@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html><head>
+    <title>SchottkyLink</title>
+    <meta charset="UTF-8" />
+    <!--  <link rel="stylesheet" type="text/css" href="scripts/style.css"> -->
+    <style>
+     body {
+	 margin: 0;
+     }
+     canvas {
+	 cursor: crosshair;
+	 display:block;
+	 background-color: black;
+     }
+
+    </style>
+    <script type="text/javascript" src="scripts/main.js"></script>
+    <script id="vs" type="x-shader/x-vertex">
+     attribute vec3 position;
+
+     void main(void){
+	 gl_Position = vec4(position, 1.0);
+     }
+    </script>
+    <script id="kissing3d" type="x-shader/x-fragment">
+     precision mediump float;
+     precision mediump float;
+     uniform float iGlobalTime;
+     //   uniform vec2  mouse;
+     uniform vec2  iResolution;
+     uniform vec2 translate;
+     uniform float scale;
+     uniform float rotation;
+     uniform float circleDist;
+     uniform float initialHue;
+     uniform float hueStep;
+     uniform float tileTheta;
+
+     vec3 ROTATION_AXIS = normalize(vec3(0.1, 1, 0.5));
+     vec3 rotate(vec3 p, float angle){
+	 float s = sin(angle);
+	 float c = cos(angle);
+	 float r = 1.0 - c;
+	 mat3 m = mat3(ROTATION_AXIS.x * ROTATION_AXIS.x * r + c,
+                       ROTATION_AXIS.y * ROTATION_AXIS.x * r + ROTATION_AXIS.z * s,
+                       ROTATION_AXIS.z * ROTATION_AXIS.x * r - ROTATION_AXIS.y * s,
+                       ROTATION_AXIS.x * ROTATION_AXIS.y * r - ROTATION_AXIS.z * s,
+                       ROTATION_AXIS.y * ROTATION_AXIS.y * r + c,
+                       ROTATION_AXIS.z * ROTATION_AXIS.y * r + ROTATION_AXIS.x * s,
+                       ROTATION_AXIS.x * ROTATION_AXIS.z * r + ROTATION_AXIS.y * s,
+                       ROTATION_AXIS.y * ROTATION_AXIS.z * r - ROTATION_AXIS.x * s,
+                       ROTATION_AXIS.z * ROTATION_AXIS.z * r + c);
+	 return m * p;
+     }
+
+     const vec3 SPHERE_POS1 = vec3(300, 300, 0);
+     const vec3 SPHERE_POS2 = vec3(300, -300, 0);
+     const vec3 SPHERE_POS3 = vec3(-300, 300, 0);
+     const vec3 SPHERE_POS4 = vec3(-300, -300, 0);
+     const vec3 SPHERE_POS5 = vec3(0, 0, 424.26);
+     const vec3 SPHERE_POS6 = vec3(0, 0, -424.26);
+     const float SPHERE_R = 300.;
+     const float SPHERE_R2 = SPHERE_R * SPHERE_R;
+
+     vec3 sphereInvert(vec3 pos, vec3 circlePos, float circleR){
+	 return ((pos - circlePos) * circleR * circleR)/(distance(pos, circlePos) * distance(pos, circlePos) ) + circlePos;
+     }
+
+     float loopNum = 0.;
+     float kleinSphereR = 125.;
+     //float kleinSphereR = 300.;
+     //float kleinSphereR = 400.;
+     const int MAX_KLEIN_ITARATION = 30;
+     float distKlein(vec3 pos){
+	 pos = rotate(pos, radians(iGlobalTime * 30.));
+	 loopNum = 0.;
+	 float dr = 1.;
+	 bool loopEnd = true;
+	 for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
+	     loopEnd = true;
+	     if(distance(pos, SPHERE_POS1) < SPHERE_R){
+		 vec3 diff = (pos - SPHERE_POS1);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS1, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, SPHERE_POS2) < SPHERE_R){
+		 vec3 diff = (pos- SPHERE_POS2);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS2, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, SPHERE_POS3) < SPHERE_R){
+		 vec3 diff = (pos- SPHERE_POS3);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS3, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, SPHERE_POS4) < SPHERE_R){
+		 vec3 diff = (pos- SPHERE_POS4);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS4, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, SPHERE_POS5) < SPHERE_R){
+		 vec3 diff = (pos- SPHERE_POS5);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS5, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, SPHERE_POS6) < SPHERE_R){
+		 vec3 diff = (pos- SPHERE_POS6);
+		 dr *= SPHERE_R2 / dot(diff, diff);
+		 pos = sphereInvert(pos, SPHERE_POS6, SPHERE_R);
+		 loopEnd = false;
+		 loopNum++;
+	     }
+	     if(loopEnd == true) break;
+	 }
+
+	 float f = (length(pos) - circleDist) / abs(dr) * 0.5;
+	 dr *= (300. * 300.) / dot(pos, pos);
+	 pos = sphereInvert(pos, vec3(0), 300.);
+	 return min(f,(length(pos) - kleinSphereR) / abs(dr) * 0.5);
+     }
+
+     vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
+									   const float width, const float height, const vec2 coord){
+	 float imagePlane = (height * .5) / tan(fov * .5);
+	 vec3 v = normalize(target - eye);
+	 vec3 xaxis = normalize(cross(v, up));
+	 vec3 yaxis =  normalize(cross(v, xaxis));
+	 vec3 center = v * imagePlane;
+	 vec3 origin = center - (xaxis * (width  *.5)) - (yaxis * (height * .5));
+	 return normalize(origin + (xaxis * coord.x) + (yaxis * (height - coord.y)));
+     }
+
+     const vec4 K = vec4(1.0, .666666, .333333, 3.0);
+     vec3 hsv2rgb(const vec3 c){
+	 vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	 return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+     }
+
+     float distFunc(vec3 p){
+	 return distKlein(p);
+     }
+
+     const vec2 d = vec2(0.01, 0.);
+     vec3 getNormal(const vec3 p){
+	 return normalize(vec3(distFunc(p + d.xyy) - distFunc(p - d.xyy),
+                               distFunc(p + d.yxy) - distFunc(p - d.yxy),
+                               distFunc(p + d.yyx) - distFunc(p - d.yyx)));
+     }
+
+     const float PI_4 = 12.566368;
+     const vec3 LIGHTING_FACT = vec3(0.01);
+     vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
+							    const vec3 lightPos, const vec3 lightPower){
+	 vec3 v = lightPos - p;
+	 float dot = dot(n, normalize(v));
+	 float r = length(v);
+	 return (dot > 0.) ?
+		(lightPower * (dot / (PI_4 * r * r))) * diffuseColor
+	      : LIGHTING_FACT * diffuseColor;
+     }
+
+     const vec3 lightPos =  vec3(150 , -250., 400 );
+     vec3 lightPos2 = vec3(0., -300., 0);
+     const vec3 lightPower = vec3(400000.);
+
+     const int MAX_MARCHING_LOOP = 1000;
+     vec2 march(const vec3 origin, const  vec3 ray, const float threshold){
+	 vec3 rayPos = origin;
+	 float dist;
+	 float rayLength = 0.;
+	 for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++){
+	     dist = distFunc(rayPos);
+	     rayLength += dist;
+	     rayPos = origin + ray * rayLength ;
+	     if(dist < threshold) break;
+	 }
+	 return vec2(dist, rayLength);
+     }
+
+     const vec3 BLACK = vec3(0);
+     vec3 calcColor(vec3 eye, vec3 ray){
+	 vec3 l = BLACK;
+	 float coeff = 1.;
+	 vec2 result = march(eye, ray, 0.03);
+	 vec3 intersection = eye + ray * result.y;
+	 vec3 matColor = vec3(0);
+	 vec3 normal = getNormal(intersection);
+	 if(result.x < 0.03){
+	     matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+	     l += diffuseLighting(intersection, normal, matColor, lightPos2, lightPower);
+	 }
+	 return l;
+     }
+
+     const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
+     vec3 gammaCorrect(vec3 rgb) {
+	 return vec3((min(pow(rgb.r, DISPLAY_GAMMA_COEFF), 1.)),
+		     (min(pow(rgb.g, DISPLAY_GAMMA_COEFF), 1.)),
+		     (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
+     }
+
+     vec3 eye = vec3(150 , -250., 400);
+     vec3 target = vec3(0, 0, 0);
+     const vec3 up = vec3(0, 1, 0);
+     float fov = radians(60.);
+
+     void main(){
+	 eye = vec3(150 , -250., 400. +scale );
+	 target = vec3(0, 200. * rotation, 0);
+	 const vec2 coordOffset = vec2(0.5);
+	 vec3 ray = calcRay(eye, target, up, fov,
+			    iResolution.x, iResolution.y,
+			    gl_FragCoord.xy + coordOffset);
+
+	 gl_FragColor = vec4(gammaCorrect(calcColor(eye, ray)), 1.);
+     }
+    </script>
+    <script id="kissingSchottky" type="x-shader/x-fragment">
+     precision mediump float;
+     uniform float iGlobalTime;
+     //   uniform vec2  mouse;
+     uniform vec2  iResolution;
+//     uniform vec2 translate;
+//     uniform float scale;
+     uniform vec3 c1;
+     uniform vec3 c2;
+     uniform vec3 c3;
+     uniform vec3 c4;
+     uniform float scale;
+     
+     float LINE_THRESHOLD = 0.0001;
+     vec3 getLine(vec2 p1, vec2 p2){
+	 float xDiff = p2.x - p1.x;
+	 float yDiff = p2.y - p1.y;
+	 if(abs(xDiff) < LINE_THRESHOLD){
+	     //x = c
+	     return vec3(1, 0, p1.x);
+	 }else if(abs(yDiff) < LINE_THRESHOLD){
+	     //y = c
+	     return vec3(0, 1, p1.y);
+	 }else{
+	     //y = ax + b
+	     return vec3(yDiff / xDiff, p1.y - p1.x * (yDiff / xDiff), 0);
+	 }
+     }
+     float calcX(vec3 line, float y){
+	 if(line.z == 0.){
+	     return (y - line.y) / line.x;
+	 }else{
+	     return line.z;
+	 }
+     }
+     float calcY(vec3 line, float x){
+	 if(line.z == 0.){
+	     return line.x * x + line.y;
+	 }else{
+	     return line.z;
+	 }
+     }
+     vec2 calcIntersection(vec3 line1, vec3 line2){
+	 if(line1.z == 0. && line2.z == 0.){
+	     float x1 = 1.;
+	     float x2 = 5.;
+	     float y1 = calcY(line1, x1);
+	     float y2 = calcY(line1, x2);
+	     float x3 = 4.;
+	     float x4 = 8.;
+	     float y3 = calcY(line2, x3);
+	     float y4 = calcY(line2, x4);
+	     float ksi   = ( y4-y3 )*( x4-x1 ) - ( x4-x3 )*( y4-y1 );
+	     float eta   = ( x2-x1 )*( y4-y1 ) - ( y2-y1 )*( x4-x1 );
+	     float delta = ( x2-x1 )*( y4-y3 ) - ( y2-y1 )*( x4-x3 );
+	     float lambda = ksi / delta;
+	     float mu    = eta / delta;
+	     return vec2(x1 + lambda*( x2-x1 ), y1 + lambda*( y2-y1 ));
+	 }else{
+	     if(line1.x == 1.){
+		 return vec2(line1.z, calcY(line2, line1.z));
+	     }else if(line1.y == 1.){
+		 return vec2(calcX(line2, line1.z), line1.z);
+	     }else if(line2.x == 1.){
+		 return vec2(line2.z, calcY(line1, line2.z));
+	     }
+	     return vec2(calcX(line1, line2.z), line2.z);
+	 }
+     }
+     const vec2 commonCirclePos = vec2(0, 0);
+     const float commonCircleR = 100.;
+     const vec2 p = commonCirclePos + vec2(0, commonCircleR);
+     const vec2 q = commonCirclePos + vec2(-commonCircleR, 0);
+     const vec2 r = commonCirclePos + vec2(0, -commonCircleR);
+     const vec2 s = commonCirclePos + vec2(commonCircleR, 0);
+     vec2 c1Pos, c2Pos, c3Pos, c4Pos;
+     float c1R, c2R, c3R, c4R;
+     void calcContactCircles(vec2 commonCirclePos, float commonCircleR){
+	 vec2 pqMid = (p + q)/2.;
+	 vec2 u = (pqMid - commonCirclePos)/distance(commonCirclePos, pqMid);
+	 vec2 a = u * commonCircleR  + commonCirclePos;
+	 c1Pos = a;
+	 c1R = distance(a, p);
+	 vec3 aq = getLine(a, q);
+	 vec3 qrMidPer = getLine(commonCirclePos, (q + r) / 2.);
+	 vec2 b = calcIntersection(aq, qrMidPer);
+	 c2Pos = b;
+	 c2R = distance(b, q);
+	 vec3 br = getLine(b, r);
+	 vec3 rsMidPer = getLine(commonCirclePos, (r + s) / 2.);
+	 vec2 c = calcIntersection(br, rsMidPer);
+	 c3Pos = c;
+	 c3R = distance(c, r);
+	 vec3 cs = getLine(c, s);
+	 vec3 spMidPer = getLine(commonCirclePos, (s + p) / 2.);
+	 vec2 d = calcIntersection(cs, spMidPer);
+	 c4Pos = d;
+	 c4R = distance(d, s);
+     }
+     vec2 circleInvert(vec2 pos, vec2 circlePos, float circleR){
+	 return ((pos - circlePos) * circleR * circleR)/(length(pos - circlePos) * length(pos - circlePos) ) + circlePos;
+     }
+     const int ITERATIONS = 10;
+     float IIS(vec2 pos){
+	 float loopNum = 0.;
+	 bool cont = false;
+	 for(int i = 0 ; i < ITERATIONS ; i++){
+	     cont = false;
+	     if(length(pos - c1.xy) < c1.z){
+		 pos = circleInvert(pos, c1.xy, c1.z);
+		 cont = true;
+		 loopNum++;
+	     }else if(length(pos - c2.xy) < c2.z){
+		 pos = circleInvert(pos, c2.xy, c2.z);
+		 cont = true;
+		 loopNum++;
+	     }else if(length(pos - c3.xy) < c3.z){
+		 pos = circleInvert(pos, c3.xy, c3.z);
+		 cont = true;
+		 loopNum++;
+	     }else if(length(pos - c4.xy) < c4.z){
+		 pos = circleInvert(pos, c4.xy, c4.z);
+		 cont = true;
+		 loopNum++;
+	     }
+	     if(cont == false) break;
+	 }
+	 return loopNum;
+     }
+     vec3 hsv2rgb(vec3 c){
+	 vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	 vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	 return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+     }
+     void main(){
+	 float ratio = iResolution.x / iResolution.y / 2.0;
+	 vec2 position = ( gl_FragCoord.xy / iResolution.yy ) - vec2(ratio, 0.5);
+//	 position += translate;
+	 position = position * scale;
+//	 position *= scale;//( 2.2 + ( t * 8.));
+	 //position += vec2(cos(iGlobalTime), 0.3 * sin(iGlobalTime));
+
+//	 calcContactCircles(commonCirclePos, commonCircleR);
+	 float loopNum = IIS(position);
+	 if(loopNum > 0.){
+	     vec3 hsv = vec3(0.03 * loopNum,1.0,1.0);
+	     gl_FragColor = vec4(hsv2rgb(hsv), 1.0);
+	 }else{
+	     gl_FragColor = vec4(0.,0.,0.,1.);
+	 }
+     }
+    </script>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+</body>
+</html>
