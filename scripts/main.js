@@ -12,8 +12,10 @@ var g_mousePressing = false;
 var g_operateRadius = false;
 var g_selectableRadius = 10;
 var g_diff;
+var g_kissingSchottkyTemplate;
 
 window.addEventListener('load', function(event){
+    g_kissingSchottkyTemplate = nunjucks.compile(document.getElementById('kissingSchottkyTemplate').text);
     g_canvas = document.getElementById('canvas');
     resizeCanvasFullscreen();
     render();
@@ -74,7 +76,11 @@ function resizeCanvasFullscreen(){
 
 function setupSchottkyProgram(gl, fragId){
     var program = gl.createProgram();
-    attachShader(gl, fragId, program, gl.FRAGMENT_SHADER);
+    //    attachShader(gl, fragId, program, gl.FRAGMENT_SHADER);
+    attachShaderFromString(gl,
+			   g_kissingSchottkyTemplate.render({numCircles: g_numCircles}),
+			   program,
+			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
 
@@ -82,10 +88,9 @@ function setupSchottkyProgram(gl, fragId){
     var n = 0;
     uniLocation[n++] = gl.getUniformLocation(program, 'iResolution');
     uniLocation[n++] = gl.getUniformLocation(program, 'iGlobalTime');
-    uniLocation[n++] = gl.getUniformLocation(program, 'c1');
-    uniLocation[n++] = gl.getUniformLocation(program, 'c2');
-    uniLocation[n++] = gl.getUniformLocation(program, 'c3');
-    uniLocation[n++] = gl.getUniformLocation(program, 'c4');
+    for(var i = 0 ; i < g_numCircles ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program, 'c'+ i);
+    }
     uniLocation[n++] = gl.getUniformLocation(program, 'scale');
  
  
@@ -122,10 +127,9 @@ function setupSchottkyProgram(gl, fragId){
 	var uniI = 0;
         gl.uniform2fv(uniLocation[uniI++], [g_canvas.width, g_canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
-        gl.uniform3fv(uniLocation[uniI++], g_circles[0]);
-        gl.uniform3fv(uniLocation[uniI++], g_circles[1]);
-	gl.uniform3fv(uniLocation[uniI++], g_circles[2]);
-	gl.uniform3fv(uniLocation[uniI++], g_circles[3]);
+	for(var i = 0 ; i < g_numCircles ; i++){
+	    gl.uniform3fv(uniLocation[uniI++], g_circles[i]);
+	}
 	gl.uniform1f(uniLocation[uniI++], g_scale);
 
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -154,6 +158,19 @@ function attachShader(gl, shaderId, program, shaderType){
     var shader = gl.createShader(shaderType);
     elem = document.getElementById(shaderId).text;
     gl.shaderSource(shader, elem);
+    gl.compileShader(shader);
+    if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
+        gl.attachShader(program, shader);
+    }else{
+	alert(gl.getShaderInfoLog(shader));
+	console.log(gl.getShaderInfoLog(shader));
+    }
+}
+
+function attachShaderFromString(gl, shaderStr, program, shaderType){
+    var shader = gl.createShader(shaderType);
+    console.log(shaderStr);
+    gl.shaderSource(shader, shaderStr);
     gl.compileShader(shader);
     if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
         gl.attachShader(program, shader);

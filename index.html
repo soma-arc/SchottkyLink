@@ -14,6 +14,7 @@
      }
 
     </style>
+    <script type="text/javascript" src="scripts/nunjucks.min.js"></script>
     <script type="text/javascript" src="scripts/main.js"></script>
     <script id="vs" type="x-shader/x-vertex">
      attribute vec3 position;
@@ -226,8 +227,8 @@
      uniform float iGlobalTime;
      //   uniform vec2  mouse;
      uniform vec2  iResolution;
-//     uniform vec2 translate;
-//     uniform float scale;
+     //     uniform vec2 translate;
+     //     uniform float scale;
      uniform vec3 c1;
      uniform vec3 c2;
      uniform vec3 c3;
@@ -358,12 +359,89 @@
      void main(){
 	 float ratio = iResolution.x / iResolution.y / 2.0;
 	 vec2 position = ( gl_FragCoord.xy / iResolution.yy ) - vec2(ratio, 0.5);
-//	 position += translate;
+	 //	 position += translate;
 	 position = position * scale;
-//	 position *= scale;//( 2.2 + ( t * 8.));
+	 //	 position *= scale;//( 2.2 + ( t * 8.));
 	 //position += vec2(cos(iGlobalTime), 0.3 * sin(iGlobalTime));
 
-//	 calcContactCircles(commonCirclePos, commonCircleR);
+	 //	 calcContactCircles(commonCirclePos, commonCircleR);
+	 float loopNum = IIS(position);
+	 if(loopNum > 0.){
+	     vec3 hsv = vec3(0.03 * loopNum,1.0,1.0);
+	     gl_FragColor = vec4(hsv2rgb(hsv), 1.0);
+	 }else{
+	     gl_FragColor = vec4(0.,0.,0.,1.);
+	 }
+     }
+        </script>
+    <script id="kissingSchottkyTemplate" type="x-shader/x-fragment">
+     precision mediump float;
+     uniform float iGlobalTime;
+     //   uniform vec2  mouse;
+     uniform vec2  iResolution;
+     //     uniform vec2 translate;
+     //     uniform float scale;
+     {% for n  in range(0,  numCircles ) %}
+     uniform vec3 c{{ n }};
+     {% endfor %}
+     uniform float scale;
+     
+     vec2 circleInvert(vec2 pos, vec2 circlePos, float circleR){
+	 return ((pos - circlePos) * circleR * circleR)/(length(pos - circlePos) * length(pos - circlePos) ) + circlePos;
+     }
+     const int ITERATIONS = 10;
+     float IIS(vec2 pos){
+	 float loopNum = 0.;
+	 bool cont = false;
+	 for(int i = 0 ; i < ITERATIONS ; i++){
+	     cont = false;
+	     {% if numCircles > 2 %}
+	     {% for n  in range(0,  numCircles ) %}
+	     {% if n == 0 %}
+	     if(length(pos - c0.xy) < c0.z){
+		 pos = circleInvert(pos, c0.xy, c0.z);
+		 cont = true;
+		 loopNum++;
+	     }
+	     {% else %}
+	     else if(length(pos - c{{ n }}.xy) < c{{ n }}.z){
+		 pos = circleInvert(pos, c{{ n }}.xy, c{{ n }}.z);
+		 cont = true;
+		 loopNum++;
+	     }
+	     {% endif %}
+	     {% endfor %}
+	     {% elif numCircles == 2 %}
+	     if(length(pos - c0.xy) < c0.z){
+		 pos = circleInvert(pos, c0.xy, c0.z);
+		 cont = true;
+		 loopNum++;
+	     }else if(length(pos - c1.xy) < c1.z){
+		 pos = circleInvert(pos, c1.xy, c1.z);
+		 cont = true;
+		 loopNum++;
+	     }
+	     {% else %}
+	     if(length(pos - c0.xy) < c0.z){
+		 pos = circleInvert(pos, c0.xy, c0.z);
+		 cont = true;
+		 loopNum++;
+	     }
+	     {% endif %}
+	     if(cont == false) break;
+	 }
+	 return loopNum;
+     }
+     vec3 hsv2rgb(vec3 c){
+	 vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	 vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	 return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+     }
+     void main(){
+	 float ratio = iResolution.x / iResolution.y / 2.0;
+	 vec2 position = ( gl_FragCoord.xy / iResolution.yy ) - vec2(ratio, 0.5);
+	 position = position * scale;
+
 	 float loopNum = IIS(position);
 	 if(loopNum > 0.){
 	     vec3 hsv = vec3(0.03 * loopNum,1.0,1.0);
@@ -373,6 +451,7 @@
 	 }
      }
     </script>
+
 </head>
 <body>
     <canvas id="canvas" width="512" height="512"></canvas>
