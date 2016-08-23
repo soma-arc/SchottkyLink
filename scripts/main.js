@@ -7,12 +7,13 @@ var g_numCircles = 4;
 var g_canvas;
 var g_center = [0, 0];
 var g_canvasRatio;
-var g_scale = 600;
+var g_scale = 900;
 var g_mousePressing = false;
 var g_operateRadius = false;
 var g_selectableRadius = 10;
 var g_diff;
 var g_kissingSchottkyTemplate;
+var g_addedCircle = false;
 
 window.addEventListener('load', function(event){
     g_kissingSchottkyTemplate = nunjucks.compile(document.getElementById('kissingSchottkyTemplate').text);
@@ -31,33 +32,40 @@ window.addEventListener('mousemove', function(event){
     if(!g_mousePressing) return;
     var px = g_scale * (event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
     var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
-    if(g_operateRadius){
-	var dx = px - g_circles[g_selectedCircleIndex][0];
-	var dy = py - g_circles[g_selectedCircleIndex][1];
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	g_circles[g_selectedCircleIndex][2] = dist;
-	return;
+    if(event.button == 0){
+	if(g_operateRadius){
+	    var dx = px - g_circles[g_selectedCircleIndex][0];
+	    var dy = py - g_circles[g_selectedCircleIndex][1];
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    g_circles[g_selectedCircleIndex][2] = dist;
+	    return;
+	}
+	g_circles[g_selectedCircleIndex][0] = px - g_diff[0];
+	g_circles[g_selectedCircleIndex][1] = py - g_diff[1];
     }
-    g_circles[g_selectedCircleIndex][0] = px - g_diff[0];
-    g_circles[g_selectedCircleIndex][1] = py - g_diff[1];
 });
 
 window.addEventListener('mousedown', function(event){
     g_mousePressing = true;
     var px = g_scale * ( event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
     var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
-    for(var i = 0 ; i < g_numCircles ; i++){
-	var dx = px - g_circles[i][0];
-	var dy = py - g_circles[i][1];
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	if(Math.abs(dist - g_circles[i][2]) < g_selectableRadius){
-	    g_selectedCircleIndex = i;
-	    g_operateRadius = true;
-	}else if(dist < g_circles[i][2] - g_selectableRadius){
-	    g_diff = [dx, dy];
-	    g_selectedCircleIndex = i;
-//	    break;
+    if(event.button == 0){
+	for(var i = 0 ; i < g_numCircles ; i++){
+	    var dx = px - g_circles[i][0];
+	    var dy = py - g_circles[i][1];
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    if(Math.abs(dist - g_circles[i][2]) < g_selectableRadius){
+		g_selectedCircleIndex = i;
+		g_operateRadius = true;
+	    }else if(dist < g_circles[i][2] - g_selectableRadius){
+		g_diff = [dx, dy];
+		g_selectedCircleIndex = i;
+		//	    break;
+	    }
 	}
+    }else if(event.button == 1){
+	g_addedCircle = true;
+	g_circles.push([px, py, 100]);
     }
 }, false);
 
@@ -140,16 +148,24 @@ function setupSchottkyProgram(gl, fragId){
     return [program, uniLocation, vPosition, vIndex, vAttLocation, switchProgram, render];
 }
 
+var g_renderFunc;
 function render(){
     var startTime = new Date().getTime();
     var gl = g_canvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
     var [sgProgram, sgUniLocation, sgPositionVbo, sgIndex, sgAttLocation,
-         switchKs, renderKs] = setupSchottkyProgram(gl, 'kissingSchottky')
+         switchKs, g_renderFunc] = setupSchottkyProgram(gl, 'kissingSchottky');
 
     switchKs();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
-	renderKs(elapsedTime);
+	g_renderFunc(elapsedTime);
+	if(g_addedCircle){
+	    g_numCircles++;
+	    [sgProgram, sgUniLocation, sgPositionVbo, sgIndex, sgAttLocation,
+	     switchKs, g_renderFunc] = setupSchottkyProgram(gl, 'kissingSchottky');
+	    switchKs();
+	    g_addedCircle = false;
+	}
 	requestAnimationFrame(arguments.callee);
     })();
 }
@@ -169,7 +185,6 @@ function attachShader(gl, shaderId, program, shaderType){
 
 function attachShaderFromString(gl, shaderStr, program, shaderType){
     var shader = gl.createShader(shaderType);
-    console.log(shaderStr);
     gl.shaderSource(shader, shaderStr);
     gl.compileShader(shader);
     if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
