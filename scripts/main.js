@@ -27,8 +27,8 @@ window.addEventListener('mouseup', function(event){
 
 window.addEventListener('mousemove', function(event){
     if(!g_mousePressing) return;
-    var px = g_scale * (event.clientX * 2 / g_canvas.height - g_canvasRatio);
-    var py = g_scale * -((event.clientY * 2) / g_canvas.height - 0.5);
+    var px = g_scale * (event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
+    var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
     if(g_operateRadius){
 	var dx = px - g_circles[g_selectedCircleIndex][0];
 	var dy = py - g_circles[g_selectedCircleIndex][1];
@@ -42,8 +42,8 @@ window.addEventListener('mousemove', function(event){
 
 window.addEventListener('mousedown', function(event){
     g_mousePressing = true;
-    var px = g_scale * ( event.clientX * 2 / g_canvas.height - g_canvasRatio);
-    var py = g_scale * -((event.clientY * 2) / g_canvas.height - 0.5);
+    var px = g_scale * ( event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
+    var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
     for(var i = 0 ; i < g_numCircles ; i++){
 	var dx = px - g_circles[i][0];
 	var dy = py - g_circles[i][1];
