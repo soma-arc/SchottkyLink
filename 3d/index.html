@@ -15,6 +15,7 @@
 
     </style>
     <script type="text/javascript" src="../lib/nunjucks.min.js"></script>
+    <script type="text/javascript" src="scripts/raytrace.js"></script>
     <script type="text/javascript" src="scripts/main.js"></script>
     <script id="vs" type="x-shader/x-vertex">
      attribute vec3 position;
@@ -27,8 +28,11 @@
      precision mediump float;
      uniform vec2 iResolution;
      uniform float iGlobalTime;
+     uniform int selectedSphereIndex;
      uniform vec3 eye;
      uniform vec3 up;
+     uniform vec3 target;
+     uniform float fov;
      
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
@@ -50,9 +54,11 @@
      const int MTL_SPHERE = 1;
      const int MTL_PLANE = 2;
      int g_mtl = -1;
+     bool g_isHit = false;
 
      vec4 intersectSphere(vec3 sphereCenter, float radius, 
 			  vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 g_isHit = false;
 	 vec3 v = rayOrigin - sphereCenter;
 	 float b = dot(rayDir, v);
 	 float c = dot(v, v) - radius * radius;
@@ -64,6 +70,7 @@
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
 		 g_mtl = MTL_SPHERE;
+		 g_isHit = true;
 		 return vec4(t, normalize(p - sphereCenter));
              }
 	 }
@@ -132,16 +139,23 @@
   	 vec3 l = BLACK;
   	 float coeff = 1.;
 	 vec4 result = vec4(99999.);
+	 int hitObjIndex;
 	 {% for n  in range(0,  numSpheres ) %}
 	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
+	 if(g_isHit) hitObjIndex = {{ n }};
 	 {% endfor %}
-
-	 vec3 matColor = vec3(1.);
+	 
+	 vec3 matColor;
+	 if(hitObjIndex == selectedSphereIndex){
+	     matColor = vec3(1., 0, 0);
+	 }else{
+	     matColor = vec3(1.);
+	 }
   	 
-  	 if(result.x > 0. && result.x != 99999.){
+  	 if(result.x != 99999.){
     	     vec3 intersection = eye + ray * result.x;
              vec3 normal = result.yzw;
-   	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+   	     l += matColor * diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
 	 }
   	 return l;
      }
@@ -160,9 +174,10 @@
                      (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
      }
 
-     vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
+     vec3 calcRay (const vec3 eye, const vec3 target,
+		   const vec3 up, const float fov,
 		   const float width, const float height, const vec2 coord){
-	 float imagePlane = (height * .5) / tan(fov * .5);
+	 float imagePlane = (height * .5) / tan(radians(fov) * .5);
   	 vec3 v = normalize(target - eye);
  	 vec3 focalXAxis = normalize(cross(v, up));
   	 vec3 focalYAxis =  normalize(cross(v, focalXAxis ));
@@ -171,15 +186,10 @@
   	 return normalize(origin + (focalXAxis * coord.x) + (focalYAxis * (height - coord.y)));
      }
 
-//     vec3 eye = vec3(1500, 450, 0);
-//     const vec3 up = vec3(0, 1, 0);
-     float fov = radians(60.);
-     const vec3 target = vec3(0., 0., 0);
      const float SAMPLE_NUM = 10.;
-     void main(){
+     void main(){	 
 	 vec4 sum = vec4(0);
 	 for(float i = 0. ; i < SAMPLE_NUM ; i++){
-//	     eye = vec3(1500. * sin(iGlobalTime), 0,1550. * cos(iGlobalTime));
              vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
              
              vec3 ray = calcRay(eye, target, up, fov,

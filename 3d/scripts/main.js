@@ -4,7 +4,6 @@ var g_spheres = [[300, 300, 0, 300],
 		 [-300, -300, 0, 300],
 		 [0, 0, 424.26, 300],
 		 [0, 0, -424.26, 300]];
-var g_selectedCircleIndex = 0;
 var g_numSpheres = 6;
 var g_canvas;
 var g_center = [0, 0];
@@ -18,10 +17,13 @@ var g_schottkyTemplate;
 var g_addedCircle = false;
 
 var g_eye = [1500, 450, 0];
+var g_target = [0, 0, 0];
+var g_fov = 60;
 var g_eyeDist = 1500;
 var g_up = [0, 1, 0]
 var g_theta = 0;
 var g_phi = 0;
+var g_selectedSphereIndex = -1;
 
 function calcCoordOnSphere(r, theta, phi){
     return [r * Math.cos(phi) * Math.cos(theta),
@@ -42,22 +44,53 @@ function calcPixel(mouseEvent){
 	    (mouseEvent.clientY * window.devicePixelRatio)];
 }
 
+function updateEye(){
+    g_eye = calcCoordOnSphere(g_eyeDist, g_theta, g_phi);
+    if(Math.abs(g_phi) % (2 * Math.PI) > Math.PI / 2. &&
+       Math.abs(g_phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
+	g_up = [0, -1, 0];
+    }else{
+	g_up = [0, 1, 0];
+    }
+}
+
 function addMouseListeners(){
+    var prevPos;
+    var prevTheta;
+    var prevPhi;
     g_canvas.addEventListener('mouseup', function(event){
 	g_mousePressing = false;
 	g_operateRadius = false;
-	g_selectedCircleIndex = -1;
     }, false);
 
     g_canvas.addEventListener('mousemove', function(event){
 	if(!g_mousePressing) return;
 	[px, py] = calcPixel(event);
+	if(g_mousePressing){
+	    if(event.button == 1){
+		g_theta = prevTheta + (prevPos[0] - px) * 0.01;
+		g_phi = prevPhi -(prevPos[1] - py) * 0.01;
+		updateEye();
+	    }
+	}
     });
 
     g_canvas.addEventListener('mousedown', function(event){
 	g_mousePressing = true;
 	[px, py] = calcPixel(event);
+	if(event.button == 0){
+	    var ray = calcRay(g_eye, g_target, g_up, g_fov,
+			      g_canvas.width, g_canvas.height,
+			      [event.clientX, event.clientY]);
+	    g_selectedSphereIndex = trace(g_eye, ray, g_spheres);
+	}else if(event.button == 1){
+	    prevPos = [px, py];
+	    prevTheta = g_theta;
+	    prevPhi = g_phi;
+	}
+
     }, false);
+    
     window.addEventListener('keydown', function(event){
 	if(event.key == 'ArrowRight'){
 	    g_theta += 0.1;
@@ -68,13 +101,7 @@ function addMouseListeners(){
 	}else if(event.key == 'ArrowDown'){
 	    g_phi -= 0.1;
 	}
-	g_eye = calcCoordOnSphere(g_eyeDist, g_theta, g_phi);
-	if(Math.abs(g_phi) % (2 * Math.PI) > Math.PI / 2. &&
-	   Math.abs(g_phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
-	    g_up = [0, -1, 0];
-	}else{
-	    g_up = [0, 1, 0];
-	}
+	updateEye();
     });
 }
 
@@ -115,8 +142,13 @@ function setupSchottkyProgram(gl, numCircles){
 					     'iResolution');
     uniLocation[n++] = gl.getUniformLocation(program,
 					     'iGlobalTime');
+    uniLocation[n++] = gl.getUniformLocation(program,
+					     'selectedSphereIndex');
     uniLocation[n++] = gl.getUniformLocation(program, 'eye');
     uniLocation[n++] = gl.getUniformLocation(program, 'up');
+    uniLocation[n++] = gl.getUniformLocation(program, 'target');
+    uniLocation[n++] = gl.getUniformLocation(program, 'fov');
+
     for(var i = 0 ; i < g_numSpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
@@ -155,8 +187,11 @@ function setupSchottkyProgram(gl, numCircles){
 	var uniI = 0;
         gl.uniform2fv(uniLocation[uniI++], [g_canvas.width, g_canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
+	gl.uniform1i(uniLocation[uniI++], g_selectedSphereIndex);
 	gl.uniform3fv(uniLocation[uniI++], g_eye);
 	gl.uniform3fv(uniLocation[uniI++], g_up);
+	gl.uniform3fv(uniLocation[uniI++], g_target);
+	gl.uniform1f(uniLocation[uniI++], g_fov);
 	for(var i = 0 ; i < g_numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
@@ -180,12 +215,6 @@ function render(){
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
 	g_renderFunc(elapsedTime);
-//	g_eye = calcCoordOnSphere(g_eyeDist, 0, elapsedTime / 1000.);
-	// if(g_eye[1] < 0){
-	//     g_up = [0, -1, 0];
-	// }else{
-	//     g_up = [0, 1, 0];
-	// }
 	requestAnimationFrame(arguments.callee);
     })();
 }
