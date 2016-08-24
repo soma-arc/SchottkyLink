@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html><head>
+    <title>SchottkyLink</title>
+    <meta charset="UTF-8" />
+    <!--  <link rel="stylesheet" type="text/css" href="scripts/style.css"> -->
+    <style>
+     body {
+	 margin: 0;
+     }
+     canvas {
+	 cursor: crosshair;
+	 display:block;
+	 background-color: black;
+     }
+
+    </style>
+    <script type="text/javascript" src="../lib/nunjucks.min.js"></script>
+    <script type="text/javascript" src="scripts/main.js"></script>
+    <script id="vs" type="x-shader/x-vertex">
+     attribute vec3 position;
+
+     void main(void){
+	 gl_Position = vec4(position, 1.0);
+     }
+    </script>
+    <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
+     precision mediump float;
+     uniform vec2 iResolution;
+     uniform float iGlobalTime;
+     uniform vec3 eye;
+     uniform vec3 up;
+     
+     {% for n  in range(0,  numSpheres ) %}
+     uniform vec4 s{{ n }};
+     {% endfor %}
+     uniform vec4 baseSphere;
+     
+     // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
+     vec2 rand2n(vec2 co, float sampleIndex) {
+	 vec2 seed = co * (sampleIndex + 1.0);
+	 seed+=vec2(-1,1);
+	 // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+	 return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+                     fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
+     }
+
+     const float PI = 3.14159265359;
+     const float PI_2 = PI/2.;
+     const float EPSILON = 0.001;
+     const int MTL_SPHERE = 1;
+     const int MTL_PLANE = 2;
+     int g_mtl = -1;
+
+     vec4 intersectSphere(vec3 sphereCenter, float radius, 
+			  vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 vec3 v = rayOrigin - sphereCenter;
+	 float b = dot(rayDir, v);
+	 float c = dot(v, v) - radius * radius;
+	 float d = b * b - c;
+	 if(d >= 0.){
+             float s = sqrt(d);
+             float t = -b - s;
+             if(t <= EPSILON) t = -b + s;
+             if(EPSILON < t && t < isect.x){
+		 vec3 p = (rayOrigin + t * rayDir);
+		 g_mtl = MTL_SPHERE;
+		 return vec4(t, normalize(p - sphereCenter));
+             }
+	 }
+	 return isect;
+     }
+
+     vec4 intersectPlane(vec3 p, vec3 n, 
+			 vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 float d = -dot(p, n);
+	 float v = dot(n, rayDir);
+	 float t = -(dot(n, rayOrigin) + d) / v;
+	 if(EPSILON < t && t < isect.x){
+             g_mtl = MTL_PLANE;
+    	     return vec4(t, n);
+	 }
+	 return isect;
+     }
+
+     vec4 intersectXYRect (vec2 p1, vec2 p2, float z,
+			   vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 float t = (z - rayOrigin.z) / rayDir.z;
+	 if(EPSILON < t && t < isect.x){
+    	     vec3 p = rayOrigin + t * rayDir;
+             if(p1.x < p.x && p.x < p2.x &&
+		p1.y < p.y && p.y < p2.y ){
+
+        	 return vec4(t, vec3(0, 0, 1));
+             }
+	 }
+	 return isect;
+     }
+
+     const vec3 BLACK = vec3(0);
+
+     vec3 planeP = vec3(0, 0, 0);
+     vec3 planeN = normalize(vec3(0, 1, 0));
+
+     float lightVisibility(vec3 org, vec3 target){
+	 vec3 v = target - org;
+	 vec4 result = vec4(length(v));
+	 {% for n  in range(0,  numSpheres ) %}
+	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, org, normalize(v), result);
+         if(result.x < length(v)) return 0.;
+	 {% endfor %}
+
+	 return 1.;
+     }
+
+     const float PI_4 = 12.566368;
+     const vec3 LIGHTING_FACT = vec3(0.1);
+     vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
+							    const vec3 lightPos, const vec3 lightPower){
+  	 vec3 v = lightPos - p;
+  	 float d = dot(n, normalize(v));
+  	 float r = length(v);
+  	 return (true//d > 0. 
+	                     // && lightVisibility(p, lightPos) == 1.
+         ) ?
+    		(lightPower * (abs(d) / (PI_4 * r * r))) * diffuseColor
+    	      : vec3(0.0);
+     }
+
+     const vec3 lightPos = vec3(900, 450, 0);
+     const vec3 lightPower = vec3(500000.);
+     vec3 calcColor(vec3 eye, vec3 ray){
+  	 vec3 l = BLACK;
+  	 float coeff = 1.;
+	 vec4 result = vec4(99999.);
+	 {% for n  in range(0,  numSpheres ) %}
+	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
+	 {% endfor %}
+
+	 vec3 matColor = vec3(1.);
+  	 
+  	 if(result.x > 0. && result.x != 99999.){
+    	     vec3 intersection = eye + ray * result.x;
+             vec3 normal = result.yzw;
+   	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+	 }
+  	 return l;
+     }
+
+     vec3 hsv2rgb(vec3 c){
+	 vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	 vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	 return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+     }
+
+
+     const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
+     vec3 gammaCorrect(vec3 rgb) {
+	 return vec3((min(pow(rgb.r, DISPLAY_GAMMA_COEFF), 1.)),
+                     (min(pow(rgb.g, DISPLAY_GAMMA_COEFF), 1.)),
+                     (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
+     }
+
+     vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
+		   const float width, const float height, const vec2 coord){
+	 float imagePlane = (height * .5) / tan(fov * .5);
+  	 vec3 v = normalize(target - eye);
+ 	 vec3 focalXAxis = normalize(cross(v, up));
+  	 vec3 focalYAxis =  normalize(cross(v, focalXAxis ));
+  	 vec3 center = v * imagePlane;
+  	 vec3 origin = center - (focalXAxis * (width  * .5)) - (focalYAxis * (height * .5));
+  	 return normalize(origin + (focalXAxis * coord.x) + (focalYAxis * (height - coord.y)));
+     }
+
+//     vec3 eye = vec3(1500, 450, 0);
+//     const vec3 up = vec3(0, 1, 0);
+     float fov = radians(60.);
+     const vec3 target = vec3(0., 0., 0);
+     const float SAMPLE_NUM = 10.;
+     void main(){
+	 vec4 sum = vec4(0);
+	 for(float i = 0. ; i < SAMPLE_NUM ; i++){
+//	     eye = vec3(1500. * sin(iGlobalTime), 0,1550. * cos(iGlobalTime));
+             vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
+             
+             vec3 ray = calcRay(eye, target, up, fov,
+    		               	iResolution.x, iResolution.y,
+        		        gl_FragCoord.xy + coordOffset);
+             
+             sum += vec4(gammaCorrect(calcColor(eye, ray)), 1.);
+	 }
+	 gl_FragColor = vec4(sum/SAMPLE_NUM);
+     }
+    </script>
+
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+</body>
+</html>
