@@ -8,13 +8,7 @@ var g_numSpheres = 6;
 var g_canvas;
 var g_center = [0, 0];
 var g_canvasRatio;
-var g_scale = 900;
-var g_mousePressing = false;
-var g_operateRadius = false;
-var g_selectableRadius = 10;
-var g_diff;
 var g_schottkyTemplate;
-var g_addedCircle = false;
 
 var g_eye = [1500, 450, 0];
 var g_target = [0, 0, 0];
@@ -58,25 +52,26 @@ function addMouseListeners(){
     var prevPos;
     var prevTheta;
     var prevPhi;
+    var isMousePressing = false;
+
     g_canvas.addEventListener('mouseup', function(event){
-	g_mousePressing = false;
-	g_operateRadius = false;
-    }, false);
+	isMousePressing = false;
+    }, true);
 
     g_canvas.addEventListener('mousemove', function(event){
-	if(!g_mousePressing) return;
+	if(!isMousePressing) return;
 	[px, py] = calcPixel(event);
-	if(g_mousePressing){
+	if(isMousePressing){
 	    if(event.button == 1){
 		g_theta = prevTheta + (prevPos[0] - px) * 0.01;
 		g_phi = prevPhi -(prevPos[1] - py) * 0.01;
 		updateEye();
 	    }
 	}
-    });
+    }, true);
 
     g_canvas.addEventListener('mousedown', function(event){
-	g_mousePressing = true;
+	isMousePressing = true;
 	[px, py] = calcPixel(event);
 	if(event.button == 0){
 	    var ray = calcRay(g_eye, g_target, g_up, g_fov,
@@ -88,22 +83,30 @@ function addMouseListeners(){
 	    prevTheta = g_theta;
 	    prevPhi = g_phi;
 	}
+    }, true);
 
-    }, false);
-    
-    window.addEventListener('keydown', function(event){
-	if(event.key == 'ArrowRight'){
-	    g_theta += 0.1;
-	}else if(event.key == 'ArrowLeft'){
-	    g_theta -= 0.1;
-	}else if(event.key == 'ArrowUp'){
-	    g_phi += 0.1;
-	}else if(event.key == 'ArrowDown'){
-	    g_phi -= 0.1;
+    g_canvas.addEventListener('mousewheel', function(event){
+	if(event.wheelDelta > 0){
+	    g_eyeDist -= 100;
+	}else{
+	    g_eyeDist += 100;
 	}
 	updateEye();
-    });
+    }, true);
 }
+
+window.addEventListener('keydown', function(event){
+    if(event.key == 'ArrowRight'){
+	g_theta += 0.1;
+    }else if(event.key == 'ArrowLeft'){
+	g_theta -= 0.1;
+    }else if(event.key == 'ArrowUp'){
+	g_phi += 0.1;
+    }else if(event.key == 'ArrowDown'){
+	g_phi -= 0.1;
+    }
+    updateEye();
+});
 
 window.addEventListener('load', function(event){
     g_eye = calcCoordOnSphere(g_eyeDist, 0, 0);
