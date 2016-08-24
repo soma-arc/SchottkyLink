@@ -15,58 +15,61 @@ var g_diff;
 var g_kissingSchottkyTemplate;
 var g_addedCircle = false;
 
+function addMouseListeners(){
+    g_canvas.addEventListener('mouseup', function(event){
+	g_mousePressing = false;
+	g_operateRadius = false;
+	g_selectedCircleIndex = -1;
+    }, false);
+
+    g_canvas.addEventListener('mousemove', function(event){
+	if(!g_mousePressing) return;
+	var px = g_scale * (event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
+	var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
+	if(event.button == 0){
+	    if(g_operateRadius){
+		var dx = px - g_circles[g_selectedCircleIndex][0];
+		var dy = py - g_circles[g_selectedCircleIndex][1];
+		var dist = Math.sqrt((dx * dx) + (dy * dy));
+		g_circles[g_selectedCircleIndex][2] = dist;
+		return;
+	    }else if(g_selectedCircleIndex > -1){
+		g_circles[g_selectedCircleIndex][0] = px - g_diff[0];
+		g_circles[g_selectedCircleIndex][1] = py - g_diff[1];
+	    }
+	}
+    });
+
+    g_canvas.addEventListener('mousedown', function(event){
+	g_mousePressing = true;
+	var px = g_scale * ( event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
+	var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
+	if(event.button == 0){
+	    for(var i = 0 ; i < g_numCircles ; i++){
+		var dx = px - g_circles[i][0];
+		var dy = py - g_circles[i][1];
+		var dist = Math.sqrt((dx * dx) + (dy * dy));
+		if(Math.abs(dist - g_circles[i][2]) < g_selectableRadius){
+		    g_selectedCircleIndex = i;
+		    g_operateRadius = true;
+		}else if(dist < g_circles[i][2] - g_selectableRadius){
+		    g_diff = [dx, dy];
+		    g_selectedCircleIndex = i;
+		}
+	    }
+	}else if(event.button == 1){
+	    g_addedCircle = true;
+	    g_circles.push([px, py, 100]);
+	}
+    }, false);
+}
+
 window.addEventListener('load', function(event){
     g_kissingSchottkyTemplate = nunjucks.compile(document.getElementById('kissingSchottkyTemplate').text);
     g_canvas = document.getElementById('canvas');
+    addMouseListeners();
     resizeCanvasFullscreen();
     render();
-}, false);
-
-
-window.addEventListener('mouseup', function(event){
-    g_mousePressing = false;
-    g_operateRadius = false;
-}, false);
-
-window.addEventListener('mousemove', function(event){
-    if(!g_mousePressing) return;
-    var px = g_scale * (event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
-    var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
-    if(event.button == 0){
-	if(g_operateRadius){
-	    var dx = px - g_circles[g_selectedCircleIndex][0];
-	    var dy = py - g_circles[g_selectedCircleIndex][1];
-	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    g_circles[g_selectedCircleIndex][2] = dist;
-	    return;
-	}
-	g_circles[g_selectedCircleIndex][0] = px - g_diff[0];
-	g_circles[g_selectedCircleIndex][1] = py - g_diff[1];
-    }
-});
-
-window.addEventListener('mousedown', function(event){
-    g_mousePressing = true;
-    var px = g_scale * ( event.clientX * window.devicePixelRatio / g_canvas.height - g_canvasRatio);
-    var py = g_scale * -((event.clientY * window.devicePixelRatio) / g_canvas.height - 0.5);
-    if(event.button == 0){
-	for(var i = 0 ; i < g_numCircles ; i++){
-	    var dx = px - g_circles[i][0];
-	    var dy = py - g_circles[i][1];
-	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    if(Math.abs(dist - g_circles[i][2]) < g_selectableRadius){
-		g_selectedCircleIndex = i;
-		g_operateRadius = true;
-	    }else if(dist < g_circles[i][2] - g_selectableRadius){
-		g_diff = [dx, dy];
-		g_selectedCircleIndex = i;
-		//	    break;
-	    }
-	}
-    }else if(event.button == 1){
-	g_addedCircle = true;
-	g_circles.push([px, py, 100]);
-    }
 }, false);
 
 window.addEventListener('resize', function(event){
@@ -82,11 +85,10 @@ function resizeCanvasFullscreen(){
     g_canvasRatio = g_canvas.width / g_canvas.height / 2.;
 }
 
-function setupSchottkyProgram(gl, fragId){
+function setupSchottkyProgram(gl, numCircles){
     var program = gl.createProgram();
-    //    attachShader(gl, fragId, program, gl.FRAGMENT_SHADER);
     attachShaderFromString(gl,
-			   g_kissingSchottkyTemplate.render({numCircles: g_numCircles}),
+			   g_kissingSchottkyTemplate.render({numCircles: numCircles}),
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
@@ -96,7 +98,7 @@ function setupSchottkyProgram(gl, fragId){
     var n = 0;
     uniLocation[n++] = gl.getUniformLocation(program, 'iResolution');
     uniLocation[n++] = gl.getUniformLocation(program, 'iGlobalTime');
-    for(var i = 0 ; i < g_numCircles ; i++){
+    for(var i = 0 ; i < numCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'c'+ i);
     }
     uniLocation[n++] = gl.getUniformLocation(program, 'scale');
@@ -135,7 +137,7 @@ function setupSchottkyProgram(gl, fragId){
 	var uniI = 0;
         gl.uniform2fv(uniLocation[uniI++], [g_canvas.width, g_canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
-	for(var i = 0 ; i < g_numCircles ; i++){
+	for(var i = 0 ; i < numCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], g_circles[i]);
 	}
 	gl.uniform1f(uniLocation[uniI++], g_scale);
@@ -145,15 +147,15 @@ function setupSchottkyProgram(gl, fragId){
 	gl.flush();
     }
 
-    return [program, uniLocation, vPosition, vIndex, vAttLocation, switchProgram, render];
+    return [switchProgram, render];
 }
 
 var g_renderFunc;
 function render(){
     var startTime = new Date().getTime();
     var gl = g_canvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
-    var [sgProgram, sgUniLocation, sgPositionVbo, sgIndex, sgAttLocation,
-         switchKs, g_renderFunc] = setupSchottkyProgram(gl, 'kissingSchottky');
+    var [switchKs, g_renderFunc] = setupSchottkyProgram(gl,
+							g_numCircles);
 
     switchKs();
     (function(){
@@ -161,8 +163,8 @@ function render(){
 	g_renderFunc(elapsedTime);
 	if(g_addedCircle){
 	    g_numCircles++;
-	    [sgProgram, sgUniLocation, sgPositionVbo, sgIndex, sgAttLocation,
-	     switchKs, g_renderFunc] = setupSchottkyProgram(gl, 'kissingSchottky');
+	    [switchKs, g_renderFunc] = setupSchottkyProgram(gl,
+							    g_numCircles);
 	    switchKs();
 	    g_addedCircle = false;
 	}
