@@ -53,6 +53,7 @@
      const float EPSILON = 0.001;
      const int MTL_SPHERE = 1;
      const int MTL_PLANE = 2;
+     const int BASE_SPHERE_INDEX = -2;
      int g_mtl = -1;
      bool g_isHit = false;
 
@@ -144,10 +145,15 @@
 	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = {{ n }};
 	 {% endfor %}
+
+	 result = intersectSphere(baseSphere.xyz, baseSphere.w, eye, ray, result);
+	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX;
 	 
 	 vec3 matColor;
 	 if(hitObjIndex == selectedSphereIndex){
 	     matColor = vec3(1., 0, 0);
+	 }else if(hitObjIndex == BASE_SPHERE_INDEX){
+	     matColor = vec3(0, 1, 0);
 	 }else{
 	     matColor = vec3(1.);
 	 }

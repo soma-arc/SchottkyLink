@@ -4,6 +4,7 @@ var g_spheres = [[300, 300, 0, 300],
 		 [-300, -300, 0, 300],
 		 [0, 0, 424.26, 300],
 		 [0, 0, -424.26, 300]];
+var g_baseSphere = [0, 0, 0, 125];
 var g_numSpheres = 6;
 var g_canvas;
 var g_center = [0, 0];
@@ -156,6 +157,8 @@ function setupSchottkyProgram(gl, numCircles){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
     }
+    uniLocation[n++] = gl.getUniformLocation(program,
+					     'baseSphere');
  
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
@@ -198,6 +201,7 @@ function setupSchottkyProgram(gl, numCircles){
 	for(var i = 0 ; i < g_numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
+	gl.uniform4fv(uniLocation[uniI++], g_baseSphere);
 
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
