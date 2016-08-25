@@ -6,21 +6,39 @@ var g_spheres = [[300, 300, 0, 300],
 		 [0, 0, -424.26, 300]];
 var g_baseSphere = [0, 0, 0, 125];
 var g_numSpheres = 6;
-var g_canvas;
-var g_orbitCanvas;
-var g_center = [0, 0];
-var g_canvasRatio;
-var g_schottkyTemplate;
-var g_orbitTemplate;
 
-var g_eye = [500, 450, 0];
-var g_target = [0, 0, 0];
-var g_fov = 60;
-var g_eyeDist = 1500;
-var g_up = [0, 1, 0]
-var g_theta = 0;
-var g_phi = 0;
-var g_selectedSphereIndex = -1;
+var RenderCanvas = function(canvasId, templateId){
+    this.canvasId = canvasId;
+    this.canvas = document.getElementById(canvasId);
+    this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+    this.template = nunjucks.compile(document.getElementById(templateId).text);
+    this.target = [0, 0, 0];
+    this.fovDegree = 60;
+    this.eyeDist =  1500;
+    this.up = [0, 1, 0];
+    this.theta = 0;
+    this.phi = 0;
+    this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
+
+    this.selectedSphereIndex = -1;
+    this.isRendering = false;
+}
+
+RenderCanvas.prototype = {
+    calcPixel: function(mouseEvent){
+	return [(mouseEvent.clientX * window.devicePixelRatio),
+		(mouseEvent.clientY * window.devicePixelRatio)];
+    },
+    updateEye: function(){
+	this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
+	if(Math.abs(this.phi) % (2 * Math.PI) > Math.PI / 2. &&
+	   Math.abs(this.phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
+	    this.up = [0, -1, 0];
+	}else{
+	    this.up = [0, 1, 0];
+	}
+    }
+};
 
 function calcCoordOnSphere(r, theta, phi){
     return [r * Math.cos(phi) * Math.cos(theta),
@@ -35,108 +53,67 @@ function calcLatitudeTangentOnSphere(r, theta, phi){
 	    ];
 }
 
-
-function calcPixel(mouseEvent){
-    return [(mouseEvent.clientX * window.devicePixelRatio),
-	    (mouseEvent.clientY * window.devicePixelRatio)];
-}
-
-function updateEye(){
-    g_eye = calcCoordOnSphere(g_eyeDist, g_theta, g_phi);
-    if(Math.abs(g_phi) % (2 * Math.PI) > Math.PI / 2. &&
-       Math.abs(g_phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
-	g_up = [0, -1, 0];
-    }else{
-	g_up = [0, 1, 0];
-    }
-}
-
-function addMouseListeners(){
-    var prevPos;
-    var prevTheta;
-    var prevPhi;
+function setupSchottkyCanvas(renderCanvas){
+    var canvas = renderCanvas.canvas;
+    var prevTheta, prevPhi, prevPos;
+    
     var isMousePressing = false;
-
-    g_canvas.addEventListener('mouseup', function(event){
+    canvas.addEventListener('mouseup', function(event){
 	isMousePressing = false;
-    }, true);
+	renderCanvas.isRendering = false;
+    });
 
-    g_canvas.addEventListener('mousemove', function(event){
+    canvas.addEventListener('mousemove', function(event){
 	if(!isMousePressing) return;
-	[px, py] = calcPixel(event);
-	if(isMousePressing){
-	    if(event.button == 1){
-		g_theta = prevTheta + (prevPos[0] - px) * 0.01;
-		g_phi = prevPhi -(prevPos[1] - py) * 0.01;
-		updateEye();
-	    }
+	[px, py] = renderCanvas.calcPixel(event);
+	if(event.button == 1){
+	    renderCanvas.theta = prevTheta + (prevPos[0] - px) * 0.01;
+	    renderCanvas.phi = prevPhi -(prevPos[1] - py) * 0.01;
+	    renderCanvas.updateEye();
+	    renderCanvas.isRendering = true;
 	}
-    }, true);
+    });
 
-    g_canvas.addEventListener('mousedown', function(event){
+    canvas.addEventListener('mousedown', function(event){
 	isMousePressing = true;
-	[px, py] = calcPixel(event);
+	[px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 0){
-	    var ray = calcRay(g_eye, g_target, g_up, g_fov,
-			      g_canvas.width, g_canvas.height,
+	    var ray = calcRay(renderCanvas.eye, renderCanvas.target,
+			      renderCanvas.up, renderCanvas.fovDegree,
+			      canvas.width, canvas.height,
 			      [event.clientX, event.clientY]);
-	    g_selectedSphereIndex = trace(g_eye, ray, g_spheres);
+	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
+							 ray,
+							 g_spheres);
+	    renderCanvas.isRendering = true;
 	}else if(event.button == 1){
 	    prevPos = [px, py];
-	    prevTheta = g_theta;
-	    prevPhi = g_phi;
+	    prevTheta = renderCanvas.theta;
+	    prevPhi = renderCanvas.phi;
 	}
     }, true);
 
-    g_canvas.addEventListener('mousewheel', function(event){
+    canvas.addEventListener('mousewheel', function(event){
 	if(event.wheelDelta > 0){
-	    g_eyeDist -= 100;
+	    renderCanvas.eyeDist -= 100;
 	}else{
-	    g_eyeDist += 100;
+	    renderCanvas.eyeDist += 100;
 	}
-	updateEye();
+	renderCanvas.updateEye();
+	renderCanvas.render(0);
     }, true);
+
+    [renderCanvas.switch,
+     renderCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						     renderCanvas);
+    renderCanvas.switch();
+    renderCanvas.render(0);
 }
 
-window.addEventListener('keydown', function(event){
-    if(event.key == 'ArrowRight'){
-	g_theta += 0.1;
-    }else if(event.key == 'ArrowLeft'){
-	g_theta -= 0.1;
-    }else if(event.key == 'ArrowUp'){
-	g_phi += 0.1;
-    }else if(event.key == 'ArrowDown'){
-	g_phi -= 0.1;
-    }
-    updateEye();
-});
-
-window.addEventListener('load', function(event){
-    g_eye = calcCoordOnSphere(g_eyeDist, 0, 0);
-    g_schottkyTemplate = nunjucks.compile(document.getElementById('3dSchottkyTemplate').text);
-    g_orbitTemplate = nunjucks.compile(document.getElementById('3dOrbitTemplate').text);
-    g_canvas = document.getElementById('canvas');
-    g_orbitCanvas = document.getElementById('orbitCanvas');
-    addMouseListeners();
-//    resizeCanvasFullscreen();
-    render();
-}, false);
-
-window.addEventListener('resize', function(event){
-//    resizeCanvasFullscreen();
-}, false);
-
-function resizeCanvasFullscreen(){
-    g_canvas.style.width = window.innerWidth + 'px';
-    g_canvas.style.height = window.innerHeight + 'px';
-    g_canvas.width = window.innerWidth * window.devicePixelRatio;
-    g_canvas.height = window.innerHeight * window.devicePixelRatio;
-    g_center = [g_canvas.width / 2, g_canvas.height / 2];
-    g_canvasRatio = g_canvas.width / g_canvas.height / 2.;
-}
-
-function setupSchottkyProgram(gl, numSpheres, shaderStr){
+function setupSchottkyProgram(numSpheres, renderCanvas){
+    var gl = renderCanvas.gl;
     var program = gl.createProgram();
+    var shaderStr = renderCanvas.template.render({numSpheres: numSpheres});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -190,18 +167,18 @@ function setupSchottkyProgram(gl, numSpheres, shaderStr){
     }
 
     var render = function(elapsedTime){
-        gl.viewport(0, 0, g_canvas.width, g_canvas.height);
+        gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var uniI = 0;
-        gl.uniform2fv(uniLocation[uniI++], [g_canvas.width, g_canvas.height]);
+        gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
-	gl.uniform1i(uniLocation[uniI++], g_selectedSphereIndex);
-	gl.uniform3fv(uniLocation[uniI++], g_eye);
-	gl.uniform3fv(uniLocation[uniI++], g_up);
-	gl.uniform3fv(uniLocation[uniI++], g_target);
-	gl.uniform1f(uniLocation[uniI++], g_fov);
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedSphereIndex);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.eye);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.up);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.target);
+	gl.uniform1f(uniLocation[uniI++], renderCanvas.fovDegree);
 	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
@@ -215,79 +192,21 @@ function setupSchottkyProgram(gl, numSpheres, shaderStr){
     return [switchProgram, render];
 }
 
-var g_renderFunc;
-function render(){
+window.addEventListener('load', function(event){
+    var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
+    var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
+    
+    setupSchottkyCanvas(schottkyCanvas);
+    setupSchottkyCanvas(orbitCanvas);
+    
     var startTime = new Date().getTime();
-    var gl = g_canvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
-    var [switchKs,
-	 g_renderFunc] = setupSchottkyProgram(gl,
-					      g_numSpheres,
-					      g_schottkyTemplate.render({numSpheres: g_numSpheres}));
 
-    switchKs();
-
-    var gl2 = g_orbitCanvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
-    var [switchOrbit,
-	 g_renderFunc2] = setupSchottkyProgram(gl2,
-					       g_numSpheres,
-					       g_orbitTemplate.render({numSpheres: g_numSpheres}));
-    console.log(g_orbitTemplate.render({numSpheres: g_numSpheres}));
-    switchOrbit();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
-	g_renderFunc(elapsedTime);
-	g_renderFunc2(elapsedTime);
-	requestAnimationFrame(arguments.callee);
+	if(schottkyCanvas.isRendering)
+	    schottkyCanvas.render(elapsedTime);
+	if(orbitCanvas.isRendering)
+	    orbitCanvas.render(elapsedTime);
+    	requestAnimationFrame(arguments.callee);
     })();
-}
-
-function attachShader(gl, shaderId, program, shaderType){
-    var shader = gl.createShader(shaderType);
-    elem = document.getElementById(shaderId).text;
-    gl.shaderSource(shader, elem);
-    gl.compileShader(shader);
-    if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
-        gl.attachShader(program, shader);
-    }else{
-	alert(gl.getShaderInfoLog(shader));
-	console.log(gl.getShaderInfoLog(shader));
-    }
-}
-
-function attachShaderFromString(gl, shaderStr, program, shaderType){
-    var shader = gl.createShader(shaderType);
-    gl.shaderSource(shader, shaderStr);
-    gl.compileShader(shader);
-    if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
-        gl.attachShader(program, shader);
-    }else{
-	alert(gl.getShaderInfoLog(shader));
-	console.log(gl.getShaderInfoLog(shader));
-    }
-}
-
-function linkProgram(gl, program){
-    gl.linkProgram(program);
-    if(gl.getProgramParameter(program, gl.LINK_STATUS)){
-	gl.useProgram(program);
-	return program;
-    }else{
-	return null;
-    }
-}
-
-function createVbo(gl, data){
-    var vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    return vbo;
-}
-
-function createIbo(gl, data){
-    var ibo = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-    return ibo;
-}
+}, false);
