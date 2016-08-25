@@ -85,7 +85,6 @@ function setupSchottkyCanvas(renderCanvas){
 	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
 						     ray,
 						     g_spheres.concat([g_baseSphere]));
-	    console.log(renderCanvas.selectedSphereIndex);
 	    renderCanvas.isRendering = true;
 	}else if(event.button == 1){
 	    prevPos = [px, py];
@@ -193,6 +192,21 @@ function setupSchottkyProgram(numSpheres, renderCanvas){
     return [switchProgram, render];
 }
 
+function addSphere(schottkyCanvas, orbitCanvas){
+    g_spheres.push([500, 500, 0, 300]);
+    g_numSpheres++;
+    [schottkyCanvas.switch,
+     schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						   schottkyCanvas);
+    [orbitCanvas.switch,
+     orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
+     						orbitCanvas);
+    schottkyCanvas.switch();
+    orbitCanvas.switch();
+    schottkyCanvas.render(0);
+    orbitCanvas.render(0);
+}
+
 window.addEventListener('load', function(event){
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
@@ -201,39 +215,47 @@ window.addEventListener('load', function(event){
     setupSchottkyCanvas(orbitCanvas);
 
     window.addEventListener('keydown', function(event){
-	var index = schottkyCanvas.selectedSphereIndex;
-	if(index == -1) return;
-	var operateSphere = g_spheres[index];
-	if(index == g_numSpheres)
-	    operateSphere = g_baseSphere;
-	switch (event.key){
-	case 'w':
-	    operateSphere[1] += 50;
-	    break;
-	case 's':
-	    operateSphere[1] -= 50;
-	    break;
-	case 'a':
-	    operateSphere[0] -= 50;
-	    break;
-	case 'd':
-	    operateSphere[0] += 50;
-	    break;
-	case 'q':
-	    operateSphere[2] -= 50;
-	    break;
-	case 'e':
-	    operateSphere[2] += 50;
-	    break;
-	case 'r':
-	    operateSphere[3] += 10;
-	    break;
-	case 'f':
-	    operateSphere[3] -= 10;
-	    break;
+	if(event.key == ' '){
+	    addSphere(schottkyCanvas, orbitCanvas);
+	    schottkyCanvas.render(0);
+	    orbitCanvas.render(0);
+	}else{
+	    var index = schottkyCanvas.selectedSphereIndex;
+	    if(index != -1){
+		var operateSphere = g_spheres[index];
+		if(index == g_numSpheres)
+		    operateSphere = g_baseSphere;
+		switch (event.key){
+		case 'w':
+		    operateSphere[1] += 50;
+		    break;
+		case 's':
+		    operateSphere[1] -= 50;
+		    break;
+		case 'a':
+		    operateSphere[0] -= 50;
+		    break;
+		case 'd':
+		    operateSphere[0] += 50;
+		    break;
+		case 'q':
+		    operateSphere[2] -= 50;
+		    break;
+		case 'e':
+		    operateSphere[2] += 50;
+		    break;
+		case 'r':
+		    operateSphere[3] += 10;
+		    break;
+		case 'f':
+		    operateSphere[3] -= 10;
+		    break;
+		}
+		schottkyCanvas.render(0);
+		orbitCanvas.render(0);
+	    }
 	}
-	schottkyCanvas.render(0);
-	orbitCanvas.render(0);
+
     });
     
     var startTime = new Date().getTime();
