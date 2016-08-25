@@ -7,11 +7,13 @@ var g_spheres = [[300, 300, 0, 300],
 var g_baseSphere = [0, 0, 0, 125];
 var g_numSpheres = 6;
 var g_canvas;
+var g_orbitCanvas;
 var g_center = [0, 0];
 var g_canvasRatio;
 var g_schottkyTemplate;
+var g_orbitTemplate;
 
-var g_eye = [1500, 450, 0];
+var g_eye = [500, 450, 0];
 var g_target = [0, 0, 0];
 var g_fov = 60;
 var g_eyeDist = 1500;
@@ -112,7 +114,9 @@ window.addEventListener('keydown', function(event){
 window.addEventListener('load', function(event){
     g_eye = calcCoordOnSphere(g_eyeDist, 0, 0);
     g_schottkyTemplate = nunjucks.compile(document.getElementById('3dSchottkyTemplate').text);
+    g_orbitTemplate = nunjucks.compile(document.getElementById('3dOrbitTemplate').text);
     g_canvas = document.getElementById('canvas');
+    g_orbitCanvas = document.getElementById('orbitCanvas');
     addMouseListeners();
 //    resizeCanvasFullscreen();
     render();
@@ -131,10 +135,10 @@ function resizeCanvasFullscreen(){
     g_canvasRatio = g_canvas.width / g_canvas.height / 2.;
 }
 
-function setupSchottkyProgram(gl, numCircles){
+function setupSchottkyProgram(gl, numSpheres, shaderStr){
     var program = gl.createProgram();
     attachShaderFromString(gl,
-			   g_schottkyTemplate.render({numSpheres: g_numSpheres}),
+			   shaderStr,
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
@@ -153,7 +157,7 @@ function setupSchottkyProgram(gl, numCircles){
     uniLocation[n++] = gl.getUniformLocation(program, 'target');
     uniLocation[n++] = gl.getUniformLocation(program, 'fov');
 
-    for(var i = 0 ; i < g_numSpheres ; i++){
+    for(var i = 0 ; i < numSpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
     }
@@ -198,7 +202,7 @@ function setupSchottkyProgram(gl, numCircles){
 	gl.uniform3fv(uniLocation[uniI++], g_up);
 	gl.uniform3fv(uniLocation[uniI++], g_target);
 	gl.uniform1f(uniLocation[uniI++], g_fov);
-	for(var i = 0 ; i < g_numSpheres ; i++){
+	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
 	gl.uniform4fv(uniLocation[uniI++], g_baseSphere);
@@ -215,13 +219,24 @@ var g_renderFunc;
 function render(){
     var startTime = new Date().getTime();
     var gl = g_canvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
-    var [switchKs, g_renderFunc] = setupSchottkyProgram(gl,
-							g_numSpheres);
+    var [switchKs,
+	 g_renderFunc] = setupSchottkyProgram(gl,
+					      g_numSpheres,
+					      g_schottkyTemplate.render({numSpheres: g_numSpheres}));
 
     switchKs();
+
+    var gl2 = g_orbitCanvas.getContext('webgl') || g_canvas.getContext('experimental-webgl');
+    var [switchOrbit,
+	 g_renderFunc2] = setupSchottkyProgram(gl2,
+					       g_numSpheres,
+					       g_orbitTemplate.render({numSpheres: g_numSpheres}));
+    console.log(g_orbitTemplate.render({numSpheres: g_numSpheres}));
+    switchOrbit();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
 	g_renderFunc(elapsedTime);
+	g_renderFunc2(elapsedTime);
 	requestAnimationFrame(arguments.callee);
     })();
 }
