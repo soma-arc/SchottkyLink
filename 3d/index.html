@@ -35,7 +35,7 @@
      uniform vec3 up;
      uniform vec3 target;
      uniform float fov;
-     
+     int numSpheres = {{ numSpheres }};
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
      {% endfor %}
@@ -155,7 +155,11 @@
 	 if(hitObjIndex == selectedSphereIndex){
 	     matColor = vec3(1., 0, 0);
 	 }else if(hitObjIndex == BASE_SPHERE_INDEX){
-	     matColor = vec3(0, 1, 0);
+	     if(selectedSphereIndex == numSpheres){
+		 matColor = vec3(1., 0, 0);
+	     }else{
+		 matColor = vec3(0, 1, 0);
+	     }
 	 }else{
 	     matColor = vec3(1.);
 	 }
@@ -218,6 +222,7 @@
      uniform vec3 up;
      uniform vec3 target;
      uniform float fov;
+     int numSpheres = {{ numSpheres }};
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
      {% endfor %}
@@ -330,10 +335,9 @@
 	      : LIGHTING_FACT * diffuseColor;
      }
 
-     const vec3 lightPos = vec3(400, 0, 500);
-     const vec3 lightPos2 = vec3(-300., -300., -300);
-     const vec3 lightPower = vec3(800000.);
-     const vec3 lightPoweSPHERE_R2 = vec3(10000.);
+     const vec3 lightPos = vec3(400, 400, 400);
+     const vec3 lightPos2 = vec3(400., -400., -400);
+     const vec3 lightPower = vec3(2000000.);
 
      const int MAX_MARCHING_LOOP = 800;
      vec2 march(const vec3 origin, const  vec3 ray, const float threshold){

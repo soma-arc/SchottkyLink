@@ -50,7 +50,7 @@ function calcLatitudeTangentOnSphere(r, theta, phi){
     return [- r * Math.sin(phi) * Math.cos(theta),
 	    r * Math.cos(phi),
 	    r * Math.sin(phi) * Math.sin(phi),
-	    ];
+	   ];
 }
 
 function setupSchottkyCanvas(renderCanvas){
@@ -83,8 +83,9 @@ function setupSchottkyCanvas(renderCanvas){
 			      canvas.width, canvas.height,
 			      [event.clientX, event.clientY]);
 	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
-							 ray,
-							 g_spheres);
+						     ray,
+						     g_spheres.concat([g_baseSphere]));
+	    console.log(renderCanvas.selectedSphereIndex);
 	    renderCanvas.isRendering = true;
 	}else if(event.button == 1){
 	    prevPos = [px, py];
@@ -105,7 +106,7 @@ function setupSchottkyCanvas(renderCanvas){
 
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(g_numSpheres,
-						     renderCanvas);
+						 renderCanvas);
     renderCanvas.switch();
     renderCanvas.render(0);
 }
@@ -140,7 +141,7 @@ function setupSchottkyProgram(numSpheres, renderCanvas){
     }
     uniLocation[n++] = gl.getUniformLocation(program,
 					     'baseSphere');
- 
+    
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
 	            -1.0, -1.0,  0.0,
@@ -198,9 +199,44 @@ window.addEventListener('load', function(event){
     
     setupSchottkyCanvas(schottkyCanvas);
     setupSchottkyCanvas(orbitCanvas);
+
+    window.addEventListener('keydown', function(event){
+	var index = schottkyCanvas.selectedSphereIndex;
+	if(index == -1) return;
+	var operateSphere = g_spheres[index];
+	if(index == g_numSpheres)
+	    operateSphere = g_baseSphere;
+	switch (event.key){
+	case 'w':
+	    operateSphere[1] += 50;
+	    break;
+	case 's':
+	    operateSphere[1] -= 50;
+	    break;
+	case 'a':
+	    operateSphere[0] -= 50;
+	    break;
+	case 'd':
+	    operateSphere[0] += 50;
+	    break;
+	case 'q':
+	    operateSphere[2] -= 50;
+	    break;
+	case 'e':
+	    operateSphere[2] += 50;
+	    break;
+	case 'r':
+	    operateSphere[3] += 10;
+	    break;
+	case 'f':
+	    operateSphere[3] -= 10;
+	    break;
+	}
+	schottkyCanvas.render(0);
+	orbitCanvas.render(0);
+    });
     
     var startTime = new Date().getTime();
-
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
 	if(schottkyCanvas.isRendering)
