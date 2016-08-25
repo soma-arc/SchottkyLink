@@ -36,7 +36,7 @@
      uniform float scale;
      
      vec2 circleInvert(vec2 pos, vec2 circlePos, float circleR){
-	 return ((pos - circlePos) * circleR * circleR)/(length(pos - circlePos) * length(pos - circlePos) ) + circlePos;
+	 return ((pos - circlePos) * circleR * circleR)/(distance(pos, circlePos) * distance(pos, circlePos) ) + circlePos;
      }
      const int ITERATIONS = 10;
      float IIS(vec2 pos){
@@ -47,13 +47,13 @@
 	     {% if numCircles > 2 %}
 	     {% for n  in range(0,  numCircles ) %}
 	     {% if n == 0 %}
-	     if(length(pos - c0.xy) < c0.z){
+	     if(distance(pos, c0.xy) < c0.z){
 		 pos = circleInvert(pos, c0.xy, c0.z);
 		 cont = true;
 		 loopNum++;
 	     }
 	     {% else %}
-	     else if(length(pos - c{{ n }}.xy) < c{{ n }}.z){
+	     else if(distance(pos, c{{ n }}.xy) < c{{ n }}.z){
 		 pos = circleInvert(pos, c{{ n }}.xy, c{{ n }}.z);
 		 cont = true;
 		 loopNum++;
@@ -61,17 +61,17 @@
 	     {% endif %}
 	     {% endfor %}
 	     {% elif numCircles == 2 %}
-	     if(length(pos - c0.xy) < c0.z){
+	     if(distance(pos, c0.xy) < c0.z){
 		 pos = circleInvert(pos, c0.xy, c0.z);
 		 cont = true;
 		 loopNum++;
-	     }else if(length(pos - c1.xy) < c1.z){
+	     }else if(distance(pos, c1.xy) < c1.z){
 		 pos = circleInvert(pos, c1.xy, c1.z);
 		 cont = true;
 		 loopNum++;
 	     }
 	     {% else %}
-	     if(length(pos - c0.xy) < c0.z){
+	     if(distance(pos, c0.xy) < c0.z){
 		 pos = circleInvert(pos, c0.xy, c0.z);
 		 cont = true;
 		 loopNum++;
