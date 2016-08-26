@@ -84,6 +84,70 @@
 	 return isect;
      }
 
+     vec4 intersectXYCylinder(float r, vec3 center,
+			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 g_isHit = false;
+	 rayOrigin = rayOrigin - center;
+	 float a = rayDir.x * rayDir.x + rayDir.y * rayDir.y;
+	 float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.y * rayDir.y);
+	 float c = rayOrigin.x * rayOrigin.x + rayOrigin.y * rayOrigin.y - r * r;
+	 float d = b * b - 4. * a * c;
+	 if(d >= 0.){
+	     float s = sqrt(d);
+	     float t = (-b - s) / (2. * a);
+             if(t <= EPSILON) t = (-b + s) / (2. * a);
+             if(EPSILON < t && t < isect.x){
+		 vec3 p = (rayOrigin + t * rayDir);
+		 g_isHit = true;
+		 return vec4(t, normalize(vec3(p.xy, 0)));
+             }
+	 }
+	 return isect;
+     }
+
+     vec4 intersectYZCylinder(float r, vec3 center,
+			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 g_isHit = false;
+	 rayOrigin = rayOrigin - center;
+	 float a = rayDir.z * rayDir.z + rayDir.y * rayDir.y;
+	 float b = 2. * ( rayOrigin.z * rayDir.z + rayOrigin.y * rayDir.y);
+	 float c = rayOrigin.z * rayOrigin.z + rayOrigin.y * rayOrigin.y - r * r;
+	 float d = b * b - 4. * a * c;
+	 if(d >= 0.){
+	     float s = sqrt(d);
+	     float t = (-b - s) / (2. * a);
+             if(t <= EPSILON) t = (-b + s) / (2. * a);
+             if(EPSILON < t && t < isect.x){
+		 vec3 p = (rayOrigin + t * rayDir);
+		 g_isHit = true;
+		 return vec4(t, normalize(vec3(0, p.yz)));
+             }
+	 }
+	 return isect;
+     }
+
+     vec4 intersectXZCylinder(float r, vec3 center,
+			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 g_isHit = false;
+	 rayOrigin = rayOrigin - center;
+	 float a = rayDir.x * rayDir.x + rayDir.z * rayDir.z;
+	 float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.z * rayDir.z);
+	 float c = rayOrigin.x * rayOrigin.x + rayOrigin.z * rayOrigin.z - r * r;
+	 float d = b * b - 4. * a * c;
+	 if(d >= 0.){
+	     float s = sqrt(d);
+	     float t = (-b - s) / (2. * a);
+             if(t <= EPSILON) t = (-b + s) / (2. * a);
+             if(EPSILON < t && t < isect.x){
+		 vec3 p = (rayOrigin + t * rayDir);
+		 g_isHit = true;
+		 return vec4(t, normalize(vec3(p.x, 0, p.z)));
+             }
+	 }
+	 return isect;
+     }
+     
+
      vec4 intersectPlane(vec3 p, vec3 n, 
 			 vec3 rayOrigin, vec3 rayDir, vec4 isect){
 	 float d = -dot(p, n);
@@ -133,30 +197,54 @@
   	 vec3 v = lightPos - p;
   	 float d = dot(n, normalize(v));
   	 float r = length(v);
-  	 return (true//d > 0. 
-	                     // && lightVisibility(p, lightPos) == 1.
+  	 return (d > 0. 
+     // && lightVisibility(p, lightPos) == 1.
          ) ?
     		(lightPower * (abs(d) / (PI_4 * r * r))) * diffuseColor
     	      : vec3(0.0);
      }
 
      const vec3 lightPos = vec3(900, 450, 0);
-     const vec3 lightPower = vec3(500000.);
+     const vec3 lightPower = vec3(1000000.);
+     const vec3 ambientFactor = vec3(0.1);
      vec3 calcColor(vec3 eye, vec3 ray){
   	 vec3 l = BLACK;
   	 float coeff = 1.;
 	 vec4 result = vec4(99999.);
-	 int hitObjIndex;
+	 int hitObjIndex = 99999;
 	 {% for n  in range(0,  numSpheres ) %}
 	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = {{ n }};
+
+	 if(selectedSphereIndex == {{ n }}){
+	     result = intersectXYCylinder(10., s{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	     result = intersectYZCylinder(10., s{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	     result = intersectXZCylinder(10., s{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	 }
 	 {% endfor %}
 
 	 {% for n  in range(0,  numBaseSpheres ) %}
 	 result = intersectSphere(baseSphere{{ n }}.xyz, baseSphere{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX - {{ n }};
+	 if(selectedSphereIndex - numSpheres == {{ n }}){
+	     result = intersectXYCylinder(10., baseSphere{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	     result = intersectYZCylinder(10., baseSphere{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	     result = intersectXZCylinder(10., baseSphere{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit) hitObjIndex = 99999;
+	 }
 	 {% endfor %}
-	 
+	     
 	 vec3 matColor;
 	 if(hitObjIndex == selectedSphereIndex){
 	     matColor = vec3(1., 0, 0);
@@ -173,7 +261,8 @@
   	 if(result.x != 99999.){
     	     vec3 intersection = eye + ray * result.x;
              vec3 normal = result.yzw;
-   	     l += matColor * diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+	     l += matColor * ambientFactor;
 	 }
   	 return l;
      }
@@ -241,6 +330,16 @@
      uniform vec4 baseSphere{{ n }};
      {% endfor %}
      int numBaseSpheres = {{ numBaseSpheres }};
+
+
+     // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
+     vec2 rand2n(vec2 co, float sampleIndex) {
+	 vec2 seed = co * (sampleIndex + 1.0);
+	 seed+=vec2(-1,1);
+	 // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+	 return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+                     fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
+     }
      
      vec3 sphereInvert(vec3 pos, vec3 spherePos, float sphereR, float sphereR2){
 	 return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
@@ -373,6 +472,7 @@
      }
 
      const vec3 BLACK = vec3(0);
+     const vec3 ambientFactor = vec3(0.1);
      vec3 calcColor(vec3 eye, vec3 ray){
 	 vec3 l = BLACK;
 	 float coeff = 1.;
@@ -383,7 +483,8 @@
 	 if(result.x < 0.01){
 	     matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
 	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
-	     l += diffuseLighting(intersection, normal, matColor, lightPos2, lightPower);
+	     //	     l += diffuseLighting(intersection, normal, matColor, lightPos2, lightPower);
+	     l += matColor * ambientFactor;
 	 }
 	 return l;
      }
@@ -395,7 +496,18 @@
 		     (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
      }
 
+     const float SAMPLE_NUM = 1.;
      void main(){
+	 /* vec4 sum = vec4(0);
+	    for(float i = 0. ; i < SAMPLE_NUM ; i++){
+	  *     vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
+	  *     vec3 ray = calcRay(eye, target, up, fov,
+    	    iResolution.x, iResolution.y,
+            gl_FragCoord.xy + coordOffset);
+	  *     
+	  *     sum += vec4(gammaCorrect(calcColor(eye, ray)), 1.);
+	    }
+	    gl_FragColor = vec4(sum/SAMPLE_NUM);*/
 	 const vec2 coordOffset = vec2(0.5);
 	 vec3 ray = calcRay(eye, target, up, fov,
 			    iResolution.x, iResolution.y,

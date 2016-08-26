@@ -4,10 +4,9 @@ var g_spheres = [[300, 300, 0, 300],
 		 [-300, -300, 0, 300],
 		 [0, 0, 424.26, 300],
 		 [0, 0, -424.26, 300]];
-var g_baseSpheres = [[0, 0, 0, 125],
-		     [800, 800, 0, 125]];
+var g_baseSpheres = [[0, 0, 0, 125],];
 var g_numSpheres = 6;
-var g_numBaseSpheres = 2;
+var g_numBaseSpheres = 1;
 
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -138,7 +137,6 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
     uniLocation[n++] = gl.getUniformLocation(program, 'up');
     uniLocation[n++] = gl.getUniformLocation(program, 'target');
     uniLocation[n++] = gl.getUniformLocation(program, 'fov');
-
     for(var i = 0 ; i < numSpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
@@ -186,6 +184,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.up);
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.target);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.fovDegree);
+
 	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
