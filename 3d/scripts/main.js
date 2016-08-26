@@ -4,8 +4,10 @@ var g_spheres = [[300, 300, 0, 300],
 		 [-300, -300, 0, 300],
 		 [0, 0, 424.26, 300],
 		 [0, 0, -424.26, 300]];
-var g_baseSphere = [0, 0, 0, 125];
+var g_baseSpheres = [[0, 0, 0, 125],
+		     [800, 800, 0, 125]];
 var g_numSpheres = 6;
+var g_numBaseSpheres = 2;
 
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -84,7 +86,7 @@ function setupSchottkyCanvas(renderCanvas){
 			      [event.clientX, event.clientY]);
 	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
 						     ray,
-						     g_spheres.concat([g_baseSphere]));
+						     g_spheres.concat(g_baseSpheres));
 	    renderCanvas.isRendering = true;
 	}else if(event.button == 1){
 	    prevPos = [px, py];
@@ -105,15 +107,18 @@ function setupSchottkyCanvas(renderCanvas){
 
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						 g_numBaseSpheres,
 						 renderCanvas);
     renderCanvas.switch();
     renderCanvas.render(0);
 }
 
-function setupSchottkyProgram(numSpheres, renderCanvas){
+function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
-    var shaderStr = renderCanvas.template.render({numSpheres: numSpheres});
+        
+    var shaderStr = renderCanvas.template.render({numSpheres: numSpheres,
+						  numBaseSpheres: numBaseSpheres});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -138,8 +143,10 @@ function setupSchottkyProgram(numSpheres, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
     }
-    uniLocation[n++] = gl.getUniformLocation(program,
-					     'baseSphere');
+    for(var j = 0 ; j < numBaseSpheres ; j++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'baseSphere'+ j);
+    }
     
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
@@ -182,7 +189,9 @@ function setupSchottkyProgram(numSpheres, renderCanvas){
 	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
-	gl.uniform4fv(uniLocation[uniI++], g_baseSphere);
+	for(var j = 0 ; j < numBaseSpheres ; j++){
+	    gl.uniform4fv(uniLocation[uniI++], g_baseSpheres[j]);
+	}
 
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
@@ -197,9 +206,11 @@ function addSphere(schottkyCanvas, orbitCanvas){
     g_numSpheres++;
     [schottkyCanvas.switch,
      schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						   g_numBaseSpheres,
 						   schottkyCanvas);
     [orbitCanvas.switch,
      orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						g_numBaseSpheres,
      						orbitCanvas);
     schottkyCanvas.switch();
     orbitCanvas.switch();
@@ -207,10 +218,25 @@ function addSphere(schottkyCanvas, orbitCanvas){
     orbitCanvas.render(0);
 }
 
+function addBaseSphere(schottkyCanvas, orbitCanvas){
+    g_baseSpheres.push([500, 500, 0, 125]);
+    g_numBaseSpheres++;
+    [schottkyCanvas.switch,
+     schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						   g_numBaseSpheres,
+						   schottkyCanvas);
+    [orbitCanvas.switch,
+     orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
+						g_numBaseSpheres,
+     						orbitCanvas);
+    schottkyCanvas.switch();
+    orbitCanvas.switch();
+}
+
 window.addEventListener('load', function(event){
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
-    
+
     setupSchottkyCanvas(schottkyCanvas);
     setupSchottkyCanvas(orbitCanvas);
 
@@ -219,12 +245,16 @@ window.addEventListener('load', function(event){
 	    addSphere(schottkyCanvas, orbitCanvas);
 	    schottkyCanvas.render(0);
 	    orbitCanvas.render(0);
+	}else if(event.key == 'b'){
+	    addBaseSphere(schottkyCanvas, orbitCanvas);
+	    schottkyCanvas.render(0);
+	    orbitCanvas.render(0);
 	}else{
 	    var index = schottkyCanvas.selectedSphereIndex;
 	    if(index != -1){
 		var operateSphere = g_spheres[index];
-		if(index == g_numSpheres)
-		    operateSphere = g_baseSphere;
+		if(index >= g_numSpheres)
+		    operateSphere = g_baseSpheres[index - g_numSpheres];
 		switch (event.key){
 		case 'w':
 		    operateSphere[1] += 50;

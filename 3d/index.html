@@ -39,7 +39,11 @@
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
      {% endfor %}
-     uniform vec4 baseSphere;
+
+     {% for n  in range(0,  numBaseSpheres ) %}
+     uniform vec4 baseSphere{{ n }};
+     {% endfor %}
+     int numBaseSpheres = {{ numBaseSpheres }};
      
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
@@ -148,14 +152,16 @@
 	 if(g_isHit) hitObjIndex = {{ n }};
 	 {% endfor %}
 
-	 result = intersectSphere(baseSphere.xyz, baseSphere.w, eye, ray, result);
-	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX;
+	 {% for n  in range(0,  numBaseSpheres ) %}
+	 result = intersectSphere(baseSphere{{ n }}.xyz, baseSphere{{ n }}.w, eye, ray, result);
+	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX - {{ n }};
+	 {% endfor %}
 	 
 	 vec3 matColor;
 	 if(hitObjIndex == selectedSphereIndex){
 	     matColor = vec3(1., 0, 0);
-	 }else if(hitObjIndex == BASE_SPHERE_INDEX){
-	     if(selectedSphereIndex == numSpheres){
+	 }else if(hitObjIndex < 0){
+	     if(-(selectedSphereIndex - numSpheres) + BASE_SPHERE_INDEX == hitObjIndex){
 		 matColor = vec3(1., 0, 0);
 	     }else{
 		 matColor = vec3(0, 1, 0);
@@ -226,11 +232,15 @@
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
      {% endfor %}
-     uniform vec4 baseSphere;
 
      {% for n  in range(0,  numSpheres ) %}
      float s{{ n }}r2 = s{{ n }}.w * s{{ n }}.w;
      {% endfor %}
+
+     {% for n  in range(0,  numBaseSpheres ) %}
+     uniform vec4 baseSphere{{ n }};
+     {% endfor %}
+     int numBaseSpheres = {{ numBaseSpheres }};
      
      vec3 sphereInvert(vec3 pos, vec3 spherePos, float sphereR, float sphereR2){
 	 return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
@@ -292,7 +302,16 @@
 	     
 	     if(loopEnd == true) break;
 	 }
-	 return (distance(pos, baseSphere.xyz) - baseSphere.w) / abs(dr) * 0.08;
+	 {% if numBaseSpheres == 1 %}
+	 return (distance(pos, baseSphere0.xyz) - baseSphere0.w) / abs(dr) * 0.08;
+	 {% elif numBaseSpheres > 1 %}
+	 float minDist = (distance(pos, baseSphere0.xyz) - baseSphere0.w) / abs(dr) * 0.08;
+	 {% for n  in range(1,  numBaseSpheres ) %}
+	 minDist = min(minDist,
+		       (distance(pos, baseSphere{{ n }}.xyz) - baseSphere{{ n }}.w) / abs(dr) * 0.08);
+	 {% endfor %}
+	 return minDist;
+	 {% endif %}
      }
 
      vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
@@ -388,7 +407,7 @@
 </head>
 <body>
 
-	<canvas id="canvas" width="512" height="512"></canvas>
-	<canvas id="orbitCanvas" width="512" height="512"></canvas>
+	<canvas id="canvas" width="256" height="256"></canvas>
+	<canvas id="orbitCanvas" width="256" height="256"></canvas>
 </body>
 </html>
