@@ -7,6 +7,7 @@ var g_spheres = [[300, 300, 0, 300],
 var g_baseSpheres = [[0, 0, 0, 125],];
 var g_numSpheres = 6;
 var g_numBaseSpheres = 1;
+var g_prevSphere;
 
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -23,6 +24,9 @@ var RenderCanvas = function(canvasId, templateId){
 
     this.selectedSphereIndex = -1;
     this.isRendering = false;
+    this.isMousePressing = false;
+    this.prevMousePos = [0, 0];
+    this.selectedAxis = -1;
 }
 
 RenderCanvas.prototype = {
@@ -54,30 +58,30 @@ function calcLatitudeTangentOnSphere(r, theta, phi){
 	   ];
 }
 
-function setupSchottkyCanvas(renderCanvas){
+function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
-    var prevTheta, prevPhi, prevPos;
+    var prevTheta, prevPhi;
     
-    var isMousePressing = false;
     canvas.addEventListener('mouseup', function(event){
-	isMousePressing = false;
+	renderCanvas.isMousePressing = false;
 	renderCanvas.isRendering = false;
     });
 
     canvas.addEventListener('mousemove', function(event){
-	if(!isMousePressing) return;
+	if(!renderCanvas.isMousePressing) return;
 	[px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 1){
-	    renderCanvas.theta = prevTheta + (prevPos[0] - px) * 0.01;
-	    renderCanvas.phi = prevPhi -(prevPos[1] - py) * 0.01;
+	    renderCanvas.theta = prevTheta + (renderCanvas.prevMousePos[0] - px) * 0.01;
+	    renderCanvas.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
 	    renderCanvas.updateEye();
 	    renderCanvas.isRendering = true;
 	}
     });
 
     canvas.addEventListener('mousedown', function(event){
-	isMousePressing = true;
+	renderCanvas.isMousePressing = true;
 	[px, py] = renderCanvas.calcPixel(event);
+	renderCanvas.prevMousePos = [px, py];
 	if(event.button == 0){
 	    var ray = calcRay(renderCanvas.eye, renderCanvas.target,
 			      renderCanvas.up, renderCanvas.fovDegree,
@@ -86,9 +90,13 @@ function setupSchottkyCanvas(renderCanvas){
 	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
 						     ray,
 						     g_spheres.concat(g_baseSpheres));
-	    renderCanvas.isRendering = true;
+	    if(renderCanvas.selectedSphereIndex == -1) return;
+	    renderCanvas.render(0);
+	    if(renderCanvas.selectedSphereIndex >= g_numSpheres)
+		g_prevSphere = g_baseSpheres[renderCanvas.selectedSphereIndex - g_numSpheres].slice(0);
+	    else
+		g_prevSphere = g_spheres[renderCanvas.selectedSphereIndex].slice(0);
 	}else if(event.button == 1){
-	    prevPos = [px, py];
 	    prevTheta = renderCanvas.theta;
 	    prevPhi = renderCanvas.phi;
 	}
@@ -133,6 +141,8 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
 					     'iGlobalTime');
     uniLocation[n++] = gl.getUniformLocation(program,
 					     'selectedSphereIndex');
+    uniLocation[n++] = gl.getUniformLocation(program,
+					     'selectedAxis');
     uniLocation[n++] = gl.getUniformLocation(program, 'eye');
     uniLocation[n++] = gl.getUniformLocation(program, 'up');
     uniLocation[n++] = gl.getUniformLocation(program, 'target');
@@ -180,6 +190,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
         gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedSphereIndex);
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedAxis);
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.eye);
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.up);
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.target);
@@ -236,10 +247,50 @@ window.addEventListener('load', function(event){
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
 
-    setupSchottkyCanvas(schottkyCanvas);
-    setupSchottkyCanvas(orbitCanvas);
-
+    addMouseListenersToSchottkyCanvas(schottkyCanvas);
+    addMouseListenersToSchottkyCanvas(orbitCanvas);
+    
+    var pressingKey = '';
+    window.addEventListener('keyup', function(event){
+	pressingKey = '';
+	schottkyCanvas.selectedAxis = -1;
+	schottkyCanvas.render(0);
+	schottkyCanvas.isRendering = false;
+	orbitCanvas.isRendering = false;
+    })
+    schottkyCanvas.canvas.addEventListener('mousemove', function(event){
+	if(!schottkyCanvas.isMousePressing) return;
+	var index = schottkyCanvas.selectedSphereIndex;
+	if(event.button == 0){
+	    if(index != -1){
+		var operateSphere = g_spheres[index];
+		if(index >= g_numSpheres)
+		    operateSphere = g_baseSpheres[index - g_numSpheres];
+		[px, py] = schottkyCanvas.calcPixel(event);
+		var dx = px - schottkyCanvas.prevMousePos[0];
+		var dy = py - schottkyCanvas.prevMousePos[1];
+		var d = Math.sqrt((dx * dx) + (dy * dy));
+		switch (pressingKey){
+		case 'z':
+		    operateSphere[0] = g_prevSphere[0] + dx * 10;
+		    break;
+		case 'x':
+		    operateSphere[1] = g_prevSphere[1] + dx * 10;
+		    break;
+		case 'c':
+		    operateSphere[2] = g_prevSphere[2] + dx * 10;
+		    break;
+		case 's':
+		    operateSphere[3] = g_prevSphere[3] + dx * 10;
+		    break;
+		}
+		schottkyCanvas.isRendering = true;
+		orbitCanvas.isRendering = true;
+	    }
+	}
+    });
     window.addEventListener('keydown', function(event){
+	pressingKey = event.key;
 	if(event.key == ' '){
 	    addSphere(schottkyCanvas, orbitCanvas);
 	    schottkyCanvas.render(0);
@@ -248,6 +299,15 @@ window.addEventListener('load', function(event){
 	    addBaseSphere(schottkyCanvas, orbitCanvas);
 	    schottkyCanvas.render(0);
 	    orbitCanvas.render(0);
+	}else if(event.key == 'z'){
+	    schottkyCanvas.selectedAxis = 0;
+	    schottkyCanvas.render(0);
+	}else if(event.key == 'x'){
+	    schottkyCanvas.selectedAxis = 1;
+	    schottkyCanvas.render(0);
+	}else if(event.key == 'c'){
+	    schottkyCanvas.selectedAxis = 2;
+	    schottkyCanvas.render(0);
 	}else{
 	    var index = schottkyCanvas.selectedSphereIndex;
 	    if(index != -1){
@@ -255,22 +315,22 @@ window.addEventListener('load', function(event){
 		if(index >= g_numSpheres)
 		    operateSphere = g_baseSpheres[index - g_numSpheres];
 		switch (event.key){
-		case 'w':
+		case 'i':
 		    operateSphere[1] += 50;
 		    break;
-		case 's':
+		case 'k':
 		    operateSphere[1] -= 50;
 		    break;
-		case 'a':
+		case 'j':
 		    operateSphere[0] -= 50;
 		    break;
-		case 'd':
+		case 'l':
 		    operateSphere[0] += 50;
 		    break;
-		case 'q':
+		case 'u':
 		    operateSphere[2] -= 50;
 		    break;
-		case 'e':
+		case 'p':
 		    operateSphere[2] += 50;
 		    break;
 		case 'r':
@@ -284,7 +344,6 @@ window.addEventListener('load', function(event){
 		orbitCanvas.render(0);
 	    }
 	}
-
     });
     
     var startTime = new Date().getTime();

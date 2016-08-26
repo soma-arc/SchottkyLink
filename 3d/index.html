@@ -31,6 +31,7 @@
      uniform vec2 iResolution;
      uniform float iGlobalTime;
      uniform int selectedSphereIndex;
+     uniform int selectedAxis;
      uniform vec3 eye;
      uniform vec3 up;
      uniform vec3 target;
@@ -59,6 +60,7 @@
      const float EPSILON = 0.001;
      const int MTL_SPHERE = 1;
      const int MTL_PLANE = 2;
+     const int MTL_CYLINDER = 3;
      const int BASE_SPHERE_INDEX = -2;
      int g_mtl = -1;
      bool g_isHit = false;
@@ -99,6 +101,7 @@
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
 		 g_isHit = true;
+		 g_mtl = MTL_CYLINDER;
 		 return vec4(t, normalize(vec3(p.xy, 0)));
              }
 	 }
@@ -120,6 +123,7 @@
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
 		 g_isHit = true;
+		 g_mtl = MTL_CYLINDER;
 		 return vec4(t, normalize(vec3(0, p.yz)));
              }
 	 }
@@ -141,6 +145,7 @@
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
 		 g_isHit = true;
+		 g_mtl = MTL_CYLINDER;
 		 return vec4(t, normalize(vec3(p.x, 0, p.z)));
              }
 	 }
@@ -212,20 +217,30 @@
   	 float coeff = 1.;
 	 vec4 result = vec4(99999.);
 	 int hitObjIndex = 99999;
+	 int hitCylinderAxis = -999;
 	 {% for n  in range(0,  numSpheres ) %}
 	 result = intersectSphere(s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = {{ n }};
 
 	 if(selectedSphereIndex == {{ n }}){
-	     result = intersectXYCylinder(10., s{{ n }}.xyz,
-					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
 	     result = intersectYZCylinder(10., s{{ n }}.xyz,
 					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
+	     if(g_isHit) {
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 0;
+	     }
 	     result = intersectXZCylinder(10., s{{ n }}.xyz,
 					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
+	     if(g_isHit){
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 1;
+	     }
+	     result = intersectXYCylinder(10., s{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit){
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 2;
+	     }
 	 }
 	 {% endfor %}
 
@@ -233,29 +248,46 @@
 	 result = intersectSphere(baseSphere{{ n }}.xyz, baseSphere{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX - {{ n }};
 	 if(selectedSphereIndex - numSpheres == {{ n }}){
-	     result = intersectXYCylinder(10., baseSphere{{ n }}.xyz,
-					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
 	     result = intersectYZCylinder(10., baseSphere{{ n }}.xyz,
 					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
+	     if(g_isHit){
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 0;
+	     }
 	     result = intersectXZCylinder(10., baseSphere{{ n }}.xyz,
 					  eye, ray, result);
-	     if(g_isHit) hitObjIndex = 99999;
+	     if(g_isHit){
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 1;
+	     }
+	     result = intersectXYCylinder(10., baseSphere{{ n }}.xyz,
+					  eye, ray, result);
+	     if(g_isHit){
+		 hitObjIndex = 99999;
+		 hitCylinderAxis = 2;
+	     }
 	 }
 	 {% endfor %}
-	     
+	 
 	 vec3 matColor;
-	 if(hitObjIndex == selectedSphereIndex){
-	     matColor = vec3(1., 0, 0);
-	 }else if(hitObjIndex < 0){
-	     if(-(selectedSphereIndex - numSpheres) + BASE_SPHERE_INDEX == hitObjIndex){
+	 if(g_mtl == MTL_SPHERE){
+	     if(hitObjIndex == selectedSphereIndex){
 		 matColor = vec3(1., 0, 0);
+	     }else if(hitObjIndex < 0){
+		 if(-(selectedSphereIndex - numSpheres) + BASE_SPHERE_INDEX == hitObjIndex){
+		     matColor = vec3(1., 0, 0);
+		 }else{
+		     matColor = vec3(0, 1, 0);
+		 }
 	     }else{
-		 matColor = vec3(0, 1, 0);
+		 matColor = vec3(1.);
 	     }
-	 }else{
-	     matColor = vec3(1.);
+	 }else if(g_mtl == MTL_CYLINDER){
+	     if(selectedAxis == hitCylinderAxis){
+		 matColor = vec3(1, 0, 0);
+	     }else{
+		 matColor = vec3(1.);
+	     }
 	 }
   	 
   	 if(result.x != 99999.){
@@ -313,6 +345,7 @@
      uniform vec2 iResolution;
      uniform float iGlobalTime;
      uniform int selectedSphereIndex;
+     uniform int selectedAxis;
      uniform vec3 eye;
      uniform vec3 up;
      uniform vec3 target;
