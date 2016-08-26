@@ -66,7 +66,7 @@ function addMouseListeners(renderCanvas){
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
 	renderCanvas.isMousePressing = true;
-	var [px, py] = renderCanvas.calcPixel(event)
+	var [px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 0){
 	    for(var i = 0 ; i < g_numCircles ; i++){
 		var dx = px - g_circles[i][0];
@@ -91,6 +91,28 @@ function addMouseListeners(renderCanvas){
 	    renderCanvas.render(0);
 	}
     }, false);
+
+    renderCanvas.canvas.addEventListener('dblclick', function(event){
+	if(event.button == 0 && g_numCircles > 1){
+	    var [px, py] = renderCanvas.calcPixel(event);
+	    for(var i = 0 ; i < g_numCircles ; i++){
+		var dx = px - g_circles[i][0];
+		var dy = py - g_circles[i][1];
+		var dist = Math.sqrt((dx * dx) + (dy * dy));
+		if(dist < g_circles[i][2]){
+		    g_circles.splice(i, 1);
+		    g_numCircles--;
+		    
+		    [renderCanvas.switch,
+		     renderCanvas.render] = setupSchottkyProgram(renderCanvas,
+								 g_numCircles);
+		    renderCanvas.switch();
+		    renderCanvas.render(0);
+		    return;
+		}
+	    }
+	}
+    });
 }
 
 function setupSchottkyProgram(renderCanvas, numCircles){
