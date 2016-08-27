@@ -392,14 +392,20 @@ window.addEventListener('load', function(event){
 	    schottkyCanvas.render(0);
 	    orbitCanvas.render(0);
 	}else if(event.key == 'z'){
-	    schottkyCanvas.selectedAxis = 0;
-	    schottkyCanvas.render(0);
+	    if(schottkyCanvas.selectedAxis != 0){
+		schottkyCanvas.selectedAxis = 0;
+		schottkyCanvas.render(0);
+	    }
 	}else if(event.key == 'x'){
-	    schottkyCanvas.selectedAxis = 1;
-	    schottkyCanvas.render(0);
+	    if(schottkyCanvas.selectedAxis != 1){
+		schottkyCanvas.selectedAxis = 1;
+		schottkyCanvas.render(0);
+	    }
 	}else if(event.key == 'c'){
-	    schottkyCanvas.selectedAxis = 2;
-	    schottkyCanvas.render(0);
+	    if(schottkyCanvas.selectedAxis != 2){
+		schottkyCanvas.selectedAxis = 2;
+		schottkyCanvas.render(0);
+	    }
 	}else{
 	    var index = schottkyCanvas.selectedSphereIndex;
 	    if(index != -1){
