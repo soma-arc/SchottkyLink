@@ -211,9 +211,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
     return [switchProgram, render];
 }
 
-function addSphere(schottkyCanvas, orbitCanvas){
-    g_spheres.push([500, 500, 0, 300]);
-    g_numSpheres++;
+function updateShaders(schottkyCanvas, orbitCanvas){
     [schottkyCanvas.switch,
      schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						   g_numBaseSpheres,
@@ -224,23 +222,33 @@ function addSphere(schottkyCanvas, orbitCanvas){
      						orbitCanvas);
     schottkyCanvas.switch();
     orbitCanvas.switch();
+
     schottkyCanvas.render(0);
     orbitCanvas.render(0);
+}
+
+function addSchottkySphere(schottkyCanvas, orbitCanvas){
+    g_spheres.push([500, 500, 0, 300]);
+    g_numSpheres++;
+    updateShaders(schottkyCanvas, orbitCanvas);
 }
 
 function addBaseSphere(schottkyCanvas, orbitCanvas){
     g_baseSpheres.push([500, 500, 0, 125]);
     g_numBaseSpheres++;
-    [schottkyCanvas.switch,
-     schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
-						   g_numBaseSpheres,
-						   schottkyCanvas);
-    [orbitCanvas.switch,
-     orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
-						g_numBaseSpheres,
-     						orbitCanvas);
-    schottkyCanvas.switch();
-    orbitCanvas.switch();
+    updateShaders(schottkyCanvas, orbitCanvas);
+}
+
+function removeSchottkySphere(schottkyCanvas, orbitCanvas, sphereIndex){
+    g_spheres.splice(sphereIndex, 1);
+    g_numSpheres--;
+    updateShaders(schottkyCanvas, orbitCanvas);
+}
+
+function removeBaseSphere(schottkyCanvas, orbitCanvas, sphereIndex){
+    g_baseSpheres.splice(sphereIndex, 1);
+    g_numBaseSpheres--;
+    updateShaders(schottkyCanvas, orbitCanvas);   
 }
 
 window.addEventListener('load', function(event){
@@ -289,12 +297,25 @@ window.addEventListener('load', function(event){
 	    }
 	}
     });
+    schottkyCanvas.canvas.addEventListener('dblclick', function(){
+	var index = schottkyCanvas.selectedSphereIndex;
+	if(index != -1){
+	    if(index >= g_numSpheres &&
+	       g_numBaseSpheres > 1){
+		removeBaseSphere(schottkyCanvas,
+				 orbitCanvas,
+				 index - g_numSpheres);
+	    }else if(g_numSpheres > 1){
+		removeSchottkySphere(schottkyCanvas,
+				     orbitCanvas,
+				     index);
+	    }
+	}
+    });
     window.addEventListener('keydown', function(event){
 	pressingKey = event.key;
 	if(event.key == ' '){
-	    addSphere(schottkyCanvas, orbitCanvas);
-	    schottkyCanvas.render(0);
-	    orbitCanvas.render(0);
+	    addSchottkySphere(schottkyCanvas, orbitCanvas);
 	}else if(event.key == 'b'){
 	    addBaseSphere(schottkyCanvas, orbitCanvas);
 	    schottkyCanvas.render(0);
