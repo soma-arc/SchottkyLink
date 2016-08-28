@@ -21,6 +21,11 @@ var RenderCanvas2D = function(canvasId, templateId){
     
     this.switch;
     this.render;
+    this.iterations = 10;
+    this.initialHue = 0;
+    this.hueStep = 0.03
+    this.numSamples = 1;
+    this.translate = [0, 0];
 }
 
 RenderCanvas2D.prototype = {
@@ -33,8 +38,10 @@ RenderCanvas2D.prototype = {
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     calcPixel: function(mouseEvent){
-	return [this.scale * (event.clientX * window.devicePixelRatio / this.canvas.height - this.canvasRatio),
-		this.scale * -((event.clientY * window.devicePixelRatio) / this.canvas.height - 0.5)];
+	return [this.scale * (event.clientX * window.devicePixelRatio / this.canvas.height - this.canvasRatio) +
+		this.translate[0],
+		this.scale * -((event.clientY * window.devicePixelRatio) / this.canvas.height - 0.5) +
+		this.translate[1]];
     }
 }
 
@@ -113,6 +120,17 @@ function addMouseListeners(renderCanvas){
 	    }
 	}
     });
+
+    renderCanvas.canvas.addEventListener('mousewheel', function(event){
+	if(event.wheelDelta > 0){
+	    if(renderCanvas.scale > 1){
+		renderCanvas.scale -= 100;
+	    }
+	}else{
+	    renderCanvas.scale += 100;
+	}
+	renderCanvas.render(0);
+    })
 }
 
 function setupSchottkyProgram(renderCanvas, numCircles){
@@ -129,12 +147,15 @@ function setupSchottkyProgram(renderCanvas, numCircles){
     var n = 0;
     uniLocation[n++] = gl.getUniformLocation(program, 'iResolution');
     uniLocation[n++] = gl.getUniformLocation(program, 'iGlobalTime');
+    uniLocation[n++] = gl.getUniformLocation(program, 'translate');
     for(var i = 0 ; i < numCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'c'+ i);
     }
     uniLocation[n++] = gl.getUniformLocation(program, 'scale');
- 
- 
+    uniLocation[n++] = gl.getUniformLocation(program, 'iterations');
+    uniLocation[n++] = gl.getUniformLocation(program, 'initialHue');
+    uniLocation[n++] = gl.getUniformLocation(program, 'hueStep');
+    uniLocation[n++] = gl.getUniformLocation(program, 'numSamples');
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
 	            -1.0, -1.0,  0.0,
@@ -171,11 +192,16 @@ function setupSchottkyProgram(renderCanvas, numCircles){
         gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width,
 					    renderCanvas.canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
+	gl.uniform2fv(uniLocation[uniI++], renderCanvas.translate);
 	for(var i = 0 ; i < numCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], g_circles[i]);
 	}
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.scale);
-
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.iterations);
+	gl.uniform1f(uniLocation[uniI++], renderCanvas.initialHue);
+	gl.uniform1f(uniLocation[uniI++], renderCanvas.hueStep);
+	gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples);
+	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
 	gl.flush();
@@ -201,7 +227,68 @@ window.addEventListener('load', function(event){
 	renderCanvas.resizeCanvasFullscreen();
 	renderCanvas.render(0);
     }, false);
-    
+
+    window.addEventListener('keydown', function(event){
+	switch(event.key){
+	case '+':
+	    renderCanvas.iterations++;
+	    renderCanvas.render(0);
+	    break;
+	case '-':
+	    if(renderCanvas.iterations > 1){
+		renderCanvas.iterations--;
+		renderCanvas.render(0);
+	    }
+	    break;
+	case 'p':
+	    renderCanvas.numSamples++;
+	    renderCanvas.render(0);
+	    break;
+	case 'n':
+	    if(renderCanvas.numSamples > 1){
+		renderCanvas.numSamples--;
+		renderCanvas.render(0);
+	    }
+	    break;
+	case 'a':
+	    if(renderCanvas.initialHue > 0){
+		renderCanvas.initialHue -= 0.05;
+		renderCanvas.render(0);
+	    }
+	    break;
+	case 's':
+	    renderCanvas.initialHue += 0.05;
+	    renderCanvas.render(0);
+	    break;
+	case 'z':
+	    if(renderCanvas.hueStep > 0){
+		renderCanvas.hueStep -= 0.01;
+		renderCanvas.render(0);
+	    }
+	    break;
+	case 'x':
+	    renderCanvas.hueStep += 0.01;
+	    renderCanvas.render(0);
+	    break;
+	case 'ArrowRight':
+	    renderCanvas.translate[0] += renderCanvas.scale / 10;
+	    renderCanvas.render(0);
+	    break;
+	case 'ArrowLeft':
+	    renderCanvas.translate[0] -= renderCanvas.scale / 10;
+	    renderCanvas.render(0);
+	    break;
+	case 'ArrowUp':
+	    renderCanvas.translate[1] += renderCanvas.scale / 10;
+	    renderCanvas.render(0);
+	    break;
+	case 'ArrowDown':
+	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
+	    renderCanvas.render(0);
+	    break;
+	}
+    });
+
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
