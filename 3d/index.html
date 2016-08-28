@@ -350,6 +350,8 @@
      uniform vec3 up;
      uniform vec3 target;
      uniform float fov;
+     uniform int numIterations;
+     
      int numSpheres = {{ numSpheres }};
      {% for n  in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
@@ -380,12 +382,13 @@
 
      float loopNum = 0.;
 
-     const int MAX_KLEIN_ITARATION = 10;
+     const int MAX_KLEIN_ITARATION = 30;
      float distKlein(vec3 pos){
 	 loopNum = 0.;
 	 float dr = 1.;
 	 bool loopEnd = true;
 	 for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
+	     if(i >= numIterations) break;
 	     loopEnd = true;
 
 	     {% if numSpheres > 2 %}

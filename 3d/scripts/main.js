@@ -30,6 +30,7 @@ var RenderCanvas = function(canvasId, templateId){
 
     this.axisVecOnScreen;
     this.pressingKey = '';
+    this.numIterations = 10;
 }
 
 RenderCanvas.prototype = {
@@ -170,6 +171,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
     uniLocation[n++] = gl.getUniformLocation(program, 'up');
     uniLocation[n++] = gl.getUniformLocation(program, 'target');
     uniLocation[n++] = gl.getUniformLocation(program, 'fov');
+    uniLocation[n++] = gl.getUniformLocation(program, 'numIterations');
     for(var i = 0 ; i < numSpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 's'+ i);
@@ -218,7 +220,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.up);
 	gl.uniform3fv(uniLocation[uniI++], renderCanvas.target);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.fovDegree);
-
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
 	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], g_spheres[i]);
 	}
@@ -385,28 +387,45 @@ window.addEventListener('load', function(event){
     });
     window.addEventListener('keydown', function(event){
 	schottkyCanvas.pressingKey = event.key;
-	if(event.key == ' '){
+	switch(event.key){
+	case ' ':
 	    addSchottkySphere(schottkyCanvas, orbitCanvas);
-	}else if(event.key == 'b'){
-	    addBaseSphere(schottkyCanvas, orbitCanvas);
-	    schottkyCanvas.render(0);
-	    orbitCanvas.render(0);
-	}else if(event.key == 'z'){
+	    break;
+	case 'b':
+	    	addBaseSphere(schottkyCanvas, orbitCanvas);
+		schottkyCanvas.render(0);
+		orbitCanvas.render(0);
+	    break;
+	case 'z':
 	    if(schottkyCanvas.selectedAxis != 0){
 		schottkyCanvas.selectedAxis = 0;
 		schottkyCanvas.render(0);
 	    }
-	}else if(event.key == 'x'){
+
+	    break;
+	case 'x':
 	    if(schottkyCanvas.selectedAxis != 1){
 		schottkyCanvas.selectedAxis = 1;
 		schottkyCanvas.render(0);
 	    }
-	}else if(event.key == 'c'){
+	    break;
+	case 'c':
 	    if(schottkyCanvas.selectedAxis != 2){
 		schottkyCanvas.selectedAxis = 2;
 		schottkyCanvas.render(0);
 	    }
-	}else{
+	    break;
+	case '+':
+	    orbitCanvas.numIterations++;
+	    orbitCanvas.render(0);
+	    break;
+	case '-':
+	    if(orbitCanvas.numIterations != 0){
+		orbitCanvas.numIterations--;
+		orbitCanvas.render(0);
+	    }
+	    break;
+	default:
 	    var index = schottkyCanvas.selectedSphereIndex;
 	    if(index != -1){
 		var operateSphere = g_spheres[index];
