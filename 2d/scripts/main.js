@@ -1,4 +1,4 @@
-var g_circles = [[100, 0, 100],
+var g_circles = [[100, -100, 100],
 		 [100, 100, 100],
 		 [-100, -100, 100],
 		 [-100, 100, 100]];
@@ -27,6 +27,8 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.hueStep = 0.03
     this.numSamples = 10;
     this.translate = [0, 0];
+
+    this.isFullScreen = false;
 }
 
 RenderCanvas2D.prototype = {
@@ -52,6 +54,33 @@ RenderCanvas2D.prototype = {
 		this.translate[0],
 		this.scale * -(((event.clientY - rect.top) * devicePixelRatio) / this.canvas.height - 0.5) +
 		this.translate[1]];
+    },
+    requestFullScreen: function(){
+	var ua = navigator.userAgent.toLowerCase();
+	var version = navigator.appVersion.toLowerCase();
+
+	var requestFullScreen;
+	if(ua.indexOf('firefox') > -1){
+	    // firefox
+	    this.canvas.mozRequestFullscreen();
+	}else if((ua.indexOf('chrome') > -1) &&
+		 (ua.indexOf('edge') == -1)){
+	    // chrome
+	    this.canvas.webkitRequestFullscreen();
+	    
+	}else if((ua.indexOf('safari') > -1) && (ua.indexOf('chrome') == -1)){
+	    // safari
+	    this.canvas.webkitRequestFullscreen();
+	}else if(ua.indexOf('opera') > -1){
+	    // opera
+	    this.canvas.webkitRequestFullscreen();
+	}else if(ua.indexOf('trident/7') > -1){
+	    // IE11
+	    this.canvas.msRequestFullscreen();
+	}else if((ua.indexOf('Edge') > -1)){
+	    // Edge
+	    this.canvas.msRequestFullscreen();
+	}
     }
 }
 
@@ -224,6 +253,7 @@ function setupSchottkyProgram(renderCanvas, numCircles){
 window.addEventListener('load', function(event){
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
+    
     addMouseListeners(renderCanvas);
     renderCanvas.resizeCanvas(512, 512);
 
@@ -235,10 +265,38 @@ window.addEventListener('load', function(event){
     renderCanvas.render();
 
     window.addEventListener('resize', function(event){
-	renderCanvas.resizeCanvas(512, 512);
+	if(renderCanvas.isFullScreen){
+	    renderCanvas.resizeCanvasFullscreen();
+	}else{
+	    renderCanvas.resizeCanvas(512, 512);
+	}
 	renderCanvas.render(0);
     }, false);
 
+    document.addEventListener('webkitfullscreenchange', function(event){
+	if ( document.webkitFullscreenElement ) {
+	    renderCanvas.isFullScreen = true;
+	}else{
+	    renderCanvas.isFullScreen = false;
+	}
+    });
+
+    document.addEventListener('mozfullscreenchange', function(event){
+	if ( document.mozFullscreenElement ) {
+	    renderCanvas.isFullScreen = true;
+	}else{
+	    renderCanvas.isFullScreen = false;
+	}
+    });
+
+    document.addEventListener('msfullscreenchange', function(event){
+	if ( document.msFullscreenElement ) {
+	    renderCanvas.isFullScreen = true;
+	}else{
+	    renderCanvas.isFullScreen = false;
+	}
+    });
+    
     window.addEventListener('keydown', function(event){
 	switch(event.key){
 	case '+':
@@ -281,6 +339,9 @@ window.addEventListener('load', function(event){
 	    renderCanvas.hueStep += 0.01;
 	    renderCanvas.render(0);
 	    break;
+	case 'r':
+	    renderCanvas.requestFullScreen();
+	    break;
 	case 'ArrowRight':
 	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;
@@ -303,7 +364,6 @@ window.addEventListener('load', function(event){
 	    break;
 	}
     });
-
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
