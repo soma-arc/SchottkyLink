@@ -12,8 +12,10 @@
 	 display:block;
 	 background-color: black;
      }
-
     </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../lib/bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="../lib/nunjucks.min.js"></script>
     <script type="text/javascript" src="scripts/util.js"></script>
     <script type="text/javascript" src="scripts/main.js"></script>
@@ -126,6 +128,46 @@
 
 </head>
 <body>
-    <canvas id="canvas" width="512" height="512"></canvas>
+    <div id="main-area">
+	<nav class="navbar">
+	    <div class="container">
+		<div class="navbar-header">
+		    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+			<span class="sr-only">Toggle navigation</span>
+		    </button>
+		    <a class="navbar-brand">SchottkyLink</a>
+		</div>
+		<div id="navbar" class="collapse navbar-collapse">
+		    <ul class="nav navbar-nav">
+			<li class="active"><a href="../index.html">Home</a></li>
+		    </ul>
+		</div>
+	    </div>
+	</nav>
+
+	<div class="container">
+	    <div class="row">
+		<div class="col-sm-5 col-md-3 sidebar-offcanvas">
+		    <div class="well">
+			<ul class="nav">
+			    <li><a href="index.html" data-cw="512" data-ch="512">
+				2 Dimensional </a></li>
+			    <li><a href="../3d/index.html" data-cw="512" data-ch="512">
+				3 Dimensional </a></li>
+			</ul>
+		    </div>
+		</div>
+		<div class="col-sm-7 col-md-9">
+		    <div id="content">
+			<h1>Schottky Link</h1>
+			<div class="canvas-area">
+			    <canvas id="canvas" width="512" height="512"></canvas>
+			</div>
+			<br>
+		    </div>
+		</div>
+	    </div>
+	</div>
+    </div>
 </body>
 </html>
