@@ -31,12 +31,21 @@ var RenderCanvas = function(canvasId, templateId){
     this.axisVecOnScreen;
     this.pressingKey = '';
     this.numIterations = 10;
+
+    this.pixelRatio = 1;//window.devicePixelRatio;
 }
 
 RenderCanvas.prototype = {
+    resizeCanvas: function(width, height){
+	this.canvas.style.width = width + 'px';
+	this.canvas.style.height = height + 'px';
+	this.canvas.width = width * this.pixelRatio;
+	this.canvas.height = height * this.pixelRatio;
+    },
     calcPixel: function(mouseEvent){
-	return [mouseEvent.clientX * window.devicePixelRatio,
-		mouseEvent.clientY * window.devicePixelRatio];
+	var rect = event.target.getBoundingClientRect();
+	return [(mouseEvent.clientX - rect.left) * this.pixelRatio,
+		(mouseEvent.clientY - rect.top) * this.pixelRatio];
     },
     updateEye: function(){
 	this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
@@ -73,7 +82,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 
     canvas.addEventListener('mousemove', function(event){
 	if(!renderCanvas.isMousePressing) return;
-	[px, py] = [event.clientX, event.clientY];//renderCanvas.calcPixel(event);
+	[px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 1){
 	    renderCanvas.theta = prevTheta + (renderCanvas.prevMousePos[0] - px) * 0.01;
 	    renderCanvas.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
@@ -84,7 +93,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 
     canvas.addEventListener('mousedown', function(event){
 	renderCanvas.isMousePressing = true;
-	[px, py] = [event.clientX, event.clientY];//renderCanvas.calcPixel(event);
+	[px, py] = renderCanvas.calcPixel(event);
 	renderCanvas.prevMousePos = [px, py];
 	if(event.button == 0){
 	    if((renderCanvas.pressingKey == 'z' ||
@@ -101,7 +110,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	    var ray = calcRay(renderCanvas.eye, renderCanvas.target,
 			      renderCanvas.up, renderCanvas.fovDegree,
 			      canvas.width, canvas.height,
-			      [event.clientX, event.clientY]);
+			      [px, py]);
 	    renderCanvas.selectedSphereIndex = trace(renderCanvas.eye,
 						     ray,
 						     g_spheres.concat(g_baseSpheres));
@@ -127,6 +136,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     }, true);
 
     canvas.addEventListener('mousewheel', function(event){
+	event.preventDefault();
 	if(event.wheelDelta > 0){
 	    renderCanvas.eyeDist -= 100;
 	}else{
@@ -287,6 +297,9 @@ window.addEventListener('load', function(event){
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
 
+    schottkyCanvas.resizeCanvas(256, 256);
+    orbitCanvas.resizeCanvas(256, 256);
+    
     addMouseListenersToSchottkyCanvas(schottkyCanvas);
     addMouseListenersToSchottkyCanvas(orbitCanvas);
     
@@ -307,7 +320,7 @@ window.addEventListener('load', function(event){
 		var operateSphere = g_spheres[index];
 		if(index >= g_numSpheres)
 		    operateSphere = g_baseSpheres[index - g_numSpheres];
-		[px, py] = [event.clientX, event.clientY];//schottkyCanvas.calcPixel(event);
+		[px, py] = schottkyCanvas.calcPixel(event);
 		var dx = px - schottkyCanvas.prevMousePos[0];
 		var dy = py - schottkyCanvas.prevMousePos[1];
 		switch (schottkyCanvas.pressingKey){

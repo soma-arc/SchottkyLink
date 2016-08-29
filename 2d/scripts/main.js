@@ -8,7 +8,8 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
     this.center = [0, 0];
-    this.canvasRatio;
+    this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
+;
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
     this.isRendering = false;
@@ -24,11 +25,19 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.iterations = 10;
     this.initialHue = 0;
     this.hueStep = 0.03
-    this.numSamples = 1;
+    this.numSamples = 10;
     this.translate = [0, 0];
 }
 
 RenderCanvas2D.prototype = {
+    resizeCanvas: function(width, height){
+	this.canvas.style.width = width + 'px';
+	this.canvas.style.height = height + 'px';
+	this.canvas.width = width * window.devicePixelRatio;
+	this.canvas.height = height * window.devicePixelRatio;
+	this.center = [this.canvas.width / 2, this.canvas.height / 2];
+	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
+    },
     resizeCanvasFullscreen: function(){
 	this.canvas.style.width = window.innerWidth + 'px';
 	this.canvas.style.height = window.innerHeight + 'px';
@@ -37,10 +46,11 @@ RenderCanvas2D.prototype = {
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
-    calcPixel: function(mouseEvent){
-	return [this.scale * (event.clientX * window.devicePixelRatio / this.canvas.height - this.canvasRatio) +
+    calcPixel: function(){
+	var rect = event.target.getBoundingClientRect();
+	return [this.scale * (((event.clientX - rect.left) * devicePixelRatio) / this.canvas.height - this.canvasRatio) +
 		this.translate[0],
-		this.scale * -((event.clientY * window.devicePixelRatio) / this.canvas.height - 0.5) +
+		this.scale * -(((event.clientY - rect.top) * devicePixelRatio) / this.canvas.height - 0.5) +
 		this.translate[1]];
     }
 }
@@ -122,6 +132,7 @@ function addMouseListeners(renderCanvas){
     });
 
     renderCanvas.canvas.addEventListener('mousewheel', function(event){
+	event.preventDefault();
 	if(event.wheelDelta > 0){
 	    if(renderCanvas.scale > 1){
 		renderCanvas.scale -= 100;
@@ -214,7 +225,7 @@ window.addEventListener('load', function(event){
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
     addMouseListeners(renderCanvas);
-    renderCanvas.resizeCanvasFullscreen();
+    renderCanvas.resizeCanvas(512, 512);
 
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(renderCanvas,
@@ -224,7 +235,7 @@ window.addEventListener('load', function(event){
     renderCanvas.render();
 
     window.addEventListener('resize', function(event){
-	renderCanvas.resizeCanvasFullscreen();
+	renderCanvas.resizeCanvas(512, 512);
 	renderCanvas.render(0);
     }, false);
 
@@ -271,18 +282,22 @@ window.addEventListener('load', function(event){
 	    renderCanvas.render(0);
 	    break;
 	case 'ArrowRight':
+	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;
 	    renderCanvas.render(0);
 	    break;
 	case 'ArrowLeft':
+	    event.preventDefault();
 	    renderCanvas.translate[0] -= renderCanvas.scale / 10;
 	    renderCanvas.render(0);
 	    break;
 	case 'ArrowUp':
+	    event.preventDefault();
 	    renderCanvas.translate[1] += renderCanvas.scale / 10;
 	    renderCanvas.render(0);
 	    break;
 	case 'ArrowDown':
+	    event.preventDefault();
 	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
 	    renderCanvas.render(0);
 	    break;
