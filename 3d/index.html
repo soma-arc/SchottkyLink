@@ -39,11 +39,16 @@
      uniform vec3 target;
      uniform float fov;
      int numSpheres = {{ numSpheres }};
-     {% for n  in range(0,  numSpheres ) %}
+     {% for n in range(0,  numSpheres ) %}
      uniform vec4 s{{ n }};
      {% endfor %}
 
-     {% for n  in range(0,  numBaseSpheres ) %}
+     int numPlanes = {{ numPlanes }};
+     {% for n in range(0,  numPlanes ) %}
+     uniform vec4 plane{{ n }};
+     {% endfor %}
+     
+     {% for n in range(0,  numBaseSpheres ) %}
      uniform vec4 baseSphere{{ n }};
      {% endfor %}
      int numBaseSpheres = {{ numBaseSpheres }};
@@ -63,6 +68,7 @@
      const int MTL_SPHERE = 1;
      const int MTL_PLANE = 2;
      const int MTL_CYLINDER = 3;
+     const int MTL_RECT = 4;
      const int BASE_SPHERE_INDEX = -2;
      int g_mtl = -1;
      bool g_isHit = false;
@@ -157,24 +163,30 @@
 
      vec4 intersectPlane(vec3 p, vec3 n, 
 			 vec3 rayOrigin, vec3 rayDir, vec4 isect){
+	 g_isHit = false;
 	 float d = -dot(p, n);
 	 float v = dot(n, rayDir);
 	 float t = -(dot(n, rayOrigin) + d) / v;
 	 if(EPSILON < t && t < isect.x){
              g_mtl = MTL_PLANE;
+	     g_isHit = true;
     	     return vec4(t, n);
 	 }
 	 return isect;
      }
 
-     vec4 intersectXYRect (vec2 p1, vec2 p2, float z,
-			   vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	 float t = (z - rayOrigin.z) / rayDir.z;
+     vec4 intersectXYRect (vec3 center, float size,
+			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
+	 g_isHit = false;
+	 float t = (center.z - rayOrigin.z) / rayDir.z;
 	 if(EPSILON < t && t < isect.x){
+	     vec2 p1 = center.xy - vec2(size * 0.5);
+	     vec2 p2 = center.xy + vec2(size * 0.5);
     	     vec3 p = rayOrigin + t * rayDir;
              if(p1.x < p.x && p.x < p2.x &&
 		p1.y < p.y && p.y < p2.y ){
-
+		 g_mtl = MTL_RECT;
+		 g_isHit = true;
         	 return vec4(t, vec3(0, 0, 1));
              }
 	 }
@@ -246,7 +258,7 @@
 	 }
 	 {% endfor %}
 
-	 {% for n  in range(0,  numBaseSpheres ) %}
+	 {% for n in range(0,  numBaseSpheres ) %}
 	 result = intersectSphere(baseSphere{{ n }}.xyz, baseSphere{{ n }}.w, eye, ray, result);
 	 if(g_isHit) hitObjIndex = BASE_SPHERE_INDEX - {{ n }};
 	 if(selectedSphereIndex - numSpheres == {{ n }}){
@@ -270,8 +282,13 @@
 	     }
 	 }
 	 {% endfor %}
+
+	 {% for n in range(0,  numPlanes ) %}
+	 result = intersectXYRect(plane{{ n }}.xyz, plane{{ n }}.w,
+				  eye, ray, result);
+	 {% endfor %}
 	 
-	 vec3 matColor;
+	 vec3 matColor = vec3(1);
 	 if(g_mtl == MTL_SPHERE){
 	     if(hitObjIndex == selectedSphereIndex){
 		 matColor = vec3(1., 0, 0);
@@ -290,6 +307,8 @@
 	     }else{
 		 matColor = vec3(1.);
 	     }
+	 }else if(g_mtl == MTL_RECT){
+	     matColor = vec3(0, 0, 1);
 	 }
   	 
   	 if(result.x != 99999.){
@@ -368,7 +387,22 @@
      {% endfor %}
      int numBaseSpheres = {{ numBaseSpheres }};
 
+     int numPlanes = {{ numPlanes }};
+     {% for n in range(0,  numPlanes ) %}
+     uniform vec4 plane{{ n }};
+     {% endfor %}
 
+     int numTranslations = {{ numTranslations }};
+     {% for n in range(0,  numTranslations ) %}
+     uniform vec2 translation{{ n }};
+     {% endfor %}
+
+     uniform int renderPlane;
+     
+     int g_mtl = -1;
+     const int MTL_KLEIN = 0;
+     const int MTL_RECT = 1;
+     
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
 	 vec2 seed = co * (sampleIndex + 1.0);
@@ -469,6 +503,13 @@
      }
 
      float distFunc(vec3 p){
+	 {% for n in range(0,  numTranslations ) %}
+	 p -= vec3(0, 0, translation{{ n }}.x);
+	 p = mod(p,
+		 vec3(0, 0, translation{{ n }}.y) -
+		 vec3(0, 0, translation{{ n }}.x))+
+	     vec3(0, 0, translation{{ n }}.x);
+	 {% endfor %}
 	 return distKlein(p);
      }
 
@@ -496,7 +537,10 @@
      const vec3 lightPower = vec3(2000000.);
 
      const int MAX_MARCHING_LOOP = 800;
-     vec2 march(const vec3 origin, const  vec3 ray, const float threshold){
+     const float NO_HIT = 99999.;
+     const float EPSILON = 0.01;
+     vec4 march(const vec3 origin, const  vec3 ray,
+		const float threshold, vec4 isect){
 	 vec3 rayPos = origin;
 	 float dist;
 	 float rayLength = 0.;
@@ -506,7 +550,28 @@
 	     rayPos = origin + ray * rayLength ;
 	     if(dist < threshold) break;
 	 }
-	 return vec2(dist, rayLength);
+	 if(dist < EPSILON && rayLength < isect.x){
+	     g_mtl = MTL_KLEIN;
+	     return vec4(rayLength);
+	 }else{
+	     return isect;
+	 }
+     }
+
+     vec4 intersectXYRect (vec3 center, float size,
+			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
+	 float t = (center.z - rayOrigin.z) / rayDir.z;
+	 if(EPSILON < t && t < isect.x){
+	     vec2 p1 = center.xy - vec2(size * 0.5);
+	     vec2 p2 = center.xy + vec2(size * 0.5);
+    	     vec3 p = rayOrigin + t * rayDir;
+             if(p1.x < p.x && p.x < p2.x &&
+		p1.y < p.y && p.y < p2.y ){
+		 g_mtl = MTL_RECT;
+        	 return vec4(t, vec3(0, 0, 1));
+             }
+	 }
+	 return isect;
      }
 
      const vec3 BLACK = vec3(0);
@@ -514,12 +579,28 @@
      vec3 calcColor(vec3 eye, vec3 ray){
 	 vec3 l = BLACK;
 	 float coeff = 1.;
-	 vec2 result = march(eye, ray, 0.01);
-	 vec3 intersection = eye + ray * result.y;
-	 vec3 matColor = vec3(0);
-	 vec3 normal = getNormal(intersection);
-	 if(result.x < 0.01){
-	     matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+	 vec4 result = vec4(NO_HIT);
+	 result = march(eye, ray, 0.01, result);
+	 {% if numPlanes > 0 %}
+	 if(renderPlane == 1){
+	     {% for n in range(0,  numPlanes ) %}
+	     result = intersectXYRect(plane{{ n }}.xyz, plane{{ n }}.w,
+				      eye, ray, result);
+	     {% endfor %}
+	 }
+	 {% endif %}
+	 
+	 if(result.x != NO_HIT){
+	     vec3 matColor = vec3(1);
+	     vec3 normal;
+	     vec3 intersection = eye + ray * result.x;
+	     if(g_mtl == MTL_KLEIN){
+		 normal = getNormal(intersection);
+		 matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+	     }else if(g_mtl == MTL_RECT){
+		 normal = result.yzw;
+		 matColor = vec3(1);
+	     }
 	     l += diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
 	     //	     l += diffuseLighting(intersection, normal, matColor, lightPos2, lightPower);
 	     l += matColor * ambientFactor;
@@ -602,6 +683,7 @@
 		s + Drag : Tweak radius<br>
 		Space : Add a Schottky sphere<br>
 		b : Add a base sphere<br>
+		+ / - : Increase / Decrease max iterations<br>
 	      </div>
 	    </div>
 	</div>

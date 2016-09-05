@@ -7,7 +7,13 @@ var g_spheres = [[300, 300, 0, 300],
 var g_baseSpheres = [[0, 0, 0, 125],];
 var g_numSpheres = 6;
 var g_numBaseSpheres = 1;
+var g_numPlanes = 2;
+var g_planes = [[0, 0, 300, 1200],
+		[0, 0, -300, 1200]];
+var g_numTranslations = 1;
+var g_translation = [[-300, 300]];
 var g_prevSphere;
+var g_renderPlane = 0;
 
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -130,6 +136,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 								canvas.width, canvas.height);
 	    }
 	}else if(event.button == 1){
+	    event.preventDefault();
 	    prevTheta = renderCanvas.theta;
 	    prevPhi = renderCanvas.phi;
 	}
@@ -149,17 +156,22 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						 g_numBaseSpheres,
+						 g_numPlanes,
+						 g_numTranslations,
 						 renderCanvas);
     renderCanvas.switch();
     renderCanvas.render(0);
 }
 
-function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
+function setupSchottkyProgram(numSpheres, numBaseSpheres, numPlanes, numTranslations,
+			      renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
         
     var shaderStr = renderCanvas.template.render({numSpheres: numSpheres,
-						  numBaseSpheres: numBaseSpheres});
+						  numBaseSpheres: numBaseSpheres,
+						  numPlanes: numPlanes,
+						  numTranslations: numTranslations});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -190,6 +202,15 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'baseSphere'+ j);
     }
+    for(var k = 0 ; k < numPlanes ; k++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'plane'+ k);
+    }
+    for(var k = 0 ; k < numTranslations ; k++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'translation'+ k);
+    }
+    uniLocation[n++] = gl.getUniformLocation(program, 'renderPlane');
     
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
@@ -237,7 +258,14 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, renderCanvas){
 	for(var j = 0 ; j < numBaseSpheres ; j++){
 	    gl.uniform4fv(uniLocation[uniI++], g_baseSpheres[j]);
 	}
-
+	for(var k = 0 ; k < numPlanes ; k++){
+	    gl.uniform4fv(uniLocation[uniI++], g_planes[k]);
+	}
+	for(var k = 0 ; k < numTranslations ; k++){
+	    gl.uniform2fv(uniLocation[uniI++], g_translation[k]);
+	}
+	gl.uniform1i(uniLocation[uniI++], g_renderPlane);
+	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
 	gl.flush();
@@ -250,10 +278,14 @@ function updateShaders(schottkyCanvas, orbitCanvas){
     [schottkyCanvas.switch,
      schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						   g_numBaseSpheres,
+						   g_numPlanes,
+						   g_numTranslations,
 						   schottkyCanvas);
     [orbitCanvas.switch,
      orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						g_numBaseSpheres,
+						g_numPlanes,
+						g_numTranslations,
      						orbitCanvas);
     schottkyCanvas.switch();
     orbitCanvas.switch();
