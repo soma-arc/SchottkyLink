@@ -7,6 +7,8 @@ var g_numCircles = 4;
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
+    this.defaultWidth = canvas.width;
+    this.defaultHeight = canvas.height;
     this.center = [0, 0];
     this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
 ;
@@ -29,6 +31,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.translate = [0, 0];
 
     this.isFullScreen = false;
+    
 }
 
 RenderCanvas2D.prototype = {
@@ -255,7 +258,8 @@ window.addEventListener('load', function(event){
 					  'kissingSchottkyTemplate');
     
     addMouseListeners(renderCanvas);
-    renderCanvas.resizeCanvas(512, 512);
+    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
+			      renderCanvas.defaultHeight);
 
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(renderCanvas,
@@ -265,19 +269,25 @@ window.addEventListener('load', function(event){
     renderCanvas.render();
 
     window.addEventListener('resize', function(event){
-	if(renderCanvas.isFullScreen){
-	    renderCanvas.resizeCanvasFullscreen();
-	}else{
-	    renderCanvas.resizeCanvas(512, 512);
-	}
-	renderCanvas.render(0);
+	console.log('resize');
+    	if(renderCanvas.isFullScreen){
+    	    renderCanvas.resizeCanvasFullscreen();
+    	}else{
+    	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
+				      renderCanvas.defaultHeight);
+    	}
+    	renderCanvas.render(0);
     }, false);
 
     document.addEventListener('webkitfullscreenchange', function(event){
+	console.log(document.webkitFullscreenElement);
 	if ( document.webkitFullscreenElement ) {
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
+	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
+				      renderCanvas.defaultHeight);
+	    renderCanvas.render(0);
 	}
     });
 
@@ -286,6 +296,9 @@ window.addEventListener('load', function(event){
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
+	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
+				      renderCanvas.defaultHeight);
+	    renderCanvas.render(0);
 	}
     });
 
@@ -294,6 +307,9 @@ window.addEventListener('load', function(event){
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
+	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
+				      renderCanvas.defaultHeight);
+	    renderCanvas.render(0);
 	}
     });
     
