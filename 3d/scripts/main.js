@@ -11,7 +11,7 @@ var g_numPlanes = 2;
 var g_planes = [[0, 0, 300, 1200],
 		[0, 0, -300, 1200]];
 var g_numTranslations = 1;
-var g_translation = [[-300, 300]];
+var g_translation = [[-300, 300, 0.]];
 var g_prevSphere;
 var g_renderPlane = 0;
 
@@ -262,7 +262,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numPlanes, numTranslat
 	    gl.uniform4fv(uniLocation[uniI++], g_planes[k]);
 	}
 	for(var k = 0 ; k < numTranslations ; k++){
-	    gl.uniform2fv(uniLocation[uniI++], g_translation[k]);
+	    gl.uniform3fv(uniLocation[uniI++], g_translation[k]);
 	}
 	gl.uniform1i(uniLocation[uniI++], g_renderPlane);
 	
@@ -469,6 +469,14 @@ window.addEventListener('load', function(event){
 		orbitCanvas.numIterations--;
 		orbitCanvas.render(0);
 	    }
+	    break;
+	case 'p':
+	    g_translation[0][2] += 1;
+	    orbitCanvas.render(0);
+	    break;
+	case 'n':
+	    g_translation[0][2] -= 1;
+	    orbitCanvas.render(0);
 	    break;
 	default:
 	    var index = schottkyCanvas.selectedSphereIndex;
