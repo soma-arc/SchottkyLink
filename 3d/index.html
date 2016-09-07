@@ -394,7 +394,7 @@
 
      int numTranslations = {{ numTranslations }};
      {% for n in range(0,  numTranslations ) %}
-     uniform vec2 translation{{ n }};
+     uniform vec3 translation{{ n }};
      {% endfor %}
 
      uniform int renderPlane;
@@ -477,7 +477,7 @@
 		 pos.z = mod(pos.z,
 			     translation{{ n }}.y - translation{{ n }}.x)+
 			 translation{{ n }}.x;
-		 float theta = radians(15.) * nn;
+		 float theta = radians(translation{{ n }}.z) * nn;
 		 mat3 m = mat3(cos(theta), -sin(theta), 0,
 			       sin(theta), cos(theta), 0,
 			       0, 0, 1);
