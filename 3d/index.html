@@ -470,6 +470,23 @@
 		 loopNum++;
 	     }
 	     {% endif %}
+	     {% for n in range(0,  numTranslations ) %}
+	     if(pos.z < translation{{ n }}.x || translation{{ n }}.y < pos.z){
+		 pos -= vec3(0, 0, translation{{ n }}.x);
+		 float nn = floor(pos.z / (translation{{n}}.y - translation{{ n }}.x));
+		 pos.z = mod(pos.z,
+			     translation{{ n }}.y - translation{{ n }}.x)+
+			 translation{{ n }}.x;
+		 float theta = radians(15.) * nn;
+		 mat3 m = mat3(cos(theta), -sin(theta), 0,
+			       sin(theta), cos(theta), 0,
+			       0, 0, 1);
+		 pos = m * pos;
+
+		 loopEnd = false;
+		 loopNum ++;
+	     }
+	     {% endfor %}
 	     
 	     if(loopEnd == true) break;
 	 }
@@ -503,13 +520,6 @@
      }
 
      float distFunc(vec3 p){
-	 {% for n in range(0,  numTranslations ) %}
-	 p -= vec3(0, 0, translation{{ n }}.x);
-	 p = mod(p,
-		 vec3(0, 0, translation{{ n }}.y) -
-		 vec3(0, 0, translation{{ n }}.x))+
-	     vec3(0, 0, translation{{ n }}.x);
-	 {% endfor %}
 	 return distKlein(p);
      }
 
