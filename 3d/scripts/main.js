@@ -86,6 +86,11 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	renderCanvas.isRendering = false;
     });
 
+    canvas.addEventListener('mouseleave', function(event){
+	renderCanvas.isMousePressing = false;
+	renderCanvas.isRendering = false;
+    });
+
     canvas.addEventListener('mousemove', function(event){
 	if(!renderCanvas.isMousePressing) return;
 	[px, py] = renderCanvas.calcPixel(event);
@@ -123,12 +128,14 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	    if(renderCanvas.selectedSphereIndex == -1) return;
 	    renderCanvas.render(0);
 	    if(renderCanvas.selectedSphereIndex >= g_numSpheres){
+		// Base Sphere
 		g_prevSphere = g_baseSpheres[renderCanvas.selectedSphereIndex - g_numSpheres].slice(0);
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(g_prevSphere.slice(0, 3),
 								renderCanvas.eye, renderCanvas.target,
 								renderCanvas.up, renderCanvas.fovDegree,
 								canvas.width, canvas.height);
 	    }else{
+		// Schottky Sphere
 		g_prevSphere = g_spheres[renderCanvas.selectedSphereIndex].slice(0);
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(g_prevSphere.slice(0, 3),
 								renderCanvas.eye, renderCanvas.target,
@@ -344,6 +351,7 @@ window.addEventListener('load', function(event){
 	schottkyCanvas.isRendering = false;
 	orbitCanvas.isRendering = false;
     });
+    // Move Spheres on Schottky Canvas
     schottkyCanvas.canvas.addEventListener('mousemove', function(event){
 	if(!schottkyCanvas.isMousePressing) return;
 	var index = schottkyCanvas.selectedSphereIndex;
@@ -368,6 +376,8 @@ window.addEventListener('load', function(event){
 					    0, v, g_prevSphere.slice(0, 3),
 					    lengthOnAxis);
 		    operateSphere[0] = p[0];
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
 		    break;
 		case 'x':
 		    var v = schottkyCanvas.axisVecOnScreen[1];
@@ -381,6 +391,8 @@ window.addEventListener('load', function(event){
 					    1, v, g_prevSphere.slice(0, 3),
 					    lengthOnAxis);
 		    operateSphere[1] = p[1];
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
 		    break;
 		case 'c':
 		    var v = schottkyCanvas.axisVecOnScreen[2];
@@ -394,6 +406,8 @@ window.addEventListener('load', function(event){
 					    2, v, g_prevSphere.slice(0, 3),
 					    lengthOnAxis);
 		    operateSphere[2] = p[2];
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
 		    break;
 		case 's':
 		    //operateSphere[3] = g_prevSphere[3] + dx * 10;
@@ -408,12 +422,16 @@ window.addEventListener('load', function(event){
 					    0, v, g_prevSphere.slice(0, 3),
 					    lengthOnAxis);
 		    operateSphere[3] = p[0];
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
 		    break;
 		}
-		schottkyCanvas.isRendering = true;
-		orbitCanvas.isRendering = true;
 	    }
 	}
+    });
+    schottkyCanvas.canvas.addEventListener('mouseup', function(){
+	orbitCanvas.isMousePressing = false;
+	orbitCanvas.isRendering = false;
     });
     schottkyCanvas.canvas.addEventListener('dblclick', function(){
 	var index = schottkyCanvas.selectedSphereIndex;
@@ -528,8 +546,9 @@ window.addEventListener('load', function(event){
 	if(schottkyCanvas.isRendering){
 	    schottkyCanvas.render(elapsedTime);
 	}
-	if(orbitCanvas.isRendering)
+	if(orbitCanvas.isRendering){
 	    orbitCanvas.render(elapsedTime);
+	}
     	requestAnimationFrame(arguments.callee);
     })();
 }, false);
