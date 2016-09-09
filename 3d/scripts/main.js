@@ -24,20 +24,13 @@ var ParabolicTransformation = function(){
     this.phi = 0; // Degree
     this.size = 1200;
     this.rotation = 0.;
-//    this.isRenderingPlaneAtOrbitCanvas = 0;
-    // plane [distance, size, theta (Radians) , Phi (Radians) ]
-    // transformation [p1, p2, rotation]
+    //    this.isRenderingPlaneAtOrbitCanvas = 0;
 }
 
 ParabolicTransformation.prototype = {
-    getPlane1: function(){
-	return [this.distToP1, this.size, radians(this.theta), radians(this.phi)];
-    },
-    getPlane2: function(){
-	return [this.distToP2, this.size, radians(this.theta), radians(this.phi)];
-    },
     getTransformation: function(){
-	return [this.distToP1, this.distToP2, this.rotation];
+	return [this.distToP1, this.distToP2, this.size,
+		radians(this.theta), radians(this.phi), this.rotation];
     }
 }
 
@@ -48,7 +41,7 @@ var RenderCanvas = function(canvasId, templateId){
     this.template = nunjucks.compile(document.getElementById(templateId).text);
     this.target = [0, 0, 0];
     this.fovDegree = 60;
-    this.eyeDist =  1500;
+    this.eyeDist = 1500;
     this.up = [0, 1, 0];
     this.theta = 0;
     this.phi = 0;
@@ -202,7 +195,6 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numTransformations,
         
     var shaderStr = renderCanvas.template.render({numSpheres: numSpheres,
 						  numBaseSpheres: numBaseSpheres,
-						  numPlanes: numTransformations * 2,
 						  numTranslations: numTransformations});
     attachShaderFromString(gl,
 			   shaderStr,
@@ -236,12 +228,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numTransformations,
     }
     for(var i = 0 ; i < numTransformations ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'plane'+ i);
-
-	uniLocation[n++] = gl.getUniformLocation(program,
-						 'plane'+ (i + 1));
-	uniLocation[n++] = gl.getUniformLocation(program,
-						 'translation'+ i);
+						 'transformation'+ i);
     }
     
     uniLocation[n++] = gl.getUniformLocation(program, 'renderPlane');
@@ -293,9 +280,7 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numTransformations,
 	    gl.uniform4fv(uniLocation[uniI++], g_baseSpheres[j]);
 	}
 	for(var i = 0 ; i < numTransformations ; i++){
-	    gl.uniform4fv(uniLocation[uniI++], g_transformations[i].getPlane1());
-	    gl.uniform4fv(uniLocation[uniI++], g_transformations[i].getPlane2());
-	    gl.uniform3fv(uniLocation[uniI++], g_transformations[i].getTransformation());
+	    gl.uniform1fv(uniLocation[uniI++], g_transformations[i].getTransformation());
 	}
 	gl.uniform1i(uniLocation[uniI++], g_renderPlane);
 	

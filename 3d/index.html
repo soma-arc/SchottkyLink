@@ -42,15 +42,25 @@
      uniform vec4 s{{ n }};
      {% endfor %}
 
-     int numPlanes = {{ numPlanes }};
-     {% for n in range(0,  numPlanes ) %}
-     uniform vec4 plane{{ n }};
-     {% endfor %}
-     
      {% for n in range(0,  numBaseSpheres ) %}
      uniform vec4 baseSphere{{ n }};
      {% endfor %}
      int numBaseSpheres = {{ numBaseSpheres }};
+
+     {% for n in range(0,  numTranslations ) %}
+     uniform float transformation{{ n }}[6];
+     float cosTheta{{ n }} = cos(transformation{{ n }}[3]);
+     float sinTheta{{ n }} = sin(transformation{{ n }}[3]);
+     float cosPhi{{ n }} = cos(transformation{{ n }}[4]);
+     float sinPhi{{ n }} = sin(transformation{{ n }}[4]);
+     mat3 rotateX{{ n }} = mat3(1, 0, 0,
+				0, cosTheta{{ n }}, -sinTheta{{ n }},
+				0, sinTheta{{ n }}, cosTheta{{ n }});
+     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
+				0, 1, 0,
+			       -sinPhi{{ n }}, 0, cosPhi{{ n }});
+     mat3 rotatePlaneMat{{ n }} = rotateX{{ n }} * rotateY{{ n }};
+     {% endfor %}
      
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
@@ -284,22 +294,16 @@
 	 }
 	 {% endfor %}
 
-	 {% for n in range(0,  numPlanes ) %}
-	 float cosTheta{{ n }} = cos(plane{{ n }}.z);
-	 float sinTheta{{ n }} = sin(plane{{ n }}.z);
-	 float cosPhi{{ n }} = cos(plane{{ n }}.w);
-	 float sinPhi{{ n }} = sin(plane{{ n }}.w);
-	 mat3 rotateX{{ n }} = mat3(1, 0, 0,
-					  0, cosTheta{{ n }}, -sinTheta{{ n }},
-					  0, sinTheta{{ n }}, cosTheta{{ n }});
-	 mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
-					  0, 1, 0,
-					 -sinPhi{{ n }}, 0, cosPhi{{ n }});
-	 mat3 rotation{{ n }} = rotateX{{ n }} * rotateY{{ n }};
-	 result = intersectXYRect(vec3(0, 0, plane{{ n }}.x), plane{{ n }}.y, rotation{{ n }},
+	 {% for n in range(0,  numTranslations ) %}
+	 result = intersectXYRect(vec3(0, 0, transformation{{ n }}[0]),
+				  transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				  eye, ray, result);
+	 result = intersectXYRect(vec3(0, 0, transformation{{ n }}[1]),
+				  transformation{{ n }}[2], rotatePlaneMat{{ n }},
 				  eye, ray, result);
 	 {% endfor %}
 	 
+
 	 vec3 matColor = vec3(1);
 	 if(g_mtl == MTL_SPHERE){
 	     if(hitObjIndex == selectedSphereIndex){
@@ -399,14 +403,21 @@
      {% endfor %}
      int numBaseSpheres = {{ numBaseSpheres }};
 
-     int numPlanes = {{ numPlanes }};
-     {% for n in range(0,  numPlanes ) %}
-     uniform vec4 plane{{ n }};
-     {% endfor %}
-
      int numTranslations = {{ numTranslations }};
+
      {% for n in range(0,  numTranslations ) %}
-     uniform vec3 translation{{ n }};
+     uniform float transformation{{ n }}[6];
+     float cosTheta{{ n }} = cos(transformation{{ n }}[3]);
+     float sinTheta{{ n }} = sin(transformation{{ n }}[3]);
+     float cosPhi{{ n }} = cos(transformation{{ n }}[4]);
+     float sinPhi{{ n }} = sin(transformation{{ n }}[4]);
+     mat3 rotateX{{ n }} = mat3(1, 0, 0,
+				0, cosTheta{{ n }}, -sinTheta{{ n }},
+				0, sinTheta{{ n }}, cosTheta{{ n }});
+     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
+				0, 1, 0,
+			       -sinPhi{{ n }}, 0, cosPhi{{ n }});
+     mat3 rotatePlaneMat{{ n }} = rotateX{{ n }} * rotateY{{ n }};
      {% endfor %}
 
      uniform int renderPlane;
@@ -483,13 +494,13 @@
 	     }
 	     {% endif %}
 	     {% for n in range(0,  numTranslations ) %}
-	     if(pos.z < translation{{ n }}.x || translation{{ n }}.y < pos.z){
-		 pos -= vec3(0, 0, translation{{ n }}.x);
-		 float nn = floor(pos.z / (translation{{n}}.y - translation{{ n }}.x));
+	     if(pos.z < transformation{{ n }}[0] || transformation{{ n }}[1] < pos.z){
+		 pos -= vec3(0, 0, transformation{{ n }}[0]);
+		 float nn = floor(pos.z / (transformation{{n}}[1] - transformation{{ n }}[0]));
 		 pos.z = mod(pos.z,
-			     translation{{ n }}.y - translation{{ n }}.x)+
-			 translation{{ n }}.x;
-		 float theta = radians(translation{{ n }}.z) * nn;
+			     transformation{{ n }}[1] - transformation{{ n }}[0])+
+			   transformation{{ n }}[0];
+		 float theta = radians(transformation{{ n }}[5]) * nn;
 		 mat3 m = mat3(cos(theta), -sin(theta), 0,
 			       sin(theta), cos(theta), 0,
 			       0, 0, 1);
@@ -605,21 +616,14 @@
 	 float coeff = 1.;
 	 vec4 result = vec4(NO_HIT);
 	 result = march(eye, ray, 0.01, result);
-	 {% if numPlanes > 0 %}
+	 {% if numTransformations > 0 %}
 	 if(renderPlane == 1){
-	     {% for n in range(0,  numPlanes ) %}
-	     float cosTheta{{ n }} = cos(plane{{ n }}.z);
-	     float sinTheta{{ n }} = sin(plane{{ n }}.z);
-	     float cosPhi{{ n }} = cos(plane{{ n }}.w);
-	     float sinPhi{{ n }} = sin(plane{{ n }}.w);
-	     mat3 rotateX{{ n }} = mat3(1, 0, 0,
-					0, cosTheta{{ n }}, -sinTheta{{ n }},
-					0, sinTheta{{ n }}, cosTheta{{ n }});
-	     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
-					0, 1, 0,
-				       -sinPhi{{ n }}, 0, cosPhi{{ n }});
-	     mat3 rotation{{ n }} = rotateX{{ n }} * rotateY{{ n }};
-	     result = intersectXYRect(vec3(0, 0, plane{{ n }}.x), plane{{ n }}.y, rotation{{ n }},
+	     {% for n in range(0,  numTranslations ) %}
+	     result = intersectXYRect(vec3(0, 0, transformation{{ n }}[0]),
+				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				      eye, ray, result);
+	     result = intersectXYRect(vec3(0, 0, transformation{{ n }}[1]),
+				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
 				      eye, ray, result);
 	     {% endfor %}
 	 }
