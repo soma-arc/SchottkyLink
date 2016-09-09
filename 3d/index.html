@@ -2,7 +2,6 @@
 <html><head>
     <title>SchottkyLink</title>
     <meta charset="UTF-8" />
-    <!--  <link rel="stylesheet" type="text/css" href="scripts/style.css"> -->
     <style>
      body {
 	 margin: 0;
@@ -175,9 +174,11 @@
 	 return isect;
      }
 
-     vec4 intersectXYRect (vec3 center, float size,
+     vec4 intersectXYRect (vec3 center, float size, mat3 rotation,
 			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
+	 rayOrigin *= rotation;
+	 rayDir *= rotation;
 	 float t = (center.z - rayOrigin.z) / rayDir.z;
 	 if(EPSILON < t && t < isect.x){
 	     vec2 p1 = center.xy - vec2(size * 0.5);
@@ -187,7 +188,7 @@
 		p1.y < p.y && p.y < p2.y ){
 		 g_mtl = MTL_RECT;
 		 g_isHit = true;
-        	 return vec4(t, vec3(0, 0, 1));
+        	 return vec4(t, vec3(0, 0, 1) * rotation);
              }
 	 }
 	 return isect;
@@ -284,7 +285,18 @@
 	 {% endfor %}
 
 	 {% for n in range(0,  numPlanes ) %}
-	 result = intersectXYRect(plane{{ n }}.xyz, plane{{ n }}.w,
+	 float cosTheta{{ n }} = cos(plane{{ n }}.z);
+	 float sinTheta{{ n }} = sin(plane{{ n }}.z);
+	 float cosPhi{{ n }} = cos(plane{{ n }}.w);
+	 float sinPhi{{ n }} = sin(plane{{ n }}.w);
+	 mat3 rotateX{{ n }} = mat3(1, 0, 0,
+					  0, cosTheta{{ n }}, -sinTheta{{ n }},
+					  0, sinTheta{{ n }}, cosTheta{{ n }});
+	 mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
+					  0, 1, 0,
+					 -sinPhi{{ n }}, 0, cosPhi{{ n }});
+	 mat3 rotation{{ n }} = rotateX{{ n }} * rotateY{{ n }};
+	 result = intersectXYRect(vec3(0, 0, plane{{ n }}.x), plane{{ n }}.y, rotation{{ n }},
 				  eye, ray, result);
 	 {% endfor %}
 	 
@@ -568,9 +580,11 @@
 	 }
      }
 
-     vec4 intersectXYRect (vec3 center, float size,
+     vec4 intersectXYRect (vec3 center, float size, mat3 rotation,
 			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 float t = (center.z - rayOrigin.z) / rayDir.z;
+	 rayOrigin *= rotation;
+	 rayDir *= rotation;
 	 if(EPSILON < t && t < isect.x){
 	     vec2 p1 = center.xy - vec2(size * 0.5);
 	     vec2 p2 = center.xy + vec2(size * 0.5);
@@ -578,7 +592,7 @@
              if(p1.x < p.x && p.x < p2.x &&
 		p1.y < p.y && p.y < p2.y ){
 		 g_mtl = MTL_RECT;
-        	 return vec4(t, vec3(0, 0, 1));
+        	 return vec4(t, vec3(0, 0, 1) * rotation);
              }
 	 }
 	 return isect;
@@ -594,7 +608,18 @@
 	 {% if numPlanes > 0 %}
 	 if(renderPlane == 1){
 	     {% for n in range(0,  numPlanes ) %}
-	     result = intersectXYRect(plane{{ n }}.xyz, plane{{ n }}.w,
+	     float cosTheta{{ n }} = cos(plane{{ n }}.z);
+	     float sinTheta{{ n }} = sin(plane{{ n }}.z);
+	     float cosPhi{{ n }} = cos(plane{{ n }}.w);
+	     float sinPhi{{ n }} = sin(plane{{ n }}.w);
+	     mat3 rotateX{{ n }} = mat3(1, 0, 0,
+					0, cosTheta{{ n }}, -sinTheta{{ n }},
+					0, sinTheta{{ n }}, cosTheta{{ n }});
+	     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
+					0, 1, 0,
+				       -sinPhi{{ n }}, 0, cosPhi{{ n }});
+	     mat3 rotation{{ n }} = rotateX{{ n }} * rotateY{{ n }};
+	     result = intersectXYRect(vec3(0, 0, plane{{ n }}.x), plane{{ n }}.y, rotation{{ n }},
 				      eye, ray, result);
 	     {% endfor %}
 	 }

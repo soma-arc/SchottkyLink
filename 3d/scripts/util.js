@@ -1,3 +1,7 @@
+radians = function(degrees) {
+    return degrees * Math.PI / 180;
+};
+
 function resizeCanvasFullscreen(canvas){
     canvas.style.width = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';

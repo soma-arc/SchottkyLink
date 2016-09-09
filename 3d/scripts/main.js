@@ -7,13 +7,39 @@ var g_spheres = [[300, 300, 0, 300],
 var g_baseSpheres = [[0, 0, 0, 125],];
 var g_numSpheres = 6;
 var g_numBaseSpheres = 1;
-var g_numPlanes = 2;
-var g_planes = [[0, 0, 300, 1200],
-		[0, 0, -300, 1200]];
-var g_numTranslations = 1;
-var g_translation = [[-300, 300, 0.]];
+
 var g_prevSphere;
 var g_renderPlane = 0;
+
+
+var g_numTransformations = 1;
+var g_transformations = [];
+// Initially planes are aligned along the z-axis
+// Rotation is defined by theta and phi
+// center is (0, 0, 0)
+var ParabolicTransformation = function(){
+    this.distToP1 = -300;
+    this.distToP2 = 300;
+    this.theta = 0; // Degree
+    this.phi = 0; // Degree
+    this.size = 1200;
+    this.rotation = 0.;
+//    this.isRenderingPlaneAtOrbitCanvas = 0;
+    // plane [distance, size, theta (Radians) , Phi (Radians) ]
+    // transformation [p1, p2, rotation]
+}
+
+ParabolicTransformation.prototype = {
+    getPlane1: function(){
+	return [this.distToP1, this.size, radians(this.theta), radians(this.phi)];
+    },
+    getPlane2: function(){
+	return [this.distToP2, this.size, radians(this.theta), radians(this.phi)];
+    },
+    getTransformation: function(){
+	return [this.distToP1, this.distToP2, this.rotation];
+    }
+}
 
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -49,7 +75,7 @@ RenderCanvas.prototype = {
 	this.canvas.height = height * this.pixelRatio;
     },
     calcPixel: function(mouseEvent){
-	var rect = event.target.getBoundingClientRect();
+	var rect = mouseEvent.target.getBoundingClientRect();
 	return [(mouseEvent.clientX - rect.left) * this.pixelRatio,
 		(mouseEvent.clientY - rect.top) * this.pixelRatio];
     },
@@ -163,22 +189,21 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						 g_numBaseSpheres,
-						 g_numPlanes,
-						 g_numTranslations,
+						 g_numTransformations,
 						 renderCanvas);
     renderCanvas.switch();
     renderCanvas.render(0);
 }
 
-function setupSchottkyProgram(numSpheres, numBaseSpheres, numPlanes, numTranslations,
+function setupSchottkyProgram(numSpheres, numBaseSpheres, numTransformations,
 			      renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
         
     var shaderStr = renderCanvas.template.render({numSpheres: numSpheres,
 						  numBaseSpheres: numBaseSpheres,
-						  numPlanes: numPlanes,
-						  numTranslations: numTranslations});
+						  numPlanes: numTransformations * 2,
+						  numTranslations: numTransformations});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -209,14 +234,16 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numPlanes, numTranslat
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'baseSphere'+ j);
     }
-    for(var k = 0 ; k < numPlanes ; k++){
+    for(var i = 0 ; i < numTransformations ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'plane'+ k);
-    }
-    for(var k = 0 ; k < numTranslations ; k++){
+						 'plane'+ i);
+
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'translation'+ k);
+						 'plane'+ (i + 1));
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'translation'+ i);
     }
+    
     uniLocation[n++] = gl.getUniformLocation(program, 'renderPlane');
     
     var position = [-1.0, 1.0, 0.0,
@@ -265,11 +292,10 @@ function setupSchottkyProgram(numSpheres, numBaseSpheres, numPlanes, numTranslat
 	for(var j = 0 ; j < numBaseSpheres ; j++){
 	    gl.uniform4fv(uniLocation[uniI++], g_baseSpheres[j]);
 	}
-	for(var k = 0 ; k < numPlanes ; k++){
-	    gl.uniform4fv(uniLocation[uniI++], g_planes[k]);
-	}
-	for(var k = 0 ; k < numTranslations ; k++){
-	    gl.uniform3fv(uniLocation[uniI++], g_translation[k]);
+	for(var i = 0 ; i < numTransformations ; i++){
+	    gl.uniform4fv(uniLocation[uniI++], g_transformations[i].getPlane1());
+	    gl.uniform4fv(uniLocation[uniI++], g_transformations[i].getPlane2());
+	    gl.uniform3fv(uniLocation[uniI++], g_transformations[i].getTransformation());
 	}
 	gl.uniform1i(uniLocation[uniI++], g_renderPlane);
 	
@@ -285,14 +311,12 @@ function updateShaders(schottkyCanvas, orbitCanvas){
     [schottkyCanvas.switch,
      schottkyCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						   g_numBaseSpheres,
-						   g_numPlanes,
-						   g_numTranslations,
+						   g_numTransformations,
 						   schottkyCanvas);
     [orbitCanvas.switch,
      orbitCanvas.render] = setupSchottkyProgram(g_numSpheres,
 						g_numBaseSpheres,
-						g_numPlanes,
-						g_numTranslations,
+						g_numTransformations,
      						orbitCanvas);
     schottkyCanvas.switch();
     orbitCanvas.switch();
@@ -333,6 +357,7 @@ function transformSphere(schottkyCanvas, orbitCanvas,
 }
 
 window.addEventListener('load', function(event){
+    g_transformations.push(new ParabolicTransformation());
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
 
@@ -489,11 +514,11 @@ window.addEventListener('load', function(event){
 	    }
 	    break;
 	case 'p':
-	    g_translation[0][2] += 1;
+	    g_transformations[0].rotation += 1;
 	    orbitCanvas.render(0);
 	    break;
 	case 'n':
-	    g_translation[0][2] -= 1;
+	    g_transformations[0].rotation -= 1;
 	    orbitCanvas.render(0);
 	    break;
 	default:
