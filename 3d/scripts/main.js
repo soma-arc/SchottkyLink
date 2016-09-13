@@ -103,7 +103,7 @@ Scene.prototype = {
 	updateShaders(schottkyCanvas, orbitCanvas);
     },
     removeSchottkySphere: function(schottkyCanvas, orbitCanvas, sphereIndex){
-	if(this.schottkySpheres.length == 1) return;
+	if(this.schottkySpheres.length == 0) return;
 	this.schottkySpheres.splice(sphereIndex, 1);
 	updateShaders(schottkyCanvas, orbitCanvas);
     },

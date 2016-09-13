@@ -301,8 +301,7 @@
 		 matColor = (g_objGroupId == selectedGroupId &&
 			     g_objId == selectedObjectIndex) ? RED : GREEN;
 	     }else if(g_objGroupId == ID_AXIS_CYLINDER){
-		 matColor = (g_objGroupId == selectedGroupId &&
-			     g_objId == selectedAxis) ? RED : WHITE;
+		 matColor = (g_objId == selectedAxis) ? RED : WHITE;
 	     }else if(g_objGroupId == ID_TRANSFORMATION){
 		 matColor = (g_objGroupId == selectedGroupId &&
 			     int(g_objId / 2) == int(selectedObjectIndex / 2))?
@@ -461,7 +460,7 @@
 	     }
 	     {% endif %}
 	     {% endfor %}
-	     {% elif numCircles == 2 %}
+	     {% elif numSpheres == 2 %}
 	     if(distance(pos, s0.xyz) < s0.w){
 		 vec3 diff = (pos - s0.xyz);
 		 dr *= s0r2 / dot(diff, diff);
@@ -475,7 +474,7 @@
 		 loopEnd = false;
 		 loopNum++;
 	     }
-	     {% else %}
+	     {% elif numSpheres == 1 %}
 	     if(distance(pos, s0.xyz) < s0.w){
 		 vec3 diff = (pos - s0.xyz);
 		 dr *= s0r2 / dot(diff, diff);
