@@ -21,6 +21,21 @@ ParabolicTransformation.prototype = {
     }
 }
 
+
+// Transformation defined by two spheres
+var TransformBySpheres = function(){
+    //[x, y, z, r]
+    this.s1 = [0, 0, 100, 100]; //kissing at origin
+    this.s2 = [0, 0, 70, 130];
+    this.s3 = sphereInvert(this.s1, this.s2);
+}
+
+TransformBySpheres.prototype = {
+    getUniformArray: function(){
+	return this.s1.concat(this.s2).concat(this.s3);
+    }
+}
+
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
@@ -80,16 +95,18 @@ RenderCanvas.prototype = {
 const ID_SCHOTTKY_SPHERE = 0;
 const ID_BASE_SPHERE = 1;
 const ID_TRANSFORMATION = 2;
+const ID_TRANSFORM_BY_SPHERES = 3;
 
 var Scene = function(){
-    this.schottkySpheres = [[300, 300, 0, 300],
-			    [300, -300, 0, 300],
-			    [-300, 300, 0, 300],
-			    [-300, -300, 0, 300],
-			    [0, 0, 424.26, 300],
-			    [0, 0, -424.26, 300]];
+    this.schottkySpheres = [];// [[300, 300, 0, 300],
+			    // [300, -300, 0, 300],
+			    // [-300, 300, 0, 300],
+			    // [-300, -300, 0, 300],
+			    // [0, 0, 424.26, 300],
+			    // [0, 0, -424.26, 300]];
     this.baseSpheres = [[0, 0, 0, 125],];
-    this.transformations = [new ParabolicTransformation()];
+    this.transformations = [];//[new ParabolicTransformation()];
+    this.transformBySpheres = [new TransformBySpheres()];
 }
 
 
@@ -117,6 +134,7 @@ Scene.prototype = {
 	obj[ID_SCHOTTKY_SPHERE] = this.schottkySpheres;
 	obj[ID_BASE_SPHERE] = this.baseSpheres;
 	obj[ID_TRANSFORMATION] = this.transformations;
+	obj[ID_TRANSFORM_BY_SPHERES] = this.transformBySpheres;
 	return obj;
     },
     getNumSchottkySpheres: function(){
@@ -127,6 +145,9 @@ Scene.prototype = {
     },
     getNumTransformations: function(){
 	return this.transformations.length;
+    },
+    getNumTransformBySpheres: function(){
+	return this.transformBySpheres.length;
     }
 }
 
@@ -242,10 +263,12 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numSpheres = scene.getNumSchottkySpheres();
     var numBaseSpheres = scene.getNumBaseSpheres();
     var numTransformations = scene.getNumTransformations();
-
+    var numTransformBySpheres = scene.getNumTransformBySpheres();
+    
     var shaderStr = renderCanvas.template.render({numSpheres: numSpheres,
 						  numBaseSpheres: numBaseSpheres,
-						  numTranslations: numTransformations});
+						  numTranslations: numTransformations,
+						  numTransformBySpheres: numTransformBySpheres});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -281,6 +304,10 @@ function setupSchottkyProgram(scene, renderCanvas){
     for(var i = 0 ; i < numTransformations ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'transformation'+ i);
+    }
+    for(var i = 0 ; i < numTransformBySpheres ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'transformBySpheres'+ i);
     }
     
     uniLocation[n++] = gl.getUniformLocation(program, 'renderPlane');
@@ -334,6 +361,9 @@ function setupSchottkyProgram(scene, renderCanvas){
 	}
 	for(var i = 0 ; i < numTransformations ; i++){
 	    gl.uniform1fv(uniLocation[uniI++], scene.transformations[i].getTransformation());
+	}
+	for(var i = 0 ; i < numTransformBySpheres ; i++){
+	    gl.uniform1fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
 	}
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.isRenderingPlaneOnOrbitCanvas);
 	
@@ -468,6 +498,21 @@ window.addEventListener('load', function(event){
     schottkyCanvas.canvas.addEventListener('mouseup', function(){
 	orbitCanvas.isMousePressing = false;
 	orbitCanvas.isRendering = false;
+	if(schottkyCanvas.selectedGroupId == ID_BASE_SPHERE){
+	    schottkyCanvas.prevSphere = g_scene.baseSpheres[schottkyCanvas.selectedObjectIndex].slice(0);
+	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevSphere.slice(0, 3),
+							      schottkyCanvas.eye, schottkyCanvas.target,
+							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.canvas.width,
+							      schottkyCanvas.canvas.height);
+	}else if(schottkyCanvas.selectedGroupId == ID_SCHOTTKY_SPHERE){
+	    schottkyCanvas.prevSphere = g_scene.schottkySpheres[schottkyCanvas.selectedObjectIndex].slice(0);
+	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevSphere.slice(0, 3),
+							      schottkyCanvas.eye, schottkyCanvas.target,
+							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.canvas.width,
+							      schottkyCanvas.canvas.height);
+	}
     });
     schottkyCanvas.canvas.addEventListener('dblclick', function(){
 	var groupId = schottkyCanvas.selectedGroupId;
@@ -500,7 +545,6 @@ window.addEventListener('load', function(event){
 		schottkyCanvas.selectedAxis = 0;
 		schottkyCanvas.render(0);
 	    }
-
 	    break;
 	case 'x':
 	    if(schottkyCanvas.selectedAxis != 1){

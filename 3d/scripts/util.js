@@ -2,6 +2,67 @@ radians = function(degrees) {
     return degrees * Math.PI / 180;
 };
 
+function makeSphereFromPoints(p1, p2, p3, p4){
+    var p = [p1, p2, p3, p4];
+    var coefficient =[[], [], []];
+    for(var i = 0 ; i < 3 ; i++){
+	coefficient[i][0] = 2 * (p[i + 1][0] - p[i][0]);
+	coefficient[i][1] = 2 * (p[i + 1][1] - p[i][1]);
+	coefficient[i][2] = 2 * (p[i + 1][2] - p[i][2]);
+	coefficient[i][3] = -(Math.pow(p[i][0], 2) + Math.pow(p[i][1], 2) + Math.pow(p[i][2], 2))+
+	    Math.pow(p[i + 1][0], 2) + Math.pow(p[i + 1][1], 2) + Math.pow(p[i + 1][2], 2);
+    }
+
+    var pibot, d;
+    for (var k = 0 ; k < 3 ; k++) {
+	pibot = coefficient[k][k];
+	//    if(pibot == 0) console.log("0 pibot");
+	for (var j = k; j < 3 + 1; j++) {
+	    coefficient[k][j] = coefficient[k][j] / pibot;
+	}
+	for (var i = 0 ; i < 3 ; i++) {
+	    if (k != i) {
+  		d = coefficient[i][k];
+		for (var j = k; j < 3 + 1; j++) {
+  		    coefficient[i][j] = coefficient[i][j] - d * coefficient[k][j];
+		}
+	    }
+	}
+    }
+
+    var center = [coefficient[0][3], coefficient[1][3], coefficient[2][3]];
+    var r = vecLength(diff(center, p1));
+    return center.concat([r]);
+}
+
+var RT_3 = Math.sqrt(3);
+function sphereInvert(invertSphere, genSphere){
+    var [x, y, z, r] = invertSphere;
+    coeffR = r * RT_3 / 3;
+    var p1 = sphereInvertOnPoint([x + coeffR,
+				  y + coeffR,
+				  z + coeffR], genSphere);
+    var p2 = sphereInvertOnPoint([x - coeffR,
+				  y - coeffR,
+				  z - coeffR], genSphere);
+    var p3 = sphereInvertOnPoint([x + coeffR,
+				  y - coeffR,
+				  z - coeffR], genSphere);
+    var p4 = sphereInvertOnPoint([x + coeffR,
+				  y + coeffR,
+				  z - coeffR], genSphere);
+    return makeSphereFromPoints(p1, p2, p3, p4);
+}
+
+function sphereInvertOnPoint(p, s){
+    var sphereC = s.slice(0, 3);
+    var r2 = s[3] * s[3];
+    var d = diff(p, sphereC);
+    var len = vecLength(d);
+    return sum(scale(d, r2 / (len * len)),
+	       sphereC);
+}
+
 function resizeCanvasFullscreen(canvas){
     canvas.style.width = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';
