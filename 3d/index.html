@@ -65,10 +65,12 @@
      {% endfor %}
      
      {% for n in range(0, numTransformBySpheres) %}
-     //[s1x, s1y, s1z, s1r, s2x, s2y, s2z, s2r, s3x, s3y, s3z, s3r]
+     //[innerSphere.x, innerSphere.y, innerSphere.z, innerSphere.r,
+     // outerSphere.x, outerSphere.y, outerSphere.z, outerSphere.r,
+     // invertedSphere.x, invertedSphere.y, invertedSphere.z, invertedSphere.r]
      uniform float transformBySpheres{{ n }}[12];
      {% endfor %}
-     
+
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
 	 vec2 seed = co * (sampleIndex + 1.0);
@@ -81,8 +83,7 @@
      const int ID_SCHOTTKY_SPHERE = 0;
      const int ID_BASE_SPHERE = 1;
      const int ID_TRANSFORMATION = 2;
-     const int ID_TRANSPARENT_SPHERE = 3;
-     const int ID_TRANSFORM_BY_SPHERES = 4;
+     const int ID_TRANSFORM_BY_SPHERES = 3;
 
      const int ID_AXIS_CYLINDER = 100;
      
@@ -242,6 +243,8 @@
      const vec3 GREEN = vec3(0, 1, 0);
      const vec3 BLUE = vec3(0, 0, 1);
      const vec3 YELLOW = vec3(1, 1, 0);
+     const vec3 PINK = vec3(1, 0, 1);
+     const vec3 LIGHT_BLUE = vec3(0, 1, 1);
      float transparency = 0.8;
      vec3 calcColor(vec3 eye, vec3 ray){
 	 vec3 l = BLACK;
@@ -311,6 +314,24 @@
 					   transformBySpheres{{ n }}[6]),
 				      transformBySpheres{{ n }}[7],
 				      eye, ray, result);
+	     if(selectedGroupId == ID_TRANSFORM_BY_SPHERES &&
+		selectedObjectIndex == {{ n * 3 + 1 }}){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, 0, MTL_DIFFUSE,
+					      10., vec3(transformBySpheres{{ n }}[4],
+							transformBySpheres{{ n }}[5],
+							transformBySpheres{{ n }}[6]),
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, 1, MTL_DIFFUSE,
+					      10., vec3(transformBySpheres{{ n }}[4],
+							transformBySpheres{{ n }}[5],
+							transformBySpheres{{ n }}[6]),
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, 2, MTL_DIFFUSE,
+					      10., vec3(transformBySpheres{{ n }}[4],
+							transformBySpheres{{ n }}[5],
+							transformBySpheres{{ n }}[6]),
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n * 3 + 2}} , MTL_TRANSPARENT,
 				      vec3(transformBySpheres{{ n }}[8],
 					   transformBySpheres{{ n }}[9],
@@ -335,9 +356,11 @@
 			     int(g_objId / 2) == int(selectedObjectIndex / 2))?
 			    RED : BLUE;
 	     }else if(g_objGroupId == ID_TRANSFORM_BY_SPHERES){
-		 matColor = (mod( float(g_objId), 3.) == 1.) ? YELLOW : WHITE;
+		 matColor = (mod( float(g_objId), 3.) == 0.) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+		 matColor = (mod( float(g_objId), 3.) == 1.) ? YELLOW : matColor;
+		 matColor = (g_objGroupId == selectedGroupId &&
+			     g_objId == selectedObjectIndex) ? RED : matColor;
 	     }
-  	     
   	     if(result.x != 99999.){
     		 vec3 intersection = eye + ray * result.x;
 		 vec3 normal = result.yzw;
@@ -475,6 +498,48 @@
 	     if(i >= numIterations) break;
 	     loopEnd = true;
 
+	     {% for n in range(0,  numTransformBySpheres ) %}
+	     vec4 s0{{ n }} = vec4(transformBySpheres{{ n }}[0],
+				   transformBySpheres{{ n }}[1],
+				   transformBySpheres{{ n }}[2],
+				   transformBySpheres{{ n }}[3]);
+	     vec4 s1{{ n }} = vec4(transformBySpheres{{ n }}[4],
+				   transformBySpheres{{ n }}[5],
+				   transformBySpheres{{ n }}[6],
+				   transformBySpheres{{ n }}[7]);
+	     vec4 s2{{ n }} = vec4(transformBySpheres{{ n }}[8],
+				   transformBySpheres{{ n }}[9],
+				   transformBySpheres{{ n }}[10],
+				   transformBySpheres{{ n }}[11]);
+	     if(distance(pos, s0{{ n }}.xyz) < s0{{ n }}.w){
+		 vec3 diff0 = (pos - s0{{ n }}.xyz);
+		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
+		 dr *= s0r2 / dot(diff0, diff0);
+		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
+
+		 vec3 diff1 = (pos - s1{{ n }}.xyz);
+		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
+		 dr *= s1r2 / dot(diff1, diff1);
+		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
+		 
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, s2{{ n }}.xyz) >= s2{{ n }}.w){
+		 vec3 diff1 = (pos - s1{{ n }}.xyz);
+		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
+		 dr *= s1r2 / dot(diff1, diff1);
+		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
+
+		 vec3 diff0 = (pos - s0{{ n }}.xyz);
+		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
+		 dr *= s0r2 / dot(diff0, diff0);
+		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
+
+		 loopEnd = false;
+		 loopNum++;
+	     }
+	     {% endfor %}
+	     
 	     {% if numSpheres > 2 %}
 	     {% for n  in range(0,  numSpheres ) %}
 	     {% if n == 0 %}
@@ -536,47 +601,7 @@
 	     }
 	     {% endfor %}
 
-	     {% for n in range(0,  numTransformBySpheres ) %}
-	     vec4 s0{{ n }} = vec4(transformBySpheres{{ n }}[0],
-				   transformBySpheres{{ n }}[1],
-				   transformBySpheres{{ n }}[2],
-				   transformBySpheres{{ n }}[3]);
-	     vec4 s1{{ n }} = vec4(transformBySpheres{{ n }}[4],
-				   transformBySpheres{{ n }}[5],
-				   transformBySpheres{{ n }}[6],
-				   transformBySpheres{{ n }}[7]);
-	     vec4 s2{{ n }} = vec4(transformBySpheres{{ n }}[8],
-				   transformBySpheres{{ n }}[9],
-				   transformBySpheres{{ n }}[10],
-				   transformBySpheres{{ n }}[11]);
-	     if(distance(pos, s0{{ n }}.xyz) < s0{{ n }}.w){
-		 vec3 diff0 = (pos - s0{{ n }}.xyz);
-		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
-		 dr *= s0r2 / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
 
-		 vec3 diff1 = (pos - s1{{ n }}.xyz);
-		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
-		 dr *= s1r2 / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
-		 
-		 loopEnd = false;
-		 loopNum++;
-	     }else if(distance(pos, s2{{ n }}.xyz) >= s2{{ n }}.w){
-		 vec3 diff1 = (pos - s1{{ n }}.xyz);
-		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
-		 dr *= s1r2 / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
-
-		 vec3 diff0 = (pos - s0{{ n }}.xyz);
-		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
-		 dr *= s0r2 / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
-
-		 loopEnd = false;
-		 loopNum++;
-	     }
-	     {% endfor %}
 	     
 	     if(loopEnd == true) break;
 	 }

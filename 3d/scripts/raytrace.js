@@ -347,6 +347,18 @@ function getIntersectedObject(eye, ray, objects){
 					 transformation.rotationMat3,
 					 eye, ray, result);
 	    }
+	}else if(groupId == ID_TRANSFORM_BY_SPHERES){
+	    for(var i = 0 ; i <  objects[groupId].length ; i++){
+		var transformation = objects[groupId][i];
+		var innerSphere = transformation.inner;
+		var outerSphere = transformation.outer;
+		//ignore innerSphere
+		result = intersectSphere(groupId, i * 3 + 1,
+					 outerSphere.slice(0, 3),
+					 outerSphere[3],
+					 eye, ray, result);
+		//ignore invertedSphere
+	    }
 	}
     }
 

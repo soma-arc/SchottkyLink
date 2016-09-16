@@ -24,15 +24,25 @@ ParabolicTransformation.prototype = {
 
 // Transformation defined by two spheres
 var TransformBySpheres = function(){
-    //[x, y, z, r]
-    this.s1 = [0, 0, 100, 100]; //kissing at origin
-    this.s2 = [0, 0, 70, 130];
-    this.s3 = sphereInvert(this.s1, this.s2);
+    // [x, y, z, r]
+    this.inner = [0, 0, 1000, 500]; // kissing at origin
+    this.outer = [0, 0, 900, 600];
+    this.inverted = sphereInvert(this.inner, this.outer);
 }
 
 TransformBySpheres.prototype = {
     getUniformArray: function(){
-	return this.s1.concat(this.s2).concat(this.s3);
+	return this.inner.concat(this.outer).concat(this.inverted);
+    },
+    clone: function(){
+	var obj = new TransformBySpheres();
+	obj.inner = this.inner.slice(0);
+	obj.outer = this.outer.slice(0);
+	obj.inverted = this.inverted.slice(0);
+	return obj;
+    },
+    update: function(){
+	this.inverted = sphereInvert(this.inner, this.outer);
     }
 }
 
@@ -67,6 +77,7 @@ var RenderCanvas = function(canvasId, templateId){
 
     this.sphereCenterOnScreen;
     this.prevSphere;
+    this.prevObject;
 }
 
 RenderCanvas.prototype = {
@@ -98,15 +109,15 @@ const ID_TRANSFORMATION = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 
 var Scene = function(){
-    this.schottkySpheres = [];// [[300, 300, 0, 300],
-			    // [300, -300, 0, 300],
-			    // [-300, 300, 0, 300],
-			    // [-300, -300, 0, 300],
-			    // [0, 0, 424.26, 300],
-			    // [0, 0, -424.26, 300]];
+    this.schottkySpheres =  [[300, 300, 0, 300],
+			     [300, -300, 0, 300],
+			     [-300, 300, 0, 300],
+			     [-300, -300, 0, 300],
+			     [0, 0, 424.26, 300],
+			     [0, 0, -424.26, 300]];
     this.baseSpheres = [[0, 0, 0, 125],];
     this.transformations = [];//[new ParabolicTransformation()];
-    this.transformBySpheres = [new TransformBySpheres()];
+    this.transformBySpheres =  [new TransformBySpheres()];
 }
 
 
@@ -198,12 +209,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 		renderCanvas.pressingKey == 'x' ||
 		renderCanvas.pressingKey == 'c' ||
 		renderCanvas.pressingKey == 's' ) &&
-	       (renderCanvas.selectedGroupId == ID_SCHOTTKY_SPHERE ||
-		renderCanvas.selectedGroupId == ID_BASE_SPHERE)){
-		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevSphere.slice(0, 3),
-								renderCanvas.eye, renderCanvas.target,
-								renderCanvas.up, renderCanvas.fovDegree,
-								canvas.width, canvas.height);
+	       (renderCanvas.selectedGroupId != -1)){
 		return;
 	    }
 	    var ray = calcRay(renderCanvas.eye, renderCanvas.target,
@@ -227,6 +233,12 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 		// Schottky Sphere
 		renderCanvas.prevSphere = g_scene.schottkySpheres[renderCanvas.selectedObjectIndex].slice(0);
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevSphere.slice(0, 3),
+								renderCanvas.eye, renderCanvas.target,
+								renderCanvas.up, renderCanvas.fovDegree,
+								canvas.width, canvas.height);
+	    }else if(renderCanvas.selectedGroupId == ID_TRANSFORM_BY_SPHERES){
+		renderCanvas.prevObject = g_scene.transformBySpheres[parseInt(renderCanvas.selectedObjectIndex/3)].clone();
+		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevObject.outer.slice(0, 3),
 								renderCanvas.eye, renderCanvas.target,
 								renderCanvas.up, renderCanvas.fovDegree,
 								canvas.width, canvas.height);
@@ -492,6 +504,97 @@ window.addEventListener('load', function(event){
 		    orbitCanvas.isRendering = true;
 		    break;
 		}
+	    }else if(groupId == ID_TRANSFORM_BY_SPHERES){
+		var transform = g_scene.getObjects()[groupId][parseInt(index / 3)];
+		var operateSphere = transform.outer;
+		var prevInnerSphere = schottkyCanvas.prevObject.inner;
+		var prevOuterSphere = schottkyCanvas.prevObject.outer;
+		var diffSphere = diff(prevInnerSphere.slice(0, 3),
+				      prevOuterSphere.slice(0, 3));
+		[px, py] = schottkyCanvas.calcPixel(event);
+		var dx = px - schottkyCanvas.prevMousePos[0];
+		var dy = py - schottkyCanvas.prevMousePos[1];
+		switch (schottkyCanvas.pressingKey){
+		case 'z':
+		    var v = schottkyCanvas.axisVecOnScreen[0];
+		    var lengthOnAxis = v[0] * dx + v[1] * dy; //dot
+		    var p = calcCoordOnAxis(schottkyCanvas.eye,
+					    schottkyCanvas.target,
+					    schottkyCanvas.up,
+					    schottkyCanvas.fovDegree,
+					    schottkyCanvas.canvas.width,
+					    schottkyCanvas.canvas.height,
+					    0, v, schottkyCanvas.prevObject.outer.slice(0, 3),
+					    lengthOnAxis);
+		    operateSphere[0] = p[0];
+		    transform.inner[0] = p[0] + diffSphere[0];
+		    transform.update();
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
+		    break;
+		case 'x':
+		    var v = schottkyCanvas.axisVecOnScreen[1];
+		    var lengthOnAxis = v[0] * dx + v[1] * dy;
+		    var p = calcCoordOnAxis(schottkyCanvas.eye,
+					    schottkyCanvas.target,
+					    schottkyCanvas.up,
+					    schottkyCanvas.fovDegree,
+					    schottkyCanvas.canvas.width,
+					    schottkyCanvas.canvas.height,
+					    1, v, schottkyCanvas.prevObject.outer.slice(0, 3),
+					    lengthOnAxis);
+		    operateSphere[1] = p[1];
+		    transform.inner[1] = p[1] + diffSphere[1];
+		    transform.update();
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
+		    break;
+		case 'c':
+		    var v = schottkyCanvas.axisVecOnScreen[2];
+		    var lengthOnAxis = v[0] * dx + v[1] * dy;
+		    var p = calcCoordOnAxis(schottkyCanvas.eye,
+					    schottkyCanvas.target,
+					    schottkyCanvas.up,
+					    schottkyCanvas.fovDegree,
+					    schottkyCanvas.canvas.width,
+					    schottkyCanvas.canvas.height,
+					    2, v, schottkyCanvas.prevObject.outer.slice(0, 3),
+					    lengthOnAxis);
+		    operateSphere[2] = p[2];
+		    transform.inner[2] = p[2] + diffSphere[2];
+		    transform.update();
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
+		    break;
+		case 's':
+		    var v = schottkyCanvas.axisVecOnScreen[0];
+		    var lengthOnAxis = v[0] * dx + v[1] * dy; //dot
+
+		    var spherePosOnScreen = calcPointOnScreen(schottkyCanvas.prevObject.outer.slice(0, 3),
+							      schottkyCanvas.eye,
+							      schottkyCanvas.target,
+							      schottkyCanvas.up,
+							      schottkyCanvas.fovDegree,
+							      schottkyCanvas.canvas.width,
+							      schottkyCanvas.canvas.height);
+		    var diffSphereAndPrevMouse = [spherePosOnScreen[0] - schottkyCanvas.prevMousePos[0],
+						  spherePosOnScreen[1] - schottkyCanvas.prevMousePos[1]];
+		    var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+				      diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+		    var diffSphereAndMouse = [spherePosOnScreen[0] - px,
+					      spherePosOnScreen[1] - py];
+		    var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+						diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+		    var d = distToMouse - r;
+
+		    //TODO: calculate tangent sphere
+		    operateSphere[3] = schottkyCanvas.prevObject.outer[3] + d * 3;
+		    transform.inner[2] = prevInnerSphere[2] +  d * 3;
+		    transform.update();
+		    schottkyCanvas.isRendering = true;
+		    orbitCanvas.isRendering = true;
+		    break;
+		}
 	    }
 	}
     });
@@ -508,6 +611,13 @@ window.addEventListener('load', function(event){
 	}else if(schottkyCanvas.selectedGroupId == ID_SCHOTTKY_SPHERE){
 	    schottkyCanvas.prevSphere = g_scene.schottkySpheres[schottkyCanvas.selectedObjectIndex].slice(0);
 	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevSphere.slice(0, 3),
+							      schottkyCanvas.eye, schottkyCanvas.target,
+							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.canvas.width,
+							      schottkyCanvas.canvas.height);
+	}else if(schottkyCanvas.selectedGroupId == ID_TRANSFORM_BY_SPHERES){
+	    schottkyCanvas.prevObject = g_scene.transformBySpheres[parseInt(schottkyCanvas.selectedObjectIndex/3)].clone();
+	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevObject.outer.slice(0, 3),
 							      schottkyCanvas.eye, schottkyCanvas.target,
 							      schottkyCanvas.up, schottkyCanvas.fovDegree,
 							      schottkyCanvas.canvas.width,
