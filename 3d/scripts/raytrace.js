@@ -338,8 +338,8 @@ function getIntersectedObject(eye, ray, objects){
 		var outerSphere = transformation.outer;
 		//ignore innerSphere
 		result = intersectSphere(groupId, i * 3 + 1,
-					 outerSphere.slice(0, 3),
-					 outerSphere[3],
+					 outerSphere.getPosition(),
+					 outerSphere.r,
 					 eye, ray, result);
 		//ignore invertedSphere
 	    }

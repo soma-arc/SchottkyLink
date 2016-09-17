@@ -32,12 +32,13 @@ function makeSphereFromPoints(p1, p2, p3, p4){
 
     var center = [coefficient[0][3], coefficient[1][3], coefficient[2][3]];
     var r = vecLength(diff(center, p1));
-    return center.concat([r]);
+    return new Sphere(center[0], center[1], center[2], r);
 }
 
 var RT_3 = Math.sqrt(3);
 function sphereInvert(invertSphere, genSphere){
-    var [x, y, z, r] = invertSphere;
+    var [x, y, z] = invertSphere.getPosition();
+    var r = invertSphere.r;
     coeffR = r * RT_3 / 3;
     var p1 = sphereInvertOnPoint([x + coeffR,
 				  y + coeffR,
@@ -55,8 +56,8 @@ function sphereInvert(invertSphere, genSphere){
 }
 
 function sphereInvertOnPoint(p, s){
-    var sphereC = s.slice(0, 3);
-    var r2 = s[3] * s[3];
+    var sphereC = s.getPosition();
+    var r2 = s.r * s.r;
     var d = diff(p, sphereC);
     var len = vecLength(d);
     return sum(scale(d, r2 / (len * len)),
