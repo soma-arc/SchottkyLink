@@ -304,22 +304,6 @@ function intersectXYRect (groupId, id,
     return isect;
 }
 
-function trace(eye, ray, spheres){
-    var result = [99999, 99999, 99999, 99999];
-    var l = spheres.length;
-    for(let i = 0 ; i < l ; i++){
-	result = intersectSphere(0, i,
-				 spheres[i].slice(0, 3),
-				 spheres[i][3],
-				 eye, ray, result);
-    }
-    if(result[0] != 99999){
-	return result[2];
-    }
-    return -1;
-}
-
-
 function getIntersectedObject(eye, ray, objects){
     var result = [99999999, -1, -1];
     for(groupId in Object.keys(objects)){
@@ -329,8 +313,8 @@ function getIntersectedObject(eye, ray, objects){
 	    for(var i = 0 ; i < objects[groupId].length ; i++){
 		var sphere = objects[groupId][i];
 		result = intersectSphere(groupId, i,
-					 sphere.slice(0, 3),
-					 sphere[3],
+					 sphere.getPosition(),
+					 sphere.r,
 					 eye, ray, result);
 	    }
 	}else if(groupId == ID_TRANSFORMATION){
