@@ -137,6 +137,27 @@ TransformBySpheres.prototype = {
     }
 }
 
+var Camera = function(target, fovDegree, eyeDist, up){
+    this.target = target;
+    this.fovDegree = fovDegree;
+    this.eyeDist = eyeDist;
+    this.up = up;
+    this.theta = 0;
+    this.phi = 0;
+    this.position;
+    this.update();
+}
+
+// Camera is on the sphere which its center is target and radius is eyeDist.
+// Position is defined by two angle, theta and phi.
+Camera.prototype = {    
+    update: function(){
+	this.position = [this.eyeDist * Math.cos(this.phi) * Math.cos(this.theta),
+			 this.eyeDist * Math.sin(this.phi),
+			 -this.eyeDist * Math.cos(this.phi) * Math.sin(this.theta)];
+    }
+}
+
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
@@ -149,6 +170,7 @@ var RenderCanvas = function(canvasId, templateId){
     this.theta = 0;
     this.phi = 0;
     this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
+    this.camera = new Camera([0, 0, 0], 60, 1500, [0, 1, 0]);
 
     this.selectedGroupId = -1;
     this.selectedObjectIndex = -1;
