@@ -283,7 +283,7 @@ function calcPointOnScreen(point, camera,
      	    dot(pv, focalYAxis)];
 }
 
-function intersectSphere(groupId, id, center, radius,
+function intersectSphere(objectId, objectIndex, componentId, center, radius,
 			 rayOrigin, rayDir, isect){
     var v = diff(rayOrigin, center);
     var b = dot(rayDir, v);
@@ -295,13 +295,13 @@ function intersectSphere(groupId, id, center, radius,
 	if(t <= RAYTRACE_EPSILON) t = -b + s;
 	if(RAYTRACE_EPSILON < t && t < isect[0]){
 //	    var p = sum(rayOrigin, scale(rayDir, t));
-	    return [t, groupId, id];
+	    return [t, objectId, objectIndex, componentId];
 	}
     }
     return isect;
 }
 
-function intersectXYRect (groupId, id,
+function intersectXYRect (objectId, objectIndex, componentId,
 			  distFromOrigin, size, rotationMat3,
 			  rayOrigin, rayDir, isect) {
     rayOrigin = applyMat3(rayOrigin, rotationMat3);
@@ -312,7 +312,7 @@ function intersectXYRect (groupId, id,
     	var p = sum(rayOrigin, scale(rayDir, t));
         if(-hSize < p[0] && p[0] < hSize &&
 	   -hSize < p[1] && p[1] < hSize ){
-            return [t, groupId, id];
+            return [t, objectId, objectIndex, componentId];
         }
     }
     return isect;
@@ -320,45 +320,47 @@ function intersectXYRect (groupId, id,
 
 function getIntersectedObject(eye, ray, objects){
     var result = [99999999, -1, -1];
-    for(groupId in Object.keys(objects)){
-	groupId = parseInt(groupId);
-	if(groupId == ID_SCHOTTKY_SPHERE ||
-	   groupId == ID_BASE_SPHERE){
-	    for(var i = 0 ; i < objects[groupId].length ; i++){
-		var sphere = objects[groupId][i];
-		result = intersectSphere(groupId, i,
+    for(objectId in Object.keys(objects)){
+	objectId = parseInt(objectId);
+	if(objectId == ID_SCHOTTKY_SPHERE ||
+	   objectId == ID_BASE_SPHERE){
+	    for(var i = 0 ; i < objects[objectId].length ; i++){
+		var sphere = objects[objectId][i];
+		result = intersectSphere(objectId, i, 0,
 					 sphere.getPosition(),
 					 sphere.r,
 					 eye, ray, result);
 	    }
-	}else if(groupId == ID_TRANSFORMATION){
-	    for(var i = 0 ; i <  objects[groupId].length ; i++){
-		var transformation = objects[groupId][i];
-		result = intersectXYRect(groupId, i * 2,
+	}else if(objectId == ID_TRANSFORMATION){
+	    for(var i = 0 ; i <  objects[objectId].length ; i++){
+		var transformation = objects[objectId][i];
+		result = intersectXYRect(objectId, i, 0,
 					 transformation.distToP1,
 					 transformation.size,
 					 transformation.rotationMat3,
 					 eye, ray, result);
-		result = intersectXYRect(groupId, i * 2 + 1,
+		result = intersectXYRect(objectId, i, 1,
 					 transformation.distToP2,
 					 transformation.size,
 					 transformation.rotationMat3,
 					 eye, ray, result);
 	    }
-	}else if(groupId == ID_TRANSFORM_BY_SPHERES){
-	    for(var i = 0 ; i <  objects[groupId].length ; i++){
-		var transformation = objects[groupId][i];
+	}else if(objectId == ID_TRANSFORM_BY_SPHERES){
+	    for(var i = 0 ; i <  objects[objectId].length ; i++){
+		var transformation = objects[objectId][i];
 		var innerSphere = transformation.inner;
 		var outerSphere = transformation.outer;
-		//ignore innerSphere
-		result = intersectSphere(groupId, i * 3 + 1,
+		//ignore innerSphere componentId = 0
+		//
+		result = intersectSphere(objectId, i, 1,
 					 outerSphere.getPosition(),
 					 outerSphere.r,
 					 eye, ray, result);
-		//ignore invertedSphere
+		//ignore invertedSphere componentId = 1
+		//
 	    }
 	}
     }
 
-    return result.slice(1, 3);
+    return result.slice(1, 4);
 }

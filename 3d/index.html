@@ -31,8 +31,9 @@
      precision mediump float;
      uniform vec2 iResolution;
      uniform float iGlobalTime;
-     uniform int selectedGroupId;
+     uniform int selectedObjectId;
      uniform int selectedObjectIndex;
+     uniform int selectedComponentId;
      uniform int selectedAxis;
      uniform vec3 eye;
      uniform vec3 up;
@@ -94,11 +95,12 @@
      const int MTL_DIFFUSE = 0;
      const int MTL_TRANSPARENT = 1;
      int g_mtl = MTL_DIFFUSE;
-     int g_objGroupId = -1;
      int g_objId = -1;
+     int g_objIndex = -1;
+     int g_objComponentId = -1;
      bool g_isHit = false;
 
-     vec4 intersectSphere(int objGroupId, int objId, int mtl,
+     vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
 			  vec3 sphereCenter, float radius, 
 			  vec3 rayOrigin, vec3 rayDir, vec4 isect){
 	 g_isHit = false;
@@ -112,8 +114,9 @@
              if(t <= EPSILON) t = -b + s;
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
-		 g_objGroupId = objGroupId;
 		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
 		 return vec4(t, normalize(p - sphereCenter));
@@ -122,7 +125,7 @@
 	 return isect;
      }
 
-     vec4 intersectXYCylinder(int objGroupId, int objId, int mtl,
+     vec4 intersectXYCylinder(int objId, int objIndex, int objComponentId, int mtl,
 			      float r, vec3 center,
 			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
 	 g_isHit = false;
@@ -137,8 +140,9 @@
              if(t <= EPSILON) t = (-b + s) / (2. * a);
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
-		 g_objGroupId = objGroupId;
 		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
 		 return vec4(t, normalize(vec3(p.xy, 0)));
@@ -147,7 +151,7 @@
 	 return isect;
      }
 
-     vec4 intersectYZCylinder(int objGroupId, int objId, int mtl,
+     vec4 intersectYZCylinder(int objId, int objIndex, int objComponentId, int mtl,
 			      float r, vec3 center,
 			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
 	 g_isHit = false;
@@ -162,8 +166,9 @@
              if(t <= EPSILON) t = (-b + s) / (2. * a);
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
-		 g_objGroupId = objGroupId;
 		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
 		 return vec4(t, normalize(vec3(0, p.yz)));
@@ -172,7 +177,7 @@
 	 return isect;
      }
 
-     vec4 intersectXZCylinder(int objGroupId, int objId, int mtl,
+     vec4 intersectXZCylinder(int objId, int objIndex, int objComponentId, int mtl,
 			      float r, vec3 center,
 			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
 	 g_isHit = false;
@@ -187,8 +192,9 @@
              if(t <= EPSILON) t = (-b + s) / (2. * a);
              if(EPSILON < t && t < isect.x){
 		 vec3 p = (rayOrigin + t * rayDir);
-		 g_objGroupId = objGroupId;
 		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
 		 return vec4(t, normalize(vec3(p.x, 0, p.z)));
@@ -197,7 +203,7 @@
 	 return isect;
      }
 
-     vec4 intersectXYRect (int objGroupId, int objId, int mtl,
+     vec4 intersectXYRect (int objId, int objIndex, int objComponentId, int mtl,
 			   vec3 center, float size, mat3 rotation,
 			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
@@ -210,8 +216,9 @@
     	     vec3 p = rayOrigin + t * rayDir;
              if(p1.x < p.x && p.x < p2.x &&
 		p1.y < p.y && p.y < p2.y ){
-		 g_objGroupId = objGroupId;
 		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
         	 return vec4(t, vec3(0, 0, 1) * rotation);
@@ -253,48 +260,48 @@
 	     vec4 result = vec4(99999.);
 	     
 	     {% for n  in range(0,  numSpheres ) %}
-	     result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, MTL_DIFFUSE,
+	     result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
 				      s{{ n }}.xyz, s{{ n }}.w, eye, ray, result);
 
-	     if(selectedGroupId == ID_SCHOTTKY_SPHERE &&
+	     if(selectedObjectId == ID_SCHOTTKY_SPHERE &&
 		selectedObjectIndex == {{ n }}){
-		 result = intersectYZCylinder(ID_AXIS_CYLINDER, 0, MTL_DIFFUSE,
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
 					      10., s{{ n }}.xyz,
 					      eye, ray, result);
 		 
-		 result = intersectXZCylinder(ID_AXIS_CYLINDER, 1, MTL_DIFFUSE,
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
 					      10., s{{ n }}.xyz,
 					      eye, ray, result);
-		 result = intersectXYCylinder(ID_AXIS_CYLINDER, 2, MTL_DIFFUSE,
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
 					      10., s{{ n }}.xyz,
 					      eye, ray, result);
 	     }
 	     {% endfor %}
 
 	     {% for n in range(0,  numBaseSpheres ) %}
-	     result = intersectSphere(ID_BASE_SPHERE, {{ n }}, MTL_DIFFUSE,
+	     result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
 				      baseSphere{{ n }}.xyz, baseSphere{{ n }}.w, eye, ray, result);
 	     
-	     if(selectedGroupId == ID_BASE_SPHERE &&
+	     if(selectedObjectId == ID_BASE_SPHERE &&
 		selectedObjectIndex == {{ n }}){
-		 result = intersectYZCylinder(ID_AXIS_CYLINDER, 0, MTL_DIFFUSE,
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
 					      10., baseSphere{{ n }}.xyz,
 					      eye, ray, result);
-		 result = intersectXZCylinder(ID_AXIS_CYLINDER, 1, MTL_DIFFUSE,
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
 					      10., baseSphere{{ n }}.xyz,
 					      eye, ray, result);
-		 result = intersectXYCylinder(ID_AXIS_CYLINDER, 2, MTL_DIFFUSE,
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
 					      10., baseSphere{{ n }}.xyz,
 					      eye, ray, result);
 	     }
 	     {% endfor %}
 
 	     {% for n in range(0,  numTranslations ) %}
-	     result = intersectXYRect(ID_TRANSFORMATION, {{ n * 2 }}, MTL_DIFFUSE,
+	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[0]),
 				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
 				      eye, ray, result);
-	     result = intersectXYRect(ID_TRANSFORMATION, {{ n * 2 + 1}}, MTL_DIFFUSE,
+	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[1]),
 				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
 				      eye, ray, result);
@@ -302,37 +309,38 @@
 	     {% endfor %}
 
 	     {% for n in range(0, numTransformBySpheres) %}
-	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, MTL_TRANSPARENT,
+	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
 				      vec3(transformBySpheres{{ n }}[0],
 					   transformBySpheres{{ n }}[1],
 					   transformBySpheres{{ n }}[2]),
 				      transformBySpheres{{ n }}[3],
 				      eye, ray, result);
-	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n * 3 + 1}} , MTL_TRANSPARENT,
+	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
 				      vec3(transformBySpheres{{ n }}[4],
 					   transformBySpheres{{ n }}[5],
 					   transformBySpheres{{ n }}[6]),
 				      transformBySpheres{{ n }}[7],
 				      eye, ray, result);
-	     if(selectedGroupId == ID_TRANSFORM_BY_SPHERES &&
-		selectedObjectIndex == {{ n * 3 + 1 }}){
-		 result = intersectYZCylinder(ID_AXIS_CYLINDER, 0, MTL_DIFFUSE,
+	     if(selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
+		selectedObjectIndex == {{ n }} &&
+		selectedComponentId == 1){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
 					      10., vec3(transformBySpheres{{ n }}[4],
 							transformBySpheres{{ n }}[5],
 							transformBySpheres{{ n }}[6]),
 					      eye, ray, result);
-		 result = intersectXZCylinder(ID_AXIS_CYLINDER, 1, MTL_DIFFUSE,
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
 					      10., vec3(transformBySpheres{{ n }}[4],
 							transformBySpheres{{ n }}[5],
 							transformBySpheres{{ n }}[6]),
 					      eye, ray, result);
-		 result = intersectXYCylinder(ID_AXIS_CYLINDER, 2, MTL_DIFFUSE,
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
 					      10., vec3(transformBySpheres{{ n }}[4],
 							transformBySpheres{{ n }}[5],
 							transformBySpheres{{ n }}[6]),
 					      eye, ray, result);
 	     }
-	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n * 3 + 2}} , MTL_TRANSPARENT,
+	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
 				      vec3(transformBySpheres{{ n }}[8],
 					   transformBySpheres{{ n }}[9],
 					   transformBySpheres{{ n }}[10]),
@@ -342,24 +350,25 @@
 	     
 
 	     vec3 matColor = WHITE;
-	     if( g_objGroupId == ID_SCHOTTKY_SPHERE){
+	     if( g_objId == ID_SCHOTTKY_SPHERE){
 		 g_mtl = MTL_TRANSPARENT;
-		 matColor = (g_objId == selectedObjectIndex &&
-			     g_objGroupId == selectedGroupId) ? RED : WHITE;
-	     }else if(g_objGroupId == ID_BASE_SPHERE){
-		 matColor = (g_objGroupId == selectedGroupId &&
-			     g_objId == selectedObjectIndex) ? RED : GREEN;
-	     }else if(g_objGroupId == ID_AXIS_CYLINDER){
-		 matColor = (g_objId == selectedAxis) ? RED : WHITE;
-	     }else if(g_objGroupId == ID_TRANSFORMATION){
-		 matColor = (g_objGroupId == selectedGroupId &&
-			     int(g_objId / 2) == int(selectedObjectIndex / 2))?
+		 matColor = (g_objIndex == selectedObjectIndex &&
+			     g_objId == selectedObjectId) ? RED : WHITE;
+	     }else if(g_objId == ID_BASE_SPHERE){
+		 matColor = (g_objId == selectedObjectId &&
+			     g_objIndex == selectedObjectIndex) ? RED : GREEN;
+	     }else if(g_objId == ID_AXIS_CYLINDER){
+		 matColor = (g_objComponentId == selectedAxis) ? RED : WHITE;
+	     }else if(g_objId == ID_TRANSFORMATION){
+		 matColor = (g_objId == selectedObjectId &&
+			     g_objIndex == selectedObjectIndex)?
 			    RED : BLUE;
-	     }else if(g_objGroupId == ID_TRANSFORM_BY_SPHERES){
-		 matColor = (mod( float(g_objId), 3.) == 0.) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		 matColor = (mod( float(g_objId), 3.) == 1.) ? YELLOW : matColor;
-		 matColor = (g_objGroupId == selectedGroupId &&
-			     g_objId == selectedObjectIndex) ? RED : matColor;
+	     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
+		 matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+		 matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+		 matColor = (g_objId == selectedObjectId &&
+			     g_objIndex == selectedObjectIndex &&
+			     g_objComponentId == 1) ? RED : matColor;
 	     }
   	     if(result.x != 99999.){
     		 vec3 intersection = eye + ray * result.x;
