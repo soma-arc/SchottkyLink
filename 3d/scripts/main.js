@@ -133,6 +133,7 @@ TransformBySpheres.prototype = {
 
 var Camera = function(target, fovDegree, eyeDist, up){
     this.target = target;
+    this.prevTarget = target;
     this.fovDegree = fovDegree;
     this.eyeDist = eyeDist;
     this.up = up;
@@ -149,6 +150,7 @@ Camera.prototype = {
 	this.position = [this.eyeDist * Math.cos(this.phi) * Math.cos(this.theta),
 			 this.eyeDist * Math.sin(this.phi),
 			 -this.eyeDist * Math.cos(this.phi) * Math.sin(this.theta)];
+	this.position = sum(this.target, this.position);
 	if(Math.abs(this.phi) % (2 * Math.PI) > Math.PI / 2. &&
 	   Math.abs(this.phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
 	    this.up = [0, -1, 0];
@@ -265,7 +267,12 @@ Scene.prototype = {
 function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
     var prevTheta, prevPhi;
-    
+
+    canvas.addEventListener("contextmenu", function(e){
+	// disable right-click context-menu
+        event.preventDefault();
+    });
+
     canvas.addEventListener('mouseup', function(event){
 	renderCanvas.isMousePressing = false;
 	renderCanvas.isRendering = false;
@@ -284,15 +291,26 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	    renderCanvas.camera.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
 	    renderCanvas.camera.update();
 	    renderCanvas.isRendering = true;
+	}else if(event.button == 2){
+	    var dx = px - renderCanvas.prevMousePos[0];
+	    var dy = py - renderCanvas.prevMousePos[1];
+	    var vec = getFocalXYAxisVector(renderCanvas.camera,
+					   renderCanvas.canvas.width,
+					   renderCanvas.canvas.height);
+	    renderCanvas.camera.target = sum(renderCanvas.camera.prevTarget,
+					     sum(scale(vec[0], dx * 5),
+						 scale(vec[1], dy * 5)));
+	    renderCanvas.camera.update();
+	    renderCanvas.isRendering = true;
 	}
     });
 
     canvas.addEventListener('mousedown', function(event){
+	event.preventDefault();
 	renderCanvas.isMousePressing = true;
 	[px, py] = renderCanvas.calcPixel(event);
 	renderCanvas.prevMousePos = [px, py];
 	if(event.button == 0){
-	    event.preventDefault();
 	    if((renderCanvas.pressingKey == 'z' ||
 		renderCanvas.pressingKey == 'x' ||
 		renderCanvas.pressingKey == 'c' ||
@@ -327,9 +345,10 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 								canvas.width, canvas.height);
 	    }
 	}else if(event.button == 1){
-	    event.preventDefault();
 	    prevTheta = renderCanvas.camera.theta;
 	    prevPhi = renderCanvas.camera.phi;
+	}else if(event.button == 2){
+	    renderCanvas.camera.prevTarget = renderCanvas.camera.target;
 	}
     }, true);
 

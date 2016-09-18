@@ -108,6 +108,14 @@ function calcRay(camera, width, height, coord){
 			  scale(focalYAxis, coord[1])))
 }
 
+function getFocalXYAxisVector(camera, width, height){
+    var imagePlane = (height * 0.5) / Math.tan(radians(camera.fovDegree) * 0.5);
+    var v = normalize3(diff(camera.target, camera.position));
+    var focalXAxis = normalize3(cross(v, camera.up));
+    var focalYAxis = normalize3(cross(v, focalXAxis));
+    return [focalXAxis, focalYAxis]
+}
+
 function intersectPlane(groupId, id, p, n, rayOrigin, rayDir, isect){
     var d = -dot(p, n);
     var v = dot(n, rayDir);
