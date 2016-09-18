@@ -53,6 +53,7 @@
      //[distToP1, distToP2, size, thetaRad, phiRad, twist]
      uniform float transformation{{ n }}[6];
      uniform mat3 rotatePlaneMat3{{ n }};
+     uniform mat3 invRotatePlaneMat3{{ n }};
      uniform mat3 twistPlaneMat3{{ n }};
      {% endfor %}
      
@@ -195,7 +196,7 @@
      }
 
      vec4 intersectXYRect (int objId, int objIndex, int objComponentId, int mtl,
-			   vec3 center, float size, mat3 rotation,
+			   vec3 center, float size, mat3 rotation, mat3 invRotation,
 			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
 	 rayOrigin *= rotation;
@@ -291,10 +292,12 @@
 	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[0]),
 				      transformation{{ n }}[2], rotatePlaneMat3{{ n }},
+				      invRotatePlaneMat3{{ n }},
 				      eye, ray, result);
 	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[1]),
 				      transformation{{ n }}[2], rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
+				      invRotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
 				      eye, ray, result);
 	     
 	     {% endfor %}
@@ -451,6 +454,7 @@
      {% for n in range(0,  numTranslations ) %}
      uniform float transformation{{ n }}[6];
      uniform mat3 rotatePlaneMat3{{ n }};
+     uniform mat3 invRotatePlaneMat3{{ n }};
      uniform mat3 twistPlaneMat3{{ n }};
      {% endfor %}
 
@@ -578,11 +582,11 @@
 	     {% endif %}
 	     {% for n in range(0,  numTranslations ) %}
 	     if(pos.z < transformation{{ n }}[0] || transformation{{ n }}[1] < pos.z){
-		 pos -= vec3(0, 0, transformation{{ n }}[0]);
+		 pos.z -= transformation{{ n }}[0];
 		 float nn = floor(pos.z / (transformation{{n}}[1] - transformation{{ n }}[0]));
 		 pos.z = mod(pos.z,
-			     transformation{{ n }}[1] - transformation{{ n }}[0])+
-			   transformation{{ n }}[0];
+			     transformation{{ n }}[1] - transformation{{ n }}[0]);
+		 pos.z += transformation{{ n }}[0];
 		 float theta = radians(transformation{{ n }}[5]) * nn;
 		 mat3 m = mat3(cos(theta), -sin(theta), 0,
 			       sin(theta), cos(theta), 0,
