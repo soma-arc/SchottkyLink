@@ -96,16 +96,16 @@ function applyMat3(p, m){
 	    p[0] * m[2] + p[1] * m[5] + p[2] * m[8]];
 }
 
-function calcRay(eye, target, up, fov, width, height, coord){
-    var imagePlane = (height * 0.5) / Math.tan(radians(fov) * 0.5);
-    var v = normalize3(diff(target, eye));
-    var focalXAxis = normalize3(cross(v, up));
+function calcRay(camera, width, height, coord){
+    var imagePlane = (height * 0.5) / Math.tan(radians(camera.fovDegree) * 0.5);
+    var v = normalize3(diff(camera.target, camera.position));
+    var focalXAxis = normalize3(cross(v, camera.up));
     var focalYAxis = normalize3(cross(v, focalXAxis));
     var center = scale(v, imagePlane);
     var origin = diff(diff(center, scale(focalXAxis, width * 0.5)),
 		      scale(focalYAxis, height * 0.5));
     return normalize3(sum(sum(origin, scale(focalXAxis, coord[0])),
-			 scale(focalYAxis, coord[1])))
+			  scale(focalYAxis, coord[1])))
 }
 
 function intersectPlane(groupId, id, p, n, rayOrigin, rayDir, isect){
@@ -178,68 +178,73 @@ function intersectXZCylinder(groupId, id, r, center,
     return isect;
 }
 
-function calcCoordOnAxis(eye, target, up, fov,
-			 width, height,
+function calcCoordOnAxis(camera, width, height,
 			 axis, axisVec, spherePos, lengthOnAxis){
-    var pos = calcPointOnScreen(spherePos, eye, target, up, fov,
+    var pos = calcPointOnScreen(spherePos, camera,
 				width, height);
-    var ray = calcRay(eye, target, up, fov, width, height,
+    var ray = calcRay(camera, width, height,
 		      [pos[0] + axisVec[0] * lengthOnAxis,
 		       pos[1] + axisVec[1] * lengthOnAxis]);
-
     var r = 10;
     var isect;
     if(axis == 0){
 	isect = intersectYZCylinder(0, 0, r, spherePos,
-				    eye, ray,
+				    camera.position, ray,
 				    [99999, 99999, 99999, 99999])
     }else if(axis == 1){
 	isect = intersectXZCylinder(0, 0, r, spherePos,
-				    eye, ray,
+				    camera.position, ray,
 				    [99999, 99999, 99999, 99999])
     }else if(axis == 2){
 	isect = intersectXYCylinder(0, 0, r, spherePos,
-				    eye, ray,
+				    camera.position, ray,
 				    [99999, 99999, 99999, 99999])
     }
-    return sum(eye, scale(ray, isect[0] + r));
+    return sum(camera.position, scale(ray, isect[0] + r));
 }
 
-function calcAxisOnScreen(spherePos, eye, target, up, fov,
+// Calculate vector of axis on screen space
+function calcAxisOnScreen(spherePos, camera,
 			  width, height){
-    var imagePlane = (height * 0.5) / Math.tan(radians(fov) * 0.5);
-    var v = normalize3(diff(target, eye));
-    var focalXAxis = normalize3(cross(v, up));
+    var imagePlane = (height * 0.5) / Math.tan(radians(camera.fovDegree) * 0.5);
+    var v = normalize3(diff(camera.target, camera.position));
+    var focalXAxis = normalize3(cross(v, camera.up));
     var focalYAxis = normalize3(cross(v, focalXAxis));
     var center = scale(v, imagePlane);
     var origin = diff(diff(center, scale(focalXAxis, width * 0.5)),
     		      scale(focalYAxis, height * 0.5));
 
-    var ray = normalize3(diff(spherePos, eye));
-    var [t, id, planeP, n] = intersectPlane(0, 0, sum(eye, center), v, eye, ray,
+    var planeCenter = sum(camera.position, center);
+    var planeOrigin = sum(camera.position, origin);
+    var ray = normalize3(diff(spherePos, camera.position));
+    var [t, id, planeP, n] = intersectPlane(0, 0, planeCenter,
+					    v, camera.position, ray,
 					    [99999, 99999, 99999, 99999]);
-    var pv = diff(planeP, sum(eye, origin));
+    var pv = diff(planeP, planeOrigin);
     var sp = [dot(pv, focalXAxis),
      	      dot(pv, focalYAxis)];
 
-    ray = normalize3(diff(sum(spherePos, [50, 0, 0]), eye));
-    [t, id, planeP, n] = intersectPlane(0, 0, sum(eye, center), v, eye, ray,
+    ray = normalize3(diff(sum(spherePos, [50, 0, 0]), camera.position));
+    [t, id, planeP, n] = intersectPlane(0, 0, planeCenter, v,
+					camera.position, ray,
 					[99999, 99999, 99999, 99999]);
-    pv = diff(planeP, sum(eye, origin));
+    pv = diff(planeP, planeOrigin);
     var px = [dot(pv, focalXAxis),
      	      dot(pv, focalYAxis)];
 
-    ray = normalize3(diff(sum(spherePos, [0, 50, 0]), eye));
-    [t, id, planeP, n] = intersectPlane(0, 0, sum(eye, center), v, eye, ray,
+    ray = normalize3(diff(sum(spherePos, [0, 50, 0]), camera.position));
+    [t, id, planeP, n] = intersectPlane(0, 0, planeCenter, v,
+					camera.position, ray,
 					[99999, 99999, 99999, 99999]);
-    pv = diff(planeP, sum(eye, origin));
+    pv = diff(planeP, planeOrigin);
     var py = [dot(pv, focalXAxis),
      	      dot(pv, focalYAxis)];
 
-    ray = normalize3(diff(sum(spherePos, [0, 0, 50]), eye));
-    [t, id, planeP, n] = intersectPlane(0, 0, sum(eye, center), v, eye, ray,
+    ray = normalize3(diff(sum(spherePos, [0, 0, 50]), camera.position));
+    [t, id, planeP, n] = intersectPlane(0, 0, planeCenter,
+					v, camera.position, ray,
 					[99999, 99999, 99999, 99999]);
-    pv = diff(planeP, sum(eye, origin));
+    pv = diff(planeP, planeOrigin);
     var pz = [dot(pv, focalXAxis),
      	      dot(pv, focalYAxis)];
 
@@ -251,20 +256,21 @@ function calcAxisOnScreen(spherePos, eye, target, up, fov,
 		       pz[1] - sp[1]])]
 }
 
-function calcPointOnScreen(point, eye, target, up, fov,
+function calcPointOnScreen(point, camera,
 			   width, height){
-    var ray = normalize3(diff(point, eye));
-    var imagePlane = (height * 0.5) / Math.tan(radians(fov) * 0.5);
-    var v = normalize3(diff(target, eye));
-    var focalXAxis = normalize3(cross(v, up));
+    var ray = normalize3(diff(point, camera.position));
+    var imagePlane = (height * 0.5) / Math.tan(radians(camera.fovDegree) * 0.5);
+    var v = normalize3(diff(camera.target, camera.position));
+    var focalXAxis = normalize3(cross(v, camera.up));
     var focalYAxis = normalize3(cross(v, focalXAxis));
     var center = scale(v, imagePlane);
     var origin = diff(diff(center, scale(focalXAxis, width * 0.5)),
     		      scale(focalYAxis, height * 0.5));
-    var [t, id, planeP, n] = intersectPlane(0, 0, sum(eye, center), v, eye, ray,
+    var [t, id, planeP, n] = intersectPlane(0, 0, sum(camera.position, center),
+					    v, camera.position, ray,
 					    [99999, 99999, 99999, 99999]);
     
-    var pv = diff(planeP, sum(eye, origin));
+    var pv = diff(planeP, sum(camera.position, origin));
     return [dot(pv, focalXAxis),
      	    dot(pv, focalYAxis)];
 }

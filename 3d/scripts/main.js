@@ -44,10 +44,7 @@ Sphere.prototype = {
     move: function(dx, dy, axis, prevObject, schottkyCanvas){
 	var v = schottkyCanvas.axisVecOnScreen[axis];
 	var lengthOnAxis = v[0] * dx + v[1] * dy;
-	var p = calcCoordOnAxis(schottkyCanvas.eye,
-				schottkyCanvas.target,
-				schottkyCanvas.up,
-				schottkyCanvas.fovDegree,
+	var p = calcCoordOnAxis(schottkyCanvas.camera,
 				schottkyCanvas.canvas.width,
 				schottkyCanvas.canvas.height,
 				axis, v, prevObject.getPosition(),
@@ -57,10 +54,7 @@ Sphere.prototype = {
     setRadius: function(mx, my, dx, dy, prevObject, schottkyCanvas){
 	//We assume that prevObject is Sphere.
 	var spherePosOnScreen = calcPointOnScreen(prevObject.getPosition(),
-						  schottkyCanvas.eye,
-						  schottkyCanvas.target,
-						  schottkyCanvas.up,
-						  schottkyCanvas.fovDegree,
+						  schottkyCanvas.camera,
 						  schottkyCanvas.canvas.width,
 						  schottkyCanvas.canvas.height);
 	var diffSphereAndPrevMouse = [spherePosOnScreen[0] - schottkyCanvas.prevMousePos[0],
@@ -155,6 +149,12 @@ Camera.prototype = {
 	this.position = [this.eyeDist * Math.cos(this.phi) * Math.cos(this.theta),
 			 this.eyeDist * Math.sin(this.phi),
 			 -this.eyeDist * Math.cos(this.phi) * Math.sin(this.theta)];
+	if(Math.abs(this.phi) % (2 * Math.PI) > Math.PI / 2. &&
+	   Math.abs(this.phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
+	    this.up = [0, -1, 0];
+	}else{
+	    this.up = [0, 1, 0];
+	}
     }
 }
 
@@ -163,13 +163,6 @@ var RenderCanvas = function(canvasId, templateId){
     this.canvas = document.getElementById(canvasId);
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
-    this.target = [0, 0, 0];
-    this.fovDegree = 60;
-    this.eyeDist = 1500;
-    this.up = [0, 1, 0];
-    this.theta = 0;
-    this.phi = 0;
-    this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
     this.camera = new Camera([0, 0, 0], 60, 1500, [0, 1, 0]);
 
     this.selectedGroupId = -1;
@@ -203,15 +196,6 @@ RenderCanvas.prototype = {
 	var rect = mouseEvent.target.getBoundingClientRect();
 	return [(mouseEvent.clientX - rect.left) * this.pixelRatio,
 		(mouseEvent.clientY - rect.top) * this.pixelRatio];
-    },
-    updateEye: function(){
-	this.eye = calcCoordOnSphere(this.eyeDist, this.theta, this.phi);
-	if(Math.abs(this.phi) % (2 * Math.PI) > Math.PI / 2. &&
-	   Math.abs(this.phi) % (2 * Math.PI) < 3 * Math.PI / 2.){
-	    this.up = [0, -1, 0];
-	}else{
-	    this.up = [0, 1, 0];
-	}
     }
 };
 
@@ -278,19 +262,6 @@ Scene.prototype = {
     }
 }
 
-function calcCoordOnSphere(r, theta, phi){
-    return [r * Math.cos(phi) * Math.cos(theta),
-	    r * Math.sin(phi),
-	    -r * Math.cos(phi) * Math.sin(theta)];
-}
-
-function calcLatitudeTangentOnSphere(r, theta, phi){
-    return [- r * Math.sin(phi) * Math.cos(theta),
-	    r * Math.cos(phi),
-	    r * Math.sin(phi) * Math.sin(phi),
-	   ];
-}
-
 function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
     var prevTheta, prevPhi;
@@ -309,9 +280,9 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	if(!renderCanvas.isMousePressing) return;
 	[px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 1){
-	    renderCanvas.theta = prevTheta + (renderCanvas.prevMousePos[0] - px) * 0.01;
-	    renderCanvas.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
-	    renderCanvas.updateEye();
+	    renderCanvas.camera.theta = prevTheta + (renderCanvas.prevMousePos[0] - px) * 0.01;
+	    renderCanvas.camera.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
+	    renderCanvas.camera.update();
 	    renderCanvas.isRendering = true;
 	}
     });
@@ -329,13 +300,11 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	       (renderCanvas.selectedGroupId != -1)){
 		return;
 	    }
-	    var ray = calcRay(renderCanvas.eye, renderCanvas.target,
-			      renderCanvas.up, renderCanvas.fovDegree,
-			      canvas.width, canvas.height,
-			      [px, py]);
 	    [renderCanvas.selectedGroupId,
-	     renderCanvas.selectedObjectIndex] = getIntersectedObject(renderCanvas.eye,
-								      ray,
+	     renderCanvas.selectedObjectIndex] = getIntersectedObject(renderCanvas.camera.position,
+								      calcRay(renderCanvas.camera,
+									      canvas.width, canvas.height,
+									      [px, py]),
 								      g_scene.getObjects());
 	    renderCanvas.render(0);
 	    if(renderCanvas.selectedGroupId == -1) return;
@@ -343,38 +312,35 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 		// Base Sphere
 		renderCanvas.prevObject = g_scene.baseSpheres[renderCanvas.selectedObjectIndex].clone();
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevObject.getPosition(),
-								renderCanvas.eye, renderCanvas.target,
-								renderCanvas.up, renderCanvas.fovDegree,
+								renderCanvas.camera,
 								canvas.width, canvas.height);
 	    }else if(renderCanvas.selectedGroupId == ID_SCHOTTKY_SPHERE){
 		// Schottky Sphere
 		renderCanvas.prevObject = g_scene.schottkySpheres[renderCanvas.selectedObjectIndex].clone();
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevObject.getPosition(),
-								renderCanvas.eye, renderCanvas.target,
-								renderCanvas.up, renderCanvas.fovDegree,
+								renderCanvas.camera,
 								canvas.width, canvas.height);
 	    }else if(renderCanvas.selectedGroupId == ID_TRANSFORM_BY_SPHERES){
 		renderCanvas.prevObject = g_scene.transformBySpheres[parseInt(renderCanvas.selectedObjectIndex/3)].clone();
 		renderCanvas.axisVecOnScreen = calcAxisOnScreen(renderCanvas.prevObject.outer.getPosition(),
-								renderCanvas.eye, renderCanvas.target,
-								renderCanvas.up, renderCanvas.fovDegree,
+								renderCanvas.camera,
 								canvas.width, canvas.height);
 	    }
 	}else if(event.button == 1){
 	    event.preventDefault();
-	    prevTheta = renderCanvas.theta;
-	    prevPhi = renderCanvas.phi;
+	    prevTheta = renderCanvas.camera.theta;
+	    prevPhi = renderCanvas.camera.phi;
 	}
     }, true);
 
     canvas.addEventListener('mousewheel', function(event){
 	event.preventDefault();
-	if(event.wheelDelta > 0){
-	    renderCanvas.eyeDist -= 100;
+	if(event.wheelDelta > 0 && renderCanvas.camera.eyeDist > 100){
+	    renderCanvas.camera.eyeDist -= 100;
 	}else{
-	    renderCanvas.eyeDist += 100;
+	    renderCanvas.camera.eyeDist += 100;
 	}
-	renderCanvas.updateEye();
+	renderCanvas.camera.update();
 	renderCanvas.render(0);
     }, true);
 
@@ -477,10 +443,10 @@ function setupSchottkyProgram(scene, renderCanvas){
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedGroupId);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedAxis);
-	gl.uniform3fv(uniLocation[uniI++], renderCanvas.eye);
-	gl.uniform3fv(uniLocation[uniI++], renderCanvas.up);
-	gl.uniform3fv(uniLocation[uniI++], renderCanvas.target);
-	gl.uniform1f(uniLocation[uniI++], renderCanvas.fovDegree);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.position);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.up);
+	gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.target);
+	gl.uniform1f(uniLocation[uniI++], renderCanvas.camera.fovDegree);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
 	for(var i = 0 ; i < numSpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], scene.schottkySpheres[i].getUniformArray());
@@ -583,22 +549,19 @@ window.addEventListener('load', function(event){
 	if(schottkyCanvas.selectedGroupId == ID_BASE_SPHERE){
 	    schottkyCanvas.prevObject = g_scene.baseSpheres[schottkyCanvas.selectedObjectIndex].clone();
 	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevObject.getPosition(),
-							      schottkyCanvas.eye, schottkyCanvas.target,
-							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.camera,
 							      schottkyCanvas.canvas.width,
 							      schottkyCanvas.canvas.height);
 	}else if(schottkyCanvas.selectedGroupId == ID_SCHOTTKY_SPHERE){
 	    schottkyCanvas.prevObject = g_scene.schottkySpheres[schottkyCanvas.selectedObjectIndex].clone();
 	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevObject.getPosition(),
-							      schottkyCanvas.eye, schottkyCanvas.target,
-							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.camera,
 							      schottkyCanvas.canvas.width,
 							      schottkyCanvas.canvas.height);
 	}else if(schottkyCanvas.selectedGroupId == ID_TRANSFORM_BY_SPHERES){
 	    schottkyCanvas.prevObject = g_scene.transformBySpheres[parseInt(schottkyCanvas.selectedObjectIndex/3)].clone();
 	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(schottkyCanvas.prevObject.outer.getPosition(),
-							      schottkyCanvas.eye, schottkyCanvas.target,
-							      schottkyCanvas.up, schottkyCanvas.fovDegree,
+							      schottkyCanvas.camera,
 							      schottkyCanvas.canvas.width,
 							      schottkyCanvas.canvas.height);
 	}
