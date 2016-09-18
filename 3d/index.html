@@ -50,19 +50,10 @@
      int numBaseSpheres = {{ numBaseSpheres }};
 
      {% for n in range(0,  numTranslations ) %}
-     //[distToP1, distToP2, size, thetaRad, phiRadm, rotation]
+     //[distToP1, distToP2, size, thetaRad, phiRad, twist]
      uniform float transformation{{ n }}[6];
-     float cosTheta{{ n }} = cos(transformation{{ n }}[3]);
-     float sinTheta{{ n }} = sin(transformation{{ n }}[3]);
-     float cosPhi{{ n }} = cos(transformation{{ n }}[4]);
-     float sinPhi{{ n }} = sin(transformation{{ n }}[4]);
-     mat3 rotateX{{ n }} = mat3(1, 0, 0,
-				0, cosTheta{{ n }}, -sinTheta{{ n }},
-				0, sinTheta{{ n }}, cosTheta{{ n }});
-     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
-				0, 1, 0,
-			       -sinPhi{{ n }}, 0, cosPhi{{ n }});
-     mat3 rotatePlaneMat{{ n }} = rotateX{{ n }} * rotateY{{ n }};
+     uniform mat3 rotatePlaneMat3{{ n }};
+     uniform mat3 twistPlaneMat3{{ n }};
      {% endfor %}
      
      {% for n in range(0, numTransformBySpheres) %}
@@ -299,11 +290,11 @@
 	     {% for n in range(0,  numTranslations ) %}
 	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[0]),
-				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				      transformation{{ n }}[2], rotatePlaneMat3{{ n }},
 				      eye, ray, result);
 	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
 				      vec3(0, 0, transformation{{ n }}[1]),
-				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				      transformation{{ n }}[2], rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
 				      eye, ray, result);
 	     
 	     {% endfor %}
@@ -459,17 +450,8 @@
 
      {% for n in range(0,  numTranslations ) %}
      uniform float transformation{{ n }}[6];
-     float cosTheta{{ n }} = cos(transformation{{ n }}[3]);
-     float sinTheta{{ n }} = sin(transformation{{ n }}[3]);
-     float cosPhi{{ n }} = cos(transformation{{ n }}[4]);
-     float sinPhi{{ n }} = sin(transformation{{ n }}[4]);
-     mat3 rotateX{{ n }} = mat3(1, 0, 0,
-				0, cosTheta{{ n }}, -sinTheta{{ n }},
-				0, sinTheta{{ n }}, cosTheta{{ n }});
-     mat3 rotateY{{ n }} = mat3(cosPhi{{ n }}, 0, sinPhi{{ n }},
-				0, 1, 0,
-			       -sinPhi{{ n }}, 0, cosPhi{{ n }});
-     mat3 rotatePlaneMat{{ n }} = rotateX{{ n }} * rotateY{{ n }};
+     uniform mat3 rotatePlaneMat3{{ n }};
+     uniform mat3 twistPlaneMat3{{ n }};
      {% endfor %}
 
      {% for n in range(0, numTransformBySpheres) %}
@@ -723,10 +705,10 @@
 	 if(renderPlane == 1){
 	     {% for n in range(0,  numTranslations ) %}
 	     result = intersectXYRect(vec3(0, 0, transformation{{ n }}[0]),
-				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				      transformation{{ n }}[2], rotatePlaneMat3{{ n }},
 				      eye, ray, result);
 	     result = intersectXYRect(vec3(0, 0, transformation{{ n }}[1]),
-				      transformation{{ n }}[2], rotatePlaneMat{{ n }},
+				      transformation{{ n }}[2], rotatePlaneMat3{{ n }},
 				      eye, ray, result);
 	     {% endfor %}
 	 }

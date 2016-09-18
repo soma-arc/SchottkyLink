@@ -61,7 +61,7 @@ function getIdentityMat3(){
 	    0, 0, 1];
 }
 
-function getRotationXAxis(p, thetaRad){
+function getRotationXAxis(thetaRad){
     var cosTheta = Math.cos(thetaRad);
     var sinTheta = Math.sin(thetaRad);
     return [1, 0, 0,
@@ -69,12 +69,20 @@ function getRotationXAxis(p, thetaRad){
 	    0, sinTheta, cosTheta];
 }
 
-function getRotationYAxis(p, thetaRad){
+function getRotationYAxis(thetaRad){
     var cosTheta = Math.cos(thetaRad);
     var sinTheta = Math.sin(thetaRad);
     return [cosTheta, 0, sinTheta,
 	    0, 1, 0,
 	    -sinTheta, 0, cosTheta];
+}
+
+function getRotationZAxis(thetaRad){
+    var cosTheta = Math.cos(thetaRad);
+    var sinTheta = Math.sin(thetaRad);
+    return [cosTheta, -sinTheta, 0,
+	    sinTheta, cosTheta, 0,
+	    0, 0, 1];
 }
 
 function prodMat3(a, b){

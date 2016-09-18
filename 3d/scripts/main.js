@@ -85,17 +85,25 @@ var ParabolicTransformation = function(){
     this.phi = 0; // Degree
     this.rotationMat3 = getIdentityMat3();
     this.size = 1200;
-    this.rotation = 0.;
+    this.twist = 45.; // Degree
+    this.twistMat3 = getIdentityMat3();
     //    this.isRenderingPlaneAtOrbitCanvas = 0;
+    this.update();
 }
 
 ParabolicTransformation.prototype = {
     getUniformArray: function(){
 	return [this.distToP1, this.distToP2, this.size,
-		radians(this.theta), radians(this.phi), this.rotation];
+		radians(this.theta), radians(this.phi), this.twist];
     },
     getComponentFromId: function(id){
 	return this;
+    },
+    update: function(){
+	var rotateX = getRotationXAxis(radians(this.theta));
+	var rotateY = getRotationYAxis(radians(this.phi));
+	this.rotationMat3 = prodMat3(rotateX, rotateY);
+	this.twistMat3 = getRotationZAxis(radians(this.twist));
     }
 }
 
@@ -402,6 +410,10 @@ function setupSchottkyProgram(scene, renderCanvas){
     for(var i = 0 ; i < numTransformations ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'transformation'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'rotatePlaneMat3'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'twistPlaneMat3'+ i);
     }
     for(var i = 0 ; i < numTransformBySpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
@@ -460,6 +472,8 @@ function setupSchottkyProgram(scene, renderCanvas){
 	}
 	for(var i = 0 ; i < numTransformations ; i++){
 	    gl.uniform1fv(uniLocation[uniI++], scene.transformations[i].getUniformArray());
+	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].rotationMat3);
+	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].twistMat3);
 	}
 	for(var i = 0 ; i < numTransformBySpheres ; i++){
 	    gl.uniform1fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
