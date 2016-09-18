@@ -498,51 +498,53 @@
 
      float loopNum = 0.;
 
+     {% for n in range(0,  numTransformBySpheres ) %}
+     vec4 s0{{ n }} = vec4(transformBySpheres{{ n }}[0],
+			   transformBySpheres{{ n }}[1],
+			   transformBySpheres{{ n }}[2],
+			   transformBySpheres{{ n }}[3]);
+     vec4 s1{{ n }} = vec4(transformBySpheres{{ n }}[4],
+			   transformBySpheres{{ n }}[5],
+			   transformBySpheres{{ n }}[6],
+			   transformBySpheres{{ n }}[7]);
+     vec4 s2{{ n }} = vec4(transformBySpheres{{ n }}[8],
+			   transformBySpheres{{ n }}[9],
+			   transformBySpheres{{ n }}[10],
+			   transformBySpheres{{ n }}[11]);
+     float s0r2{{ n }} = s0{{ n }}.w * s0{{ n }}.w;
+     float s1r2{{ n }} = s1{{ n }}.w * s1{{ n }}.w;
+     {% endfor %}
+     
      const int MAX_KLEIN_ITARATION = 30;
      float distKlein(vec3 pos){
 	 loopNum = 0.;
 	 float dr = 1.;
 	 bool loopEnd = true;
+
 	 for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
 	     if(i >= numIterations) break;
 	     loopEnd = true;
 
 	     {% for n in range(0,  numTransformBySpheres ) %}
-	     vec4 s0{{ n }} = vec4(transformBySpheres{{ n }}[0],
-				   transformBySpheres{{ n }}[1],
-				   transformBySpheres{{ n }}[2],
-				   transformBySpheres{{ n }}[3]);
-	     vec4 s1{{ n }} = vec4(transformBySpheres{{ n }}[4],
-				   transformBySpheres{{ n }}[5],
-				   transformBySpheres{{ n }}[6],
-				   transformBySpheres{{ n }}[7]);
-	     vec4 s2{{ n }} = vec4(transformBySpheres{{ n }}[8],
-				   transformBySpheres{{ n }}[9],
-				   transformBySpheres{{ n }}[10],
-				   transformBySpheres{{ n }}[11]);
 	     if(distance(pos, s0{{ n }}.xyz) < s0{{ n }}.w){
 		 vec3 diff0 = (pos - s0{{ n }}.xyz);
-		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
-		 dr *= s0r2 / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
+		 dr *= s0r2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2{{ n }});
 
 		 vec3 diff1 = (pos - s1{{ n }}.xyz);
-		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
-		 dr *= s1r2 / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
+		 dr *= s1r2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2{{ n }});
 		 
 		 loopEnd = false;
 		 loopNum++;
 	     }else if(distance(pos, s2{{ n }}.xyz) >= s2{{ n }}.w){
 		 vec3 diff1 = (pos - s1{{ n }}.xyz);
-		 float s1r2 = s1{{ n }}.w * s1{{ n }}.w;
-		 dr *= s1r2 / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2);
+		 dr *= s1r2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2{{ n }});
 
 		 vec3 diff0 = (pos - s0{{ n }}.xyz);
-		 float s0r2 = s0{{ n }}.w * s0{{ n }}.w;
-		 dr *= s0r2 / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2);
+		 dr *= s0r2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2{{ n }});
 
 		 loopEnd = false;
 		 loopNum++;
