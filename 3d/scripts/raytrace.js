@@ -98,10 +98,10 @@ function prodMat3(a, b){
 	   ];
 }
 
-function applyMat3(p, m){
-    return [p[0] * m[0] + p[1] * m[3] + p[2] * m[6],
-	    p[0] * m[1] + p[1] * m[4] + p[2] * m[7],
-	    p[0] * m[2] + p[1] * m[5] + p[2] * m[8]];
+function applyMat3(m, p){
+    return [p[0] * m[0] + p[1] * m[1] + p[2] * m[2],
+	    p[0] * m[3] + p[1] * m[4] + p[2] * m[5],
+	    p[0] * m[6] + p[1] * m[7] + p[2] * m[8]];
 }
 
 function calcRay(camera, width, height, coord){
@@ -309,15 +309,21 @@ function intersectSphere(objectId, objectIndex, componentId, center, radius,
     return isect;
 }
 
-function intersectXYRect (objectId, objectIndex, componentId,
-			  distFromOrigin, size, rotationMat3,
-			  rayOrigin, rayDir, isect) {
-    rayOrigin = applyMat3(rayOrigin, rotationMat3);
-    rayDir = applyMat3(rayDir, rotationMat3);
-    var t = (distFromOrigin - rayOrigin[2]) / rayDir[2];
+function intersectRect (objectId, objectIndex, componentId,
+			distToOrigin, size,
+			rotationMat3, invRotationMat3,
+			rayOrigin, rayDir, isect) {    
+    var c = [0, 0, distToOrigin];
+    var defaultN = [0, 0, 1];
+    var n = applyMat3(rotationMat3, defaultN);
+    var cc =  applyMat3(rotationMat3, c)
+    var d = -dot(cc, n);
+    var v = dot(n, rayDir);
+    var t = -(dot(n, rayOrigin) + d) / v;
     if(RAYTRACE_EPSILON < t && t < isect[0]){
 	hSize = size * 0.5;
     	var p = sum(rayOrigin, scale(rayDir, t));
+	p = applyMat3(invRotationMat3, p);
         if(-hSize < p[0] && p[0] < hSize &&
 	   -hSize < p[1] && p[1] < hSize ){
             return [t, objectId, objectIndex, componentId];
@@ -342,16 +348,37 @@ function getIntersectedObject(eye, ray, objects){
 	}else if(objectId == ID_TRANSFORMATION){
 	    for(var i = 0 ; i <  objects[objectId].length ; i++){
 		var transformation = objects[objectId][i];
-		result = intersectXYRect(objectId, i, 0,
-					 transformation.distToP1,
-					 transformation.size,
-					 transformation.rotationMat3,
-					 eye, ray, result);
-		result = intersectXYRect(objectId, i, 1,
-					 transformation.distToP2,
-					 transformation.size,
-					 transformation.rotationMat3,
-					 eye, ray, result);
+		// result = intersectRect(objectId, i, 0,
+		// 		       transformation.distToP1,
+		// 		       transformation.size,
+		// 		       transformation.rotationMat3,
+		// 		       transformation.invRotationMat3,
+		// 		       eye, ray, result);
+		// result = intersectRect(objectId, i, 1,
+		// 		       transformation.distToP2,
+		// 		       transformation.size,
+		// 		       prodMat3(transformation.rotationMat3,
+		// 				transformation.twistMat3),
+		// 		       prodMat3(transformation.invTwistMat3,
+		// 				transformation.invRotationMat3),
+		// 		       eye, ray, result);
+		// It does not work correctly in Java Script.
+		// We inversed rotation matrix and inversed rotation matrix.
+		// 
+		result = intersectRect(objectId, i, 0,
+				       transformation.distToP1,
+				       transformation.size,
+				       transformation.invRotationMat3,
+				       transformation.rotationMat3,
+				       eye, ray, result);
+		result = intersectRect(objectId, i, 1,
+				       transformation.distToP2,
+				       transformation.size,
+				       prodMat3(transformation.invTwistMat3,
+						transformation.invRotationMat3),
+				       prodMat3(transformation.rotationMat3,
+						transformation.twistMat3),
+				       eye, ray, result);
 	    }
 	}else if(objectId == ID_TRANSFORM_BY_SPHERES){
 	    for(var i = 0 ; i <  objects[objectId].length ; i++){
