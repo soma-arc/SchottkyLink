@@ -86,10 +86,9 @@ var ParabolicTransformation = function(){
     this.rotationMat3 = getIdentityMat3();
     this.invRotationMat3 = getIdentityMat3();
     this.size = 1200;
-    this.twist = 10.; // Degree
+    this.twist = 0.; // Degree
     this.twistMat3 = getIdentityMat3();
     this.invTwistMat3 = getIdentityMat3();
-    //    this.isRenderingPlaneAtOrbitCanvas = 0;
     this.update();
 }
 
@@ -210,8 +209,6 @@ var RenderCanvas = function(canvasId, templateId){
     this.numIterations = 10;
 
     this.pixelRatio = 1;//window.devicePixelRatio;
-
-    this.isRenderingPlaneOnOrbitCanvas = 0;
 
     this.sphereCenterOnScreen;
     this.prevObject;
@@ -389,48 +386,46 @@ function setupSchottkyProgram(scene, renderCanvas){
     var uniLocation = new Array();
     var n = 0;
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'iResolution');
+					     'u_iResolution');
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'iGlobalTime');
+					     'u_iGlobalTime');
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'selectedObjectId');
+					     'u_selectedObjectId');
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'selectedObjectIndex');
+					     'u_selectedObjectIndex');
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'selectedComponentId');
+					     'u_selectedComponentId');
     uniLocation[n++] = gl.getUniformLocation(program,
-					     'selectedAxis');
-    uniLocation[n++] = gl.getUniformLocation(program, 'eye');
-    uniLocation[n++] = gl.getUniformLocation(program, 'up');
-    uniLocation[n++] = gl.getUniformLocation(program, 'target');
-    uniLocation[n++] = gl.getUniformLocation(program, 'fov');
-    uniLocation[n++] = gl.getUniformLocation(program, 'numIterations');
+					     'u_selectedAxis');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_eye');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_up');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_target');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_fov');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_numIterations');
     for(var i = 0 ; i < numSpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 's'+ i);
+						 'u_schottkySphere'+ i);
     }
     for(var j = 0 ; j < numBaseSpheres ; j++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'baseSphere'+ j);
+						 'u_baseSphere'+ j);
     }
     for(var i = 0 ; i < numTransformations ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'transformation'+ i);
+						 'u_transformByPlanes'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'rotatePlaneMat3'+ i);
+						 'u_rotatePlaneMat3'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'invRotatePlaneMat3'+ i);
+						 'u_invRotatePlaneMat3'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'twistPlaneMat3'+ i);
+						 'u_twistPlaneMat3'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'invTwistPlaneMat3'+ i);
+						 'u_invTwistPlaneMat3'+ i);
     }
     for(var i = 0 ; i < numTransformBySpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
-						 'transformBySpheres'+ i);
+						 'u_transformBySpheres'+ i);
     }
-    
-    uniLocation[n++] = gl.getUniformLocation(program, 'renderPlane');
     
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
@@ -490,7 +485,6 @@ function setupSchottkyProgram(scene, renderCanvas){
 	for(var i = 0 ; i < numTransformBySpheres ; i++){
 	    gl.uniform1fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
 	}
-	gl.uniform1i(uniLocation[uniI++], renderCanvas.isRenderingPlaneOnOrbitCanvas);
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
