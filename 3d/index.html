@@ -55,6 +55,7 @@
      uniform mat3 rotatePlaneMat3{{ n }};
      uniform mat3 invRotatePlaneMat3{{ n }};
      uniform mat3 twistPlaneMat3{{ n }};
+     uniform mat3 invTwistPlaneMat3{{ n }};
      {% endfor %}
      
      {% for n in range(0, numTransformBySpheres) %}
@@ -207,12 +208,11 @@
 	 float v = dot(n, rayDir);
 	 float t = -(dot(n, rayOrigin) + d) / v;
 	 if(EPSILON < t && t < isect.x){
-	     vec2 p1 = - vec2(size * 0.5);
-	     vec2 p2 = vec2(size * 0.5);
+	     float hSize = size * 0.5;
     	     vec3 p = rayOrigin + t * rayDir;
 	     p = invRotation * p;
-             if(p1.x < p.x && p.x < p2.x &&
-		p1.y < p.y && p.y < p2.y ){
+             if(-hSize < p.x && p.x < hSize &&
+		-hSize < p.y && p.y < hSize ){
 		 g_objId = objId;
 		 g_objIndex = objIndex;
 		 g_objComponentId = objComponentId;
@@ -301,8 +301,9 @@
 				    eye, ray, result);
 	     result = intersectRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
 				    transformation{{ n }}[1],
-				    transformation{{ n }}[2], rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
-				    twistPlaneMat3{{ n }} * invRotatePlaneMat3{{ n }},
+				    transformation{{ n }}[2],
+				    rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
+				    invTwistPlaneMat3{{ n }} * invRotatePlaneMat3{{ n }},
 				    eye, ray, result);
 	     
 	     {% endfor %}
@@ -593,7 +594,7 @@
 		 pos.z = mod(pos.z,
 			     transformation{{ n }}[1] - transformation{{ n }}[0]);
 		 pos.z += transformation{{ n }}[0];
-		 float theta = radians(transformation{{ n }}[5]) * nn;
+		 float theta = -radians(transformation{{ n }}[5]) * nn;
 		 mat3 m = mat3(cos(theta), -sin(theta), 0,
 			       sin(theta), cos(theta), 0,
 			       0, 0, 1);

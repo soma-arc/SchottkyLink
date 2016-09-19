@@ -88,6 +88,7 @@ var ParabolicTransformation = function(){
     this.size = 1200;
     this.twist = 10.; // Degree
     this.twistMat3 = getIdentityMat3();
+    this.invTwistMat3 = getIdentityMat3();
     //    this.isRenderingPlaneAtOrbitCanvas = 0;
     this.update();
 }
@@ -108,6 +109,7 @@ ParabolicTransformation.prototype = {
 	rotateY = getRotationYAxis(radians(-this.phi));
 	this.invRotationMat3 = prodMat3(rotateY, rotateX);
 	this.twistMat3 = getRotationZAxis(radians(this.twist));
+	this.invTwistMat3 = getRotationZAxis(radians(-this.twist));
     }
 }
 
@@ -420,6 +422,8 @@ function setupSchottkyProgram(scene, renderCanvas){
 						 'invRotatePlaneMat3'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'twistPlaneMat3'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'invTwistPlaneMat3'+ i);
     }
     for(var i = 0 ; i < numTransformBySpheres ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program,
@@ -481,6 +485,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].rotationMat3);
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].invRotationMat3);
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].twistMat3);
+	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformations[i].invTwistMat3);
 	}
 	for(var i = 0 ; i < numTransformBySpheres ; i++){
 	    gl.uniform1fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
@@ -573,7 +578,7 @@ window.addEventListener('load', function(event){
 	       groupId == ID_BASE_SPHERE){
 		operateObject = g_scene.getObjects()[groupId][index];
 	    }else if(groupId == ID_TRANSFORM_BY_SPHERES){
-		operateObject = g_scene.getObjects()[groupId][parseInt(index / 3)];
+		operateObject = g_scene.getObjects()[groupId][index];
 	    }
 	    if(operateObject == undefined) return;
 	    [mx, my] = schottkyCanvas.calcPixel(event);
