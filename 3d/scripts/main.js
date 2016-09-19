@@ -86,7 +86,7 @@ var ParabolicTransformation = function(){
     this.rotationMat3 = getIdentityMat3();
     this.invRotationMat3 = getIdentityMat3();
     this.size = 1200;
-    this.twist = 45.; // Degree
+    this.twist = 10.; // Degree
     this.twistMat3 = getIdentityMat3();
     //    this.isRenderingPlaneAtOrbitCanvas = 0;
     this.update();
@@ -106,7 +106,7 @@ ParabolicTransformation.prototype = {
 	this.rotationMat3 = prodMat3(rotateX, rotateY);
 	rotateX = getRotationXAxis(radians(-this.theta));
 	rotateY = getRotationYAxis(radians(-this.phi));
-	this.invRotationMat3 = prodMat3(rotateX, rotateY);
+	this.invRotationMat3 = prodMat3(rotateY, rotateX);
 	this.twistMat3 = getRotationZAxis(radians(this.twist));
     }
 }
@@ -242,8 +242,8 @@ var Scene = function(){
 			     new Sphere(0, 0, 424.26, 300),
 			     new Sphere(0, 0, -424.26, 300)];
     this.baseSpheres = [new Sphere(0, 0, 0, 125),];
-    this.transformations = [];//[new ParabolicTransformation()];
-    this.transformBySpheres =  [new TransformBySpheres()];
+    this.transformations = [new ParabolicTransformation()];
+    this.transformBySpheres = [];// [new TransformBySpheres()];
 }
 
 
@@ -670,6 +670,48 @@ window.addEventListener('load', function(event){
 		orbitCanvas.numIterations--;
 		orbitCanvas.render(0);
 	    }
+	    break;
+	case 'ArrowRight':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].phi += 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'ArrowLeft':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].phi -= 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'ArrowUp':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].theta += 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'ArrowDown':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].theta -= 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'p':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].twist += 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'n':
+	    if(g_scene.transformations[0] == undefined) return;
+	    g_scene.transformations[0].twist -= 10;
+	    g_scene.transformations[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
 	    break;
 	}});
     

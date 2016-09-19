@@ -195,17 +195,22 @@
 	 return isect;
      }
 
-     vec4 intersectXYRect (int objId, int objIndex, int objComponentId, int mtl,
-			   vec3 center, float size, mat3 rotation, mat3 invRotation,
-			   vec3 rayOrigin, vec3 rayDir, vec4 isect) {
+     // default plane is aligned the z-axis
+     vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
+			 float distToOrigin, float size, mat3 rotation, mat3 invRotation,
+			 vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
-	 rayOrigin *= rotation;
-	 rayDir *= rotation;
-	 float t = (center.z - rayOrigin.z) / rayDir.z;
+	 vec3 c = vec3(0, 0, distToOrigin);
+	 const vec3 defaultN = vec3(0, 0, 1);
+	 vec3 n = rotation * defaultN;
+	 float d = -dot(rotation * c, n);
+	 float v = dot(n, rayDir);
+	 float t = -(dot(n, rayOrigin) + d) / v;
 	 if(EPSILON < t && t < isect.x){
-	     vec2 p1 = center.xy - vec2(size * 0.5);
-	     vec2 p2 = center.xy + vec2(size * 0.5);
+	     vec2 p1 = - vec2(size * 0.5);
+	     vec2 p2 = vec2(size * 0.5);
     	     vec3 p = rayOrigin + t * rayDir;
+	     p = invRotation * p;
              if(p1.x < p.x && p.x < p2.x &&
 		p1.y < p.y && p.y < p2.y ){
 		 g_objId = objId;
@@ -213,7 +218,7 @@
 		 g_objComponentId = objComponentId;
 		 g_mtl = mtl;
 		 g_isHit = true;
-        	 return vec4(t, vec3(0, 0, 1) * rotation);
+        	 return vec4(t, n);
              }
 	 }
 	 return isect;
@@ -289,16 +294,16 @@
 	     {% endfor %}
 
 	     {% for n in range(0,  numTranslations ) %}
-	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
-				      vec3(0, 0, transformation{{ n }}[0]),
-				      transformation{{ n }}[2], rotatePlaneMat3{{ n }},
-				      invRotatePlaneMat3{{ n }},
-				      eye, ray, result);
-	     result = intersectXYRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
-				      vec3(0, 0, transformation{{ n }}[1]),
-				      transformation{{ n }}[2], rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
-				      invRotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
-				      eye, ray, result);
+	     result = intersectRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
+				    transformation{{ n }}[0],
+				    transformation{{ n }}[2], rotatePlaneMat3{{ n }},
+				    invRotatePlaneMat3{{ n }},
+				    eye, ray, result);
+	     result = intersectRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
+				    transformation{{ n }}[1],
+				    transformation{{ n }}[2], rotatePlaneMat3{{ n }} * twistPlaneMat3{{ n }},
+				    twistPlaneMat3{{ n }} * invRotatePlaneMat3{{ n }},
+				    eye, ray, result);
 	     
 	     {% endfor %}
 
@@ -581,6 +586,7 @@
 	     }
 	     {% endif %}
 	     {% for n in range(0,  numTranslations ) %}
+	     pos = invRotatePlaneMat3{{ n }} * pos;
 	     if(pos.z < transformation{{ n }}[0] || transformation{{ n }}[1] < pos.z){
 		 pos.z -= transformation{{ n }}[0];
 		 float nn = floor(pos.z / (transformation{{n}}[1] - transformation{{ n }}[0]));
@@ -596,6 +602,7 @@
 		 loopEnd = false;
 		 loopNum ++;
 	     }
+	     pos = rotatePlaneMat3{{ n }} * pos;
 	     {% endfor %}
 
 
