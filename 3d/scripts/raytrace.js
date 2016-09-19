@@ -345,7 +345,7 @@ function getIntersectedObject(eye, ray, objects){
 					 sphere.r,
 					 eye, ray, result);
 	    }
-	}else if(objectId == ID_TRANSFORMATION){
+	}else if(objectId == ID_TRANSFORM_BY_PLANES){
 	    for(var i = 0 ; i <  objects[objectId].length ; i++){
 		var transformation = objects[objectId][i];
 		// result = intersectRect(objectId, i, 0,

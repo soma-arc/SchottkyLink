@@ -39,7 +39,7 @@
      uniform vec3 u_up;
      uniform vec3 u_target;
      uniform float u_fov;
-     {% for n in range(0,  numSpheres ) %}
+     {% for n in range(0,  numSchottkySpheres ) %}
      uniform vec4 u_schottkySphere{{ n }};
      {% endfor %}
 
@@ -47,7 +47,7 @@
      uniform vec4 u_baseSphere{{ n }};
      {% endfor %}
 
-     {% for n in range(0,  numTranslations ) %}
+     {% for n in range(0,  numTransformByPlanes ) %}
      //[distToP1, distToP2, size, thetaRad, phiRad, twist]
      uniform float u_transformByPlanes{{ n }}[6];
      uniform mat3 u_rotatePlaneMat3{{ n }};
@@ -74,7 +74,7 @@
 
      const int ID_SCHOTTKY_SPHERE = 0;
      const int ID_BASE_SPHERE = 1;
-     const int ID_TRANSFORMATION = 2;
+     const int ID_TRANSFORM_BY_PLANES = 2;
      const int ID_TRANSFORM_BY_SPHERES = 3;
 
      const int ID_AXIS_CYLINDER = 100;
@@ -254,7 +254,7 @@
 	 for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
 	     vec4 result = vec4(99999.);
 	     
-	     {% for n  in range(0,  numSpheres ) %}
+	     {% for n  in range(0,  numSchottkySpheres ) %}
 	     result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
 				      u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w, eye, ray, result);
 
@@ -291,14 +291,14 @@
 	     }
 	     {% endfor %}
 
-	     {% for n in range(0,  numTranslations ) %}
-	     result = intersectRect(ID_TRANSFORMATION, {{ n }}, 0, MTL_DIFFUSE,
+	     {% for n in range(0,  numTransformByPlanes ) %}
+	     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
 				    u_transformByPlanes{{ n }}[0],
 				    u_transformByPlanes{{ n }}[2],
 				    u_rotatePlaneMat3{{ n }},
 				    u_invRotatePlaneMat3{{ n }},
 				    eye, ray, result);
-	     result = intersectRect(ID_TRANSFORMATION, {{ n }}, 1, MTL_DIFFUSE,
+	     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
 				    u_transformByPlanes{{ n }}[1],
 				    u_transformByPlanes{{ n }}[2],
 				    u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
@@ -358,7 +358,7 @@
 			     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
 	     }else if(g_objId == ID_AXIS_CYLINDER){
 		 matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
-	     }else if(g_objId == ID_TRANSFORMATION){
+	     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		 matColor = (g_objId == u_selectedObjectId &&
 			     g_objIndex == u_selectedObjectIndex)?
 			    RED : BLUE;
@@ -440,11 +440,11 @@
      uniform float u_fov;
      uniform int u_numIterations;
      
-     {% for n  in range(0,  numSpheres ) %}
+     {% for n  in range(0,  numSchottkySpheres ) %}
      uniform vec4 u_schottkySphere{{ n }};
      {% endfor %}
 
-     {% for n  in range(0,  numSpheres ) %}
+     {% for n  in range(0,  numSchottkySpheres ) %}
      float u_schottkySphere{{ n }}r2 = u_schottkySphere{{ n }}.w * u_schottkySphere{{ n }}.w;
      {% endfor %}
 
@@ -452,9 +452,7 @@
      uniform vec4 u_baseSphere{{ n }};
      {% endfor %}
 
-     int numTranslations = {{ numTranslations }};
-
-     {% for n in range(0,  numTranslations ) %}
+     {% for n in range(0,  numTransformByPlanes ) %}
      uniform float u_transformByPlanes{{ n }}[6];
      uniform mat3 u_rotatePlaneMat3{{ n }};
      uniform mat3 u_invRotatePlaneMat3{{ n }};
@@ -538,8 +536,8 @@
 	     }
 	     {% endfor %}
 	     
-	     {% if numSpheres > 2 %}
-	     {% for n  in range(0,  numSpheres ) %}
+	     {% if numSchottkySpheres > 2 %}
+	     {% for n  in range(0,  numSchottkySpheres ) %}
 	     {% if n == 0 %}
 	     if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
@@ -560,7 +558,7 @@
 	     }
 	     {% endif %}
 	     {% endfor %}
-	     {% elif numSpheres == 2 %}
+	     {% elif numSchottkySpheres == 2 %}
 	     if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
 		 dr *= u_schottkySphere0r2 / dot(diff, diff);
@@ -576,7 +574,7 @@
 		 loopEnd = false;
 		 loopNum++;
 	     }
-	     {% elif numSpheres == 1 %}
+	     {% elif numSchottkySpheres == 1 %}
 	     if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
 		 dr *= u_schottkySphere0r2 / dot(diff, diff);
@@ -585,7 +583,7 @@
 		 loopNum++;
 	     }
 	     {% endif %}
-	     {% for n in range(0,  numTranslations ) %}
+	     {% for n in range(0,  numTransformByPlanes ) %}
 	     pos = u_invRotatePlaneMat3{{ n }} * pos;
 	     if(pos.z < u_transformByPlanes{{ n }}[0] || u_transformByPlanes{{ n }}[1] < pos.z){
 		 pos.z -= u_transformByPlanes{{ n }}[0];
@@ -655,7 +653,7 @@
      const vec3 LIGHTING_FACT = vec3(0.);
      const vec3 BLACK = vec3(0);
      vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
-							    const vec3 lightPos, const vec3 lightPower){
+			  const vec3 lightPos, const vec3 lightPower){
 	 vec3 v = lightPos - p;
 	 float dot = dot(n, normalize(v));
 	 float r = length(v);
