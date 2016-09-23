@@ -114,6 +114,7 @@ function addMouseListeners(renderCanvas){
     });
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
+	event.preventDefault();
 	renderCanvas.isMousePressing = true;
 	var [px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 0){
