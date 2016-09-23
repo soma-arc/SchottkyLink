@@ -233,20 +233,123 @@ const ID_BASE_SPHERE = 1;
 const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 
+var g_params = [
+    {
+	schottkySpheres:[],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300)],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(300 + 300. * Math.sqrt(3), 0, 0, 300),
+			 new Sphere(-300 - 300 * Math.sqrt(3), 0, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300),
+			],
+	baseSpheres:[new Sphere(0, 0, 0, 125),
+		     new Sphere(300 + 100 * Math.sqrt(3), 0, 0, 50),
+		     new Sphere(-300 -100 * Math.sqrt(3), 0, 0, 50)],
+	transformBySpheres:[],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300)],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres: [],
+	transformByPlanes:[new ParabolicTransformation()],
+    },
+    {
+	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300)],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[new TransformBySpheres()],
+	transformByPlanes:[],
+    },
+    {
+	schottkySpheres:[],
+	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	transformBySpheres:[new TransformBySpheres()],
+	transformByPlanes:[new ParabolicTransformation()],
+    }
+    
+];
+
 var Scene = function(){
-    this.schottkySpheres =  [new Sphere(300, 300, 0, 300),
-			     new Sphere(300, -300, 0, 300),
-			     new Sphere(-300, 300, 0, 300),
-			     new Sphere(-300, -300, 0, 300),
-			     new Sphere(0, 0, 424.26, 300),
-			     new Sphere(0, 0, -424.26, 300)];
-    this.baseSpheres = [new Sphere(0, 0, 0, 125),];
-    this.transformByPlanes = [new ParabolicTransformation()];
-    this.transformBySpheres = [];// [new TransformBySpheres()];
+    this.schottkySpheres = [];
+    this.baseSpheres = [new Sphere(0, 0, 0, 125)];
+    this.transformByPlanes = [];
+    this.transformBySpheres = [];
 }
 
 
 Scene.prototype = {
+    loadParameter: function(param){
+	this.schottkySpheres = param["schottkySpheres"];
+	this.baseSpheres = param["baseSpheres"];
+	this.transformByPlanes = param["transformByPlanes"];
+	this.transformBySpheres = param["transformBySpheres"];
+    },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.schottkySpheres.push(new Sphere(500, 500, 0, 300));
 	updateShaders(schottkyCanvas, orbitCanvas);
@@ -311,6 +414,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     });
 
     canvas.addEventListener('mousemove', function(event){
+	event.preventDefault();
 	if(!renderCanvas.isMousePressing) return;
 	[px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 1){
@@ -333,17 +437,17 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     });
 
     canvas.addEventListener('mousedown', function(event){
+	event.preventDefault();
 	renderCanvas.isMousePressing = true;
 	[px, py] = renderCanvas.calcPixel(event);
 	renderCanvas.prevMousePos = [px, py];
 	if(event.button == 1){
-	    event.preventDefault();
 	    prevTheta = renderCanvas.camera.theta;
 	    prevPhi = renderCanvas.camera.phi;
 	}else if(event.button == 2){
 	    renderCanvas.camera.prevTarget = renderCanvas.camera.target;
 	}
-    }, true);
+    }, false);
 
     canvas.addEventListener('mousewheel', function(event){
 	event.preventDefault();
@@ -354,7 +458,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 	}
 	renderCanvas.camera.update();
 	renderCanvas.render(0);
-    }, true);
+    }, false);
 
     [renderCanvas.switch,
      renderCanvas.render] = setupSchottkyProgram(g_scene,
@@ -711,6 +815,23 @@ window.addEventListener('load', function(event){
 	    g_scene.transformByPlanes[0].update();
 	    orbitCanvas.render(0);
 	    schottkyCanvas.render(0);
+	    break;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    var i = parseInt(event.key);
+	    var param = g_params[i];
+	    if(param != undefined){
+		g_scene.loadParameter(param);
+		updateShaders(schottkyCanvas, orbitCanvas);
+	    }
 	    break;
 	}});
     
