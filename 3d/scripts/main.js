@@ -112,6 +112,56 @@ ParabolicTransformation.prototype = {
     }
 }
 
+// Currently, we aligne the transformation along the z-axis only.
+var CompoundParabolic = function(){
+    // innerSphere and outer sphere is kissing
+    this.inner = new Sphere(0, 0, 1000, 500);// componentId = 0
+    this.outer = new Sphere(0, 0, 900, 600);// componentId = 1
+    this.inverted = sphereInvert(this.inner, this.outer); // componentId = 2
+    this.theta = 10; //Degree
+    this.rotationMat3 = getRotationZAxis(radians(this.theta));
+}
+
+CompoundParabolic.prototype = {
+    getUniformArray: function(){
+	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						   this.inverted.getUniformArray());
+    },
+    clone: function(){
+	var obj = new TransformBySpheres();
+	obj.inner = this.inner.clone();
+	obj.outer = this.outer.clone();
+	obj.inverted = this.inverted.clone();
+	return obj;
+    },
+    update: function(){
+	this.inverted = sphereInvert(this.inner, this.outer);
+	this.rotationMat3 = getRotationZAxis(radiand(this.theta));
+    },
+    move: function(dx, dy, axis, prevObject, schottkyCanvas){
+	var d = prevObject.inner.get(axis)- prevObject.outer.get(axis);
+	this.outer.move(dx, dy, axis, prevObject.outer, schottkyCanvas);
+	// Keep spheres kissing
+	this.inner.set(axis, this.outer.get(axis) + d);
+	this.update();
+    },
+    setRadius: function(mx, my, dx, dy, prevObject, schottkyCanvas){
+	this.outer.setRadius(mx, my, dx, dy, prevObject.outer, schottkyCanvas);
+	// Keep spheres kissing
+	this.inner.set(2, prevObject.inner.get(2) + this.outer.r - prevObject.outer.r);
+	this.update();
+    },
+    getComponentFromId: function(id){
+	if(id == 0){
+	    return this.inner;
+	}else if(id == 1){
+	    return this.outer;
+	}else if(id == 2){
+	    return this.inverted;
+	}
+    }
+}
+
 // Transformation defined by two spheres
 var TransformBySpheres = function(){
     // innerSphere and outer sphere is kissing
@@ -232,6 +282,7 @@ const ID_SCHOTTKY_SPHERE = 0;
 const ID_BASE_SPHERE = 1;
 const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
+const ID_COMPOUND_PARABOLIC  = 4;
 
 var g_params = [
     {
@@ -239,6 +290,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -246,6 +298,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -255,6 +308,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -265,6 +319,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -276,6 +331,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -287,6 +343,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -303,6 +360,7 @@ var g_params = [
 		     new Sphere(-300 -100 * Math.sqrt(3), 0, 0, 50)],
 	transformBySpheres:[],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -314,6 +372,7 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres: [],
 	transformByPlanes:[new ParabolicTransformation()],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -325,12 +384,14 @@ var g_params = [
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[new TransformBySpheres()],
 	transformByPlanes:[],
+	compoundParabolic:[],
     },
     {
 	schottkySpheres:[],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[new TransformBySpheres()],
 	transformByPlanes:[new ParabolicTransformation()],
+	compoundParabolic:[],
     }
     
 ];
@@ -340,6 +401,7 @@ var Scene = function(){
     this.baseSpheres = [new Sphere(0, 0, 0, 125)];
     this.transformByPlanes = [];
     this.transformBySpheres = [];
+    this.compoundParabolic = [];
 }
 
 
@@ -349,6 +411,7 @@ Scene.prototype = {
 	this.baseSpheres = param["baseSpheres"];
 	this.transformByPlanes = param["transformByPlanes"];
 	this.transformBySpheres = param["transformBySpheres"];
+	this.compoundParabolic = param["compoundParabolic"];
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.schottkySpheres.push(new Sphere(500, 500, 0, 300));
@@ -378,6 +441,7 @@ Scene.prototype = {
 	obj[ID_BASE_SPHERE] = this.baseSpheres;
 	obj[ID_TRANSFORM_BY_PLANES] = this.transformByPlanes;
 	obj[ID_TRANSFORM_BY_SPHERES] = this.transformBySpheres;
+	obj[ID_COMPOUND_PARABOLIC] = this.compoundParabolic;
 	return obj;
     },
     getNumSchottkySpheres: function(){
@@ -391,6 +455,9 @@ Scene.prototype = {
     },
     getNumTransformBySpheres: function(){
 	return this.transformBySpheres.length;
+    },
+    getNumCompundParabolic: function(){
+	return this.compoundParabolic.length;
     }
 }
 
@@ -475,11 +542,13 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numBaseSpheres = scene.getNumBaseSpheres();
     var numTransformByPlanes = scene.getNumTransformByPlanes();
     var numTransformBySpheres = scene.getNumTransformBySpheres();
+    var numCompoundParabolic = scene.getNumCompundParabolic()
     
     var shaderStr = renderCanvas.template.render({numSchottkySpheres: numSchottkySpheres,
 						  numBaseSpheres: numBaseSpheres,
 						  numTransformByPlanes: numTransformByPlanes,
-						  numTransformBySpheres: numTransformBySpheres});
+						  numTransformBySpheres: numTransformBySpheres,
+						  numCompoundParabolic: numCompoundParabolic});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -587,7 +656,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.transformByPlanes[i].invTwistMat3);
 	}
 	for(var i = 0 ; i < numTransformBySpheres ; i++){
-	    gl.uniform1fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
+	    gl.uniform4fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
 	}
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);

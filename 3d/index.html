@@ -57,10 +57,13 @@
      {% endfor %}
      
      {% for n in range(0, numTransformBySpheres) %}
-     //[innerSphere.x, innerSphere.y, innerSphere.z, innerSphere.r,
-     // outerSphere.x, outerSphere.y, outerSphere.z, outerSphere.r,
-     // invertedSphere.x, invertedSphere.y, invertedSphere.z, invertedSphere.r]
-     uniform float u_transformBySpheres{{ n }}[12];
+     //[innerSphere, outerSphere, invertedSphere]
+     uniform vec4 u_transformBySpheres{{ n }}[3];
+     {% endfor %}
+
+     {% for n in range(0, numCompoundParabolic) %}
+     //[innerSphere, outerSphere, invertedSphere]
+     uniform vec4 u_transformBySpheres{{ n }}[3];
      {% endfor %}
 
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -309,41 +312,29 @@
 
 	     {% for n in range(0, numTransformBySpheres) %}
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
-				      vec3(u_transformBySpheres{{ n }}[0],
-					   u_transformBySpheres{{ n }}[1],
-					   u_transformBySpheres{{ n }}[2]),
-				      u_transformBySpheres{{ n }}[3],
+				      u_transformBySpheres{{ n }}[0].xyz,
+				      u_transformBySpheres{{ n }}[0].w,
 				      eye, ray, result);
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
-				      vec3(u_transformBySpheres{{ n }}[4],
-					   u_transformBySpheres{{ n }}[5],
-					   u_transformBySpheres{{ n }}[6]),
-				      u_transformBySpheres{{ n }}[7],
+				      u_transformBySpheres{{ n }}[1].xyz,
+				      u_transformBySpheres{{ n }}[1].w,
 				      eye, ray, result);
 	     if(u_selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
 		u_selectedObjectIndex == {{ n }} &&
 		u_selectedComponentId == 1){
 		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					      10., vec3(u_transformBySpheres{{ n }}[4],
-							u_transformBySpheres{{ n }}[5],
-							u_transformBySpheres{{ n }}[6]),
+					      10., u_transformBySpheres{{ n }}[1].xyz,
 					      eye, ray, result);
 		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					      10., vec3(u_transformBySpheres{{ n }}[4],
-							u_transformBySpheres{{ n }}[5],
-							u_transformBySpheres{{ n }}[6]),
+					      10., u_transformBySpheres{{ n }}[1].xyz,
 					      eye, ray, result);
 		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					      10., vec3(u_transformBySpheres{{ n }}[4],
-							u_transformBySpheres{{ n }}[5],
-							u_transformBySpheres{{ n }}[6]),
+					      10., u_transformBySpheres{{ n }}[1].xyz,
 					      eye, ray, result);
 	     }
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
-				      vec3(u_transformBySpheres{{ n }}[8],
-					   u_transformBySpheres{{ n }}[9],
-					   u_transformBySpheres{{ n }}[10]),
-				      u_transformBySpheres{{ n }}[11],
+				      u_transformBySpheres{{ n }}[2].xyz,
+				      u_transformBySpheres{{ n }}[2].w,
 				      eye, ray, result);
 	     {% endfor %}
 	     
@@ -464,8 +455,8 @@
      {% endfor %}
 
      {% for n in range(0, numTransformBySpheres) %}
-     //[s1x, s1y, s1z, s1r, s2x, s2y, s2z, s2r, s3x, s3y, s3z, s3r]
-     uniform float u_transformBySpheres{{ n }}[12];
+     //[innerSphere, outerSphere, invertedSphere]
+     uniform vec4 u_transformBySpheres{{ n }}[3];
      {% endfor %}
      
      int g_mtl = -1;
@@ -549,27 +540,15 @@
 	 return isect;
      }
      
-     vec3 sphereInvert(vec3 pos, vec3 spherePos, float sphereR, float sphereR2){
+     vec3 sphereInvert(vec3 pos, vec3 spherePos, float sphereR2){
 	 return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
      }
 
      float loopNum = 0.;
 
      {% for n in range(0,  numTransformBySpheres ) %}
-     vec4 s0{{ n }} = vec4(u_transformBySpheres{{ n }}[0],
-			   u_transformBySpheres{{ n }}[1],
-			   u_transformBySpheres{{ n }}[2],
-			   u_transformBySpheres{{ n }}[3]);
-     vec4 s1{{ n }} = vec4(u_transformBySpheres{{ n }}[4],
-			   u_transformBySpheres{{ n }}[5],
-			   u_transformBySpheres{{ n }}[6],
-			   u_transformBySpheres{{ n }}[7]);
-     vec4 s2{{ n }} = vec4(u_transformBySpheres{{ n }}[8],
-			   u_transformBySpheres{{ n }}[9],
-			   u_transformBySpheres{{ n }}[10],
-			   u_transformBySpheres{{ n }}[11]);
-     float s0r2{{ n }} = s0{{ n }}.w * s0{{ n }}.w;
-     float s1r2{{ n }} = s1{{ n }}.w * s1{{ n }}.w;
+     float s0r2{{ n }} = u_transformBySpheres{{ n }}[0].w * u_transformBySpheres{{ n }}[0].w;
+     float s1r2{{ n }} = u_transformBySpheres{{ n }}[1].w * u_transformBySpheres{{ n }}[1].w;
      {% endfor %}
      
      const int MAX_KLEIN_ITARATION = 30;
@@ -583,25 +562,26 @@
 	     loopEnd = true;
 
 	     {% for n in range(0,  numTransformBySpheres ) %}
-	     if(distance(pos, s0{{ n }}.xyz) < s0{{ n }}.w){
-		 vec3 diff0 = (pos - s0{{ n }}.xyz);
+	     if(distance(pos, u_transformBySpheres{{ n }}[0].xyz) < u_transformBySpheres{{ n }}[0].w){
+		 vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
 		 dr *= s0r2{{ n }} / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2{{ n }});
+		 pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
 
-		 vec3 diff1 = (pos - s1{{ n }}.xyz);
+		 vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
 		 dr *= s1r2{{ n }} / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2{{ n }});
+		 pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz, s1r2{{ n }});
 		 
 		 loopEnd = false;
 		 loopNum++;
-	     }else if(distance(pos, s2{{ n }}.xyz) >= s2{{ n }}.w){
-		 vec3 diff1 = (pos - s1{{ n }}.xyz);
+	     }else if(distance(pos, u_transformBySpheres{{ n }}[2].xyz) >= u_transformBySpheres{{ n }}[2].w){
+		 vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
 		 dr *= s1r2{{ n }} / dot(diff1, diff1);
-		 pos = sphereInvert(pos, s1{{ n }}.xyz, s1{{ n }}.w, s1r2{{ n }});
+		 pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz,
+				    s1r2{{ n }});
 
-		 vec3 diff0 = (pos - s0{{ n }}.xyz);
+		 vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
 		 dr *= s0r2{{ n }} / dot(diff0, diff0);
-		 pos = sphereInvert(pos, s0{{ n }}.xyz, s0{{ n }}.w, s0r2{{ n }});
+		 pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
 
 		 loopEnd = false;
 		 loopNum++;
@@ -614,7 +594,7 @@
 	     if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
 		 dr *= u_schottkySphere0r2 / dot(diff, diff);
-		 pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0.w, u_schottkySphere0r2);
+		 pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
 		 loopEnd = false;
 		 loopNum++;
 	     }
@@ -623,7 +603,6 @@
 		 vec3 diff = (pos - u_schottkySphere{{ n }}.xyz);
 		 dr *= u_schottkySphere{{ n }}r2 / dot(diff, diff);
 		 pos = sphereInvert(pos, u_schottkySphere{{ n }}.xyz,
-				    u_schottkySphere{{ n }}.w,
 				    u_schottkySphere{{ n }}r2);
 		 loopEnd = false;
 		 loopNum++;
@@ -635,14 +614,13 @@
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
 		 dr *= u_schottkySphere0r2 / dot(diff, diff);
 		 pos = sphereInvert(pos, u_schottkySphere0.xyz,
-				    u_schottkySphere0.w,
 				    u_schottkySphere0r2);
 		 loopEnd = false;
 		 loopNum++;
 	     }else if(distance(pos, u_schottkySphere1.xyz) < u_schottkySphere1.w){
 		 vec3 diff = (pos - u_schottkySphere1.xyz);
 		 dr *= u_schottkySphere1r2 / dot(diff, diff);
-		 pos = sphereInvert(pos, u_schottkySphere1.xyz, u_schottkySphere1.w, u_schottkySphere1r2);
+		 pos = sphereInvert(pos, u_schottkySphere1.xyz, u_schottkySphere1r2);
 		 loopEnd = false;
 		 loopNum++;
 	     }
@@ -650,7 +628,7 @@
 	     if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
 		 vec3 diff = (pos - u_schottkySphere0.xyz);
 		 dr *= u_schottkySphere0r2 / dot(diff, diff);
-		 pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0.w, u_schottkySphere0r2);
+		 pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
 		 loopEnd = false;
 		 loopNum++;
 	     }
