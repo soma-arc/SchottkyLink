@@ -63,7 +63,7 @@
 
      {% for n in range(0, numCompoundParabolic) %}
      //[innerSphere, outerSphere, invertedSphere]
-     uniform vec4 u_transformBySpheres{{ n }}[3];
+     uniform vec4 u_compoundParabolic{{ n }}[3];
      {% endfor %}
 
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -79,6 +79,7 @@
      const int ID_BASE_SPHERE = 1;
      const int ID_TRANSFORM_BY_PLANES = 2;
      const int ID_TRANSFORM_BY_SPHERES = 3;
+     const int ID_COMPOUND_PARABOLIC = 4;
 
      const int ID_AXIS_CYLINDER = 100;
      
@@ -310,6 +311,34 @@
 	     
 	     {% endfor %}
 
+	     {% for n in range(0, numCompoundParabolic) %}
+	     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+				      u_compoundParabolic{{ n }}[0].xyz,
+				      u_compoundParabolic{{ n }}[0].w,
+				      eye, ray, result);
+	     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+				      u_compoundParabolic{{ n }}[1].xyz,
+				      u_compoundParabolic{{ n }}[1].w,
+				      eye, ray, result);
+	     if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 1){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[1].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[1].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[1].xyz,
+					      eye, ray, result);
+	     }
+	     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+				      u_compoundParabolic{{ n }}[2].xyz,
+				      u_compoundParabolic{{ n }}[2].w,
+				      eye, ray, result);
+	     {% endfor %}
+
 	     {% for n in range(0, numTransformBySpheres) %}
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
 				      u_transformBySpheres{{ n }}[0].xyz,
@@ -338,6 +367,7 @@
 				      eye, ray, result);
 	     {% endfor %}
 	     
+	     
   	     if(result.x != 99999.){
 		 vec3 matColor = WHITE;
 		 if( g_objId == ID_SCHOTTKY_SPHERE){
@@ -354,6 +384,12 @@
 				 g_objIndex == u_selectedObjectIndex)?
 				RED : BLUE;
 		 }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
+		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+		     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex &&
+				 g_objComponentId == 1) ? RED : matColor;
+		 }else if(g_objId == ID_COMPOUND_PARABOLIC){
 		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
 		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
 		     matColor = (g_objId == u_selectedObjectId &&
@@ -458,6 +494,13 @@
      //[innerSphere, outerSphere, invertedSphere]
      uniform vec4 u_transformBySpheres{{ n }}[3];
      {% endfor %}
+
+     {% for n in range(0, numCompoundParabolic) %}
+     //[innerSphere, outerSphere, invertedSphere]
+     uniform vec4 u_compoundParabolic{{ n }}[3];
+     uniform mat3 u_compoundRotateMat3{{ n }};
+     uniform mat3 u_invCompoundRotateMat3{{ n }};
+     {% endfor %}
      
      int g_mtl = -1;
      int g_objId = -1;
@@ -550,6 +593,11 @@
      float s0r2{{ n }} = u_transformBySpheres{{ n }}[0].w * u_transformBySpheres{{ n }}[0].w;
      float s1r2{{ n }} = u_transformBySpheres{{ n }}[1].w * u_transformBySpheres{{ n }}[1].w;
      {% endfor %}
+
+     {% for n in range(0, numCompoundParabolic) %}
+     float comp0r2{{ n }} = u_compoundParabolic{{ n }}[0].w * u_compoundParabolic{{ n }}[0].w;
+     float comp1r2{{ n }} = u_compoundParabolic{{ n }}[1].w * u_compoundParabolic{{ n }}[1].w;
+     {% endfor %}
      
      const int MAX_KLEIN_ITARATION = 30;
      float distKlein(vec3 pos){
@@ -560,6 +608,37 @@
 	 for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
 	     if(i >= u_numIterations) break;
 	     loopEnd = true;
+	     {% for n in range(0, numCompoundParabolic) %}
+	     if(distance(pos, u_compoundParabolic{{ n }}[0].xyz) < u_compoundParabolic{{ n }}[0].w){
+		 vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
+		 dr *= comp0r2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
+
+		 vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
+		 dr *= comp1r2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz, comp1r2{{ n }});
+
+		 pos = u_compoundRotateMat3{{ n }} *  pos;
+		 
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, u_compoundParabolic{{ n }}[2].xyz) >= u_compoundParabolic{{ n }}[2].w){
+		 vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
+		 dr *= comp1r2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz,
+				    comp1r2{{ n }});
+
+		 vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
+		 dr *= comp0r2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
+
+		 pos = u_invCompoundRotateMat3{{ n }} * pos;
+		 
+		 loopEnd = false;
+		 loopNum++;
+	     }
+	     
+	     {% endfor %}
 
 	     {% for n in range(0,  numTransformBySpheres ) %}
 	     if(distance(pos, u_transformBySpheres{{ n }}[0].xyz) < u_transformBySpheres{{ n }}[0].w){

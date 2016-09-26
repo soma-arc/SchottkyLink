@@ -118,8 +118,9 @@ var CompoundParabolic = function(){
     this.inner = new Sphere(0, 0, 1000, 500);// componentId = 0
     this.outer = new Sphere(0, 0, 900, 600);// componentId = 1
     this.inverted = sphereInvert(this.inner, this.outer); // componentId = 2
-    this.theta = 10; //Degree
+    this.theta = 45; //Degree
     this.rotationMat3 = getRotationZAxis(radians(this.theta));
+    this.invRotationMat3 = getRotationZAxis(radians(-this.theta));
 }
 
 CompoundParabolic.prototype = {
@@ -128,7 +129,7 @@ CompoundParabolic.prototype = {
 						   this.inverted.getUniformArray());
     },
     clone: function(){
-	var obj = new TransformBySpheres();
+	var obj = new CompoundParabolic();
 	obj.inner = this.inner.clone();
 	obj.outer = this.outer.clone();
 	obj.inverted = this.inverted.clone();
@@ -136,7 +137,8 @@ CompoundParabolic.prototype = {
     },
     update: function(){
 	this.inverted = sphereInvert(this.inner, this.outer);
-	this.rotationMat3 = getRotationZAxis(radiand(this.theta));
+	this.rotationMat3 = getRotationZAxis(radians(this.theta));
+	this.invRotationMat3 = getRotationZAxis(radians(-this.theta));
     },
     move: function(dx, dy, axis, prevObject, schottkyCanvas){
 	var d = prevObject.inner.get(axis)- prevObject.outer.get(axis);
@@ -294,11 +296,15 @@ var g_params = [
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
-			 new Sphere(300, -300, 0, 300),],
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300)],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres:[],
 	transformByPlanes:[],
-	compoundParabolic:[],
+	compoundParabolic:[new CompoundParabolic()],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -412,6 +418,7 @@ Scene.prototype = {
 	this.transformByPlanes = param["transformByPlanes"];
 	this.transformBySpheres = param["transformBySpheres"];
 	this.compoundParabolic = param["compoundParabolic"];
+	console.log(param["compoundParabolic"]);
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.schottkySpheres.push(new Sphere(500, 500, 0, 300));
@@ -456,7 +463,7 @@ Scene.prototype = {
     getNumTransformBySpheres: function(){
 	return this.transformBySpheres.length;
     },
-    getNumCompundParabolic: function(){
+    getNumCompoundParabolic: function(){
 	return this.compoundParabolic.length;
     }
 }
@@ -542,8 +549,8 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numBaseSpheres = scene.getNumBaseSpheres();
     var numTransformByPlanes = scene.getNumTransformByPlanes();
     var numTransformBySpheres = scene.getNumTransformBySpheres();
-    var numCompoundParabolic = scene.getNumCompundParabolic()
-    
+    var numCompoundParabolic = scene.getNumCompoundParabolic()
+    console.log(numCompoundParabolic);
     var shaderStr = renderCanvas.template.render({numSchottkySpheres: numSchottkySpheres,
 						  numBaseSpheres: numBaseSpheres,
 						  numTransformByPlanes: numTransformByPlanes,
@@ -599,6 +606,15 @@ function setupSchottkyProgram(scene, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'u_transformBySpheres'+ i);
     }
+    for(var i = 0 ; i < numCompoundParabolic ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'u_compoundParabolic'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'u_compoundRotateMat3'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program,
+						 'u_invCompoundRotateMat3'+ i);
+    }
+    
     
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
@@ -657,6 +673,12 @@ function setupSchottkyProgram(scene, renderCanvas){
 	}
 	for(var i = 0 ; i < numTransformBySpheres ; i++){
 	    gl.uniform4fv(uniLocation[uniI++], scene.transformBySpheres[i].getUniformArray());
+	}
+
+	for(var i = 0 ; i < numCompoundParabolic ; i++){
+	    gl.uniform4fv(uniLocation[uniI++], scene.compoundParabolic[i].getUniformArray());
+	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.compoundParabolic[i].rotationMat3);
+	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.compoundParabolic[i].invRotationMat3);
 	}
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -724,7 +746,8 @@ window.addEventListener('load', function(event){
 	    schottkyCanvas.render(0);
 	    if(objectId == ID_BASE_SPHERE ||
 	       objectId == ID_SCHOTTKY_SPHERE ||
-	       objectId == ID_TRANSFORM_BY_SPHERES){
+	       objectId == ID_TRANSFORM_BY_SPHERES ||
+	       objectId == ID_COMPOUND_PARABOLIC){
 		var obj = objects[objectId][objectIndex];
 		schottkyCanvas.prevObject = obj.clone();
 		schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(obj.getComponentFromId(componentId).getPosition(),
@@ -744,7 +767,8 @@ window.addEventListener('load', function(event){
 	    if(groupId == ID_SCHOTTKY_SPHERE ||
 	       groupId == ID_BASE_SPHERE){
 		operateObject = g_scene.getObjects()[groupId][index];
-	    }else if(groupId == ID_TRANSFORM_BY_SPHERES){
+	    }else if(groupId == ID_TRANSFORM_BY_SPHERES ||
+		     groupId == ID_COMPOUND_PARABOLIC){
 		operateObject = g_scene.getObjects()[groupId][index];
 	    }
 	    if(operateObject == undefined) return;
@@ -780,7 +804,8 @@ window.addEventListener('load', function(event){
 	orbitCanvas.isRendering = false;
 	if(schottkyCanvas.selectedObjectId == ID_BASE_SPHERE ||
 	   schottkyCanvas.selectedObjectId == ID_SCHOTTKY_SPHERE ||
-	   schottkyCanvas.selectedObjectId == ID_TRANSFORM_BY_SPHERES){
+	   schottkyCanvas.selectedObjectId == ID_TRANSFORM_BY_SPHERES ||
+	   schottkyCanvas.selectedObjectId == ID_COMPOUND_PARABOLIC){
 	    var obj = g_scene.getObjects()[schottkyCanvas.selectedObjectId][schottkyCanvas.selectedObjectIndex];
 	    schottkyCanvas.prevObject = obj.clone();
 	    schottkyCanvas.axisVecOnScreen = calcAxisOnScreen(obj.getComponentFromId(schottkyCanvas.selectedComponentId).getPosition(),

@@ -380,7 +380,8 @@ function getIntersectedObject(eye, ray, objects){
 						transformation.twistMat3),
 				       eye, ray, result);
 	    }
-	}else if(objectId == ID_TRANSFORM_BY_SPHERES){
+	}else if(objectId == ID_TRANSFORM_BY_SPHERES ||
+		objectId == ID_COMPOUND_PARABOLIC){
 	    for(var i = 0 ; i <  objects[objectId].length ; i++){
 		var transformation = objects[objectId][i];
 		var innerSphere = transformation.inner;
