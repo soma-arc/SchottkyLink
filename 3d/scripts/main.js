@@ -93,6 +93,17 @@ var ParabolicTransformation = function(){
 }
 
 ParabolicTransformation.prototype = {
+    clone: function(){
+	var obj = new ParabolicTransformation();
+	obj.distToP1 = this.distToP1;
+	obj.distToP2 = this.distToP2;
+	obj.theta = this.theta;
+	obj.phi = this.phi;
+	obj.size = this.size;
+	obj.twist = this.twist;
+	obj.update();
+	return obj;
+    },
     getUniformArray: function(){
 	return [this.distToP1, this.distToP2, this.size,
 		radians(this.theta), radians(this.phi), this.twist];
@@ -133,6 +144,7 @@ CompoundParabolic.prototype = {
 	obj.inner = this.inner.clone();
 	obj.outer = this.outer.clone();
 	obj.inverted = this.inverted.clone();
+	obj.update();
 	return obj;
     },
     update: function(){
@@ -182,6 +194,7 @@ TransformBySpheres.prototype = {
 	obj.inner = this.inner.clone();
 	obj.outer = this.outer.clone();
 	obj.inverted = this.inverted.clone();
+	obj.update();
 	return obj;
     },
     update: function(){
@@ -413,12 +426,18 @@ var Scene = function(){
 
 Scene.prototype = {
     loadParameter: function(param){
-	this.schottkySpheres = param["schottkySpheres"];
-	this.baseSpheres = param["baseSpheres"];
-	this.transformByPlanes = param["transformByPlanes"];
-	this.transformBySpheres = param["transformBySpheres"];
-	this.compoundParabolic = param["compoundParabolic"];
-	console.log(param["compoundParabolic"]);
+	this.schottkySpheres = this.clone(param["schottkySpheres"]);
+	this.baseSpheres = this.clone(param["baseSpheres"]);
+	this.transformByPlanes = this.clone(param["transformByPlanes"]);
+	this.transformBySpheres = this.clone(param["transformBySpheres"]);
+	this.compoundParabolic = this.clone(param["compoundParabolic"]);
+    },
+    clone: function(objects){
+	var obj = [];
+	for(var i = 0 ; i < objects.length ; i++){
+	    obj.push(objects[i].clone());
+	}
+	return obj;
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.schottkySpheres.push(new Sphere(500, 500, 0, 300));
@@ -550,7 +569,6 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numTransformByPlanes = scene.getNumTransformByPlanes();
     var numTransformBySpheres = scene.getNumTransformBySpheres();
     var numCompoundParabolic = scene.getNumCompoundParabolic()
-    console.log(numCompoundParabolic);
     var shaderStr = renderCanvas.template.render({numSchottkySpheres: numSchottkySpheres,
 						  numBaseSpheres: numBaseSpheres,
 						  numTransformByPlanes: numTransformByPlanes,
@@ -907,6 +925,20 @@ window.addEventListener('load', function(event){
 	    if(g_scene.transformByPlanes[0] == undefined) return;
 	    g_scene.transformByPlanes[0].twist -= 10;
 	    g_scene.transformByPlanes[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'y':
+	    if(g_scene.compoundParabolic[0] == undefined) return;
+	    g_scene.compoundParabolic[0].theta += 10;
+	    g_scene.compoundParabolic[0].update();
+	    orbitCanvas.render(0);
+	    schottkyCanvas.render(0);
+	    break;
+	case 'g':
+	    if(g_scene.compoundParabolic[0] == undefined) return;
+	    g_scene.compoundParabolic[0].theta -= 10;
+	    g_scene.compoundParabolic[0].update();
 	    orbitCanvas.render(0);
 	    schottkyCanvas.render(0);
 	    break;
