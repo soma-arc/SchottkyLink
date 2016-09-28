@@ -277,6 +277,8 @@ var RenderCanvas = function(canvasId, templateId){
 
     this.sphereCenterOnScreen;
     this.prevObject;
+
+    this.displayGenerators = false;
 }
 
 RenderCanvas.prototype = {
@@ -632,8 +634,8 @@ function setupSchottkyProgram(scene, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'u_invCompoundRotateMat3'+ i);
     }
-    
-    
+    uniLocation[n++] = gl.getUniformLocation(program,
+					     'u_displayGenerators');
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
 	            -1.0, -1.0,  0.0,
@@ -698,6 +700,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.compoundParabolic[i].rotationMat3);
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.compoundParabolic[i].invRotationMat3);
 	}
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
@@ -876,6 +879,9 @@ window.addEventListener('load', function(event){
 		schottkyCanvas.render(0);
 	    }
 	    break;
+	case 'd':
+	    orbitCanvas.displayGenerators = !orbitCanvas.displayGenerators;
+	    orbitCanvas.render(0);
 	case '+':
 	    orbitCanvas.numIterations++;
 	    orbitCanvas.render(0);

@@ -501,6 +501,8 @@
      uniform mat3 u_compoundRotateMat3{{ n }};
      uniform mat3 u_invCompoundRotateMat3{{ n }};
      {% endfor %}
+
+     uniform bool u_displayGenerators;
      
      int g_mtl = -1;
      int g_objId = -1;
@@ -512,6 +514,7 @@
      const int ID_BASE_SPHERE = 1;
      const int ID_TRANSFORM_BY_PLANES = 2;
      const int ID_TRANSFORM_BY_SPHERES = 3;
+     const int ID_COMPOUND_PARABOLIC = 4;
 
      const int ID_AXIS_CYLINDER = 100;
      const int ID_KLEIN_ORBIT = 101;
@@ -583,7 +586,7 @@
 	 return isect;
      }
      
-     vec3 sphereInvert(vec3 pos, vec3 spherePos, float sphereR2){
+     vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
 	 return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
      }
 
@@ -839,54 +842,68 @@
 
 	     result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
 			    eye, ray, 0.01, result);
-	     /* 
-		{% for n  in range(0,  numSchottkySpheres ) %}
-		result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
-		u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w, eye, ray, result);
-		{% endfor %}
+	     if(u_displayGenerators){
+		 
+		 {% for n  in range(0,  numSchottkySpheres ) %}
+		 result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
+					  u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w,
+					  eye, ray, result);
+		 {% endfor %}
 
-		{% for n in range(0,  numBaseSpheres ) %}
-		result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
-		u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w, eye, ray, result);
-		
-		{% endfor %}
+		 {% for n in range(0,  numBaseSpheres ) %}
+		 result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
+					  u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w,
+					  eye, ray, result);
+		 
+		 {% endfor %}
 
-		{% for n in range(0,  numTransformByPlanes ) %}
-		result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
-		u_transformByPlanes{{ n }}[0],
-		u_transformByPlanes{{ n }}[2],
-		u_rotatePlaneMat3{{ n }},
-		u_invRotatePlaneMat3{{ n }},
-		eye, ray, result);
-		result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
-		u_transformByPlanes{{ n }}[1],
-		u_transformByPlanes{{ n }}[2],
-		u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
-		u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
-		eye, ray, result);
-		
-		{% endfor %}
+		 {% for n in range(0,  numTransformByPlanes ) %}
+		 result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
+					u_transformByPlanes{{ n }}[0],
+					u_transformByPlanes{{ n }}[2],
+					u_rotatePlaneMat3{{ n }},
+					u_invRotatePlaneMat3{{ n }},
+					eye, ray, result);
+		 result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
+					u_transformByPlanes{{ n }}[1],
+					u_transformByPlanes{{ n }}[2],
+					u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
+					u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
+					eye, ray, result);
+		 
+		 {% endfor %}
 
-		{% for n in range(0, numTransformBySpheres) %}
-		result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
-		vec3(u_transformBySpheres{{ n }}[0],
-		u_transformBySpheres{{ n }}[1],
-		u_transformBySpheres{{ n }}[2]),
-		u_transformBySpheres{{ n }}[3],
-		eye, ray, result);
-		result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
-		vec3(u_transformBySpheres{{ n }}[4],
-		u_transformBySpheres{{ n }}[5],
-		u_transformBySpheres{{ n }}[6]),
-		u_transformBySpheres{{ n }}[7],
-		eye, ray, result);
-		result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
-		vec3(u_transformBySpheres{{ n }}[8],
-		u_transformBySpheres{{ n }}[9],
-		u_transformBySpheres{{ n }}[10]),
-		u_transformBySpheres{{ n }}[11],
-		eye, ray, result);
-		{% endfor %}*/
+		 {% for n in range(0, numTransformBySpheres) %}
+		 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
+					  u_transformBySpheres{{ n }}[0].xyz,
+					  u_transformBySpheres{{ n }}[0].w,
+					  eye, ray, result);
+		 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
+					  u_transformBySpheres{{ n }}[1].xyz,
+					  u_transformBySpheres{{ n }}[1].w,
+					  eye, ray, result);
+		 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
+					  u_transformBySpheres{{ n }}[2].xyz,
+					  u_transformBySpheres{{ n }}[2].w,
+					  eye, ray, result);
+		 {% endfor %}
+
+		 {% for n in range(0, numCompoundParabolic) %}
+		 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+					  u_compoundParabolic{{ n }}[0].xyz,
+					  u_compoundParabolic{{ n }}[0].w,
+					  eye, ray, result);
+		 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+					  u_compoundParabolic{{ n }}[1].xyz,
+					  u_compoundParabolic{{ n }}[1].w,
+					  eye, ray, result);
+		 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+					  u_compoundParabolic{{ n }}[2].xyz,
+					  u_compoundParabolic{{ n }}[2].w,
+					  eye, ray, result);
+		 {% endfor %}
+		 
+	     }
 
 	     if(result.x != NO_HIT){
 		 vec3 normal = result.yzw;
@@ -912,12 +929,19 @@
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex &&
 				 g_objComponentId == 1) ? RED : matColor;
+		 }else if(g_objId == ID_COMPOUND_PARABOLIC){
+		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+		     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex &&
+				 g_objComponentId == 1) ? RED : matColor;
 		 }else if(g_objId == ID_KLEIN_ORBIT){
 		     matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
 		     normal = getNormal(intersection);
 		 }
 
-		 vec3 diffuse = diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+		 vec3 diffuse = diffuseLighting(intersection, normal, matColor,
+						lightPos, lightPower);
 		 vec3 ambient = matColor * ambientFactor;
 		 if(g_mtl == MTL_TRANSPARENT){
 		     coeff *= transparency;
