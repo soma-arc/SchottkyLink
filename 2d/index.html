@@ -28,15 +28,26 @@
     </script>
     <script id="kissingSchottkyTemplate" type="x-shader/x-fragment">
      precision mediump float;
-     uniform float iGlobalTime;
-     //   uniform vec2  mouse;
-     uniform vec2  iResolution;
-     uniform vec2 translate;
+     uniform float u_iGlobalTime;
+     uniform vec2  u_iResolution;
+     uniform vec2 u_translate;
+     uniform float u_scale;
+     uniform int u_iterations;
+     uniform float u_initialHue;
+     uniform float u_hueStep;
+     uniform float u_numSamples;
+     
      {% for n  in range(0,  numCircles ) %}
-     uniform vec3 c{{ n }};
+     // [x, y, r, r * r]
+     uniform vec3 u_schottkyCircle{{ n }};
      {% endfor %}
-     uniform float scale;
-     uniform int iterations;
+
+     {% for n  in range(0,  numInfiniteCircles ) %}
+     // [x, y, degree]
+     uniform vec3 u_infiniteCircle{{ n }};
+     uniform mat2 u_infiniteCircleRotationMat2{{ n }};
+     uniform mat2 u_invInfiniteCircleRotationMat2{{ n }};
+     {% endfor %}
 
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
@@ -47,7 +58,7 @@
                      fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
      }
      
-     vec2 circleInvert(vec2 pos, vec2 circlePos, float circleR){
+     vec2 circleInvert(const vec2 pos, const vec2 circlePos, const float circleR){
 	 return ((pos - circlePos) * circleR * circleR)/(distance(pos, circlePos) * distance(pos, circlePos) ) + circlePos;
      }
 
@@ -56,41 +67,53 @@
 	 float loopNum = 0.;
 	 bool cont = false;
 	 for(int i = 0 ; i < MAX_ITERATIONS ; i++){
-	     if(i >= iterations) break;
+	     if(i >= u_iterations) break;
 	     cont = false;
 	     {% if numCircles > 2 %}
 	     {% for n  in range(0,  numCircles ) %}
 	     {% if n == 0 %}
-	     if(distance(pos, c0.xy) < c0.z){
-		 pos = circleInvert(pos, c0.xy, c0.z);
+	     if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		 pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
 		 cont = true;
 		 loopNum++;
 	     }
 	     {% else %}
-	     else if(distance(pos, c{{ n }}.xy) < c{{ n }}.z){
-		 pos = circleInvert(pos, c{{ n }}.xy, c{{ n }}.z);
+	     else if(distance(pos, u_schottkyCircle{{ n }}.xy) < u_schottkyCircle{{ n }}.z){
+		 pos = circleInvert(pos, u_schottkyCircle{{ n }}.xy, u_schottkyCircle{{ n }}.z);
 		 cont = true;
 		 loopNum++;
 	     }
 	     {% endif %}
 	     {% endfor %}
 	     {% elif numCircles == 2 %}
-	     if(distance(pos, c0.xy) < c0.z){
-		 pos = circleInvert(pos, c0.xy, c0.z);
+	     if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		 pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
 		 cont = true;
 		 loopNum++;
-	     }else if(distance(pos, c1.xy) < c1.z){
-		 pos = circleInvert(pos, c1.xy, c1.z);
+	     }else if(distance(pos, u_schottkyCircle1.xy) < u_schottkyCircle1.z){
+		 pos = circleInvert(pos, u_schottkyCircle1.xy, u_schottkyCircle1.z);
 		 cont = true;
 		 loopNum++;
 	     }
-	     {% else %}
-	     if(distance(pos, c0.xy) < c0.z){
-		 pos = circleInvert(pos, c0.xy, c0.z);
+	     {% elif numCircles == 1 %}
+	     if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		 pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
 		 cont = true;
 		 loopNum++;
 	     }
 	     {% endif %}
+
+	     {% for n in range(0,  numInfiniteCircles ) %}
+	     pos -= u_infiniteCircle{{ n }}.xy;
+	     pos = u_invInfiniteCircleRotationMat2{{ n }} * pos;
+	     if(pos.x > 0.){
+		 pos.x *= -1.;
+		 cont = true;
+		 loopNum++;
+	     }
+	     pos = u_infiniteCircleRotationMat2{{ n }} * pos;
+	     pos += u_infiniteCircle{{ n }}.xy;
+	     {% endfor %}
 	     if(cont == false) break;
 	 }
 	 return loopNum;
@@ -102,27 +125,24 @@
      }
 
      const float MAX_SAMPLE = 100.;
-     uniform float initialHue;
-     uniform float hueStep;
-     uniform float numSamples;
      void main(){
 	 vec4 sum = vec4(0);
-	 float ratio = iResolution.x / iResolution.y / 2.0;
+	 float ratio = u_iResolution.x / u_iResolution.y / 2.0;
 	 for(float i = 0. ; i < MAX_SAMPLE ; i++){
-	     if(i >= numSamples) break;
-	     vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / iResolution.yy ) - vec2(ratio, 0.5);
-	     position = position * scale;
-	     position += translate;
+	     if(i >= u_numSamples) break;
+	     vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_iResolution.yy ) - vec2(ratio, 0.5);
+	     position = position * u_scale;
+	     position += u_translate;
 
 	     float loopNum = IIS(position);
 	     if(loopNum > 0.){
-		 vec3 hsv = vec3(initialHue + hueStep * loopNum, 1.0,1.0);
+		 vec3 hsv = vec3(u_initialHue + u_hueStep * loopNum, 1.0,1.0);
 		 sum += vec4(hsv2rgb(hsv), 1.0);
 	     }else{
 		 sum += vec4(0.,0.,0.,1.);
 	     }
 	 }
-	 gl_FragColor = vec4(sum/numSamples);
+	 gl_FragColor = vec4(sum/u_numSamples);
      }
     </script>
 

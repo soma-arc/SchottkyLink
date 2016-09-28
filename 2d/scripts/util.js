@@ -1,3 +1,28 @@
+radians = function(degrees) {
+    return degrees * Math.PI / 180;
+};
+
+
+function getIdentityMat2(){
+    return [1, 0,
+	    0, 1];
+}
+
+function getRotationMat2(thetaRad){
+    var cosTheta = Math.cos(thetaRad);
+    var sinTheta = Math.sin(thetaRad);
+    return [cosTheta, -sinTheta,
+	    sinTheta, cosTheta];
+}
+
+function prodMat2(a, b){
+    return [a[0] * b[0] + a[1] * b[2],
+	    a[0] * b[1] + a[1] * b[3],
+	    a[2] * b[0] + a[3] * b[2],
+	    a[2] * b[1] + a[3] * b[3]];
+    
+}
+
 function attachShader(gl, shaderId, program, shaderType){
     var shader = gl.createShader(shaderType);
     elem = document.getElementById(shaderId).text;

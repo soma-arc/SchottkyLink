@@ -15,16 +15,38 @@ Circle.prototype = {
     }
 }
 
+// Circle which have infinite radius.
+// It is defined by translation and rotation.
+// Initially it is reflection along the y-axis.
+var InfiniteCircle = function(x, y, thetaDegree){
+    this.x = x;
+    this.y = y;
+    this.theta = thetaDegree;
+    this.rotationMat2 = getRotationMat2(radians(thetaDegree));
+    this.invRotationMat2 = getRotationMat2(radians(-thetaDegree));
+}
+
+InfiniteCircle.prototype = {
+    getUniformArray: function(){
+	return [this.x, this.y, this.thetaDegree];
+    }
+}
+
 var Scene = function(){
     this.circles = [new Circle(100, -100, 100),
 		    new Circle(100, 100, 100),
 		    new Circle(-100, -100, 100),
 		    new Circle(-100, 100, 100)];
+    this.infiniteCircles = [new InfiniteCircle(200, 0, 0),
+			    new InfiniteCircle(-200, 0, 180)];
 }
 
 Scene.prototype = {
     getNumCircles: function(){
 	return this.circles.length;
+    },
+    getNumInfiniteCircles: function(){
+	return this.infiniteCircles.length;
     },
     removeCircle: function(canvas, index){
 	if(this.circles.length == 0) return;
@@ -231,9 +253,10 @@ function setupSchottkyProgram(scene, renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
     var numCircles = scene.getNumCircles();
-    
+    var numInfiniteCircles = scene.getNumInfiniteCircles();
     attachShaderFromString(gl,
-			   renderCanvas.template.render({numCircles: numCircles}),
+			   renderCanvas.template.render({numCircles: numCircles,
+							 numInfiniteCircles: numInfiniteCircles}),
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
@@ -241,17 +264,23 @@ function setupSchottkyProgram(scene, renderCanvas){
 
     var uniLocation = new Array();
     var n = 0;
-    uniLocation[n++] = gl.getUniformLocation(program, 'iResolution');
-    uniLocation[n++] = gl.getUniformLocation(program, 'iGlobalTime');
-    uniLocation[n++] = gl.getUniformLocation(program, 'translate');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_iResolution');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_iGlobalTime');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_translate');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_scale');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_iterations');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_initialHue');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_hueStep');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_numSamples');
     for(var i = 0 ; i < numCircles ; i++){
-	uniLocation[n++] = gl.getUniformLocation(program, 'c'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircle'+ i);
     }
-    uniLocation[n++] = gl.getUniformLocation(program, 'scale');
-    uniLocation[n++] = gl.getUniformLocation(program, 'iterations');
-    uniLocation[n++] = gl.getUniformLocation(program, 'initialHue');
-    uniLocation[n++] = gl.getUniformLocation(program, 'hueStep');
-    uniLocation[n++] = gl.getUniformLocation(program, 'numSamples');
+    for(var i = 0 ; i < numInfiniteCircles ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircle'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleRotationMat2'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_invInfiniteCircleRotationMat2'+ i);
+    }
+    
     var position = [-1.0, 1.0, 0.0,
                     1.0, 1.0, 0.0,
 	            -1.0, -1.0,  0.0,
@@ -289,14 +318,22 @@ function setupSchottkyProgram(scene, renderCanvas){
 					    renderCanvas.canvas.height]);
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
 	gl.uniform2fv(uniLocation[uniI++], renderCanvas.translate);
-	for(var i = 0 ; i < numCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
-	}
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.scale);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.iterations);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.initialHue);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.hueStep);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples);
+
+	for(var i = 0 ; i < numCircles ; i++){
+	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
+	}
+	for(var i = 0 ; i < numInfiniteCircles ; i++){
+	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUniformArray());
+	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
+				scene.infiniteCircles[i].rotationMat2);
+	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
+				scene.infiniteCircles[i].invRotationMat2);
+	}
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
