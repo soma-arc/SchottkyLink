@@ -1,8 +1,47 @@
-var g_circles = [[100, -100, 100],
-		 [100, 100, 100],
-		 [-100, -100, 100],
-		 [-100, 100, 100]];
-var g_numCircles = 4;
+var g_scene;
+
+var Circle = function(x, y, r){
+    this.x = x;
+    this.y = y;
+    this.r = r;
+}
+
+Circle.prototype = {
+    clone: function(){
+	return new Circle(thix.x, thix.y, thix.r);
+    },
+    getUniformArray: function(){
+	return [this.x, this.y, this.r];
+    }
+}
+
+var Scene = function(){
+    this.circles = [new Circle(100, -100, 100),
+		    new Circle(100, 100, 100),
+		    new Circle(-100, -100, 100),
+		    new Circle(-100, 100, 100)];
+}
+
+Scene.prototype = {
+    getNumCircles: function(){
+	return this.circles.length;
+    },
+    removeCircle: function(canvas, index){
+	if(this.circles.length == 0) return;
+	canvas.selectedObjectId = -1;
+	canvas.selectedObjectIndex = -1;
+	this.circles.splice(index, 1);
+	updateShaders(canvas);
+    },
+    addCircle: function(canvas, x, y){
+	this.circles.push(new Circle(x, y, 100));
+	updateShaders(canvas);
+    }
+}
+
+const ID_CIRCLE = 0;
+const CIRCLE_BODY = 0;
+const CIRCLE_CIRCUMFERENCE = 1;
 
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -11,16 +50,18 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.defaultHeight = canvas.height;
     this.center = [0, 0];
     this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
-;
+
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
     this.isRendering = false;
     this.isMousePressing = false;
-    this.isOperatingRadius = false;
     this.prevMousePos = [0, 0];
     this.scale = 900;
     this.selectableRadius = 10;
-    this.selectedCircleIndex = -1;
+
+    this.selectedObjectId = -1;
+    this.selectedObjectIndex = -1;
+    this.selectedComponentId = -1;
     
     this.switch;
     this.render;
@@ -87,28 +128,39 @@ RenderCanvas2D.prototype = {
     }
 }
 
+function updateShaders(canvas){
+    [canvas.switch,
+     canvas.render] = setupSchottkyProgram(g_scene, canvas);
+    canvas.switch();
+    canvas.render(0);
+}
+
 function addMouseListeners(renderCanvas){
     var diff = [0, 0];
     renderCanvas.canvas.addEventListener('mouseup', function(event){
 	renderCanvas.mousePressing = false;
-	renderCanvas.isOperatingRadius = false;
-	renderCanvas.selectedCircleIndex = -1;
 	renderCanvas.isRendering = false;
+	renderCanvas.selectedObjectId = -1;
+	renderCanvas.selectedObjectIndex = -1;
+	renderCanvas.selectedComponentId = -1;
     }, false);
 
     renderCanvas.canvas.addEventListener('mousemove', function(event){
 	if(!renderCanvas.isMousePressing) return;
 	var [px, py] = renderCanvas.calcPixel();
 	if(event.button == 0){
-	    if(renderCanvas.isOperatingRadius){
-		var dx = px - g_circles[renderCanvas.selectedCircleIndex][0];
-		var dy = py - g_circles[renderCanvas.selectedCircleIndex][1];
-		var dist = Math.sqrt((dx * dx) + (dy * dy));
-		g_circles[renderCanvas.selectedCircleIndex][2] = dist;
-		return;
-	    }else if(renderCanvas.selectedCircleIndex > -1){
-		g_circles[renderCanvas.selectedCircleIndex][0] = px - diff[0];
-		g_circles[renderCanvas.selectedCircleIndex][1] = py - diff[1];
+	    if(renderCanvas.selectedObjectId == ID_CIRCLE){
+		var circle = g_scene.circles[renderCanvas.selectedObjectIndex];
+		if(renderCanvas.selectedComponentId == CIRCLE_CIRCUMFERENCE){
+		    var dx = px - circle.x;
+		    var dy = py - circle.y;
+		    var dist = Math.sqrt((dx * dx) + (dy * dy));
+		    circle.r = dist;
+		}else{
+		    circle.x = px - diff[0];
+		    circle.y = py - diff[1];
+		}
+		renderCanvas.isRendering = true;
 	    }
 	}
     });
@@ -118,46 +170,44 @@ function addMouseListeners(renderCanvas){
 	renderCanvas.isMousePressing = true;
 	var [px, py] = renderCanvas.calcPixel(event);
 	if(event.button == 0){
-	    for(var i = 0 ; i < g_numCircles ; i++){
-		var dx = px - g_circles[i][0];
-		var dy = py - g_circles[i][1];
+	    var circles = g_scene.circles;
+	    for(var i = 0 ; i < circles.length ; i++){
+		var dx = px - circles[i].x;
+		var dy = py - circles[i].y;
 		var dist = Math.sqrt((dx * dx) + (dy * dy));
-		if(Math.abs(dist - g_circles[i][2]) < renderCanvas.selectableRadius){
+		if(Math.abs(dist - circles[i].r) < renderCanvas.selectableRadius){
 		    renderCanvas.selectedCircleIndex = i;
 		    renderCanvas.isOperatingRadius = true;
-		}else if(dist < g_circles[i][2] - renderCanvas.selectableRadius){
+		    renderCanvas.selectedObjectId = ID_CIRCLE;
+		    renderCanvas.selectedObjectIndex = i;
+		    renderCanvas.selectedComponentId = CIRCLE_CIRCUMFERENCE;
+		    return;
+		}else if(dist < circles[i].r - renderCanvas.selectableRadius){
 		    diff = [dx, dy];
-		    renderCanvas.selectedCircleIndex = i;
+		    renderCanvas.selectedObjectId = ID_CIRCLE;
+		    renderCanvas.selectedObjectIndex = i;
+		    renderCanvas.selectedComponentId = CIRCLE_BODY;
+		    return;
 		}
 	    }
-	    renderCanvas.isRendering = true;
 	}else if(event.button == 1){
-	    g_circles.push([px, py, 100]);
-	    g_numCircles++;
-	    [renderCanvas.switch,
-	     renderCanvas.render] = setupSchottkyProgram(renderCanvas,
-							 g_numCircles);
-	    renderCanvas.switch();
-	    renderCanvas.render(0);
+	    g_scene.addCircle(renderCanvas, px, py);
 	}
+	renderCanvas.selectedObjectId = -1;
+	renderCanvas.selectedObjectIndex = -1;
+	renderCanvas.selectedComponentId = -1;
     }, false);
 
     renderCanvas.canvas.addEventListener('dblclick', function(event){
-	if(event.button == 0 && g_numCircles > 1){
+	if(event.button == 0){
 	    var [px, py] = renderCanvas.calcPixel(event);
-	    for(var i = 0 ; i < g_numCircles ; i++){
-		var dx = px - g_circles[i][0];
-		var dy = py - g_circles[i][1];
+	    var circles = g_scene.circles;
+	    for(var i = 0 ; i < circles.length ; i++){
+		var dx = px - circles[i].x;
+		var dy = py - circles[i].y;
 		var dist = Math.sqrt((dx * dx) + (dy * dy));
-		if(dist < g_circles[i][2]){
-		    g_circles.splice(i, 1);
-		    g_numCircles--;
-		    
-		    [renderCanvas.switch,
-		     renderCanvas.render] = setupSchottkyProgram(renderCanvas,
-								 g_numCircles);
-		    renderCanvas.switch();
-		    renderCanvas.render(0);
+		if(dist < circles[i].r){
+		    g_scene.removeCircle(renderCanvas, i);
 		    return;
 		}
 	    }
@@ -177,9 +227,11 @@ function addMouseListeners(renderCanvas){
     })
 }
 
-function setupSchottkyProgram(renderCanvas, numCircles){
+function setupSchottkyProgram(scene, renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
+    var numCircles = scene.getNumCircles();
+    
     attachShaderFromString(gl,
 			   renderCanvas.template.render({numCircles: numCircles}),
 			   program,
@@ -238,7 +290,7 @@ function setupSchottkyProgram(renderCanvas, numCircles){
         gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
 	gl.uniform2fv(uniLocation[uniI++], renderCanvas.translate);
 	for(var i = 0 ; i < numCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], g_circles[i]);
+	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
 	}
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.scale);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.iterations);
@@ -255,6 +307,8 @@ function setupSchottkyProgram(renderCanvas, numCircles){
 }
 
 window.addEventListener('load', function(event){
+    g_scene = new Scene();
+    
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
     
@@ -262,12 +316,7 @@ window.addEventListener('load', function(event){
     renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
 			      renderCanvas.defaultHeight);
 
-    [renderCanvas.switch,
-     renderCanvas.render] = setupSchottkyProgram(renderCanvas,
-						 g_numCircles);
-
-    renderCanvas.switch();
-    renderCanvas.render();
+    updateShaders(renderCanvas);
 
     window.addEventListener('resize', function(event){
 	console.log('resize');
