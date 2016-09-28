@@ -7,6 +7,9 @@ var Circle = function(x, y, r){
 }
 
 Circle.prototype = {
+    getPosition: function(){
+	return [this.x, this.y];
+    },
     clone: function(){
 	return new Circle(thix.x, thix.y, thix.r);
     },
@@ -32,13 +35,27 @@ InfiniteCircle.prototype = {
     }
 }
 
+var TransformByCircles = function(){
+    this.inner = new Circle(-50, 0, 150);
+    this.outer = new Circle(0, 0, 200);
+    this.inverted = circleInvert(this.inner, this.outer);
+}
+
+TransformByCircles.prototype = {
+    getUniformArray: function(){
+	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						   this.inverted.getUniformArray());
+    },
+}
+
 var Scene = function(){
     this.circles = [new Circle(100, -100, 100),
 		    new Circle(100, 100, 100),
 		    new Circle(-100, -100, 100),
 		    new Circle(-100, 100, 100)];
-    this.infiniteCircles = [new InfiniteCircle(200, 0, 0),
-			    new InfiniteCircle(-200, 0, 180)];
+    this.infiniteCircles = [];// [new InfiniteCircle(200, 0, 0),
+			      // new InfiniteCircle(-200, 0, 180)];
+    this.transformByCircles = [new TransformByCircles()];
 }
 
 Scene.prototype = {
@@ -47,6 +64,9 @@ Scene.prototype = {
     },
     getNumInfiniteCircles: function(){
 	return this.infiniteCircles.length;
+    },
+    getNumTransformByCircles: function(){
+	return this.transformByCircles.length;
     },
     removeCircle: function(canvas, index){
 	if(this.circles.length == 0) return;
@@ -254,9 +274,11 @@ function setupSchottkyProgram(scene, renderCanvas){
     var program = gl.createProgram();
     var numCircles = scene.getNumCircles();
     var numInfiniteCircles = scene.getNumInfiniteCircles();
+    var numTransformByCircles = scene.getNumTransformByCircles();
     attachShaderFromString(gl,
 			   renderCanvas.template.render({numCircles: numCircles,
-							 numInfiniteCircles: numInfiniteCircles}),
+							 numInfiniteCircles: numInfiniteCircles,
+							 numTransformByCircles: numTransformByCircles}),
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
@@ -279,6 +301,9 @@ function setupSchottkyProgram(scene, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircle'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleRotationMat2'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_invInfiniteCircleRotationMat2'+ i);
+    }
+    for(var i = 0 ; i < numTransformByCircles ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_transformByCircles'+ i);
     }
     
     var position = [-1.0, 1.0, 0.0,
@@ -333,6 +358,9 @@ function setupSchottkyProgram(scene, renderCanvas){
 				scene.infiniteCircles[i].rotationMat2);
 	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
 				scene.infiniteCircles[i].invRotationMat2);
+	}
+	for(var i = 0 ; i < numTransformByCircles ; i++){
+	    gl.uniform3fv(uniLocation[uniI++], scene.transformByCircles[i].getUniformArray());
 	}
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
