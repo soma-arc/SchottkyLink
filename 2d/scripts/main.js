@@ -1,5 +1,7 @@
 var g_scene;
 
+const CIRCLE_BODY = 0;
+const CIRCLE_CIRCUMFERENCE = 1;
 var Circle = function(x, y, r){
     this.x = x;
     this.y = y;
@@ -15,6 +17,36 @@ Circle.prototype = {
     },
     getUniformArray: function(){
 	return [this.x, this.y, this.r];
+    },
+    move: function(componentId, mouse, diff){
+	if(componentId == CIRCLE_CIRCUMFERENCE){
+	    var dx = mouse[0] - this.x;
+	    var dy = mouse[1] - this.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    this.r = dist;
+	}else{
+	    this.x = mouse[0] - diff[0];
+	    this.y = mouse[1] - diff[1];
+	}
+    },
+    removable: function(mouse, diff){
+	var dx = mouse[0] - this.x;
+	var dy = mouse[1] - this.y;
+	var dist = Math.sqrt((dx * dx) + (dy * dy));
+	return (dist < this.r);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+	var dx = mouse[0] - this.x;
+	var dy = mouse[1] - this.y;
+	var dist = Math.sqrt((dx * dx) + (dy * dy));
+	if(Math.abs(dist - this.r) < scene.selectableRadius){
+	    return [CIRCLE_CIRCUMFERENCE, [dx, dy]];
+	}else if(dist < Math.abs(this.r - scene.selectableRadius)){
+	    return [CIRCLE_BODY, [dx, dy]];
+	}
+	return [-1, [0, 0]];
     }
 }
 
@@ -55,7 +87,8 @@ var Scene = function(){
 		    new Circle(-100, 100, 100)];
     this.infiniteCircles = [];// [new InfiniteCircle(200, 0, 0),
 			      // new InfiniteCircle(-200, 0, 180)];
-    this.transformByCircles = [new TransformByCircles()];
+    this.transformByCircles = [];//[new TransformByCircles()];
+    this.selectableRadius = 10;
 }
 
 Scene.prototype = {
@@ -68,22 +101,56 @@ Scene.prototype = {
     getNumTransformByCircles: function(){
 	return this.transformByCircles.length;
     },
-    removeCircle: function(canvas, index){
-	if(this.circles.length == 0) return;
-	canvas.selectedObjectId = -1;
-	canvas.selectedObjectIndex = -1;
-	this.circles.splice(index, 1);
+    addCircle: function(canvas, mouse){
+	this.circles.push(new Circle(mouse[0], mouse[1], 100));
 	updateShaders(canvas);
     },
-    addCircle: function(canvas, x, y){
-	this.circles.push(new Circle(x, y, 100));
-	updateShaders(canvas);
+    // return [objectId, objectIndex, objectComponentId,
+    //         difference between object position and mouse position]
+    getSelectedObject: function(mouse){
+	var objects = this.getAllObjects();
+	for(objectId in Object.keys(objects)){
+	    objectId = parseInt(objectId);
+	    var objArray = this.getObjectArray(objectId);
+	    for(var i = 0 ; i < objArray.length ; i++){
+		var [componentId, diff] = objArray[i].selectable(mouse, this);
+		if(componentId != -1)
+		    return [objectId, i, componentId, diff];
+	    }
+	}
+	return [-1, -1, -1, [0, 0]];
+    },
+    getAllObjects: function(){
+	var objs = {};
+	objs[ID_CIRCLE] = this.circles;
+	return objs;
+    },
+    getObjectArray: function(objectId){
+	if(objectId == ID_CIRCLE)
+	    return this.circles;
+	return undefined;
+    },
+    getObject: function(objectId, index){
+	var objects = this.getObjectArray(objectId);
+	return (objects == undefined) ? undefined : objects[index];
+    },
+    move: function(id, index, componentId, mouse, diff){
+	var obj = this.getObject(id, index);
+	if(obj != undefined)
+	    obj.move(componentId, mouse, diff);
+    },
+    remove: function(id, index, mouse, diff){
+	var objArray = this.getObjectArray(id);
+	var obj = objArray[index];
+	if(objArray != undefined &&
+	   objArray.length != 0 &&
+	   obj.removable(mouse, diff)){
+	    objArray.splice(index, 1);
+	}
     }
 }
 
 const ID_CIRCLE = 0;
-const CIRCLE_BODY = 0;
-const CIRCLE_CIRCUMFERENCE = 1;
 
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
@@ -99,7 +166,6 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.isMousePressing = false;
     this.prevMousePos = [0, 0];
     this.scale = 900;
-    this.selectableRadius = 10;
 
     this.selectedObjectId = -1;
     this.selectedObjectIndex = -1;
@@ -167,6 +233,11 @@ RenderCanvas2D.prototype = {
 	    // Edge
 	    this.canvas.msRequestFullscreen();
 	}
+    },
+    releaseObject: function(){
+	this.selectedObjectId = -1;
+	this.selectedObjectIndex = -1;
+	this.selectedComponentId = -1;
     }
 }
 
@@ -180,79 +251,47 @@ function updateShaders(canvas){
 function addMouseListeners(renderCanvas){
     var diff = [0, 0];
     renderCanvas.canvas.addEventListener('mouseup', function(event){
-	renderCanvas.mousePressing = false;
+	renderCanvas.isMousePressing = false;
 	renderCanvas.isRendering = false;
-	renderCanvas.selectedObjectId = -1;
-	renderCanvas.selectedObjectIndex = -1;
-	renderCanvas.selectedComponentId = -1;
+	renderCanvas.render(0);
     }, false);
 
     renderCanvas.canvas.addEventListener('mousemove', function(event){
 	if(!renderCanvas.isMousePressing) return;
-	var [px, py] = renderCanvas.calcPixel();
+	var mouse = renderCanvas.calcPixel();
 	if(event.button == 0){
-	    if(renderCanvas.selectedObjectId == ID_CIRCLE){
-		var circle = g_scene.circles[renderCanvas.selectedObjectIndex];
-		if(renderCanvas.selectedComponentId == CIRCLE_CIRCUMFERENCE){
-		    var dx = px - circle.x;
-		    var dy = py - circle.y;
-		    var dist = Math.sqrt((dx * dx) + (dy * dy));
-		    circle.r = dist;
-		}else{
-		    circle.x = px - diff[0];
-		    circle.y = py - diff[1];
-		}
-		renderCanvas.isRendering = true;
-	    }
+	    g_scene.move(renderCanvas.selectedObjectId,
+			 renderCanvas.selectedObjectIndex,
+			 renderCanvas.selectedComponentId,
+			 mouse, diff);
+	    renderCanvas.isRendering = true;
 	}
     });
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
 	event.preventDefault();
-	renderCanvas.isMousePressing = true;
-	var [px, py] = renderCanvas.calcPixel(event);
+	var mouse = renderCanvas.calcPixel(event);
 	if(event.button == 0){
-	    var circles = g_scene.circles;
-	    for(var i = 0 ; i < circles.length ; i++){
-		var dx = px - circles[i].x;
-		var dy = py - circles[i].y;
-		var dist = Math.sqrt((dx * dx) + (dy * dy));
-		if(Math.abs(dist - circles[i].r) < renderCanvas.selectableRadius){
-		    renderCanvas.selectedCircleIndex = i;
-		    renderCanvas.isOperatingRadius = true;
-		    renderCanvas.selectedObjectId = ID_CIRCLE;
-		    renderCanvas.selectedObjectIndex = i;
-		    renderCanvas.selectedComponentId = CIRCLE_CIRCUMFERENCE;
-		    return;
-		}else if(dist < circles[i].r - renderCanvas.selectableRadius){
-		    diff = [dx, dy];
-		    renderCanvas.selectedObjectId = ID_CIRCLE;
-		    renderCanvas.selectedObjectIndex = i;
-		    renderCanvas.selectedComponentId = CIRCLE_BODY;
-		    return;
-		}
-	    }
+	    [renderCanvas.selectedObjectId,
+	     renderCanvas.selectedObjectIndex,
+	     renderCanvas.selectedComponentId,
+	     diff] = g_scene.getSelectedObject(mouse);
 	}else if(event.button == 1){
-	    g_scene.addCircle(renderCanvas, px, py);
+	    renderCanvas.releaseObject();
+	    g_scene.addCircle(renderCanvas, mouse);
 	}
-	renderCanvas.selectedObjectId = -1;
-	renderCanvas.selectedObjectIndex = -1;
-	renderCanvas.selectedComponentId = -1;
+	renderCanvas.isMousePressing = true;
+	renderCanvas.render(0);
     }, false);
 
     renderCanvas.canvas.addEventListener('dblclick', function(event){
 	if(event.button == 0){
-	    var [px, py] = renderCanvas.calcPixel(event);
-	    var circles = g_scene.circles;
-	    for(var i = 0 ; i < circles.length ; i++){
-		var dx = px - circles[i].x;
-		var dy = py - circles[i].y;
-		var dist = Math.sqrt((dx * dx) + (dy * dy));
-		if(dist < circles[i].r){
-		    g_scene.removeCircle(renderCanvas, i);
-		    return;
-		}
-	    }
+	    var mouse = renderCanvas.calcPixel(event);
+	    g_scene.remove(renderCanvas.selectedObjectId,
+			   renderCanvas.selectedObjectIndex,
+			   mouse, diff);
+	    renderCanvas.releaseObject();
+	    updateShaders(renderCanvas);
 	}
     });
 
