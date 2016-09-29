@@ -89,6 +89,8 @@ var Scene = function(){
 			      // new InfiniteCircle(-200, 0, 180)];
     this.transformByCircles = [];//[new TransformByCircles()];
     this.selectableRadius = 10;
+    this.objects = {}
+    this.objects[ID_CIRCLE] = this.circles;
 }
 
 Scene.prototype = {
@@ -108,10 +110,9 @@ Scene.prototype = {
     // return [objectId, objectIndex, objectComponentId,
     //         difference between object position and mouse position]
     getSelectedObject: function(mouse){
-	var objects = this.getAllObjects();
-	for(objectId in Object.keys(objects)){
+	for(objectId in Object.keys(this.objects)){
 	    objectId = parseInt(objectId);
-	    var objArray = this.getObjectArray(objectId);
+	    var objArray = this.objects[objectId];
 	    for(var i = 0 ; i < objArray.length ; i++){
 		var [componentId, diff] = objArray[i].selectable(mouse, this);
 		if(componentId != -1)
@@ -120,27 +121,15 @@ Scene.prototype = {
 	}
 	return [-1, -1, -1, [0, 0]];
     },
-    getAllObjects: function(){
-	var objs = {};
-	objs[ID_CIRCLE] = this.circles;
-	return objs;
-    },
-    getObjectArray: function(objectId){
-	if(objectId == ID_CIRCLE)
-	    return this.circles;
-	return undefined;
-    },
-    getObject: function(objectId, index){
-	var objects = this.getObjectArray(objectId);
-	return (objects == undefined) ? undefined : objects[index];
-    },
     move: function(id, index, componentId, mouse, diff){
-	var obj = this.getObject(id, index);
+	if(id == -1) return;
+	var obj = this.objects[id][index];
 	if(obj != undefined)
 	    obj.move(componentId, mouse, diff);
     },
     remove: function(id, index, mouse, diff){
-	var objArray = this.getObjectArray(id);
+	if(id == -1) return;
+	var objArray = this.objects[id];
 	var obj = objArray[index];
 	if(objArray != undefined &&
 	   objArray.length != 0 &&
