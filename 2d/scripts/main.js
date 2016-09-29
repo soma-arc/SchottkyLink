@@ -50,20 +50,54 @@ Circle.prototype = {
     }
 }
 
+const INFINITE_CIRCLE_CONTROL_POINT = 0
 // Circle which have infinite radius.
 // It is defined by translation and rotation.
 // Initially it is reflection along the y-axis.
 var InfiniteCircle = function(x, y, thetaDegree){
     this.x = x;
     this.y = y;
-    this.theta = thetaDegree;
+    this.thetaDegree = thetaDegree;
     this.rotationMat2 = getRotationMat2(radians(thetaDegree));
     this.invRotationMat2 = getRotationMat2(radians(-thetaDegree));
 }
 
 InfiniteCircle.prototype = {
+    update: function(){
+	this.rotationMat2 = getRotationMat2(radians(this.thetaDegree));
+	this.invRotationMat2 = getRotationMat2(radians(-this.thetaDegree));
+    },
+    getPosition: function(){
+	return [this.x, this.y];
+    },
+    clone: function(){
+	return new infiniteCircles(this.x, this.y, this.theta);
+    },
     getUniformArray: function(){
 	return [this.x, this.y, this.thetaDegree];
+    },
+    move: function(componentId, mouse, diff){
+	if(componentId == INFINITE_CIRCLE_CONTROL_POINT){
+	    this.x = mouse[0] - diff[0];
+	    this.y = mouse[1] - diff[1];
+	}
+    },
+    removable: function(mouse, diff){
+	var dx = mouse[0] - this.x;
+	var dy = mouse[1] - this.y;
+	var dist = Math.sqrt((dx * dx) + (dy * dy));
+	return (dist < 10);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+	var dx = mouse[0] - this.x;
+	var dy = mouse[1] - this.y;
+	var dist = Math.sqrt((dx * dx) + (dy * dy));
+	if(dist < 10){
+	    return [INFINITE_CIRCLE_CONTROL_POINT, [dx, dy]];
+	}
+	return [-1, [0, 0]];
     }
 }
 
@@ -80,17 +114,22 @@ TransformByCircles.prototype = {
     },
 }
 
+
+
+const ID_CIRCLE = 0;
+const ID_INFINITE_CIRCLE = 1;
 var Scene = function(){
     this.circles = [new Circle(100, -100, 100),
 		    new Circle(100, 100, 100),
 		    new Circle(-100, -100, 100),
 		    new Circle(-100, 100, 100)];
-    this.infiniteCircles = [];// [new InfiniteCircle(200, 0, 0),
+    this.infiniteCircles =  [new InfiniteCircle(200, 0, 0)];
 			      // new InfiniteCircle(-200, 0, 180)];
     this.transformByCircles = [];//[new TransformByCircles()];
     this.selectableRadius = 10;
     this.objects = {}
     this.objects[ID_CIRCLE] = this.circles;
+    this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
 }
 
 Scene.prototype = {
@@ -138,8 +177,6 @@ Scene.prototype = {
 	}
     }
 }
-
-const ID_CIRCLE = 0;
 
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
