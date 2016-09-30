@@ -50,7 +50,9 @@ Circle.prototype = {
     }
 }
 
-const INFINITE_CIRCLE_CONTROL_POINT = 0
+const INFINITE_CIRCLE_CONTROL_POINT = 0;
+const INFINITE_CIRCLE_BODY = 1;
+const INFINITE_CIRCLE_ROTATION = 2;
 // Circle which have infinite radius.
 // It is defined by translation and rotation.
 // Initially it is reflection along the y-axis.
@@ -60,6 +62,10 @@ var InfiniteCircle = function(x, y, thetaDegree){
     this.thetaDegree = thetaDegree;
     this.rotationMat2 = getRotationMat2(radians(thetaDegree));
     this.invRotationMat2 = getRotationMat2(radians(-thetaDegree));
+
+    this.controlPointRadius = 10;
+    this.rotationControlCircleRadius = 50.;
+    this.rotationControlCircleThickness = 2;
 }
 
 InfiniteCircle.prototype = {
@@ -76,17 +82,28 @@ InfiniteCircle.prototype = {
     getUniformArray: function(){
 	return [this.x, this.y, this.thetaDegree];
     },
+    getUIParamArray: function(){
+	return [this.controlPointRadius,
+		this.rotationControlCircleRadius,
+		this.rotationControlCircleThickness];
+    },
     move: function(componentId, mouse, diff){
-	if(componentId == INFINITE_CIRCLE_CONTROL_POINT){
+	if(componentId == INFINITE_CIRCLE_CONTROL_POINT ||
+	   componentId == INFINITE_CIRCLE_BODY){
 	    this.x = mouse[0] - diff[0];
 	    this.y = mouse[1] - diff[1];
+	}else if(componentId == INFINITE_CIRCLE_ROTATION){
+	    var x = mouse[0] - this.x;
+	    var y = mouse[1] - this.y;
+	    this.thetaDegree = degrees(Math.atan2(-y, x) + Math.PI);
+	    this.update();
 	}
     },
     removable: function(mouse, diff){
 	var dx = mouse[0] - this.x;
 	var dy = mouse[1] - this.y;
 	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	return (dist < 10);
+	return (dist < this.controlPointRadius);
     },
     // return [componentId,
     //         difference between object position and mouse position]
@@ -94,9 +111,20 @@ InfiniteCircle.prototype = {
 	var dx = mouse[0] - this.x;
 	var dy = mouse[1] - this.y;
 	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	if(dist < 10){
+	if(dist < this.controlPointRadius){
 	    return [INFINITE_CIRCLE_CONTROL_POINT, [dx, dy]];
 	}
+	var p = vec2Diff(mouse, this.getPosition());
+	var rot = applyMat2(this.rotationMat2, p);
+	if(rot[0] > 0){
+	    return [INFINITE_CIRCLE_BODY, p];
+	}
+
+	p = vec2Sum(p, applyMat2(this.invRotationMat2, [this.rotationControlCircleRadius, 0]));
+	if(vec2Len(p) < this.controlPointRadius){
+	    return [INFINITE_CIRCLE_ROTATION, p];
+	}
+	
 	return [-1, [0, 0]];
     }
 }
@@ -123,7 +151,7 @@ var Scene = function(){
 		    new Circle(100, 100, 100),
 		    new Circle(-100, -100, 100),
 		    new Circle(-100, 100, 100)];
-    this.infiniteCircles =  [new InfiniteCircle(200, 0, 0)];
+    this.infiniteCircles =  [new InfiniteCircle(200, 0, 45)];
 			      // new InfiniteCircle(-200, 0, 180)];
     this.transformByCircles = [];//[new TransformByCircles()];
     this.selectableRadius = 10;
@@ -359,11 +387,15 @@ function setupSchottkyProgram(scene, renderCanvas){
     uniLocation[n++] = gl.getUniformLocation(program, 'u_initialHue');
     uniLocation[n++] = gl.getUniformLocation(program, 'u_hueStep');
     uniLocation[n++] = gl.getUniformLocation(program, 'u_numSamples');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectId');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectIndex');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectComponentId');
     for(var i = 0 ; i < numCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircle'+ i);
     }
     for(var i = 0 ; i < numInfiniteCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircle'+ i);
+	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleUIParam'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleRotationMat2'+ i);
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_invInfiniteCircleRotationMat2'+ i);
     }
@@ -413,12 +445,15 @@ function setupSchottkyProgram(scene, renderCanvas){
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.initialHue);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.hueStep);
 	gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples);
-
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
+	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
 	for(var i = 0 ; i < numCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
 	}
 	for(var i = 0 ; i < numInfiniteCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUniformArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUIParamArray());
 	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
 				scene.infiniteCircles[i].rotationMat2);
 	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
