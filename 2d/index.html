@@ -44,6 +44,8 @@
      {% for n  in range(0,  numCircles ) %}
      // [x, y, r, r * r]
      uniform vec3 u_schottkyCircle{{ n }};
+     // [centerRadius, circumferenceThickness];
+     uniform vec2 u_schottkyCircleUIParam{{ n }};
      {% endfor %}
 
      {% for n  in range(0,  numInfiniteCircles ) %}
@@ -163,6 +165,18 @@
      const vec3 BLACK = vec3(0);
      const vec3 WHITE = vec3(1);
      vec3 renderUI(const vec2 position){
+         {% for n in range(0, numCircles) %}
+         if(u_selectedObjectId == ID_CIRCLE){
+             if(u_selectedObjectIndex == {{n}}){
+                 float dist = distance(position, u_schottkyCircle{{ n }}.xy);
+		 if(dist - u_schottkyCircle{{ n }}.z < 0. &&
+                    dist > u_schottkyCircle{{ n }}.z - u_schottkyCircleUIParam{{ n }}.y ){
+		     return WHITE;
+		 }
+	     }
+         }
+         {% endfor %}
+         
 	 {% for n in range(0, numTransformByCircles) %}
 	 if(distance(position, u_transformByCircles{{ n }}[0].xy) < u_transformByCircles{{ n }}[0].z){
 	     return vec3(.5, 0, 0);

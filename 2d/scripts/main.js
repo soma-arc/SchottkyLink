@@ -6,6 +6,9 @@ var Circle = function(x, y, r){
     this.x = x;
     this.y = y;
     this.r = r;
+
+    this.circumferenceThickness = 10;
+    this.centerRadius = 10;
 }
 
 Circle.prototype = {
@@ -17,6 +20,10 @@ Circle.prototype = {
     },
     getUniformArray: function(){
 	return [this.x, this.y, this.r];
+    },
+    getUIParamArray: function(){
+        return [this.centerRadius,
+                this.circumferenceThickness];
     },
     move: function(componentId, mouse, diff){
 	if(componentId == CIRCLE_CIRCUMFERENCE){
@@ -41,9 +48,11 @@ Circle.prototype = {
 	var dx = mouse[0] - this.x;
 	var dy = mouse[1] - this.y;
 	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	if(Math.abs(dist - this.r) < scene.selectableRadius){
+        var distFromCircumference = dist - this.r;
+	if(distFromCircumference < 0 &&
+           Math.abs(distFromCircumference) < this.circumferenceThickness){
 	    return [CIRCLE_CIRCUMFERENCE, [dx, dy]];
-	}else if(dist < Math.abs(this.r - scene.selectableRadius)){
+	}else if(dist < Math.abs(this.r - this.circumferenceThickness)){
 	    return [CIRCLE_BODY, [dx, dy]];
 	}
 	return [-1, [0, 0]];
@@ -154,7 +163,6 @@ var Scene = function(){
     this.infiniteCircles =  [new InfiniteCircle(200, 0, 45)];
 			      // new InfiniteCircle(-200, 0, 180)];
     this.transformByCircles = [];//[new TransformByCircles()];
-    this.selectableRadius = 10;
     this.objects = {}
     this.objects[ID_CIRCLE] = this.circles;
     this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
@@ -392,6 +400,7 @@ function setupSchottkyProgram(scene, renderCanvas){
     uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectComponentId');
     for(var i = 0 ; i < numCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircle'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircleUIParam'+ i);
     }
     for(var i = 0 ; i < numInfiniteCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircle'+ i);
@@ -450,6 +459,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
 	for(var i = 0 ; i < numCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
+            gl.uniform2fv(uniLocation[uniI++], scene.circles[i].getUIParamArray());
 	}
 	for(var i = 0 ; i < numInfiniteCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUniformArray());
