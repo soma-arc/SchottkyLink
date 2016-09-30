@@ -16,7 +16,7 @@ Circle.prototype = {
 	return [this.x, this.y];
     },
     clone: function(){
-	return new Circle(thix.x, thix.y, thix.r);
+	return new Circle(this.x, this.y, this.r);
     },
     getUniformArray: function(){
 	return [this.x, this.y, this.r];
@@ -86,7 +86,7 @@ InfiniteCircle.prototype = {
 	return [this.x, this.y];
     },
     clone: function(){
-	return new infiniteCircles(this.x, this.y, this.theta);
+	return new InfiniteCircle(this.x, this.y, this.thetaDegree);
     },
     getUniformArray: function(){
 	return [this.x, this.y, this.thetaDegree];
@@ -149,26 +149,75 @@ TransformByCircles.prototype = {
 	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
 						   this.inverted.getUniformArray());
     },
+    clone: function(){
+        return new TransformByCircles();
+    }
 }
-
-
 
 const ID_CIRCLE = 0;
 const ID_INFINITE_CIRCLE = 1;
+
+var g_params = [
+    {
+        circles:[new Circle(100, -100, 100),
+		 new Circle(100, 100, 100),
+		 new Circle(-100, -100, 100),
+		 new Circle(-100, 100, 100)],
+        infiniteCircles:[],
+        transformByCircles:[]
+    },
+    {
+        circles:[new Circle(100, -100, 100),
+		 new Circle(100, 100, 100),
+		 new Circle(-100, -100, 100),
+		 new Circle(-100, 100, 100)],
+        infiniteCircles:[new InfiniteCircle(200, 0, 0)],
+        transformByCircles:[]
+    },
+    {
+        circles:[new Circle(100, -100, 100),
+		 new Circle(100, 100, 100),
+		 new Circle(-100, -100, 100),
+		 new Circle(-100, 100, 100)],
+        infiniteCircles:[new InfiniteCircle(200, 0, 0),
+                         new InfiniteCircle(-200, 0, 180)],
+        transformByCircles:[]
+    },
+    {
+        circles:[new Circle(100, -100, 100),
+		 new Circle(100, 100, 100),
+		 new Circle(-100, -100, 100),
+		 new Circle(-100, 100, 100)],
+        infiniteCircles:[],
+        transformByCircles:[new TransformByCircles()]
+    },
+]
+
 var Scene = function(){
-    this.circles = [new Circle(100, -100, 100),
-		    new Circle(100, 100, 100),
-		    new Circle(-100, -100, 100),
-		    new Circle(-100, 100, 100)];
-    this.infiniteCircles =  [new InfiniteCircle(200, 0, 45)];
-			      // new InfiniteCircle(-200, 0, 180)];
-    this.transformByCircles = [];//[new TransformByCircles()];
+    this.circles = [];
+    this.infiniteCircles =  [];
+    this.transformByCircles = [];
     this.objects = {}
     this.objects[ID_CIRCLE] = this.circles;
     this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
 }
 
 Scene.prototype = {
+    loadParameter: function(param){
+        this.circles = this.clone(param["circles"]);
+        this.infiniteCircles = this.clone(param["infiniteCircles"]);
+        this.transformByCircles = this.clone(param["transformByCircles"]);
+        this.objects[ID_CIRCLE] = this.circles;
+        this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
+        console.log(this.objects);
+    },
+    clone: function(objects){
+	var obj = [];
+	for(var i = 0 ; i < objects.length ; i++){
+	    obj.push(objects[i].clone());
+	}
+	return obj;
+    },
     getNumCircles: function(){
 	return this.circles.length;
     },
@@ -483,6 +532,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 
 window.addEventListener('load', function(event){
     g_scene = new Scene();
+    g_scene.loadParameter(g_params[0]);
     
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
@@ -602,6 +652,23 @@ window.addEventListener('load', function(event){
 	    event.preventDefault();
 	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
 	    renderCanvas.render(0);
+	    break;
+        case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    var i = parseInt(event.key);
+	    var param = g_params[i];
+	    if(param != undefined){
+		g_scene.loadParameter(param);
+		updateShaders(renderCanvas);
+	    }
 	    break;
 	}
     });
