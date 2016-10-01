@@ -225,15 +225,17 @@
 	     position += u_translate;
 
 	     vec3 col = renderUI(position);
-	     if(!all(equal(col, BLACK))){
-		 sum += col;
-		 continue;
-	     }
 	     float loopNum = IIS(position);
 	     if(loopNum > 0.){
 		 vec3 hsv = vec3(u_initialHue + u_hueStep * loopNum, 1.0, 1.0);
-		 sum += hsv2rgb(hsv);
-	     }
+                 if(!all(equal(col, BLACK))){
+                     sum += mix(hsv2rgb(hsv), col, 0.5);
+                 }else{
+                     sum += hsv2rgb(hsv);
+                 }
+	     }else{
+                 sum += col;
+             }
 	 }
 	 gl_FragColor = vec4(sum/u_numSamples, 1.);
      }

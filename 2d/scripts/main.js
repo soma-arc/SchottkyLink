@@ -255,10 +255,11 @@ var g_params = [
         transformByCircles:[]
     },
     {
-        circles:[new Circle(100, -100, 100),
-		 new Circle(100, 100, 100),
-		 new Circle(-100, -100, 100),
-		 new Circle(-100, 100, 100)],
+        circles:[new Circle(226, -139, 108),
+                 new Circle(263, 106, 100),
+                 new Circle(47, -209, 78),
+                 new Circle(93, 200, 95),
+                 new Circle(154, 4, 53)],
         infiniteCircles:[],
         transformByCircles:[new TransformByCircles()]
     },
