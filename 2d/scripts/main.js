@@ -138,6 +138,11 @@ InfiniteCircle.prototype = {
     }
 }
 
+const TRANSFORM_BY_CIRCLES_INNER_BODY = 0;
+const TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE = 1;
+const TRANSFORM_BY_CIRCLES_OUTER_BODY = 2;
+const TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE = 3;
+
 var TransformByCircles = function(){
     this.inner = new Circle(-50, 0, 150);
     this.outer = new Circle(0, 0, 200);
@@ -145,17 +150,83 @@ var TransformByCircles = function(){
 }
 
 TransformByCircles.prototype = {
+    update: function(){
+        this.inverted = circleInvert(this.inner, this.outer);
+    },
     getUniformArray: function(){
 	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
 						   this.inverted.getUniformArray());
     },
     clone: function(){
         return new TransformByCircles();
-    }
+    },
+    move: function(componentId, mouse, diff){
+        var prevOuterX = this.outer.x; 
+        var prevOuterY = this.outer.y;
+        switch (componentId) {
+        case TRANSFORM_BY_CIRCLES_OUTER_BODY:
+            this.outer.x = mouse[0] - diff[0];
+	    this.outer.y = mouse[1] - diff[1];
+            this.inner.x += this.outer.x - prevOuterX;
+            this.inner.y += this.outer.y - prevOuterY;
+            break;
+        case TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.outer.x;
+	    var dy = mouse[1] - this.outer.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    this.outer.r = dist;
+            break;
+        case TRANSFORM_BY_CIRCLES_INNER_BODY:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            if(d <= this.outer.r - this.inner.r){
+                this.inner.x = np[0];
+                this.inner.y = np[1];
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.inner.x;
+	    var dy = mouse[1] - this.inner.y;
+	    var nr = Math.sqrt((dx * dx) + (dy * dy));
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
+            if(d <= this.outer.r - nr){
+                this.inner.r = nr;
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        }
+        this.update();
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+        var [componentId, diff] = this.inner.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [TRANSFORM_BY_CIRCLES_INNER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE, diff];
+        }
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [TRANSFORM_BY_CIRCLES_OUTER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE, diff];
+        }
+	return [-1, [0, 0]];
+    },
 }
 
 const ID_CIRCLE = 0;
 const ID_INFINITE_CIRCLE = 1;
+const ID_TRANSFORM_BY_CIRCLES = 2;
 
 var g_params = [
     {
@@ -200,6 +271,7 @@ var Scene = function(){
     this.objects = {}
     this.objects[ID_CIRCLE] = this.circles;
     this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
+    this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
 }
 
 Scene.prototype = {
@@ -209,7 +281,7 @@ Scene.prototype = {
         this.transformByCircles = this.clone(param["transformByCircles"]);
         this.objects[ID_CIRCLE] = this.circles;
         this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
-        console.log(this.objects);
+        this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
     },
     clone: function(objects){
 	var obj = [];
