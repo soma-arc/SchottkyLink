@@ -719,6 +719,13 @@ window.addEventListener('load', function(event){
 	case 'r':
 	    renderCanvas.requestFullScreen();
 	    break;
+        case 'o':
+            renderCanvas.render(0);
+            var a = document.createElement('a');
+            a.href = renderCanvas.canvas.toDataURL();
+            a.download = "schottky.png"
+            a.click();
+            break;
 	case 'ArrowRight':
 	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;

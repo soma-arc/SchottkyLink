@@ -948,6 +948,20 @@ window.addEventListener('load', function(event){
 	    orbitCanvas.render(0);
 	    schottkyCanvas.render(0);
 	    break;
+        case 'i':
+            schottkyCanvas.render(0);
+            var a = document.createElement('a');
+            a.href = schottkyCanvas.canvas.toDataURL();
+            a.download = "schottky.png"
+            a.click();
+            break;
+        case 'o':
+            orbitCanvas.render(0);
+            var a = document.createElement('a');
+            a.href = orbitCanvas.canvas.toDataURL();
+            a.download = "orbit.png"
+            a.click();
+            break;
 	case '0':
 	case '1':
 	case '2':
