@@ -434,6 +434,12 @@ function updateShaders(canvas){
 
 function addMouseListeners(renderCanvas){
     var diff = [0, 0];
+
+    renderCanvas.canvas.addEventListener("contextmenu", function(e){
+	// disable right-click context-menu
+        event.preventDefault();
+    });
+    
     renderCanvas.canvas.addEventListener('mouseup', function(event){
 	renderCanvas.isMousePressing = false;
 	renderCanvas.isRendering = false;
@@ -449,7 +455,12 @@ function addMouseListeners(renderCanvas){
 			 renderCanvas.selectedComponentId,
 			 mouse, diff);
 	    renderCanvas.isRendering = true;
-	}
+	}else if(event.button == 2){
+            var d = vec2Scale(vec2Diff(mouse, renderCanvas.prevMousePos), 0.01);
+            renderCanvas.translate[0] -= d[0];
+            renderCanvas.translate[1] -= d[1];
+            renderCanvas.isRendering = true;
+        }
     });
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
@@ -463,7 +474,9 @@ function addMouseListeners(renderCanvas){
 	}else if(event.button == 1){
 	    renderCanvas.releaseObject();
 	    g_scene.addCircle(renderCanvas, mouse);
-	}
+	}else if(event.button == 2){
+        }
+        renderCanvas.prevMousePos = mouse;
 	renderCanvas.isMousePressing = true;
 	renderCanvas.render(0);
     }, false);
