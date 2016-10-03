@@ -143,9 +143,9 @@ const TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE = 1;
 const TRANSFORM_BY_CIRCLES_OUTER_BODY = 2;
 const TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE = 3;
 
-var TransformByCircles = function(){
-    this.inner = new Circle(-50, 0, 150);
-    this.outer = new Circle(0, 0, 200);
+var TransformByCircles = function(innerCircle, outerCircle){
+    this.inner = innerCircle;
+    this.outer = outerCircle;
     this.inverted = circleInvert(this.inner, this.outer);
 }
 
@@ -158,7 +158,7 @@ TransformByCircles.prototype = {
 						   this.inverted.getUniformArray());
     },
     clone: function(){
-        return new TransformByCircles();
+        return new TransformByCircles(this.inner, this.outer);
     },
     move: function(componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
@@ -261,8 +261,20 @@ var g_params = [
                  new Circle(93, 200, 95),
                  new Circle(154, 4, 53)],
         infiniteCircles:[],
-        transformByCircles:[new TransformByCircles()]
+        transformByCircles:[new TransformByCircles(new Circle(-50, 0, 150),
+                                                   new Circle(0, 0, 200))]
     },
+    {
+        circles:[new Circle(-161, 132, 61),
+                 new Circle(200, 65, 66),
+                 new Circle(30, -203, 48),
+                 new Circle(169, -119, 55),
+                 new Circle(-185, -90, 50),
+                 new Circle(18, 210, 68)],
+        infiniteCircles:[],
+        transformByCircles:[new TransformByCircles(new Circle(-4, -7, 150),
+                                                   new Circle(0, 0, 200))]
+    }
 ]
 
 var Scene = function(){
@@ -630,7 +642,6 @@ window.addEventListener('load', function(event){
     updateShaders(renderCanvas);
 
     window.addEventListener('resize', function(event){
-	console.log('resize');
     	if(renderCanvas.isFullScreen){
     	    renderCanvas.resizeCanvasFullscreen();
     	}else{
@@ -641,7 +652,6 @@ window.addEventListener('load', function(event){
     }, false);
 
     document.addEventListener('webkitfullscreenchange', function(event){
-	console.log(document.webkitFullscreenElement);
 	if ( document.webkitFullscreenElement ) {
 	    renderCanvas.isFullScreen = true;
 	}else{
