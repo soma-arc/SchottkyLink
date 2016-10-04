@@ -2,6 +2,8 @@ var g_scene;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
+const CIRCLE_MOVE_MODE_NORMAL = 0;
+const CIRCLE_MOVE_MODE_NEAREST = 1;
 var Circle = function(x, y, r){
     this.x = x;
     this.y = y;
@@ -9,6 +11,8 @@ var Circle = function(x, y, r){
 
     this.circumferenceThickness = 10;
     this.centerRadius = 10;
+
+    this.moveMode = CIRCLE_MOVE_MODE_NORMAL;
 }
 
 Circle.prototype = {
@@ -34,6 +38,8 @@ Circle.prototype = {
 	}else{
 	    this.x = mouse[0] - diff[0];
 	    this.y = mouse[1] - diff[1];
+            if(this.moveMode == CIRCLE_MOVE_MODE_NEAREST)
+                this.r = g_scene.getMinRadiusToOtherCircles(this);
 	}
     },
     removable: function(mouse, diff){
@@ -302,6 +308,18 @@ Scene.prototype = {
 	    obj.push(objects[i].clone());
 	}
 	return obj;
+    },
+    getMinRadiusToOtherCircles: function(c){
+        var minRad = Number.MAX_VALUE;
+        for(var i = 0 ; i < this.circles.length ; i++){
+            var oc = this.circles[i];
+            if(c == oc) continue;
+            var nr = vec2Len(vec2Diff(c.getPosition(), oc.getPosition())) - oc.r;
+            if(nr < minRad){
+                minRad = nr;
+            }
+        }
+        return minRad
     },
     getNumCircles: function(){
 	return this.circles.length;
@@ -756,6 +774,16 @@ window.addEventListener('load', function(event){
 	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
 	    renderCanvas.render(0);
 	    break;
+        case 'v':
+            if(renderCanvas.selectedObjectId == ID_CIRCLE){
+                g_scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NEAREST;
+            }
+            break;
+        case 'b':
+            if(renderCanvas.selectedObjectId == ID_CIRCLE){
+                g_scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NORMAL;
+            }
+            break;
         case '0':
 	case '1':
 	case '2':
