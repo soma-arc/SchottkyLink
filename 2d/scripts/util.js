@@ -71,6 +71,11 @@ function makeCircleFromPoints(a, b, c){
     return new Circle(center[0], center[1], vec2Len(vec2Diff(center, a)));
 }
 
+function makeLineFromPoints(a, b){
+    var d = (b[1] - a[1]) / (b[0] - a[0]);
+    return [-d, 1, d * a[0] - a[1]];
+}
+
 var RT_2 = Math.sqrt(2);
 function circleInvert(invertCircle, genCircle){
     // var center = invertCircle.getPosition();
@@ -120,7 +125,7 @@ function attachShaderFromString(gl, shaderStr, program, shaderType){
 function linkProgram(gl, program){
     gl.linkProgram(program);
     if(gl.getProgramParameter(program, gl.LINK_STATUS)){
-	gl.useProgram(program);
+       gl.useProgram(program);
         return program;
     }else{
         return null;

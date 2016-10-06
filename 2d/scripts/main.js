@@ -7,7 +7,8 @@ var g_params = [
 		 new Circle(-100, -100, 100),
 		 new Circle(-100, 100, 100)],
         infiniteCircles:[],
-        transformByCircles:[]
+        transformByCircles:[],
+        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(100, -100, 100),
@@ -15,7 +16,8 @@ var g_params = [
 		 new Circle(-100, -100, 100),
 		 new Circle(-100, 100, 100)],
         infiniteCircles:[new InfiniteCircle(200, 0, 0)],
-        transformByCircles:[]
+        transformByCircles:[],
+        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(100, -100, 100),
@@ -24,7 +26,8 @@ var g_params = [
 		 new Circle(-100, 100, 100)],
         infiniteCircles:[new InfiniteCircle(200, 0, 0),
                          new InfiniteCircle(-200, 0, 180)],
-        transformByCircles:[]
+        transformByCircles:[],
+        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(226, -139, 108),
@@ -34,7 +37,8 @@ var g_params = [
                  new Circle(154, 4, 53)],
         infiniteCircles:[],
         transformByCircles:[new TransformByCircles(new Circle(-50, 0, 150),
-                                                   new Circle(0, 0, 200))]
+                                                   new Circle(0, 0, 200))],
+        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(-161, 132, 61),
@@ -45,7 +49,27 @@ var g_params = [
                  new Circle(18, 210, 68)],
         infiniteCircles:[],
         transformByCircles:[new TransformByCircles(new Circle(-4, -7, 150),
-                                                   new Circle(0, 0, 200))]
+                                                   new Circle(0, 0, 200))],
+        twistedLoxodromic:[],
+    },
+    {
+        circles:[],
+        infiniteCircles:[],
+        transformByCircles:[],
+        twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
+                                                 new Circle(0, 0, 200),
+                                                 [10, 10])],
+    },
+    {
+        circles:[],
+        infiniteCircles:[],
+        transformByCircles:[],
+        twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
+                                                 new Circle(0, 0, 200),
+                                                 [10, 10]),
+                           new TwistedLoxodromic(new Circle(-104, -107, 150),
+                                                 new Circle(-100, -100, 200),
+                                                 [-100, -100])],
     }
 ]
 
@@ -221,13 +245,15 @@ function addMouseListeners(renderCanvas){
 function setupSchottkyProgram(scene, renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
-    var numCircles = scene.getNumCircles();
-    var numInfiniteCircles = scene.getNumInfiniteCircles();
-    var numTransformByCircles = scene.getNumTransformByCircles();
+    var numCircles = scene.circles.length;
+    var numInfiniteCircles = scene.infiniteCircles.length;
+    var numTransformByCircles = scene.transformByCircles.length;
+    var numTwistedLoxodromic = scene.twistedLoxodromic.length;
     attachShaderFromString(gl,
 			   renderCanvas.template.render({numCircles: numCircles,
 							 numInfiniteCircles: numInfiniteCircles,
-							 numTransformByCircles: numTransformByCircles}),
+							 numTransformByCircles: numTransformByCircles,
+                                                         numTwistedLoxodromic: numTwistedLoxodromic}),
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
@@ -258,6 +284,9 @@ function setupSchottkyProgram(scene, renderCanvas){
     }
     for(var i = 0 ; i < numTransformByCircles ; i++){
 	uniLocation[n++] = gl.getUniformLocation(program, 'u_transformByCircles'+ i);
+    }
+    for(var i = 0 ; i < numTwistedLoxodromic ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromic'+ i)
     }
     
     var position = [-1.0, 1.0, 0.0,
@@ -320,7 +349,9 @@ function setupSchottkyProgram(scene, renderCanvas){
 	for(var i = 0 ; i < numTransformByCircles ; i++){
 	    gl.uniform3fv(uniLocation[uniI++], scene.transformByCircles[i].getUniformArray());
 	}
-	
+	for(var i = 0 ; i < numTwistedLoxodromic ; i++){
+	    gl.uniform3fv(uniLocation[uniI++], scene.twistedLoxodromic[i].getUniformArray());
+	}
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
 	gl.flush();

@@ -60,15 +60,17 @@
 
      const int ID_CIRCLE = 0;
      const int ID_INFINITE_CIRCLE = 1;
-
-     const int CIRCLE_BODY = 0;
-     const int CIRCLE_CIRCUMFERENCE = 1;
      
      {% for n in range(0, numTransformByCircles) %}
      //[innerCircle, outerCircle, invertedCircle]
      uniform vec3 u_transformByCircles{{ n }}[3];
      {% endfor %}
 
+     {% for n in range(0, numTwistedLoxodromic) %}
+     // [innerCircle, outerCircle, invertedCircle, c3, p]
+     uniform vec3 u_twistedLoxodromic{{ n }}[5];
+     {% endfor %}
+     
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
 	 vec2 seed = co * (sampleIndex + 1.0);
@@ -152,6 +154,42 @@
 	     }
 	     
 	     {% endfor %}
+
+             {% for n in range(0, numTwistedLoxodromic) %}
+             if(distance(pos, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){                 
+                 vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
+                 vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
+                 vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+                 vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
+                 float d{{ n }} = length(n{{ n }});
+                 pos += -2. * d{{ n }} * n{{ n }};
+                 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
+                 
+
+		 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[1].xy, u_twistedLoxodromic{{ n }}[1].z);
+
+                 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
+                 
+		 cont = true;
+                 //		 loopNum++;
+	     }else if(distance(pos, u_twistedLoxodromic{{ n }}[2].xy) >= u_twistedLoxodromic{{ n }}[2].z){
+		 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[1].xy, u_twistedLoxodromic{{ n }}[1].z);
+		 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
+
+                 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
+                 vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
+                 vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
+                 vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+                 vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
+                 float d{{ n }} = length(n{{ n }});
+                 pos += -2. * d{{ n }} * n{{ n }};
+                
+                 
+		 cont = true;
+                 //		 loopNum++;
+	     }
+   
+             {% endfor %}
 	     
 	     if(cont == false) break;
 	 }
@@ -188,6 +226,38 @@
 	 }	     
 	 {% endfor %}
 
+         vec3 col = vec3(0.);
+
+         {% for n in range(0, numTwistedLoxodromic) %}
+
+         vec2 v2{{ n }} = position - u_twistedLoxodromic{{ n }}[0].xy;
+         vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
+         vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+         vec2 n{{ n }} = v2{{ n }} - projection{{ n }};
+         float d{{ n }} = length(n{{ n }});
+         if(d{{ n }} < 10.){
+             return vec3(1);
+         }
+
+         if(distance(position, u_twistedLoxodromic{{ n }}[3].xy) < u_twistedLoxodromic{{ n }}[3].z){
+	     col = vec3(0.5, .5, 0);
+	 }
+
+         if(distance(position, u_twistedLoxodromic{{ n }}[4].xy) < 10.){
+	     return vec3(1.);
+         }
+         
+	 if(distance(position, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
+	     return mix(vec3(1., 0, 0), col, 0.5);
+	 }else if(distance(position, u_twistedLoxodromic{{ n }}[1].xy) < u_twistedLoxodromic{{ n }}[1].z){
+	     return mix(vec3(0, 1., 0), col, 0.5);
+	 }else if(distance(position, u_twistedLoxodromic{{ n }}[2].xy) < u_twistedLoxodromic{{ n }}[2].z){
+	     return mix(vec3(0, 0, 1.), col, 0.5);
+	 }else if(col != vec3(0.)){
+             return col;
+         }
+	 {% endfor %}
+         
 	 {% if numInfiniteCircles > 0 %}
 	 if(u_selectedObjectId == ID_INFINITE_CIRCLE){
 	     {% for n in range(0,  numInfiniteCircles ) %}

@@ -1,6 +1,7 @@
 const ID_CIRCLE = 0;
 const ID_INFINITE_CIRCLE = 1;
 const ID_TRANSFORM_BY_CIRCLES = 2;
+const ID_TWISTED_LOXODROMIC = 3;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
@@ -232,14 +233,127 @@ TransformByCircles.prototype = {
     },
 }
 
+const TWISTED_LOXODROMIC_INNER_BODY = 0;
+const TWISTED_LOXODROMIC_INNER_CIRCUMFERENCE = 1;
+const TWISTED_LOXODROMIC_OUTER_BODY = 2;
+const TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE = 3;
+const TWISTED_LOXODROMIC_POINT = 4;
+
+var TwistedLoxodromic = function(innerCircle, outerCircle, p){
+    this.inner = innerCircle;
+    this.outer = outerCircle;
+    this.point = p;
+    this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
+//    this.lineVec = makeLineFromPoints(this.inner.getPosition(), this.outer.getPosition());
+    // direction vector (b, -a)
+    //    this.lineThetaDegree =  degrees(Math.atan2(this.line[0], this.line[1]) + Math.PI);
+    this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI;
+    this.rotationMat2 = getRotationMat2(this.theta);
+    this.invRotationMat2 = getRotationMat2(-this.theta);
+    this.update();
+}
+
+TwistedLoxodromic.prototype = {
+    update: function(){
+        this.inverted = circleInvert(this.inner, this.outer);
+        this.pInnerInv = circleInvertOnPoint(this.point, this.inner);
+        this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
+        this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
+    },
+    getUniformArray: function(){
+	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						   this.inverted.getUniformArray(),
+                                                   this.c3.getUniformArray(),
+                                                   this.point, [0]);
+    },
+    clone: function(){
+        return new TwistedLoxodromic(this.inner, this.outer, this.point);
+    },
+    move: function(componentId, mouse, diff){
+        var prevOuterX = this.outer.x; 
+        var prevOuterY = this.outer.y;
+        switch (componentId) {
+        case TWISTED_LOXODROMIC_OUTER_BODY:
+            this.outer.x = mouse[0] - diff[0];
+	    this.outer.y = mouse[1] - diff[1];
+            this.inner.x += this.outer.x - prevOuterX;
+            this.inner.y += this.outer.y - prevOuterY;
+            break;
+        case TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.outer.x;
+	    var dy = mouse[1] - this.outer.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    this.outer.r = dist;
+            break;
+        case TWISTED_LOXODROMIC_INNER_BODY:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            if(d <= this.outer.r - this.inner.r){
+                this.inner.x = np[0];
+                this.inner.y = np[1];
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case TWISTED_LOXODROMIC_INNER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.inner.x;
+	    var dy = mouse[1] - this.inner.y;
+	    var nr = Math.sqrt((dx * dx) + (dy * dy));
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
+            if(d <= this.outer.r - nr){
+                this.inner.r = nr;
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case TWISTED_LOXODROMIC_POINT:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            this.point[0] = np[0];
+            this.point[1] = np[1];
+            break;
+        }
+        this.update();
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+        var diff = vec2Diff(this.point, mouse);
+        if(vec2Len(diff) < 10){
+            return [TWISTED_LOXODROMIC_POINT, diff];
+        }
+        var [componentId, diff] = this.inner.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [TWISTED_LOXODROMIC_INNER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [TWISTED_LOXODROMIC_INNER_CIRCUMFERENCE, diff];
+        }
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [TWISTED_LOXODROMIC_OUTER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE, diff];
+        }
+	return [-1, [0, 0]];
+    },
+    
+}
+
 var Scene = function(){
     this.circles = [];
     this.infiniteCircles =  [];
     this.transformByCircles = [];
+    this.twistedLoxodromic = [];
     this.objects = {}
     this.objects[ID_CIRCLE] = this.circles;
     this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
     this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
+    this.objects[ID_TWISTED_LOXODROMIC] = this.twistedLoxodromic;
 }
 
 Scene.prototype = {
@@ -247,9 +361,11 @@ Scene.prototype = {
         this.circles = this.clone(param["circles"]);
         this.infiniteCircles = this.clone(param["infiniteCircles"]);
         this.transformByCircles = this.clone(param["transformByCircles"]);
+        this.twistedLoxodromic = this.clone(param["twistedLoxodromic"]);
         this.objects[ID_CIRCLE] = this.circles;
         this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
         this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
+        this.objects[ID_TWISTED_LOXODROMIC] = this.twistedLoxodromic;
     },
     clone: function(objects){
 	var obj = [];
@@ -269,15 +385,6 @@ Scene.prototype = {
             }
         }
         return minRad
-    },
-    getNumCircles: function(){
-	return this.circles.length;
-    },
-    getNumInfiniteCircles: function(){
-	return this.infiniteCircles.length;
-    },
-    getNumTransformByCircles: function(){
-	return this.transformByCircles.length;
     },
     addCircle: function(canvas, mouse){
 	this.circles.push(new Circle(mouse[0], mouse[1], 100));
