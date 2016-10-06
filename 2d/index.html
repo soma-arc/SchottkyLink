@@ -69,6 +69,8 @@
      {% for n in range(0, numTwistedLoxodromic) %}
      // [innerCircle, outerCircle, invertedCircle, c3, p]
      uniform vec3 u_twistedLoxodromic{{ n }}[5];
+     uniform mat2 u_twistedLoxodromicRotationMat2{{ n }};
+     uniform mat2 u_invTwistedLoxodromicRotationMat2{{ n }};
      {% endfor %}
      
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -157,12 +159,20 @@
 
              {% for n in range(0, numTwistedLoxodromic) %}
              if(distance(pos, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){                 
-                 vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
-                 vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
-                 vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
-                 vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
-                 float d{{ n }} = length(n{{ n }});
-                 pos += -2. * d{{ n }} * n{{ n }};
+                 /* vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
+                  * vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
+                  * vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+                  * vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
+                  * float d{{ n }} = length(n{{ n }});
+                  * pos += -2. * d{{ n }} * n{{ n }};*/
+
+                 pos -= u_twistedLoxodromic{{ n }}[0].xy;
+	         pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
+		 pos.x *= -1.;
+	         pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
+                 pos += u_twistedLoxodromic{{ n }}[0].xy;
+
+                 
                  pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
                  
 
@@ -177,18 +187,23 @@
 		 pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
 
                  pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
-                 vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
-                 vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
-                 vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
-                 vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
-                 float d{{ n }} = length(n{{ n }});
-                 pos += -2. * d{{ n }} * n{{ n }};
-                
+                 /* vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
+                  * vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
+                  * vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+                  * vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
+                  * float d{{ n }} = length(n{{ n }});
+                  * pos += -2. * d{{ n }} * n{{ n }};*/
+                 pos -= u_twistedLoxodromic{{ n }}[0].xy;
+	         pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
+		 pos.x *= -1.;
+	         pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
+                 pos += u_twistedLoxodromic{{ n }}[0].xy;
+
                  
 		 cont = true;
                  //		 loopNum++;
 	     }
-   
+             
              {% endfor %}
 	     
 	     if(cont == false) break;

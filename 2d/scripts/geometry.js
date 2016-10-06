@@ -243,13 +243,7 @@ var TwistedLoxodromic = function(innerCircle, outerCircle, p){
     this.inner = innerCircle;
     this.outer = outerCircle;
     this.point = p;
-    this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
-//    this.lineVec = makeLineFromPoints(this.inner.getPosition(), this.outer.getPosition());
-    // direction vector (b, -a)
-    //    this.lineThetaDegree =  degrees(Math.atan2(this.line[0], this.line[1]) + Math.PI);
-    this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI;
-    this.rotationMat2 = getRotationMat2(this.theta);
-    this.invRotationMat2 = getRotationMat2(-this.theta);
+
     this.update();
 }
 
@@ -259,6 +253,14 @@ TwistedLoxodromic.prototype = {
         this.pInnerInv = circleInvertOnPoint(this.point, this.inner);
         this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
         this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
+
+            //this.lineVec = makeLineFromPoints(this.inner.getPosition(), this.outer.getPosition());
+    // direction vector (b, -a)
+    //    this.lineThetaDegree =  degrees(Math.atan2(this.line[0], this.line[1]) + Math.PI);
+        this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
+        this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI / 2.;
+        this.rotationMat2 = getRotationMat2(this.theta);
+        this.invRotationMat2 = getRotationMat2(-this.theta);
     },
     getUniformArray: function(){
 	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
@@ -323,6 +325,15 @@ TwistedLoxodromic.prototype = {
     // return [componentId,
     //         difference between object position and mouse position]
     selectable: function(mouse, scene){
+
+        var p = vec2Diff(mouse, this.inner.getPosition());
+	var rot = applyMat2(this.rotationMat2, p);
+	if(rot[0] > 0){
+            console.log("p");
+	}else{
+            console.log("n");
+        }
+        
         var diff = vec2Diff(this.point, mouse);
         if(vec2Len(diff) < 10){
             return [TWISTED_LOXODROMIC_POINT, diff];
