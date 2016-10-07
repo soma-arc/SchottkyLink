@@ -289,6 +289,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromic'+ i);
         uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromicRotationMat2'+ i);
         uniLocation[n++] = gl.getUniformLocation(program, 'u_invTwistedLoxodromicRotationMat2'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromicUIParam'+ i);
     }
     
     var position = [-1.0, 1.0, 0.0,
@@ -357,6 +358,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 				scene.twistedLoxodromic[i].rotationMat2);
             gl.uniformMatrix2fv(uniLocation[uniI++], false,
 				scene.twistedLoxodromic[i].invRotationMat2);
+            gl.uniform2fv(uniLocation[uniI++], scene.twistedLoxodromic[i].getUIParamArray());
 	}
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 

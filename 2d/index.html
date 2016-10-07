@@ -71,6 +71,8 @@
      uniform vec3 u_twistedLoxodromic{{ n }}[5];
      uniform mat2 u_twistedLoxodromicRotationMat2{{ n }};
      uniform mat2 u_invTwistedLoxodromicRotationMat2{{ n }};
+     // [controlPointRadius, lineThickness]
+     uniform vec2 u_twistedLoxodromicUIParam{{ n }};
      {% endfor %}
      
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -245,12 +247,13 @@
 
          {% for n in range(0, numTwistedLoxodromic) %}
 
+         // line
          vec2 v2{{ n }} = position - u_twistedLoxodromic{{ n }}[0].xy;
          vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
          vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
          vec2 n{{ n }} = v2{{ n }} - projection{{ n }};
          float d{{ n }} = length(n{{ n }});
-         if(d{{ n }} < 10.){
+         if(d{{ n }} < u_twistedLoxodromicUIParam{{ n }}.y){
              return vec3(1);
          }
 
@@ -258,15 +261,19 @@
 	     col = vec3(0.5, .5, 0);
 	 }
 
-         if(distance(position, u_twistedLoxodromic{{ n }}[4].xy) < 10.){
+         // control point
+         if(distance(position, u_twistedLoxodromic{{ n }}[4].xy) < u_twistedLoxodromicUIParam{{ n }}.x){
 	     return vec3(1.);
          }
-         
+
 	 if(distance(position, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
+             // inner circle
 	     return mix(vec3(1., 0, 0), col, 0.5);
 	 }else if(distance(position, u_twistedLoxodromic{{ n }}[1].xy) < u_twistedLoxodromic{{ n }}[1].z){
+             // outer circle
 	     return mix(vec3(0, 1., 0), col, 0.5);
 	 }else if(distance(position, u_twistedLoxodromic{{ n }}[2].xy) < u_twistedLoxodromic{{ n }}[2].z){
+             // inverted circle
 	     return mix(vec3(0, 0, 1.), col, 0.5);
 	 }else if(col != vec3(0.)){
              return col;

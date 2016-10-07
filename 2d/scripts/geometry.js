@@ -244,6 +244,9 @@ var TwistedLoxodromic = function(innerCircle, outerCircle, p){
     this.outer = outerCircle;
     this.point = p;
 
+    this.controlPointRadius = 10;
+    this.lineThickness = 10;
+
     this.update();
 }
 
@@ -254,9 +257,6 @@ TwistedLoxodromic.prototype = {
         this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
         this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
 
-            //this.lineVec = makeLineFromPoints(this.inner.getPosition(), this.outer.getPosition());
-    // direction vector (b, -a)
-    //    this.lineThetaDegree =  degrees(Math.atan2(this.line[0], this.line[1]) + Math.PI);
         this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
         this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI / 2.;
         this.rotationMat2 = getRotationMat2(this.theta);
@@ -267,6 +267,9 @@ TwistedLoxodromic.prototype = {
 						   this.inverted.getUniformArray(),
                                                    this.c3.getUniformArray(),
                                                    this.point, [0]);
+    },
+    getUIParamArray: function(){
+        return [this.controlPointRadius, this.lineThickness];
     },
     clone: function(){
         return new TwistedLoxodromic(this.inner, this.outer, this.point);
@@ -280,6 +283,8 @@ TwistedLoxodromic.prototype = {
 	    this.outer.y = mouse[1] - diff[1];
             this.inner.x += this.outer.x - prevOuterX;
             this.inner.y += this.outer.y - prevOuterY;
+            this.point[0] += this.outer.x - prevOuterX;
+            this.point[1] += this.outer.y - prevOuterY;
             break;
         case TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE:
             var dx = mouse[0] - this.outer.x;
@@ -324,18 +329,9 @@ TwistedLoxodromic.prototype = {
     },
     // return [componentId,
     //         difference between object position and mouse position]
-    selectable: function(mouse, scene){
-
-        var p = vec2Diff(mouse, this.inner.getPosition());
-	var rot = applyMat2(this.rotationMat2, p);
-	if(rot[0] > 0){
-            console.log("p");
-	}else{
-            console.log("n");
-        }
-        
+    selectable: function(mouse, scene){        
         var diff = vec2Diff(this.point, mouse);
-        if(vec2Len(diff) < 10){
+        if(vec2Len(diff) < this.controlPointRadius){
             return [TWISTED_LOXODROMIC_POINT, diff];
         }
         var [componentId, diff] = this.inner.selectable(mouse, scene);
@@ -352,7 +348,6 @@ TwistedLoxodromic.prototype = {
         }
 	return [-1, [0, 0]];
     },
-    
 }
 
 var Scene = function(){
