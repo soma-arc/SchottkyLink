@@ -6,9 +6,6 @@ var g_params = [
 		 new Circle(100, 100, 100),
 		 new Circle(-100, -100, 100),
 		 new Circle(-100, 100, 100)],
-        infiniteCircles:[],
-        transformByCircles:[],
-        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(100, -100, 100),
@@ -16,8 +13,6 @@ var g_params = [
 		 new Circle(-100, -100, 100),
 		 new Circle(-100, 100, 100)],
         infiniteCircles:[new InfiniteCircle(200, 0, 0)],
-        transformByCircles:[],
-        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(100, -100, 100),
@@ -26,8 +21,6 @@ var g_params = [
 		 new Circle(-100, 100, 100)],
         infiniteCircles:[new InfiniteCircle(200, 0, 0),
                          new InfiniteCircle(-200, 0, 180)],
-        transformByCircles:[],
-        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(226, -139, 108),
@@ -35,10 +28,8 @@ var g_params = [
                  new Circle(47, -209, 78),
                  new Circle(93, 200, 95),
                  new Circle(154, 4, 53)],
-        infiniteCircles:[],
         transformByCircles:[new TransformByCircles(new Circle(-50, 0, 150),
                                                    new Circle(0, 0, 200))],
-        twistedLoxodromic:[],
     },
     {
         circles:[new Circle(-161, 132, 61),
@@ -47,29 +38,21 @@ var g_params = [
                  new Circle(169, -119, 55),
                  new Circle(-185, -90, 50),
                  new Circle(18, 210, 68)],
-        infiniteCircles:[],
         transformByCircles:[new TransformByCircles(new Circle(-4, -7, 150),
                                                    new Circle(0, 0, 200))],
-        twistedLoxodromic:[],
     },
     {
-        circles:[],
-        infiniteCircles:[],
-        transformByCircles:[],
         twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
                                                  new Circle(0, 0, 200),
-                                                 [10, 10])],
+                                                 [100, 10])],
     },
     {
-        circles:[],
-        infiniteCircles:[],
-        transformByCircles:[],
         twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
                                                  new Circle(0, 0, 200),
-                                                 [10, 10]),
-                           new TwistedLoxodromic(new Circle(-104, -107, 150),
-                                                 new Circle(-100, -100, 200),
-                                                 [-100, -100])],
+                                                 [100, 10]),
+                           new TwistedLoxodromic(new Circle(-704, -107, 150),
+                                                 new Circle(-700, -100, 200),
+                                                 [-400, -100])],
     }
 ]
 
