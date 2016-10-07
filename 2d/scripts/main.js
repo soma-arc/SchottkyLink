@@ -1,6 +1,4 @@
-var g_scene;
-
-var g_params = [
+const PRESET_PARAMS = [
     {
         circles:[new Circle(100, -100, 100),
 		 new Circle(100, 100, 100),
@@ -145,14 +143,14 @@ RenderCanvas2D.prototype = {
     }
 }
 
-function updateShaders(canvas){
+function updateShaders(scene, canvas){
     [canvas.switch,
-     canvas.render] = setupSchottkyProgram(g_scene, canvas);
+     canvas.render] = setupSchottkyProgram(scene, canvas);
     canvas.switch();
     canvas.render(0);
 }
 
-function addMouseListeners(renderCanvas){
+function addMouseListeners(scene, renderCanvas){
     var diff = [0, 0];
 
     renderCanvas.canvas.addEventListener("contextmenu", function(e){
@@ -170,7 +168,7 @@ function addMouseListeners(renderCanvas){
 	if(!renderCanvas.isMousePressing) return;
 	var mouse = renderCanvas.calcPixel();
 	if(event.button == 0){
-	    g_scene.move(renderCanvas.selectedObjectId,
+	    scene.move(renderCanvas.selectedObjectId,
 			 renderCanvas.selectedObjectIndex,
 			 renderCanvas.selectedComponentId,
 			 mouse, diff);
@@ -190,10 +188,10 @@ function addMouseListeners(renderCanvas){
 	    [renderCanvas.selectedObjectId,
 	     renderCanvas.selectedObjectIndex,
 	     renderCanvas.selectedComponentId,
-	     diff] = g_scene.getSelectedObject(mouse);
+	     diff] = scene.getSelectedObject(mouse);
 	}else if(event.button == 1){
 	    renderCanvas.releaseObject();
-	    g_scene.addCircle(renderCanvas, mouse);
+	    scene.addCircle(renderCanvas, mouse);
 	}else if(event.button == 2){
         }
         renderCanvas.prevMousePos = mouse;
@@ -204,11 +202,11 @@ function addMouseListeners(renderCanvas){
     renderCanvas.canvas.addEventListener('dblclick', function(event){
 	if(event.button == 0){
 	    var mouse = renderCanvas.calcPixel(event);
-	    g_scene.remove(renderCanvas.selectedObjectId,
+	    scene.remove(renderCanvas.selectedObjectId,
 			   renderCanvas.selectedObjectIndex,
 			   mouse, diff);
 	    renderCanvas.releaseObject();
-	    updateShaders(renderCanvas);
+	    updateShaders(scene, renderCanvas);
 	}
     });
 
@@ -352,17 +350,17 @@ function setupSchottkyProgram(scene, renderCanvas){
 }
 
 window.addEventListener('load', function(event){
-    g_scene = new Scene();
-    g_scene.loadParameter(g_params[0]);
+    var scene = new Scene();
+    scene.loadParameter(PRESET_PARAMS[0]);
     
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
     
-    addMouseListeners(renderCanvas);
+    addMouseListeners(scene, renderCanvas);
     renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
 			      renderCanvas.defaultHeight);
 
-    updateShaders(renderCanvas);
+    updateShaders(scene, renderCanvas);
 
     window.addEventListener('resize', function(event){
     	if(renderCanvas.isFullScreen){
@@ -460,7 +458,7 @@ window.addEventListener('load', function(event){
             a.click();
             break;
         case 'l':
-            g_scene.saveSceneAsJson();
+            scene.saveSceneAsJson();
             break;
 	case 'ArrowRight':
 	    event.preventDefault();
@@ -484,12 +482,12 @@ window.addEventListener('load', function(event){
 	    break;
         case 'v':
             if(renderCanvas.selectedObjectId == ID_CIRCLE){
-                g_scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NEAREST;
+                scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NEAREST;
             }
             break;
         case 'b':
             if(renderCanvas.selectedObjectId == ID_CIRCLE){
-                g_scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NORMAL;
+                scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NORMAL;
             }
             break;
         case '0':
@@ -503,10 +501,10 @@ window.addEventListener('load', function(event){
 	case '8':
 	case '9':
 	    var i = parseInt(event.key);
-	    var param = g_params[i];
+	    var param = PRESET_PARAMS[i];
 	    if(param != undefined){
-		g_scene.loadParameter(param);
-		updateShaders(renderCanvas);
+		scene.loadParameter(param);
+		updateShaders(scene, renderCanvas);
 	    }
 	    break;
 	}

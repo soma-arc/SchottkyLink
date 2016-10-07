@@ -41,7 +41,7 @@ Circle.prototype = {
     exportJson: function(){
         return {"position": [this.x, this.y], "radius": this.r};
     },
-    move: function(componentId, mouse, diff){
+    move: function(scene, componentId, mouse, diff){
 	if(componentId == CIRCLE_CIRCUMFERENCE){
 	    var dx = mouse[0] - this.x;
 	    var dy = mouse[1] - this.y;
@@ -51,7 +51,7 @@ Circle.prototype = {
 	    this.x = mouse[0] - diff[0];
 	    this.y = mouse[1] - diff[1];
             if(this.moveMode == CIRCLE_MOVE_MODE_NEAREST)
-                this.r = g_scene.getMinRadiusToOtherCircles(this);
+                this.r = scene.getMinRadiusToOtherCircles(this);
 	}
     },
     removable: function(mouse, diff){
@@ -117,7 +117,7 @@ InfiniteCircle.prototype = {
 		this.rotationControlCircleRadius,
 		this.rotationControlCircleThickness];
     },
-    move: function(componentId, mouse, diff){
+    move: function(scene, componentId, mouse, diff){
 	if(componentId == INFINITE_CIRCLE_CONTROL_POINT ||
 	   componentId == INFINITE_CIRCLE_BODY){
 	    this.x = mouse[0] - diff[0];
@@ -186,7 +186,7 @@ TransformByCircles.prototype = {
         return {"innerCircle": this.inner.exportJson(),
                 "outerCircle": this.outer.exportJson()};
     },
-    move: function(componentId, mouse, diff){
+    move: function(scene, componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
         var prevOuterY = this.outer.y;
         switch (componentId) {
@@ -298,7 +298,7 @@ TwistedLoxodromic.prototype = {
                 "outerCircle": this.outer.exportJson(),
                 "point": this.point};
     },
-    move: function(componentId, mouse, diff){
+    move: function(scene, componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
         var prevOuterY = this.outer.y;
         switch (componentId) {
@@ -440,7 +440,7 @@ Scene.prototype = {
     },
     addCircle: function(canvas, mouse){
 	this.objects[ID_CIRCLE].push(new Circle(mouse[0], mouse[1], 100));
-	updateShaders(canvas);
+	updateShaders(this, canvas);
     },
     // return [objectId, objectIndex, objectComponentId,
     //         difference between object position and mouse position]
@@ -460,7 +460,7 @@ Scene.prototype = {
 	if(id == -1) return;
 	var obj = this.objects[id][index];
 	if(obj != undefined)
-	    obj.move(componentId, mouse, diff);
+	    obj.move(this, componentId, mouse, diff);
     },
     remove: function(id, index, mouse, diff){
 	if(id == -1) return;
