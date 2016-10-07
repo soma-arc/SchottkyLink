@@ -6,11 +6,10 @@ const PRESET_PARAMS = [
 		 new Circle(-100, 100, 100)],
     },
     {
-        circles:[new Circle(100, -100, 100),
-		 new Circle(100, 100, 100),
-		 new Circle(-100, -100, 100),
-		 new Circle(-100, 100, 100)],
-        infiniteCircles:[new InfiniteCircle(200, 0, 0)],
+        circles:[new Circle(400, 400, 400),
+		 new Circle(-400, 400, 400),
+		 new Circle(0, 100, 100)],
+        infiniteCircles:[new InfiniteCircle(0, 0, 90)],
     },
     {
         circles:[new Circle(100, -100, 100),
