@@ -4,6 +4,7 @@ const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 const ID_COMPOUND_PARABOLIC  = 4;
 
+const SPHERE_BODY = 0;
 var Sphere = function(x, y, z, r){
     this.x = x;
     this.y = y;
@@ -74,11 +75,21 @@ Sphere.prototype = {
 	//TODO: calculate tangent sphere
 	this.r = prevObject.r + d * 3;
     },
-    getComponentFromId(id){
+    getComponentFromId: function(id){
 	return this;
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        return intersectSphere(objectId, index, SPHERE_BODY,
+                               this.getPosition(), this.r,
+                               eye, ray, isect);
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.getPosition(), camera, width, height);
     }
 }
 
+const PARABOLIC_TRANSFORM_PLANE1 = 0;
+const PARABOLOC_TRANSFORM_PLANE2 = 1;
 // Initially planes are aligned along the z-axis
 // Rotation is defined by theta and phi
 // center is (0, 0, 0)
@@ -124,9 +135,31 @@ ParabolicTransformation.prototype = {
 	this.invRotationMat3 = prodMat3(rotateY, rotateX);
 	this.twistMat3 = getRotationZAxis(radians(this.twist));
 	this.invTwistMat3 = getRotationZAxis(radians(-this.twist));
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectRect(objectId, index, PARABOLIC_TRANSFORM_PLANE1,
+			      this.distToP1,
+			      this.size,
+			      this.invRotationMat3,
+			      this.rotationMat3,
+			      eye, ray, isect);
+	isect = intersectRect(objectId, index, PARABOLOC_TRANSFORM_PLANE2,
+			      this.distToP2,
+			      this.size,
+			      prodMat3(this.invTwistMat3,
+				       this.invRotationMat3),
+			      prodMat3(this.rotationMat3,
+				       this.twistMat3),
+			      eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return [];
     }
 }
 
+const COMPOUND_PARABOLIC_INNER_SPHERE = 0;
+const COMPOUND_PARABOLIC_OUTER_SPHERE = 1;
 // Currently, we aligne the transformation along the z-axis only.
 var CompoundParabolic = function(){
     // innerSphere and outer sphere is kissing
@@ -177,9 +210,26 @@ CompoundParabolic.prototype = {
 	}else if(id == 2){
 	    return this.inverted;
 	}
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectSphere(objectId, COMPOUND_PARABOLIC_INNER_SPHERE,
+				this.inner.getPosition(),
+				this.inner.r,
+				eye, ray, isect);
+        isect = intersectSphere(objectId, index, COMPOUND_PARABOLIC_OUTER_SPHERE,
+				this.outer.getPosition(),
+				this.outer.r,
+				eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                camera, width, height);
     }
 }
 
+const TRANSFORM_BY_SPHERES_INNER_SPHERE = 0;
+const TRANSFORM_BY_SPHERES_OUTER_SPHERE = 1;
 // Transformation defined by two spheres
 var TransformBySpheres = function(){
     // innerSphere and outer sphere is kissing
@@ -225,6 +275,21 @@ TransformBySpheres.prototype = {
 	}else if(id == 2){
 	    return this.inverted;
 	}
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectSphere(objectId, index, TRANSFORM_BY_SPHERES_INNER_SPHERE,
+				this.inner.getPosition(),
+				this.inner.r,
+				eye, ray, isect);
+        isect = intersectSphere(objectId, index, TRANSFORM_BY_SPHERES_OUTER_SPHERE,
+				this.outer.getPosition(),
+				this.outer.r,
+				eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                camera, width, height);
     }
 }
 
@@ -327,5 +392,19 @@ Scene.prototype = {
     },
     getNumCompoundParabolic: function(){
 	return this.compoundParabolic.length;
+    },
+    getSelectedObject: function(eye, ray){
+        // [distance, objectId, index, componentId]
+        var isect = [99999999, -1, -1, -1];
+        var objs = this.getObjects();
+        for(objectId in Object.keys(this.getObjects())){
+	    objectId = parseInt(objectId);
+	    var objArray = objs[objectId];
+	    for(var i = 0 ; i < objArray.length ; i++){
+		isect = objArray[i].castRay(objectId, i, eye, ray, isect);
+	    }
+	}
+        // return [objectId, index, componentId]
+        return isect.slice(1, 4);
     }
 }
