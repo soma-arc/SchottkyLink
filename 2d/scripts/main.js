@@ -228,10 +228,10 @@ function addMouseListeners(renderCanvas){
 function setupSchottkyProgram(scene, renderCanvas){
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
-    var numCircles = scene.circles.length;
-    var numInfiniteCircles = scene.infiniteCircles.length;
-    var numTransformByCircles = scene.transformByCircles.length;
-    var numTwistedLoxodromic = scene.twistedLoxodromic.length;
+    var numCircles = scene.objects[ID_CIRCLE].length;
+    var numInfiniteCircles = scene.objects[ID_INFINITE_CIRCLE].length;
+    var numTransformByCircles = scene.objects[ID_TRANSFORM_BY_CIRCLES].length;
+    var numTwistedLoxodromic = scene.objects[ID_TWISTED_LOXODROMIC].length;
     attachShaderFromString(gl,
 			   renderCanvas.template.render({numCircles: numCircles,
 							 numInfiniteCircles: numInfiniteCircles,
@@ -321,27 +321,27 @@ function setupSchottkyProgram(scene, renderCanvas){
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
 	for(var i = 0 ; i < numCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.circles[i].getUniformArray());
-            gl.uniform2fv(uniLocation[uniI++], scene.circles[i].getUIParamArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_CIRCLE][i].getUniformArray());
+            gl.uniform2fv(uniLocation[uniI++], scene.objects[ID_CIRCLE][i].getUIParamArray());
 	}
 	for(var i = 0 ; i < numInfiniteCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUniformArray());
-	    gl.uniform3fv(uniLocation[uniI++], scene.infiniteCircles[i].getUIParamArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_INFINITE_CIRCLE][i].getUniformArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_INFINITE_CIRCLE][i].getUIParamArray());
 	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.infiniteCircles[i].rotationMat2);
+				scene.objects[ID_INFINITE_CIRCLE][i].rotationMat2);
 	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.infiniteCircles[i].invRotationMat2);
+				scene.objects[ID_INFINITE_CIRCLE][i].invRotationMat2);
 	}
 	for(var i = 0 ; i < numTransformByCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.transformByCircles[i].getUniformArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_CIRCLES][i].getUniformArray());
 	}
 	for(var i = 0 ; i < numTwistedLoxodromic ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.twistedLoxodromic[i].getUniformArray());
+	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_TWISTED_LOXODROMIC][i].getUniformArray());
             gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.twistedLoxodromic[i].rotationMat2);
+				scene.objects[ID_TWISTED_LOXODROMIC][i].rotationMat2);
             gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.twistedLoxodromic[i].invRotationMat2);
-            gl.uniform2fv(uniLocation[uniI++], scene.twistedLoxodromic[i].getUIParamArray());
+				scene.objects[ID_TWISTED_LOXODROMIC][i].invRotationMat2);
+            gl.uniform2fv(uniLocation[uniI++], scene.objects[ID_TWISTED_LOXODROMIC][i].getUIParamArray());
 	}
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
@@ -458,6 +458,9 @@ window.addEventListener('load', function(event){
             a.href = renderCanvas.canvas.toDataURL();
             a.download = "schottky.png"
             a.click();
+            break;
+        case 'l':
+            g_scene.saveSceneAsJson();
             break;
 	case 'ArrowRight':
 	    event.preventDefault();

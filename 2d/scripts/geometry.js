@@ -3,6 +3,12 @@ const ID_INFINITE_CIRCLE = 1;
 const ID_TRANSFORM_BY_CIRCLES = 2;
 const ID_TWISTED_LOXODROMIC = 3;
 
+var GENERATOR_NAME = {};
+GENERATOR_NAME[ID_CIRCLE] = "circles";
+GENERATOR_NAME[ID_INFINITE_CIRCLE] = "infiniteCircles";
+GENERATOR_NAME[ID_TRANSFORM_BY_CIRCLES] = "transformByCircles";
+GENERATOR_NAME[ID_TWISTED_LOXODROMIC] = "twistedLoxodromic";
+
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
 const CIRCLE_MOVE_MODE_NORMAL = 0;
@@ -31,6 +37,9 @@ Circle.prototype = {
     getUIParamArray: function(){
         return [this.centerRadius,
                 this.circumferenceThickness];
+    },
+    exportJson: function(){
+        return {"position": [this.x, this.y], "radius": this.r};
     },
     move: function(componentId, mouse, diff){
 	if(componentId == CIRCLE_CIRCUMFERENCE){
@@ -93,6 +102,9 @@ InfiniteCircle.prototype = {
     },
     getPosition: function(){
 	return [this.x, this.y];
+    },
+    exportJson: function(){
+        return {"position": [this.x, this.y], "rotation": this.thetaDegree};
     },
     clone: function(){
 	return new InfiniteCircle(this.x, this.y, this.thetaDegree);
@@ -169,6 +181,10 @@ TransformByCircles.prototype = {
     clone: function(){
         return new TransformByCircles(this.inner.clone(),
                                       this.outer.clone());
+    },
+    exportJson: function(){
+        return {"innerCircle": this.inner.exportJson(),
+                "outerCircle": this.outer.exportJson()};
     },
     move: function(componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
@@ -277,6 +293,11 @@ TwistedLoxodromic.prototype = {
                                      this.outer.clone(),
                                      this.point.slice(0));
     },
+    exportJson: function(){
+        return {"innerCircle": this.inner.exportJson(),
+                "outerCircle": this.outer.exportJson(),
+                "point": this.point};
+    },
     move: function(componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
         var prevOuterY = this.outer.y;
@@ -354,34 +375,23 @@ TwistedLoxodromic.prototype = {
 }
 
 var Scene = function(){
-    this.circles = [];
-    this.infiniteCircles =  [];
-    this.transformByCircles = [];
-    this.twistedLoxodromic = [];
     this.objects = {}
-    this.objects[ID_CIRCLE] = this.circles;
-    this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
-    this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
-    this.objects[ID_TWISTED_LOXODROMIC] = this.twistedLoxodromic;
+    this.objects[ID_CIRCLE] = [];
+    this.objects[ID_INFINITE_CIRCLE] = [];
+    this.objects[ID_TRANSFORM_BY_CIRCLES] = [];
+    this.objects[ID_TWISTED_LOXODROMIC] = [];
 }
 
 Scene.prototype = {
     loadParameter: function(param){
-        var objs = (param["circles"] == undefined) ? [] : param["circles"];
-        this.circles = this.clone(objs);
-        this.objects[ID_CIRCLE] = this.circles;
-
-        objs = (param["infiniteCircles"] == undefined) ? [] : param["infiniteCircles"];
-        this.infiniteCircles = this.clone(objs);
-        this.objects[ID_INFINITE_CIRCLE] = this.infiniteCircles;
-
-        objs = (param["transformByCircles"] == undefined) ? [] : param["transformByCircles"];
-        this.transformByCircles = this.clone(objs);
-        this.objects[ID_TRANSFORM_BY_CIRCLES] = this.transformByCircles;
-        
-        objs = (param["twistedLoxodromic"] == undefined) ? [] : param["twistedLoxodromic"];
-        this.twistedLoxodromic = this.clone(objs);
-        this.objects[ID_TWISTED_LOXODROMIC] = this.twistedLoxodromic;
+        this.objects[ID_CIRCLE] =
+            (param["circles"] == undefined) ? [] : this.clone(param["circles"]);
+        this.objects[ID_INFINITE_CIRCLE] =
+            (param["infiniteCircles"] == undefined) ? [] : this.clone(param["infiniteCircles"]);
+        this.objects[ID_TRANSFORM_BY_CIRCLES] =
+            (param["transformByCircles"] == undefined) ? [] : this.clone(param["transformByCircles"]);
+        this.objects[ID_TWISTED_LOXODROMIC] =
+            (param["twistedLoxodromic"] == undefined) ? [] : this.clone(param["twistedLoxodromic"]);
         
     },
     clone: function(objects){
@@ -390,6 +400,31 @@ Scene.prototype = {
 	    obj.push(objects[i].clone());
 	}
 	return obj;
+    },
+    exportJson: function(){
+        var json = {};
+        json["name"] = "scene";
+        var generators = {};
+        for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+            var objs = [];
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		objs.push(objArray[i].exportJson());
+	    }
+            generators[GENERATOR_NAME[objectId]] = objs;
+	}
+        json["generators"] = generators;
+        return json;
+    },
+    saveSceneAsJson: function(){
+        var blob = new Blob([JSON.stringify(this.exportJson(), null, "    ")],
+                            {type: "text/plain"});
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = 'scene.json';
+        a.click();
     },
     getMinRadiusToOtherCircles: function(c){
         var minRad = Number.MAX_VALUE;
@@ -404,7 +439,7 @@ Scene.prototype = {
         return minRad
     },
     addCircle: function(canvas, mouse){
-	this.circles.push(new Circle(mouse[0], mouse[1], 100));
+	this.objects[ID_CIRCLE].push(new Circle(mouse[0], mouse[1], 100));
 	updateShaders(canvas);
     },
     // return [objectId, objectIndex, objectComponentId,
