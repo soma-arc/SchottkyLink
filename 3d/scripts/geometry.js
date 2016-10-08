@@ -4,6 +4,11 @@ const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 const ID_COMPOUND_PARABOLIC  = 4;
 
+const AXIS_X = 0;
+const AXIS_Y = 1;
+const AXIS_Z = 2;
+const AXIS_RADIUS = 3;
+
 const SPHERE_BODY = 0;
 var Sphere = function(x, y, z, r){
     this.x = x;
@@ -14,24 +19,24 @@ var Sphere = function(x, y, z, r){
 
 Sphere.prototype = {
     set : function(axis, val){
-	if(axis == 0){
+	if(axis == AXIS_X){
 	    this.x = val;
-	}else if(axis == 1){
+	}else if(axis == AXIS_Y){
 	    this.y = val;
-	}else if(axis == 2){
+	}else if(axis == AXIS_Z){
 	    this.z = val;
-	}else if(axis == 3){
+	}else if(axis == AXIS_RADIUS){
 	    this.r = val;
 	}
     },
     get : function(axis){
-	if(axis == 0){
+	if(axis == AXIS_X){
 	    return this.x;
-	}else if(axis == 1){
+	}else if(axis == AXIS_Y){
 	    return this.y;
-	}else if(axis == 2){
+	}else if(axis == AXIS_Z){
 	    return this.z;
-	}else if(axis == 3){
+	}else if(axis == AXIS_RADIUS){
 	    return this.r;
 	}
     },
@@ -44,36 +49,37 @@ Sphere.prototype = {
     clone: function(){
 	return new Sphere(this.x, this.y, this.z, this.r);
     },
-    // dx and dy are distance between preveous mouse position and current mouse position.
-    // Move this sphere along the selected axis.
-    move: function(dx, dy, axis, prevObject, schottkyCanvas){
-	var v = schottkyCanvas.axisVecOnScreen[axis];
-	var lengthOnAxis = v[0] * dx + v[1] * dy;
-	var p = calcCoordOnAxis(schottkyCanvas.camera,
-				schottkyCanvas.canvas.width,
-				schottkyCanvas.canvas.height,
-				axis, v, prevObject.getPosition(),
-				lengthOnAxis);
-	this.set(axis, p[axis]);
-    },
-    setRadius: function(mx, my, dx, dy, prevObject, schottkyCanvas){
-	//We assume that prevObject is Sphere.
-	var spherePosOnScreen = calcPointOnScreen(prevObject.getPosition(),
-						  schottkyCanvas.camera,
-						  schottkyCanvas.canvas.width,
-						  schottkyCanvas.canvas.height);
-	var diffSphereAndPrevMouse = [spherePosOnScreen[0] - schottkyCanvas.prevMousePos[0],
-				      spherePosOnScreen[1] - schottkyCanvas.prevMousePos[1]];
-	var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
-			  diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
-	var diffSphereAndMouse = [spherePosOnScreen[0] - mx,
-				  spherePosOnScreen[1] - my];
-	var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
-				    diffSphereAndMouse[1] * diffSphereAndMouse[1]);
-	var d = distToMouse - r;
-	
-	//TODO: calculate tangent sphere
-	this.r = prevObject.r + d * 3;
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        if(selectedAxis == AXIS_RADIUS){
+            //set radius
+            //We assume that prevObject is Sphere.
+	    var spherePosOnScreen = calcPointOnScreen(prevObject.getPosition(),
+						      camera, canvasWidth, canvasHeight);
+	    var diffSphereAndPrevMouse = [spherePosOnScreen[0] - prevMouse[0],
+				          spherePosOnScreen[1] - prevMouse[1]];
+	    var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+			      diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+	    var diffSphereAndMouse = [spherePosOnScreen[0] - mouse[0],
+				      spherePosOnScreen[1] - mouse[1]];
+	    var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+				        diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+	    var d = distToMouse - r;
+
+            var scaleFactor = 3;
+	    //TODO: calculate tangent sphere
+	    this.r = prevObject.r + d * scaleFactor;
+        }else{
+            // Move this sphere along the selected axis.
+            var dx = mouse[0] - prevMouse[0];
+            var dy = mouse[1] - prevMouse[1];
+            var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+	    var p = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				    selectedAxis, v, prevObject.getPosition(),
+				    lengthOnAxis);
+	    this.set(selectedAxis, p[selectedAxis]);
+        }
     },
     getComponentFromId: function(id){
 	return this;
@@ -155,11 +161,15 @@ ParabolicTransformation.prototype = {
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
         return [];
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
     }
 }
 
 const COMPOUND_PARABOLIC_INNER_SPHERE = 0;
 const COMPOUND_PARABOLIC_OUTER_SPHERE = 1;
+const COMPOUND_PARABOLIC_INVERTED_SPHERE = 2;
 // Currently, we aligne the transformation along the z-axis only.
 var CompoundParabolic = function(){
     // innerSphere and outer sphere is kissing
@@ -189,33 +199,37 @@ CompoundParabolic.prototype = {
 	this.rotationMat3 = getRotationZAxis(radians(this.theta));
 	this.invRotationMat3 = getRotationZAxis(radians(-this.theta));
     },
-    move: function(dx, dy, axis, prevObject, schottkyCanvas){
-	var d = prevObject.inner.get(axis)- prevObject.outer.get(axis);
-	this.outer.move(dx, dy, axis, prevObject.outer, schottkyCanvas);
-	// Keep spheres kissing
-	this.inner.set(axis, this.outer.get(axis) + d);
-	this.update();
-    },
-    setRadius: function(mx, my, dx, dy, prevObject, schottkyCanvas){
-	this.outer.setRadius(mx, my, dx, dy, prevObject.outer, schottkyCanvas);
-	// Keep spheres kissing
-	this.inner.set(2, prevObject.inner.get(2) + this.outer.r - prevObject.outer.r);
-	this.update();
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case COMPOUND_PARABOLIC_INNER_SPHERE:
+            this.inner.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.inner,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            break;
+        case COMPOUND_PARABOLIC_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            if(selectedAxis == AXIS_RADIUS){
+                // Keep spheres kissing along the z-axis
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+            }
+            break;
+        }
+        this.update();
     },
     getComponentFromId: function(id){
-	if(id == 0){
+	if(id == COMPOUND_PARABOLIC_INNER_SPHERE){
 	    return this.inner;
-	}else if(id == 1){
+	}else if(id == COMPOUND_PARABOLIC_OUTER_SPHERE){
 	    return this.outer;
-	}else if(id == 2){
+	}else if(id == COMPOUND_PARABOLIC_INVERTED_SPHERE){
 	    return this.inverted;
 	}
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectSphere(objectId, index, COMPOUND_PARABOLIC_INNER_SPHERE,
-				this.inner.getPosition(),
-				this.inner.r,
-				eye, ray, isect);
         isect = intersectSphere(objectId, index, COMPOUND_PARABOLIC_OUTER_SPHERE,
 				this.outer.getPosition(),
 				this.outer.r,
@@ -225,11 +239,13 @@ CompoundParabolic.prototype = {
     calcAxisOnScreen: function(componentId, camera, width, height){
         return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
                                 camera, width, height);
-    }
+    },
 }
 
 const TRANSFORM_BY_SPHERES_INNER_SPHERE = 0;
 const TRANSFORM_BY_SPHERES_OUTER_SPHERE = 1;
+const TRANSFORM_BY_SPHERES_INVERTED_SPHERE = 2;
+
 // Transformation defined by two spheres
 var TransformBySpheres = function(){
     // innerSphere and outer sphere is kissing
@@ -254,33 +270,37 @@ TransformBySpheres.prototype = {
     update: function(){
 	this.inverted = sphereInvert(this.inner, this.outer);
     },
-    move: function(dx, dy, axis, prevObject, schottkyCanvas){
-	var d = prevObject.inner.get(axis)- prevObject.outer.get(axis);
-	this.outer.move(dx, dy, axis, prevObject.outer, schottkyCanvas);
-	// Keep spheres kissing
-	this.inner.set(axis, this.outer.get(axis) + d);
-	this.update();
-    },
-    setRadius: function(mx, my, dx, dy, prevObject, schottkyCanvas){
-	this.outer.setRadius(mx, my, dx, dy, prevObject.outer, schottkyCanvas);
-	// Keep spheres kissing
-	this.inner.set(2, prevObject.inner.get(2) + this.outer.r - prevObject.outer.r);
-	this.update();
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case TRANSFORM_BY_SPHERES_INNER_SPHERE:
+            this.inner.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.inner,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            break;
+        case TRANSFORM_BY_SPHERES_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            // Keep spheres kissing along the z-axis
+            if(selectedAxis == AXIS_RADIUS){
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+            }
+            break;
+        }
+        this.update();
     },
     getComponentFromId: function(id){
-	if(id == 0){
+	if(id == TRANSFORM_BY_SPHERES_INNER_SPHERE){
 	    return this.inner;
-	}else if(id == 1){
+	}else if(id == TRANSFORM_BY_SPHERES_OUTER_SPHERE){
 	    return this.outer;
-	}else if(id == 2){
+	}else if(id == TRANSFORM_BY_SPHERES_INVERTED_SPHERE){
 	    return this.inverted;
 	}
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectSphere(objectId, index, TRANSFORM_BY_SPHERES_INNER_SPHERE,
-				this.inner.getPosition(),
-				this.inner.r,
-				eye, ray, isect);
         isect = intersectSphere(objectId, index, TRANSFORM_BY_SPHERES_OUTER_SPHERE,
 				this.outer.getPosition(),
 				this.outer.r,
@@ -355,20 +375,6 @@ Scene.prototype = {
 	this.baseSpheres.push(new Sphere(500, 500, 0, 125));
 	updateShaders(schottkyCanvas, orbitCanvas);
     },
-    removeSchottkySphere: function(schottkyCanvas, orbitCanvas, sphereIndex){
-	if(this.schottkySpheres.length == 0) return;
-	this.schottkySpheres.splice(sphereIndex, 1);
-	schottkyCanvas.selectedObjectId = -1;
-	schottkyCanvas.selectedObjectIndex = -1;
-	updateShaders(schottkyCanvas, orbitCanvas);
-    },
-    removeBaseSphere: function(schottkyCanvas, orbitCanvas, sphereIndex){
-	if(this.baseSpheres.length == 1) return;
-	this.baseSpheres.splice(sphereIndex, 1);
-	schottkyCanvas.selectedObjectId = -1;
-	schottkyCanvas.selectedObjectIndex = -1;
-	updateShaders(schottkyCanvas, orbitCanvas);
-    },
     getObjects: function(){
 	var obj = {};
 	obj[ID_SCHOTTKY_SPHERE] = this.schottkySpheres;
@@ -406,6 +412,16 @@ Scene.prototype = {
 	}
         // return [objectId, index, componentId]
         return isect.slice(1, 4);
+    },
+    // axis 0:x 1:y 2:z 3:radius
+    move: function(objId, index, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        if(objId == -1) return;
+	var obj = this.getObjects()[objId][index];
+	if(obj != undefined){
+	    obj.move(this, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                     axisVecOnScreen, camera, canvasWidth, canvasHeight);
+        }
     },
     remove: function(objectId, objectIndex){
         if(objectId == -1) return;
