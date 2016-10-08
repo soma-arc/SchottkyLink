@@ -212,7 +212,7 @@ CompoundParabolic.prototype = {
 	}
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectSphere(objectId, COMPOUND_PARABOLIC_INNER_SPHERE,
+        isect = intersectSphere(objectId, index, COMPOUND_PARABOLIC_INNER_SPHERE,
 				this.inner.getPosition(),
 				this.inner.r,
 				eye, ray, isect);
@@ -406,5 +406,15 @@ Scene.prototype = {
 	}
         // return [objectId, index, componentId]
         return isect.slice(1, 4);
+    },
+    remove: function(objectId, objectIndex){
+        if(objectId == -1) return;
+        var objArray = this.getObjects()[objectId];
+        var obj = objArray[objectIndex];
+        if(objArray != undefined &&
+           objArray.length != 0 ){
+            objArray.splice(objectIndex, 1);
+        }
+        
     }
 }

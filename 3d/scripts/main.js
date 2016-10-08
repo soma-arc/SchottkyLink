@@ -57,6 +57,11 @@ RenderCanvas.prototype = {
 							this.camera,
 							this.canvas.width, this.canvas.height);
 	}
+    },
+    releaseObject: function(){
+        this.selectedObjectId = -1;
+        this.selectedObjectIndex = -1;
+        this.selectedComponentId = -1;
     }
 };
 
@@ -496,18 +501,11 @@ window.addEventListener('load', function(event){
 
     schottkyCanvas.canvas.addEventListener('dblclick', function(event){
 	event.preventDefault();
-	var groupId = schottkyCanvas.selectedObjectId;
-	var index = schottkyCanvas.selectedObjectIndex;
-	if(groupId != -1){
-	    if(groupId == ID_SCHOTTKY_SPHERE){
-		g_scene.removeSchottkySphere(schottkyCanvas,
-					     orbitCanvas,
-					     index);
-	    }else if(groupId == ID_BASE_SPHERE){
-		g_scene.removeBaseSphere(schottkyCanvas,
-					 orbitCanvas,
-					 index);
-	    }
+	if(schottkyCanvas.selectedObjectId != -1){
+            g_scene.remove(schottkyCanvas.selectedObjectId,
+                           schottkyCanvas.selectedObjectIndex);
+            schottkyCanvas.releaseObject();
+            updateShaders(schottkyCanvas, orbitCanvas);
 	}
     });
     window.addEventListener('keydown', function(event){

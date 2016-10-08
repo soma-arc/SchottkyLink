@@ -604,6 +604,7 @@
      {% endfor %}
      
      const int MAX_KLEIN_ITARATION = 30;
+     const float NO_HIT = 99999.;
      float distKlein(vec3 pos){
 	 loopNum = 0.;
 	 float dr = 1.;
@@ -751,6 +752,8 @@
 		       (distance(pos, u_baseSphere{{ n }}.xyz) - u_baseSphere{{ n }}.w) / abs(dr) * 0.08);
 	 {% endfor %}
 	 return minDist;
+         {% else %}
+         return NO_HIT;
 	 {% endif %}
      }
 
@@ -800,7 +803,6 @@
      const vec3 lightPower = vec3(2000000.);
 
      const int MAX_MARCHING_LOOP = 800;
-     const float NO_HIT = 99999.;
      vec4 march(int objId, int objIndex, int objComponentId, int mtl,
 		const vec3 origin, const  vec3 ray,
 		const float threshold, vec4 isect){
@@ -841,8 +843,11 @@
 	 for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
 	     vec4 result = vec4(NO_HIT);
 
+             {% if numBaseSpheres == 1 %}
 	     result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
 			    eye, ray, 0.01, result);
+             {% endif %}
+
 	     if(u_displayGenerators){
 		 
 		 {% for n  in range(0,  numSchottkySpheres ) %}
