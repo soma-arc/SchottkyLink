@@ -342,23 +342,30 @@ Camera.prototype = {
     }
 }
 
+const GENERATORS_NAME_ID_MAP = {
+    "schottkySpheres": ID_SCHOTTKY_SPHERE,
+    "baseSpheres": ID_BASE_SPHERE,
+    "transformByPlanes": ID_TRANSFORM_BY_PLANES,
+    "transformBySpheres": ID_TRANSFORM_BY_SPHERES,
+    "compoundParabolic": ID_COMPOUND_PARABOLIC
+}
 
 var Scene = function(){
-    this.schottkySpheres = [];
-    this.baseSpheres = [new Sphere(0, 0, 0, 125)];
-    this.transformByPlanes = [];
-    this.transformBySpheres = [];
-    this.compoundParabolic = [];
+    this.objects = {};
+    for(objectName in GENERATORS_NAME_ID_MAP){
+        this.objects[GENERATORS_NAME_ID_MAP[objectName]] = [];
+    }
 }
 
 
 Scene.prototype = {
     loadParameter: function(param){
-	this.schottkySpheres = this.clone(param["schottkySpheres"]);
-	this.baseSpheres = this.clone(param["baseSpheres"]);
-	this.transformByPlanes = this.clone(param["transformByPlanes"]);
-	this.transformBySpheres = this.clone(param["transformBySpheres"]);
-	this.compoundParabolic = this.clone(param["compoundParabolic"]);
+        this.objects = {};
+        for(objectName in GENERATORS_NAME_ID_MAP){
+            this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
+                (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
+
+        }
     },
     clone: function(objects){
 	var obj = [];
@@ -368,44 +375,19 @@ Scene.prototype = {
 	return obj;
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
-	this.schottkySpheres.push(new Sphere(500, 500, 0, 300));
-	updateShaders(schottkyCanvas, orbitCanvas);
+	this.objects[ID_SCHOTTKY_SPHERE].push(new Sphere(500, 500, 0, 300));
+	updateShaders(this, schottkyCanvas, orbitCanvas);
     },
     addBaseSphere: function(schottkyCanvas, orbitCanvas){
-	this.baseSpheres.push(new Sphere(500, 500, 0, 125));
-	updateShaders(schottkyCanvas, orbitCanvas);
-    },
-    getObjects: function(){
-	var obj = {};
-	obj[ID_SCHOTTKY_SPHERE] = this.schottkySpheres;
-	obj[ID_BASE_SPHERE] = this.baseSpheres;
-	obj[ID_TRANSFORM_BY_PLANES] = this.transformByPlanes;
-	obj[ID_TRANSFORM_BY_SPHERES] = this.transformBySpheres;
-	obj[ID_COMPOUND_PARABOLIC] = this.compoundParabolic;
-	return obj;
-    },
-    getNumSchottkySpheres: function(){
-	return this.schottkySpheres.length;
-    },
-    getNumBaseSpheres: function(){
-	return this.baseSpheres.length;
-    },
-    getNumTransformByPlanes: function(){
-	return this.transformByPlanes.length;
-    },
-    getNumTransformBySpheres: function(){
-	return this.transformBySpheres.length;
-    },
-    getNumCompoundParabolic: function(){
-	return this.compoundParabolic.length;
+	this.objects[ID_BASE_SPHERE].push(new Sphere(500, 500, 0, 125));
+	updateShaders(this, schottkyCanvas, orbitCanvas);
     },
     getSelectedObject: function(eye, ray){
         // [distance, objectId, index, componentId]
         var isect = [99999999, -1, -1, -1];
-        var objs = this.getObjects();
-        for(objectId in Object.keys(this.getObjects())){
+        for(objectId in Object.keys(this.objects)){
 	    objectId = parseInt(objectId);
-	    var objArray = objs[objectId];
+	    var objArray = this.objects[objectId];
 	    for(var i = 0 ; i < objArray.length ; i++){
 		isect = objArray[i].castRay(objectId, i, eye, ray, isect);
 	    }
@@ -417,7 +399,7 @@ Scene.prototype = {
     move: function(objId, index, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
         if(objId == -1) return;
-	var obj = this.getObjects()[objId][index];
+	var obj = this.objects[objId][index];
 	if(obj != undefined){
 	    obj.move(this, componentId, selectedAxis, mouse, prevMouse, prevObject,
                      axisVecOnScreen, camera, canvasWidth, canvasHeight);
@@ -425,7 +407,7 @@ Scene.prototype = {
     },
     remove: function(objectId, objectIndex){
         if(objectId == -1) return;
-        var objArray = this.getObjects()[objectId];
+        var objArray = this.objects[objectId];
         var obj = objArray[objectIndex];
         if(objArray != undefined &&
            objArray.length != 0 ){

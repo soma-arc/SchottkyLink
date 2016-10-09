@@ -3,12 +3,6 @@ const ID_INFINITE_CIRCLE = 1;
 const ID_TRANSFORM_BY_CIRCLES = 2;
 const ID_TWISTED_LOXODROMIC = 3;
 
-var GENERATOR_NAME = {};
-GENERATOR_NAME[ID_CIRCLE] = "circles";
-GENERATOR_NAME[ID_INFINITE_CIRCLE] = "infiniteCircles";
-GENERATOR_NAME[ID_TRANSFORM_BY_CIRCLES] = "transformByCircles";
-GENERATOR_NAME[ID_TWISTED_LOXODROMIC] = "twistedLoxodromic";
-
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
 const CIRCLE_MOVE_MODE_NORMAL = 0;
@@ -374,25 +368,28 @@ TwistedLoxodromic.prototype = {
     },
 }
 
+const GENERATORS_NAME_ID_MAP = {
+    "circles": ID_CIRCLE,
+    "infiniteCircles": ID_INFINITE_CIRCLE,
+    "transformByCircles": ID_TRANSFORM_BY_CIRCLES,
+    "twistedLoxodromic": ID_TWISTED_LOXODROMIC,
+}
+
 var Scene = function(){
-    this.objects = {}
-    this.objects[ID_CIRCLE] = [];
-    this.objects[ID_INFINITE_CIRCLE] = [];
-    this.objects[ID_TRANSFORM_BY_CIRCLES] = [];
-    this.objects[ID_TWISTED_LOXODROMIC] = [];
+    this.objects = {};
+    for(objectName in GENERATORS_NAME_ID_MAP){
+        this.objects[GENERATORS_NAME_ID_MAP[objectName]] = [];
+    }
 }
 
 Scene.prototype = {
     loadParameter: function(param){
-        this.objects[ID_CIRCLE] =
-            (param["circles"] == undefined) ? [] : this.clone(param["circles"]);
-        this.objects[ID_INFINITE_CIRCLE] =
-            (param["infiniteCircles"] == undefined) ? [] : this.clone(param["infiniteCircles"]);
-        this.objects[ID_TRANSFORM_BY_CIRCLES] =
-            (param["transformByCircles"] == undefined) ? [] : this.clone(param["transformByCircles"]);
-        this.objects[ID_TWISTED_LOXODROMIC] =
-            (param["twistedLoxodromic"] == undefined) ? [] : this.clone(param["twistedLoxodromic"]);
-        
+        this.objects = {};
+        for(objectName in GENERATORS_NAME_ID_MAP){
+            this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
+                (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
+
+        }
     },
     clone: function(objects){
 	var obj = [];
