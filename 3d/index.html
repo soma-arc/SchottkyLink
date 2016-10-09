@@ -843,7 +843,7 @@
 	 for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
 	     vec4 result = vec4(NO_HIT);
 
-             {% if numBaseSpheres == 1 %}
+             {% if numBaseSpheres >= 1 %}
 	     result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
 			    eye, ray, 0.01, result);
              {% endif %}
