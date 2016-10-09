@@ -317,6 +317,19 @@
 				      u_compoundParabolic{{ n }}[0].xyz,
 				      u_compoundParabolic{{ n }}[0].w,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 0){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundParabolic{{ n }}[0].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
 				      u_compoundParabolic{{ n }}[1].xyz,
 				      u_compoundParabolic{{ n }}[1].w,
@@ -345,6 +358,19 @@
 				      u_transformBySpheres{{ n }}[0].xyz,
 				      u_transformBySpheres{{ n }}[0].w,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 0){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_transformBySpheres{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_transformBySpheres{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_transformBySpheres{{ n }}[0].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
 				      u_transformBySpheres{{ n }}[1].xyz,
 				      u_transformBySpheres{{ n }}[1].w,
@@ -389,13 +415,13 @@
 		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex &&
-				 g_objComponentId == 1) ? RED : matColor;
+				 g_objComponentId == u_selectedComponentId) ? RED : matColor;
 		 }else if(g_objId == ID_COMPOUND_PARABOLIC){
 		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
 		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex &&
-				 g_objComponentId == 1) ? RED : matColor;
+				 g_objComponentId == u_selectedComponentId) ? RED : matColor;
 		 }
 		 
     		 vec3 intersection = eye + ray * result.x;
@@ -934,13 +960,13 @@
 		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex &&
-				 g_objComponentId == 1) ? RED : matColor;
+				 g_objComponentId == u_selectedComponentId) ? RED : matColor;
 		 }else if(g_objId == ID_COMPOUND_PARABOLIC){
 		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
 		     matColor = (g_objComponentId == 1) ? YELLOW : matColor;
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex &&
-				 g_objComponentId == 1) ? RED : matColor;
+				 g_objComponentId == u_selectedComponentId) ? RED : matColor;
 		 }else if(g_objId == ID_KLEIN_ORBIT){
 		     matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
 		     normal = getNormal(intersection);

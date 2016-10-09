@@ -309,6 +309,37 @@ function intersectSphere(objectId, objectIndex, componentId, center, radius,
     return isect;
 }
 
+function intersectOverlappingSphere(objectId, objectIndex,
+                                    innerComponentId, outerComponentId,
+                                    innerSphere, outerSphere,
+                                    rayOrigin, rayDir, isect){
+    var v = diff(rayOrigin, outerSphere.getPosition());
+    var b = dot(rayDir, v);
+    var c = dot(v, v) - outerSphere.r * outerSphere.r;
+    var d = b * b - c;
+    if(d >= 0){
+	var s = Math.sqrt(d);
+	var ot = - b - s;
+	if(ot <= RAYTRACE_EPSILON) ot = -b + s;
+	if(RAYTRACE_EPSILON < ot && ot < isect[0]){
+	    v = diff(rayOrigin, innerSphere.getPosition());
+            b = dot(rayDir, v);
+            c = dot(v, v) - innerSphere.r * innerSphere.r;
+            d = b * b - c;
+            if(d >= 0){
+                s = Math.sqrt(d);
+	        var it = - b - s;
+	        if(it <= RAYTRACE_EPSILON) it = -b + s;
+	        if(RAYTRACE_EPSILON < it && it < isect[0]){
+	            return [it, objectId, objectIndex, innerComponentId];
+                }
+            }
+            return [ot, objectId, objectIndex, outerComponentId];
+	}
+    }
+    return isect;
+}
+
 function intersectRect (objectId, objectIndex, componentId,
 			distToOrigin, size,
 			rotationMat3, invRotationMat3,

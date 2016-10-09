@@ -230,10 +230,11 @@ CompoundParabolic.prototype = {
 	}
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectSphere(objectId, index, COMPOUND_PARABOLIC_OUTER_SPHERE,
-				this.outer.getPosition(),
-				this.outer.r,
-				eye, ray, isect);
+        isect = intersectOverlappingSphere(objectId, index,
+                                           COMPOUND_PARABOLIC_INNER_SPHERE,
+                                           COMPOUND_PARABOLIC_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				           eye, ray, isect);
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
@@ -301,10 +302,11 @@ TransformBySpheres.prototype = {
 	}
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectSphere(objectId, index, TRANSFORM_BY_SPHERES_OUTER_SPHERE,
-				this.outer.getPosition(),
-				this.outer.r,
-				eye, ray, isect);
+        isect = intersectOverlappingSphere(objectId, index,
+                                           TRANSFORM_BY_SPHERES_INNER_SPHERE,
+                                           TRANSFORM_BY_SPHERES_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				           eye, ray, isect);
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
