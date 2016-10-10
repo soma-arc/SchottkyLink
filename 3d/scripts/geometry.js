@@ -203,8 +203,17 @@ CompoundParabolic.prototype = {
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
         switch(componentId){
         case COMPOUND_PARABOLIC_INNER_SPHERE:
-            this.inner.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.inner,
-                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+	    var dx = mouse[0] - prevMouse[0];
+	    var dy = mouse[1] - prevMouse[1];
+	    var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+	    var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				     selectedAxis, v, prevObject.inner.getPosition(),
+				     lengthOnAxis);
+	    var d = vecLength(diff(this.outer.getPosition(), np));
+	    if(d <= this.outer.r - this.inner.r){
+		this.inner.set(selectedAxis, np[selectedAxis]);
+	    }
             break;
         case COMPOUND_PARABOLIC_OUTER_SPHERE:
             this.outer.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.outer,
@@ -275,8 +284,17 @@ TransformBySpheres.prototype = {
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
         switch(componentId){
         case TRANSFORM_BY_SPHERES_INNER_SPHERE:
-            this.inner.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.inner,
-                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+	    var dx = mouse[0] - prevMouse[0];
+	    var dy = mouse[1] - prevMouse[1];
+	    var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+	    var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				     selectedAxis, v, prevObject.inner.getPosition(),
+				     lengthOnAxis);
+	    var d = vecLength(diff(this.outer.getPosition(), np));
+	    if(d <= this.outer.r - this.inner.r){
+		this.inner.set(selectedAxis, np[selectedAxis]);
+	    }
             break;
         case TRANSFORM_BY_SPHERES_OUTER_SPHERE:
             this.outer.move(scene, componentId, selectedAxis, mouse, prevMouse, prevObject.outer,
