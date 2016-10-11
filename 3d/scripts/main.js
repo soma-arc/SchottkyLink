@@ -78,12 +78,18 @@ const PRESET_PARAMS = [
 	compoundParabolic:[new CompoundParabolic()],
     },
     {
+        	schottkySpheres:[new Sphere(300, 300, 0, 300),
+			 new Sphere(300, -300, 0, 300),
+			 new Sphere(-300, 300, 0, 300),
+			 new Sphere(-300, -300, 0, 300),
+			 new Sphere(0, 0, 424.26, 300),
+			 new Sphere(0, 0, -424.26, 300)],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	compoundLoxodromic:[new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
 						   new Sphere(100, 100, 900, 700),
-						   [100, 1000, 100],
+						   [0, 1000, 100],
 						   [100, -1000, 100],
-						   [1000, 100, 90])]
+						   [1000, 0, 90])]
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),

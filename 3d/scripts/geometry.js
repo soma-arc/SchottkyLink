@@ -426,14 +426,82 @@ CompoundLoxodromic.prototype = {
 						   this.q1, [0],
 						   this.q2, [0]);
     },
-     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+    getComponentFromId: function(componentId){
+        if(componentId == COMPOUND_LOXODROMIC_INNER_SPHERE){
+	    return this.inner;
+	}else if(componentId == COMPOUND_LOXODROMIC_OUTER_SPHERE){
+	    return this.outer;
+	}else if(componentId == COMPOUND_LOXODROMIC_INVERTED_SPHERE){
+	    return this.inverted;
+	}
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case COMPOUND_LOXODROMIC_INNER_SPHERE:
+	    if(selectedAxis == AXIS_RADIUS){
+		//set radius
+		var spherePosOnScreen = calcPointOnScreen(prevObject.inner.getPosition(),
+							  camera, canvasWidth, canvasHeight);
+		var diffSphereAndPrevMouse = [spherePosOnScreen[0] - prevMouse[0],
+				              spherePosOnScreen[1] - prevMouse[1]];
+		var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+				  diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+		var diffSphereAndMouse = [spherePosOnScreen[0] - mouse[0],
+					  spherePosOnScreen[1] - mouse[1]];
+		var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+				            diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+		var d = distToMouse - r;
+
+		var scaleFactor = 3;
+		//TODO: calculate tangent sphere
+		var nr = prevObject.inner.r + d * scaleFactor;
+
+		var dist = vecLength(diff(this.outer.getPosition(),
+					  this.inner.getPosition()));
+		if(dist <= this.outer.r - nr){
+		    this.inner.r = nr;
+		}
+	    }else{
+		var dx = mouse[0] - prevMouse[0];
+		var dy = mouse[1] - prevMouse[1];
+		var v = axisVecOnScreen[selectedAxis];
+		var lengthOnAxis = v[0] * dx + v[1] * dy;
+		var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+					 selectedAxis, v, prevObject.inner.getPosition(),
+					 lengthOnAxis);
+		var d = vecLength(diff(this.outer.getPosition(), np));
+		if(d <= this.outer.r - this.inner.r){
+		    this.inner.set(selectedAxis, np[selectedAxis]);
+		}
+	    }
+            break;
+        case COMPOUND_LOXODROMIC_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis,
+			    mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            // Keep spheres kissing along the z-axis
+            if(selectedAxis == AXIS_RADIUS){
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+            }
+            break;
+        }
+        this.update();
     },
     castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectOverlappingSphere(objectId, index,
+                                           COMPOUND_LOXODROMIC_INNER_SPHERE,
+                                           COMPOUND_LOXODROMIC_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				           eye, ray, isect);
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
-        return [];
+        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                camera, width, height);
     }
 }
 
