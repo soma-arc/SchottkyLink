@@ -3,6 +3,7 @@ const ID_BASE_SPHERE = 1;
 const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 const ID_COMPOUND_PARABOLIC  = 4;
+const ID_COMPOUND_LOXODROMIC = 5;
 
 const AXIS_X = 0;
 const AXIS_Y = 1;
@@ -384,6 +385,58 @@ TransformBySpheres.prototype = {
     }
 }
 
+var CompoundLoxodromic = function(inner, outer, p, q1, q2){
+    this.inner = inner;
+    this.outer = outer;
+    this.p = p;
+    this.q1 = q1;
+    this.q2 = q2;
+    this.update();
+}
+
+const COMPOUND_LOXODROMIC_INNER_SPHERE = 0;
+const COMPOUND_LOXODROMIC_OUTER_SPHERE = 1;
+const COMPOUND_LOXODROMIC_INVERTED_SPHERE = 2;
+const COMPOUND_LOXODROMIC_S3 = 3;
+const COMPOUND_LOXODROMIC_S4 = 4;
+const COMPOUND_LOXODROMIC_POINT = 5;
+const COMPOUND_LOXODROMIC_Q1 = 6;
+const COMPOUND_LOXODROMIC_Q2 = 7;
+
+CompoundLoxodromic.prototype = {
+    update: function(){
+	this.inverted = sphereInvert(this.inner, this.outer);
+	this.pInnerInv = sphereInvertOnPoint(this.p, this.inner);
+	this.pOuterInv = sphereInvertOnPoint(this.p, this.outer);
+	this.s3 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q1);
+	this.s4 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q2);
+    },
+    clone: function(){
+	return new CompoundLoxodromic(this.inner.clone(), this.outer.clone(),
+				      this.p.slice(0),
+				      this.q1.slice(0),
+				      this.q2.slice(0));
+    },
+    getUniformArray: function(){
+	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						   this.inverted.getUniformArray(),
+						   this.s3.getUniformArray(),
+						   this.s4.getUniformArray(),
+						   this.p, [0],
+						   this.q1, [0],
+						   this.q2, [0]);
+    },
+     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return [];
+    }
+}
+
 var Camera = function(target, fovDegree, eyeDist, up){
     this.target = target;
     this.prevTarget = target;
@@ -418,7 +471,8 @@ const GENERATORS_NAME_ID_MAP = {
     "baseSpheres": ID_BASE_SPHERE,
     "transformByPlanes": ID_TRANSFORM_BY_PLANES,
     "transformBySpheres": ID_TRANSFORM_BY_SPHERES,
-    "compoundParabolic": ID_COMPOUND_PARABOLIC
+    "compoundParabolic": ID_COMPOUND_PARABOLIC,
+    "compoundLoxodromic": ID_COMPOUND_LOXODROMIC
 }
 
 var Scene = function(){

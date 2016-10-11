@@ -78,11 +78,12 @@ const PRESET_PARAMS = [
 	compoundParabolic:[new CompoundParabolic()],
     },
     {
-	schottkySpheres:[new Sphere(300, 300, 0, 300),
-			 new Sphere(300, -300, 0, 300),
-			 new Sphere(0, 0, 424.26, 300),
-			],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
+	compoundLoxodromic:[new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
+						   new Sphere(100, 100, 900, 700),
+						   [100, 1000, 100],
+						   [100, -1000, 100],
+						   [1000, 100, 90])]
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -228,11 +229,13 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numTransformByPlanes = scene.objects[ID_TRANSFORM_BY_PLANES].length;
     var numTransformBySpheres = scene.objects[ID_TRANSFORM_BY_SPHERES].length;
     var numCompoundParabolic = scene.objects[ID_COMPOUND_PARABOLIC].length;
+    var numCompoundLoxodromic = scene.objects[ID_COMPOUND_LOXODROMIC].length;
     var shaderStr = renderCanvas.template.render({numSchottkySpheres: numSchottkySpheres,
 						  numBaseSpheres: numBaseSpheres,
 						  numTransformByPlanes: numTransformByPlanes,
 						  numTransformBySpheres: numTransformBySpheres,
-						  numCompoundParabolic: numCompoundParabolic});
+						  numCompoundParabolic: numCompoundParabolic,
+						  numCompoundLoxodromic: numCompoundLoxodromic});
     attachShaderFromString(gl,
 			   shaderStr,
 			   program,
@@ -291,6 +294,11 @@ function setupSchottkyProgram(scene, renderCanvas){
 	uniLocation[n++] = gl.getUniformLocation(program,
 						 'u_invCompoundRotateMat3'+ i);
     }
+    for(var i = 0 ; i < numCompoundLoxodromic ; i++){
+	uniLocation[n++] = gl.getUniformLocation(program,
+						'u_compoundLoxodromic'+ i)
+    }
+    
     uniLocation[n++] = gl.getUniformLocation(program,
 					     'u_displayGenerators');
     var position = [-1.0, 1.0, 0.0,
@@ -357,10 +365,13 @@ function setupSchottkyProgram(scene, renderCanvas){
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].rotationMat3);
 	    gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].invRotationMat3);
 	}
+	for(var i = 0 ; i < numCompoundLoxodromic ; i++){
+	    gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_LOXODROMIC][i].getUniformArray());
+	}
 	gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
+
 	
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-
 	gl.flush();
     }
 

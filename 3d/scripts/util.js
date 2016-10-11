@@ -2,6 +2,7 @@ radians = function(degrees) {
     return degrees * Math.PI / 180;
 };
 
+// TODO: Implement pivot selection
 function makeSphereFromPoints(p1, p2, p3, p4){
     var p = [p1, p2, p3, p4];
     var coefficient =[[], [], []];
@@ -12,11 +13,11 @@ function makeSphereFromPoints(p1, p2, p3, p4){
 	coefficient[i][3] = -(Math.pow(p[i][0], 2) + Math.pow(p[i][1], 2) + Math.pow(p[i][2], 2))+
 	    Math.pow(p[i + 1][0], 2) + Math.pow(p[i + 1][1], 2) + Math.pow(p[i + 1][2], 2);
     }
-
+    
     var pibot, d;
     for (var k = 0 ; k < 3 ; k++) {
 	pibot = coefficient[k][k];
-	//    if(pibot == 0) console.log("0 pibot");
+	if(pibot == 0) console.log("0 pibot");
 	for (var j = k; j < 3 + 1; j++) {
 	    coefficient[k][j] = coefficient[k][j] / pibot;
 	}
