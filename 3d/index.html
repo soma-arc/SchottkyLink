@@ -404,10 +404,36 @@
 				      u_compoundLoxodromic{{ n }}[0].xyz,
 				      u_compoundLoxodromic{{ n }}[0].w,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 0){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[0].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[0].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
 				      u_compoundLoxodromic{{ n }}[1].xyz,
 				      u_compoundLoxodromic{{ n }}[1].w,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 1){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[1].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[1].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[1].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
 				      u_compoundLoxodromic{{ n }}[2].xyz,
 				      u_compoundLoxodromic{{ n }}[2].w,
@@ -469,6 +495,9 @@
 		     matColor = (g_objComponentId == 5) ? BLUE : matColor;
 		     matColor = (g_objComponentId == 6) ? WHITE : matColor;
 		     matColor = (g_objComponentId == 7) ? WHITE : matColor;
+                     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex &&
+				 g_objComponentId == u_selectedComponentId) ? RED : matColor;
 		 }
 		 
     		 vec3 intersection = eye + ray * result.x;
@@ -577,6 +606,7 @@
      {% endfor %}
 
      {% for n in range(0, numCompoundLoxodromic) %}
+     //[innerSphere, outerSphere, invertedSphere, s3, s4, p, q1, q2]
      uniform vec4 u_compoundLoxodromic{{ n }}[8];
      {% endfor %}
      
@@ -679,6 +709,13 @@
      {% for n in range(0, numCompoundParabolic) %}
      float comp0r2{{ n }} = u_compoundParabolic{{ n }}[0].w * u_compoundParabolic{{ n }}[0].w;
      float comp1r2{{ n }} = u_compoundParabolic{{ n }}[1].w * u_compoundParabolic{{ n }}[1].w;
+     {% endfor %}
+
+     {% for n in range(0, numCompoundLoxodromic) %}
+     float loxoInnerR2{{ n }} = u_compoundLoxodromic{{ n }}[0].w * u_compoundLoxodromic{{ n }}[0].w;
+     float loxoOuterR2{{ n }} = u_compoundLoxodromic{{ n }}[1].w * u_compoundLoxodromic{{ n }}[1].w;
+     float loxoS3R2{{ n }} = u_compoundLoxodromic{{ n }}[3].w * u_compoundLoxodromic{{ n }}[3].w;
+     float loxoS4R2{{ n }} = u_compoundLoxodromic{{ n }}[4].w * u_compoundLoxodromic{{ n }}[4].w;
      {% endfor %}
      
      const int MAX_KLEIN_ITARATION = 30;
@@ -816,6 +853,48 @@
 	     }
 	     pos = u_rotatePlaneMat3{{ n }} * pos;
 	     {% endfor %}
+             {% for n in range(0, numCompoundLoxodromic) %}
+             if(distance(pos, u_compoundLoxodromic{{ n }}[0].xyz) < u_compoundLoxodromic{{ n }}[0].w){
+		 vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
+		 dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
+                 
+                 vec3 diff3 = (pos - u_compoundLoxodromic{{ n }}[3].xyz);
+		 dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
+                 
+		 vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
+		 dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
+
+		 vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
+		 dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz, loxoOuterR2{{ n }});
+		 
+		 loopEnd = false;
+		 loopNum++;
+	     }else if(distance(pos, u_compoundLoxodromic{{ n }}[2].xyz) >= u_compoundLoxodromic{{ n }}[2].w){
+		 vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
+		 dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz,
+				    loxoOuterR2{{ n }});
+
+		 vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
+		 dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
+
+                 vec3 diff3 = (pos - u_compoundLoxodromic{{ n }}[3].xyz);
+		 dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
+
+		 vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
+		 dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
+		 pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
+
+		 loopEnd = false;
+		 loopNum++;
+	     }
+             {% endfor %}
 	     
 	     if(loopEnd == true) break;
 	 }
