@@ -2,7 +2,23 @@ radians = function(degrees) {
     return degrees * Math.PI / 180;
 };
 
-// TODO: Implement pivot selection
+function pivoting(mat, n, k){
+    var col = k;
+    var maxValue = Math.abs(mat[k][k]);
+    for(var i = k+1; i < n ; i++){
+        if(Math.abs(mat[i][k]) > maxValue){
+            col = i;
+            maxValue = Math.abs(mat[i][k]);
+        }
+    }
+    if(k != col){
+        var tmp = mat[col];
+        mat[col] = mat[k];
+        mat[k] = tmp;
+    }
+    return mat;
+}
+
 function makeSphereFromPoints(p1, p2, p3, p4){
     var p = [p1, p2, p3, p4];
     var coefficient =[[], [], []];
@@ -13,24 +29,33 @@ function makeSphereFromPoints(p1, p2, p3, p4){
 	coefficient[i][3] = -(Math.pow(p[i][0], 2) + Math.pow(p[i][1], 2) + Math.pow(p[i][2], 2))+
 	    Math.pow(p[i + 1][0], 2) + Math.pow(p[i + 1][1], 2) + Math.pow(p[i + 1][2], 2);
     }
-    
-    var pibot, d;
-    for (var k = 0 ; k < 3 ; k++) {
-	pibot = coefficient[k][k];
-	if(pibot == 0) console.log("0 pibot");
-	for (var j = k; j < 3 + 1; j++) {
-	    coefficient[k][j] = coefficient[k][j] / pibot;
-	}
-	for (var i = 0 ; i < 3 ; i++) {
-	    if (k != i) {
-  		d = coefficient[i][k];
-		for (var j = k; j < 3 + 1; j++) {
-  		    coefficient[i][j] = coefficient[i][j] - d * coefficient[k][j];
-		}
-	    }
-	}
+
+    // Gaussian elimination
+    // Implementation is based on http://www.slis.tsukuba.ac.jp/~fujisawa.makoto.fu/cgi-bin/wiki/index.php?%A5%D4%A5%DC%A5%C3%A5%C8%C1%AA%C2%F2
+    // forward elimination
+    var n = 3;
+    for(var k = 0; k < n - 1; k++){
+        coefficient = pivoting(coefficient, n, k);
+
+        var vkk = coefficient[k][k];
+        for(var i = k+1; i < n; i++){
+            var vik = coefficient[i][k];
+            for(var j = k; j < n + 1; ++j){
+                coefficient[i][j] = coefficient[i][j]-vik *(coefficient[k][j]/vkk);
+            }
+        }
     }
 
+    // back substitution
+    coefficient[n-1][n] = coefficient[n-1][n]/coefficient[n-1][n-1];
+    for(var i = n-2; i >= 0; i--){
+        var acc = 0.0;
+        for(var j = i+1; j < n; j++){
+            acc += coefficient[i][j]*coefficient[j][n];
+        }
+        coefficient[i][n] = (coefficient[i][n] - acc)/coefficient[i][i];
+    }
+    
     var center = [coefficient[0][3], coefficient[1][3], coefficient[2][3]];
     var r = vecLength(diff(center, p1));
     return new Sphere(center[0], center[1], center[2], r);
