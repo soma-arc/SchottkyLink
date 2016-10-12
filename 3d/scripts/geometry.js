@@ -410,6 +410,8 @@ CompoundLoxodromic.prototype = {
 	this.pOuterInv = sphereInvertOnPoint(this.p, this.outer);
 	this.s3 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q1);
 	this.s4 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q2);
+
+        this.controlPointRadius = 50;
     },
     clone: function(){
 	return new CompoundLoxodromic(this.inner.clone(), this.outer.clone(),
@@ -433,7 +435,13 @@ CompoundLoxodromic.prototype = {
 	    return this.outer;
 	}else if(componentId == COMPOUND_LOXODROMIC_INVERTED_SPHERE){
 	    return this.inverted;
-	}
+	}else if(componentId == COMPOUND_LOXODROMIC_POINT){
+            return this.p;
+        }else if(componentId == COMPOUND_LOXODROMIC_Q1){
+            return this.q1;
+        }else if(componentId == COMPOUND_LOXODROMIC_Q2){
+            return this.q2;
+        }      
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
@@ -484,14 +492,49 @@ CompoundLoxodromic.prototype = {
             if(selectedAxis == AXIS_RADIUS){
                 this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
             }else{
-                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                var prevValue = prevObject.outer.get(selectedAxis);
+                var d = prevObject.inner.get(selectedAxis) - prevValue;
                 this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+
+                var dp = prevObject.p[selectedAxis] - prevValue;
+                this.p[selectedAxis] = this.outer.get(selectedAxis) + dp;
+
+                var dq1 = prevObject.q1[selectedAxis] - prevValue;
+                this.q1[selectedAxis] = this.outer.get(selectedAxis) + dq1;
+                
+                var dq2 = prevObject.q2[selectedAxis] - prevValue;
+                this.q2[selectedAxis]  = this.outer.get(selectedAxis) + dq2;
+                
+                
             }
+            break;
+        case COMPOUND_LOXODROMIC_POINT:
+        case COMPOUND_LOXODROMIC_Q1:
+        case COMPOUND_LOXODROMIC_Q2:
+            var prevPoint = prevObject.getComponentFromId(componentId);
+
+            var dx = mouse[0] - prevMouse[0];
+	    var dy = mouse[1] - prevMouse[1];
+	    var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+	    var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				     selectedAxis, v, prevPoint,
+				     lengthOnAxis);
+            this.getComponentFromId(componentId)[selectedAxis] = np[selectedAxis];
             break;
         }
         this.update();
     },
     castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectSphere(objectId, index, COMPOUND_LOXODROMIC_POINT,
+                                this.p, this.controlPointRadius,
+                                eye, ray, isect);
+        isect = intersectSphere(objectId, index, COMPOUND_LOXODROMIC_Q1,
+                                this.q1, this.controlPointRadius,
+                                eye, ray, isect);
+        isect = intersectSphere(objectId, index, COMPOUND_LOXODROMIC_Q2,
+                                this.q2, this.controlPointRadius,
+                                eye, ray, isect);
         isect = intersectOverlappingSphere(objectId, index,
                                            COMPOUND_LOXODROMIC_INNER_SPHERE,
                                            COMPOUND_LOXODROMIC_OUTER_SPHERE,
@@ -500,8 +543,18 @@ CompoundLoxodromic.prototype = {
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
-        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
-                                camera, width, height);
+        switch(componentId){
+        case COMPOUND_LOXODROMIC_POINT:
+        case COMPOUND_LOXODROMIC_Q1:
+        case COMPOUND_LOXODROMIC_Q2:
+            return calcAxisOnScreen(this.getComponentFromId(componentId),
+                                    camera, width, height);
+            break;
+        default:
+            return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                    camera, width, height);
+        }
+        
     }
 }
 

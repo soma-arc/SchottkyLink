@@ -450,14 +450,53 @@
 				      u_compoundLoxodromic{{ n }}[5].xyz,
 				      50.,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 5){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[5].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[5].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[5].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
 				      u_compoundLoxodromic{{ n }}[6].xyz,
 				      50.,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 6){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[6].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[6].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[6].xyz,
+					      eye, ray, result);
+	     }
 	     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
 				      u_compoundLoxodromic{{ n }}[7].xyz,
 				      50.,
 				      eye, ray, result);
+             if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
+		u_selectedObjectIndex == {{ n }} &&
+		u_selectedComponentId == 7){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[7].xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[7].xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_compoundLoxodromic{{ n }}[7].xyz,
+					      eye, ray, result);
+	     }
 	     {% endfor %}
 	     
   	     if(result.x != 99999.){
