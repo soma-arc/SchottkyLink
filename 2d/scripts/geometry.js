@@ -375,6 +375,12 @@ const GENERATORS_NAME_ID_MAP = {
     "twistedLoxodromic": ID_TWISTED_LOXODROMIC,
 }
 
+const GENERATORS_ID_NAME_MAP = {};
+GENERATORS_ID_NAME_MAP[ID_CIRCLE] = "circles";
+GENERATORS_ID_NAME_MAP[ID_INFINITE_CIRCLE] = "infiniteCircles";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "transformByCircles";
+GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "twistedLoxodromic";
+
 var Scene = function(){
     this.objects = {};
     for(objectName in GENERATORS_NAME_ID_MAP){
@@ -410,7 +416,7 @@ Scene.prototype = {
 	    for(var i = 0 ; i < objArray.length ; i++){
 		objs.push(objArray[i].exportJson());
 	    }
-            generators[GENERATOR_NAME[objectId]] = objs;
+            generators[GENERATORS_ID_NAME_MAP[objectId]] = objs;
 	}
         json["generators"] = generators;
         return json;
