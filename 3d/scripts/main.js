@@ -75,10 +75,12 @@ const PRESET_PARAMS = [
 			 new Sphere(0, 0, 424.26, 300),
 			 new Sphere(0, 0, -424.26, 300)],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
-	compoundParabolic:[new CompoundParabolic()],
+	compoundParabolic:[new CompoundParabolic(new Sphere(0, 0, 1000, 500),
+                                                 new Sphere(0, 0, 900, 600),
+                                                 0)],
     },
     {
-        	schottkySpheres:[new Sphere(300, 300, 0, 300),
+        schottkySpheres:[new Sphere(300, 300, 0, 300),
 			 new Sphere(300, -300, 0, 300),
 			 new Sphere(-300, 300, 0, 300),
 			 new Sphere(-300, -300, 0, 300),
@@ -140,7 +142,7 @@ const PRESET_PARAMS = [
 			 new Sphere(0, 0, -424.26, 300)],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
 	transformBySpheres: [],
-	transformByPlanes:[new ParabolicTransformation()],
+	transformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
     },
     {
 	schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -150,12 +152,14 @@ const PRESET_PARAMS = [
 			 new Sphere(0, 0, 424.26, 300),
 			 new Sphere(0, 0, -424.26, 300)],
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
-	transformBySpheres:[new TransformBySpheres()],
+	transformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
+                                                   new Sphere(0, 0, 900, 600))],
     },
     {
 	baseSpheres:[new Sphere(0, 0, 0, 125)],
-	transformBySpheres:[new TransformBySpheres()],
-	transformByPlanes:[new ParabolicTransformation()],
+	transformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
+                                                   new Sphere(0, 0, 900, 600))],
+	transformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
     }
     
 ];
@@ -581,6 +585,9 @@ window.addEventListener('load', function(event){
 	    orbitCanvas.render(0);
 	    schottkyCanvas.render(0);
 	    break;
+        case 'l':
+            scene.saveSceneAsJson();
+            break;
         case 'i':
             schottkyCanvas.render(0);
             var a = document.createElement('a');

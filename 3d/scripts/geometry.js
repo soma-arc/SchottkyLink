@@ -50,6 +50,9 @@ Sphere.prototype = {
     clone: function(){
 	return new Sphere(this.x, this.y, this.z, this.r);
     },
+    exportJson: function(){
+        return {"position": [this.x, this.y, this.z], "radius": this.r};
+    },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
         if(selectedAxis == AXIS_RADIUS){
@@ -100,31 +103,38 @@ const PARABOLOC_TRANSFORM_PLANE2 = 1;
 // Initially planes are aligned along the z-axis
 // Rotation is defined by theta and phi
 // center is (0, 0, 0)
-var ParabolicTransformation = function(){
-    this.distToP1 = -300;
-    this.distToP2 = 300;
-    this.theta = 0; // Degree
-    this.phi = 0; // Degree
-    this.rotationMat3 = getIdentityMat3();
-    this.invRotationMat3 = getIdentityMat3();
-    this.size = 1200;
-    this.twist = 0.; // Degree
-    this.twistMat3 = getIdentityMat3();
-    this.invTwistMat3 = getIdentityMat3();
+var ParabolicTransformation = function(distToP1, distToP2, theta, phi, twist){
+    this.distToP1 = distToP1;
+    this.distToP2 = distToP2;
+    this.theta = theta; // Degree
+    this.phi = phi; // Degree
+    this.twist = twist; // Degree
+
+    this.rotationMat3;
+    this.invRotationMat3;
+    this.twistMat3;
+    this.invTwistMat3;
+
     this.update();
+
+    this.size = 1200;
 }
 
 ParabolicTransformation.prototype = {
     clone: function(){
-	var obj = new ParabolicTransformation();
-	obj.distToP1 = this.distToP1;
-	obj.distToP2 = this.distToP2;
-	obj.theta = this.theta;
-	obj.phi = this.phi;
-	obj.size = this.size;
-	obj.twist = this.twist;
-	obj.update();
-	return obj;
+	return new ParabolicTransformation(this.distToP1,
+                                           this.distToP2,
+                                           this.theta,
+                                           this.phi,
+                                           this.twist);
+    },
+    exportJson: function(){
+        return {"distToP1": this.distToP1,
+                "distToP2": this.distToP2,
+                "theta": this.theta,
+                "phi": this.phi,
+                "size": this.size,
+                "twist": this.twist,};
     },
     getUniformArray: function(){
 	return [this.distToP1, this.distToP2, this.size,
@@ -172,14 +182,16 @@ const COMPOUND_PARABOLIC_INNER_SPHERE = 0;
 const COMPOUND_PARABOLIC_OUTER_SPHERE = 1;
 const COMPOUND_PARABOLIC_INVERTED_SPHERE = 2;
 // Currently, we aligne the transformation along the z-axis only.
-var CompoundParabolic = function(){
+var CompoundParabolic = function(innerSphere, outerSphere, thetaDegree){
     // innerSphere and outer sphere is kissing
-    this.inner = new Sphere(0, 0, 1000, 500);// componentId = 0
-    this.outer = new Sphere(0, 0, 900, 600);// componentId = 1
-    this.inverted = sphereInvert(this.inner, this.outer); // componentId = 2
-    this.theta = 45; //Degree
-    this.rotationMat3 = getRotationZAxis(radians(this.theta));
-    this.invRotationMat3 = getRotationZAxis(radians(-this.theta));
+    this.inner = innerSphere;
+    this.outer = outerSphere;
+    this.theta = thetaDegree; //Degree
+
+    this.inverted;
+    this.rotationMat3;
+    this.invRotationMat3;
+    this.update();
 }
 
 CompoundParabolic.prototype = {
@@ -188,12 +200,12 @@ CompoundParabolic.prototype = {
 						   this.inverted.getUniformArray());
     },
     clone: function(){
-	var obj = new CompoundParabolic();
-	obj.inner = this.inner.clone();
-	obj.outer = this.outer.clone();
-	obj.inverted = this.inverted.clone();
-	obj.update();
-	return obj;
+        return new CompoundParabolic(this.inner.clone(), this.outer.clone(), this.theta);
+    },
+    exportJson: function(){
+        return {"innerSphere": this.inner.exportJson(),
+                "outerSphere": this.outer.exportJson(),
+                "thetaDegree": this.theta};
     },
     update: function(){
 	this.inverted = sphereInvert(this.inner, this.outer);
@@ -283,11 +295,12 @@ const TRANSFORM_BY_SPHERES_OUTER_SPHERE = 1;
 const TRANSFORM_BY_SPHERES_INVERTED_SPHERE = 2;
 
 // Transformation defined by two spheres
-var TransformBySpheres = function(){
-    // innerSphere and outer sphere is kissing
-    this.inner = new Sphere(0, 0, 1000, 500);// componentId = 0
-    this.outer = new Sphere(0, 0, 900, 600);// componentId = 1
-    this.inverted = sphereInvert(this.inner, this.outer); // componentId = 2
+// Parabolic or Loxodromic transformation
+var TransformBySpheres = function(innerSphere, outerSphere){
+    this.inner = innerSphere;
+    this.outer = outerSphere;
+    this.inverted;
+    this.update();
 }
 
 TransformBySpheres.prototype = {
@@ -296,12 +309,11 @@ TransformBySpheres.prototype = {
 						   this.inverted.getUniformArray());
     },
     clone: function(){
-	var obj = new TransformBySpheres();
-	obj.inner = this.inner.clone();
-	obj.outer = this.outer.clone();
-	obj.inverted = this.inverted.clone();
-	obj.update();
-	return obj;
+	return new TransformBySpheres(this.inner.clone(), this.outer.clone());
+    },
+    exportJson: function(){
+        return {"innerSphere": this.inner.exportJson(),
+                "outerSphere": this.outer.exportJson(),};
     },
     update: function(){
 	this.inverted = sphereInvert(this.inner, this.outer);
@@ -418,6 +430,13 @@ CompoundLoxodromic.prototype = {
 				      this.p.slice(0),
 				      this.q1.slice(0),
 				      this.q2.slice(0));
+    },
+    exportJson: function(){
+        return {"innerSphere": this.inner.exportJson(),
+                "outerSphere": this.outer.exportJson(),
+                "point": this.p,
+                "q1": this.q1,
+                "q2": this.q2};
     },
     getUniformArray: function(){
 	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
@@ -596,6 +615,14 @@ const GENERATORS_NAME_ID_MAP = {
     "compoundLoxodromic": ID_COMPOUND_LOXODROMIC
 }
 
+const GENERATORS_ID_NAME_MAP = {};
+GENERATORS_ID_NAME_MAP[ID_SCHOTTKY_SPHERE] = "schottkySpheres";
+GENERATORS_ID_NAME_MAP[ID_BASE_SPHERE] = "baseSpheres";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_PLANES] = "transformByPlanes";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_SPHERES] = "transformBySpheres";
+GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "compoundParabolic";
+GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "compoundLoxodromic";
+
 var Scene = function(){
     this.objects = {};
     for(objectName in GENERATORS_NAME_ID_MAP){
@@ -619,6 +646,31 @@ Scene.prototype = {
 	    obj.push(objects[i].clone());
 	}
 	return obj;
+    },
+    exportJson: function(){
+        var json = {};
+        json["name"] = "scene";
+        var generators = {};
+        for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+            var objs = [];
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		objs.push(objArray[i].exportJson());
+	    }
+            generators[GENERATORS_ID_NAME_MAP[objectId]] = objs;
+	}
+        json["generators"] = generators;
+        return json;
+    },
+    saveSceneAsJson: function(){
+        var blob = new Blob([JSON.stringify(this.exportJson(), null, "    ")],
+                            {type: "text/plain"});
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = 'scene.json';
+        a.click();
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.objects[ID_SCHOTTKY_SPHERE].push(new Sphere(500, 500, 0, 300));
