@@ -311,29 +311,24 @@ function setupSchottkyProgram(scene, renderCanvas){
     
     uniLocation[n++] = gl.getUniformLocation(program,
                                              'u_displayGenerators');
-    var position = [-1.0, 1.0, 0.0,
-                    1.0, 1.0, 0.0,
-                    -1.0, -1.0,  0.0,
-                    1.0, -1.0, 0.0
-                   ];
-    var index = [
-        0, 2, 1,
-        1, 2, 3
+
+    var position = [
+            -1, -1,
+            -1, 1,
+            1, -1,
+            1, 1
     ];
     var vPosition = createVbo(gl, position);
-    var vIndex = createIbo(gl, index);
     var vAttLocation = gl.getAttribLocation(program, 'position');
     gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
     gl.enableVertexAttribArray(vAttLocation);
-    gl.vertexAttribPointer(vAttLocation, 3, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vIndex);
+    gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
 
     var switchProgram = function(){
         gl.useProgram(program);
         gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
         gl.enableVertexAttribArray(vAttLocation);
-        gl.vertexAttribPointer(vAttLocation, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vIndex);
+        gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
     }
 
     var render = function(elapsedTime){
@@ -380,8 +375,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         }
         gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
 
-        
-        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
     }
 
