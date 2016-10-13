@@ -227,8 +227,112 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
             renderCanvas.camera.eyeDist += 100;
         }
         renderCanvas.camera.update();
-        renderCanvas.render(0);
+        renderCanvas.render();
     }, false);
+}
+
+function getUniLocations(scene, renderCanvas, gl, program){
+    var uniLocation = new Array();
+    var n = 0;
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_iResolution');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_iGlobalTime');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_selectedObjectId');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_selectedObjectIndex');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_selectedComponentId');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_selectedAxis');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_eye');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_up');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_target');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_fov');
+    uniLocation[n++] = gl.getUniformLocation(program, 'u_numIterations');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_displayGenerators');
+    for(var i = 0 ; i < scene.objects[ID_SCHOTTKY_SPHERE].length ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_schottkySphere'+ i);
+    }
+    for(var j = 0 ; j < scene.objects[ID_BASE_SPHERE].length ; j++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_baseSphere'+ j);
+    }
+    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_PLANES].length ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_transformByPlanes'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_rotatePlaneMat3'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_invRotatePlaneMat3'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_twistPlaneMat3'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_invTwistPlaneMat3'+ i);
+    }
+    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_SPHERES].length ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_transformBySpheres'+ i);
+    }
+    for(var i = 0 ; i < scene.objects[ID_COMPOUND_PARABOLIC].length ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_compoundParabolic'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_compoundRotateMat3'+ i);
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_invCompoundRotateMat3'+ i);
+    }
+    for(var i = 0 ; i < scene.objects[ID_COMPOUND_LOXODROMIC].length ; i++){
+        uniLocation[n++] = gl.getUniformLocation(program,
+                                                 'u_compoundLoxodromic'+ i);
+    }
+    
+    return uniLocation;
+}
+
+function setUniformVariables(scene, renderCanvas, gl, uniLocation){
+    var uniI = 0;
+    gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
+    gl.uniform1f(uniLocation[uniI++], 0);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedAxis);
+    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.position);
+    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.up);
+    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.target);
+    gl.uniform1f(uniLocation[uniI++], renderCanvas.camera.fovDegree);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
+
+    for(var i = 0 ; i < scene.objects[ID_SCHOTTKY_SPHERE].length ; i++){
+        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_SCHOTTKY_SPHERE][i].getUniformArray());
+    }
+    for(var i = 0 ; i < scene.objects[ID_BASE_SPHERE].length ; i++){
+        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_BASE_SPHERE][i].getUniformArray());
+    }
+    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_PLANES].length ; i++){
+        gl.uniform1fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_PLANES][i].getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].rotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invRotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].twistMat3);
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invTwistMat3);
+    }
+    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_SPHERES].length ; i++){
+        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_SPHERES][i].getUniformArray());
+    }
+
+    for(var i = 0 ; i < scene.objects[ID_COMPOUND_PARABOLIC].length ; i++){
+        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_PARABOLIC][i].getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].rotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].invRotationMat3);
+    }
+    for(var i = 0 ; i < scene.objects[ID_COMPOUND_LOXODROMIC].length ; i++){
+        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_LOXODROMIC][i].getUniformArray());
+    }
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
@@ -253,132 +357,36 @@ function setupSchottkyProgram(scene, renderCanvas){
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
 
-    var uniLocation = new Array();
-    var n = 0;
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_iResolution');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_iGlobalTime');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedObjectId');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedObjectIndex');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedComponentId');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedAxis');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_eye');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_up');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_target');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_fov');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_numIterations');
-    for(var i = 0 ; i < numSchottkySpheres ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_schottkySphere'+ i);
-    }
-    for(var j = 0 ; j < numBaseSpheres ; j++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_baseSphere'+ j);
-    }
-    for(var i = 0 ; i < numTransformByPlanes ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_transformByPlanes'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_rotatePlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invRotatePlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_twistPlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invTwistPlaneMat3'+ i);
-    }
-    for(var i = 0 ; i < numTransformBySpheres ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_transformBySpheres'+ i);
-    }
-    for(var i = 0 ; i < numCompoundParabolic ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_compoundParabolic'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_compoundRotateMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invCompoundRotateMat3'+ i);
-    }
-    for(var i = 0 ; i < numCompoundLoxodromic ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                'u_compoundLoxodromic'+ i)
-    }
-    
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_displayGenerators');
+    var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
 
-    var position = [
+    var vertex = [
             -1, -1,
             -1, 1,
             1, -1,
             1, 1
     ];
-    var vPosition = createVbo(gl, position);
-    var vAttLocation = gl.getAttribLocation(program, 'position');
-    gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
-    gl.enableVertexAttribArray(vAttLocation);
-    gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
+    var vertexBuffer = createVbo(gl, vertex);
+    var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
 
     var switchProgram = function(){
         gl.useProgram(program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
-        gl.enableVertexAttribArray(vAttLocation);
-        gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.enableVertexAttribArray(vAttribLocation);
+        gl.vertexAttribPointer(vAttribLocation, 2, gl.FLOAT, false, 0, 0);
     }
 
-    var render = function(elapsedTime){
+    var render = function(){
         gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT );
 
-        var uniI = 0;
-        gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
-        gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedAxis);
-        gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.position);
-        gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.up);
-        gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.target);
-        gl.uniform1f(uniLocation[uniI++], renderCanvas.camera.fovDegree);
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
-        for(var i = 0 ; i < numSchottkySpheres ; i++){
-            gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_SCHOTTKY_SPHERE][i].getUniformArray());
-        }
-        for(var i = 0 ; i < numBaseSpheres ; i++){
-            gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_BASE_SPHERE][i].getUniformArray());
-        }
-        for(var i = 0 ; i < numTransformByPlanes ; i++){
-            gl.uniform1fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_PLANES][i].getUniformArray());
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].rotationMat3);
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invRotationMat3);
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].twistMat3);
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invTwistMat3);
-        }
-        for(var i = 0 ; i < numTransformBySpheres ; i++){
-            gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_SPHERES][i].getUniformArray());
-        }
-
-        for(var i = 0 ; i < numCompoundParabolic ; i++){
-            gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_PARABOLIC][i].getUniformArray());
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].rotationMat3);
-            gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].invRotationMat3);
-        }
-        for(var i = 0 ; i < numCompoundLoxodromic ; i++){
-            gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_LOXODROMIC][i].getUniformArray());
-        }
-        gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
+        setUniformVariables(scene, renderCanvas, gl, uniLocation);
 
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
     }
 
+    switchProgram();
     return [switchProgram, render];
 }
 
@@ -390,8 +398,8 @@ function updateShaders(scene, schottkyCanvas, orbitCanvas){
     schottkyCanvas.switch();
     orbitCanvas.switch();
 
-    schottkyCanvas.render(0);
-    orbitCanvas.render(0);
+    schottkyCanvas.render();
+    orbitCanvas.render();
 }
 
 window.addEventListener('load', function(event){
@@ -412,7 +420,7 @@ window.addEventListener('load', function(event){
         schottkyCanvas.pressingKey = '';
         if(schottkyCanvas.selectedAxis != -1){
             schottkyCanvas.selectedAxis = -1;
-            schottkyCanvas.render(0);
+            schottkyCanvas.render();
         }
         schottkyCanvas.isRendering = false;
         orbitCanvas.isRendering = false;
@@ -429,7 +437,7 @@ window.addEventListener('load', function(event){
                 return;
             }
             schottkyCanvas.updateSelection(scene, mouse);
-            schottkyCanvas.render(0);
+            schottkyCanvas.render();
             schottkyCanvas.updateAxisVecOnScreen(scene);
         }
     });
@@ -479,25 +487,25 @@ window.addEventListener('load', function(event){
             break;
         case 'b':
             scene.addBaseSphere(schottkyCanvas, orbitCanvas);
-            schottkyCanvas.render(0);
-            orbitCanvas.render(0);
+            schottkyCanvas.render();
+            orbitCanvas.render();
             break;
         case 'z':
             if(schottkyCanvas.selectedAxis != AXIS_X){
                 schottkyCanvas.selectedAxis = AXIS_X;
-                schottkyCanvas.render(0);
+                schottkyCanvas.render();
             }
             break;
         case 'x':
             if(schottkyCanvas.selectedAxis != AXIS_Y){
                 schottkyCanvas.selectedAxis = AXIS_Y;
-                schottkyCanvas.render(0);
+                schottkyCanvas.render();
             }
             break;
         case 'c':
             if(schottkyCanvas.selectedAxis != AXIS_Z){
                 schottkyCanvas.selectedAxis = AXIS_Z;
-                schottkyCanvas.render(0);
+                schottkyCanvas.render();
             }
             break;
         case 's':
@@ -507,16 +515,16 @@ window.addEventListener('load', function(event){
             break;
         case 'd':
             orbitCanvas.displayGenerators = !orbitCanvas.displayGenerators;
-            orbitCanvas.render(0);
+            orbitCanvas.render();
             break;
         case '+':
             orbitCanvas.numIterations++;
-            orbitCanvas.render(0);
+            orbitCanvas.render();
             break;
         case '-':
             if(orbitCanvas.numIterations != 0){
                 orbitCanvas.numIterations--;
-                orbitCanvas.render(0);
+                orbitCanvas.render();
             }
             break;
         case 'ArrowRight':
@@ -524,73 +532,73 @@ window.addEventListener('load', function(event){
             event.preventDefault();
             scene.transformByPlanes[0].phi += 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'ArrowLeft':
             if(scene.transformByPlanes[0] == undefined) return;
             event.preventDefault();
             scene.transformByPlanes[0].phi -= 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'ArrowUp':
             if(scene.transformByPlanes[0] == undefined) return;
             event.preventDefault();
             scene.transformByPlanes[0].theta += 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'ArrowDown':
             if(scene.transformByPlanes[0] == undefined) return;
             event.preventDefault();
             scene.transformByPlanes[0].theta -= 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'p':
             if(scene.transformByPlanes[0] == undefined) return;
             scene.transformByPlanes[0].twist += 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'n':
             if(scene.transformByPlanes[0] == undefined) return;
             scene.transformByPlanes[0].twist -= 10;
             scene.transformByPlanes[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'y':
             if(scene.compoundParabolic[0] == undefined) return;
             scene.compoundParabolic[0].theta += 10;
             scene.compoundParabolic[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'g':
             if(scene.compoundParabolic[0] == undefined) return;
             scene.compoundParabolic[0].theta -= 10;
             scene.compoundParabolic[0].update();
-            orbitCanvas.render(0);
-            schottkyCanvas.render(0);
+            orbitCanvas.render();
+            schottkyCanvas.render();
             break;
         case 'l':
             scene.saveSceneAsJson();
             break;
         case 'i':
-            schottkyCanvas.render(0);
+            schottkyCanvas.render();
             var a = document.createElement('a');
             a.href = schottkyCanvas.canvas.toDataURL();
             a.download = "schottky.png"
             a.click();
             break;
         case 'o':
-            orbitCanvas.render(0);
+            orbitCanvas.render();
             var a = document.createElement('a');
             a.href = orbitCanvas.canvas.toDataURL();
             a.download = "orbit.png"
@@ -616,14 +624,12 @@ window.addEventListener('load', function(event){
             break;
         }});
     
-    var startTime = new Date().getTime();
     (function(){
-        var elapsedTime = new Date().getTime() - startTime;
         if(schottkyCanvas.isRendering){
-            schottkyCanvas.render(elapsedTime);
+            schottkyCanvas.render();
         }
         if(orbitCanvas.isRendering){
-            orbitCanvas.render(elapsedTime);
+            orbitCanvas.render();
         }
         requestAnimationFrame(arguments.callee);
     })();
