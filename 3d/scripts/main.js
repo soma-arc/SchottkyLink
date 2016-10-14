@@ -253,42 +253,7 @@ function getUniLocations(scene, renderCanvas, gl, program){
     uniLocation[n++] = gl.getUniformLocation(program, 'u_numIterations');
     uniLocation[n++] = gl.getUniformLocation(program,
                                              'u_displayGenerators');
-    for(var i = 0 ; i < scene.objects[ID_SCHOTTKY_SPHERE].length ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_schottkySphere'+ i);
-    }
-    for(var j = 0 ; j < scene.objects[ID_BASE_SPHERE].length ; j++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_baseSphere'+ j);
-    }
-    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_PLANES].length ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_transformByPlanes'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_rotatePlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invRotatePlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_twistPlaneMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invTwistPlaneMat3'+ i);
-    }
-    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_SPHERES].length ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_transformBySpheres'+ i);
-    }
-    for(var i = 0 ; i < scene.objects[ID_COMPOUND_PARABOLIC].length ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_compoundParabolic'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_compoundRotateMat3'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_invCompoundRotateMat3'+ i);
-    }
-    for(var i = 0 ; i < scene.objects[ID_COMPOUND_LOXODROMIC].length ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program,
-                                                 'u_compoundLoxodromic'+ i);
-    }
+    scene.setUniformLocation(uniLocation, gl, program);
     
     return uniLocation;
 }
@@ -308,31 +273,7 @@ function setUniformVariables(scene, renderCanvas, gl, uniLocation){
     gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
     gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
 
-    for(var i = 0 ; i < scene.objects[ID_SCHOTTKY_SPHERE].length ; i++){
-        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_SCHOTTKY_SPHERE][i].getUniformArray());
-    }
-    for(var i = 0 ; i < scene.objects[ID_BASE_SPHERE].length ; i++){
-        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_BASE_SPHERE][i].getUniformArray());
-    }
-    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_PLANES].length ; i++){
-        gl.uniform1fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_PLANES][i].getUniformArray());
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].rotationMat3);
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invRotationMat3);
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].twistMat3);
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_TRANSFORM_BY_PLANES][i].invTwistMat3);
-    }
-    for(var i = 0 ; i < scene.objects[ID_TRANSFORM_BY_SPHERES].length ; i++){
-        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_SPHERES][i].getUniformArray());
-    }
-
-    for(var i = 0 ; i < scene.objects[ID_COMPOUND_PARABOLIC].length ; i++){
-        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_PARABOLIC][i].getUniformArray());
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].rotationMat3);
-        gl.uniformMatrix3fv(uniLocation[uniI++], false, scene.objects[ID_COMPOUND_PARABOLIC][i].invRotationMat3);
-    }
-    for(var i = 0 ; i < scene.objects[ID_COMPOUND_LOXODROMIC].length ; i++){
-        gl.uniform4fv(uniLocation[uniI++], scene.objects[ID_COMPOUND_LOXODROMIC][i].getUniformArray());
-    }
+    uniI = scene.setUniformValues(uniLocation, gl, uniI);
 }
 
 function setupSchottkyProgram(scene, renderCanvas){

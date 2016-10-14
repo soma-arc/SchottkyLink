@@ -47,6 +47,17 @@ Sphere.prototype = {
     getUniformArray: function(){
 	return [this.x, this.y, this.z, this.r];
     },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	// TODO: Remove id, because this argument is used only Sphere 
+	if(id == ID_SCHOTTKY_SPHERE)
+	    uniLocation.push(gl.getUniformLocation(program, 'u_schottkySphere'+ index));
+	else if(id == ID_BASE_SPHERE)
+	    uniLocation.push(gl.getUniformLocation(program, 'u_baseSphere'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+	return uniIndex;
+    },
     clone: function(){
 	return new Sphere(this.x, this.y, this.z, this.r);
     },
@@ -140,6 +151,31 @@ ParabolicTransformation.prototype = {
 	return [this.distToP1, this.distToP2, this.size,
 		radians(this.theta), radians(this.phi), this.twist];
     },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_transformByPlanes'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_rotatePlaneMat3'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_invRotatePlaneMat3'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_twistPlaneMat3'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_invTwistPlaneMat3'+ index));		
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	gl.uniform1fv(uniLocation[uniIndex++],
+		      this.getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.rotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.invRotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.twistMat3);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.invTwistMat3);
+	return uniIndex;
+    },
     getComponentFromId: function(id){
 	return this;
     },
@@ -211,6 +247,23 @@ CompoundParabolic.prototype = {
 	this.inverted = sphereInvert(this.inner, this.outer);
 	this.rotationMat3 = getRotationZAxis(radians(this.theta));
 	this.invRotationMat3 = getRotationZAxis(radians(-this.theta));
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_compoundParabolic'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_compoundRotateMat3'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_invCompoundRotateMat3'+ index))
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	gl.uniform4fv(uniLocation[uniIndex++],
+		      this.getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.rotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.invRotationMat3);
+	return uniIndex;
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
@@ -314,6 +367,14 @@ TransformBySpheres.prototype = {
     exportJson: function(){
         return {"innerSphere": this.inner.exportJson(),
                 "outerSphere": this.outer.exportJson(),};
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	uniLocation.push(gl.getUniformLocation(program,
+					      'u_transformBySpheres'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+	return uniIndex;
     },
     update: function(){
 	this.inverted = sphereInvert(this.inner, this.outer);
@@ -446,6 +507,14 @@ CompoundLoxodromic.prototype = {
 						   this.p, [0],
 						   this.q1, [0],
 						   this.q2, [0]);
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_compoundLoxodromic'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+	return uniIndex;
     },
     getComponentFromId: function(componentId){
         if(componentId == COMPOUND_LOXODROMIC_INNER_SPHERE){
@@ -712,5 +781,29 @@ Scene.prototype = {
             objArray.splice(objectIndex, 1);
         }
         
-    }
+    },
+    setUniformLocation: function(uniLocation, gl, program){
+	for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		objArray[i].setUniformLocation(uniLocation, gl, program,
+					       objectId, i);
+	    }
+	}
+	return uniLocation;
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		uniIndex = objArray[i].setUniformValues(uniLocation, gl, uniIndex);
+	    }
+	}
+
+	return uniIndex;
+    },
 }
