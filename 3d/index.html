@@ -25,7 +25,7 @@
      varying vec2 v_texCoord;
      void main(void){
          v_texCoord = a_vertex.xy * 0.5 + 0.5;
-         gl_Position = vec4(position, 1.0);
+         gl_Position = vec4(a_vertex, 1.0);
      }
     </script>
     <script id="render-frag" type="x-shader/x-vertex">
@@ -55,6 +55,9 @@
 
     <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
      precision mediump float;
+     uniform sampler2D u_accTexture;
+     uniform int u_numSamples;
+     uniform float u_textureWeight;
      uniform vec2 u_iResolution;
      uniform float u_iGlobalTime;
      uniform int u_selectedObjectId;
@@ -610,7 +613,7 @@
 
      const float SAMPLE_NUM = 10.;
      void main(){	 
-	 vec4 sum = vec4(0);
+	 vec3 sum = vec3(0);
 	 for(float i = 0. ; i < SAMPLE_NUM ; i++){
              vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
              
@@ -618,13 +621,20 @@
     		               	u_iResolution.x, u_iResolution.y,
         		        gl_FragCoord.xy + coordOffset);
              
-             sum += vec4(gammaCorrect(calcColor(u_eye, ray)), 1.);
+             sum += calcColor(u_eye, ray);
 	 }
-	 gl_FragColor = vec4(sum/SAMPLE_NUM);
+	 vec3 col = (sum/SAMPLE_NUM);
+         
+         vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
+         gl_FragColor = vec4(mix(col, texCol,
+                                 u_textureWeight), 1.0);
      }
     </script>
     <script id="3dOrbitTemplate" type="x-shader/x-fragment">
      precision mediump float;
+     uniform sampler2D u_accTexture;
+     uniform int u_numSamples;
+     uniform float u_textureWeight;
      uniform vec2 u_iResolution;
      uniform float u_iGlobalTime;
      uniform int u_selectedObjectId;
@@ -1234,23 +1244,14 @@
 
      const float SAMPLE_NUM = 1.;
      void main(){
-	 /* vec3 sum = vec3(0);
-	    for(float i = 0. ; i < SAMPLE_NUM ; i++){
-          *     vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
-
-          *     vec3 ray = calcRay(u_eye, u_target, u_up, u_fov,
-          *     			u_iResolution.x, u_iResolution.y,
-          *     			gl_FragCoord.xy + coordOffset);
-          *     
-          *     sum += calcColor(u_eye, ray);
-	    }
-	    gl_FragColor = vec4(gammaCorrect(sum/SAMPLE_NUM), 1.);*/
 	 const vec2 coordOffset = vec2(0.5);
 	 vec3 ray = calcRay(u_eye, u_target, u_up, u_fov,
 			    u_iResolution.x, u_iResolution.y,
 			    gl_FragCoord.xy + coordOffset);
 
-	 gl_FragColor = vec4(gammaCorrect(calcColor(u_eye, ray)), 1.);
+         vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
+         gl_FragColor = vec4(mix(calcColor(u_eye, ray), texCol,
+                                 u_textureWeight), 1.0);
      }
     </script>
 </head>

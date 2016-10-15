@@ -23,6 +23,9 @@ var RenderCanvas = function(canvasId, templateId){
     this.sphereCenterOnScreen;
     this.prevObject;
 
+    this.numSamples = 0;
+    this.textures = [];
+    
     this.displayGenerators = false;
 }
 
@@ -168,7 +171,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
     var prevTheta, prevPhi;
 
-    canvas.addEventListener("contextmenu", function(e){
+    canvas.addEventListener("contextmenu", function(event){
         // disable right-click context-menu
         event.preventDefault();
     });
@@ -235,6 +238,12 @@ function getUniLocations(scene, renderCanvas, gl, program){
     var uniLocation = new Array();
     var n = 0;
     uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_accTexture');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_numSamples');
+    uniLocation[n++] = gl.getUniformLocation(program,
+                                             'u_textureWeight');
+    uniLocation[n++] = gl.getUniformLocation(program,
                                              'u_iResolution');
     uniLocation[n++] = gl.getUniformLocation(program,
                                              'u_iGlobalTime');
@@ -260,6 +269,11 @@ function getUniLocations(scene, renderCanvas, gl, program){
 
 function setUniformVariables(scene, renderCanvas, gl, uniLocation){
     var uniI = 0;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.textures[0]);
+    gl.uniform1i(uniLocation[uniI++], renderCanvas.numSamples);
+    gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples / (renderCanvas.numSamples + 1));
     gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
     gl.uniform1f(uniLocation[uniI++], 0);
     gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
@@ -298,8 +312,26 @@ function setupSchottkyProgram(scene, renderCanvas){
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
 
-    var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
+    var renderProgram = gl.createProgram();
+    attachShader(gl, 'render-frag', renderProgram, gl.FRAGMENT_SHADER);
+    attachShader(gl, 'render-vert', renderProgram, gl.VERTEX_SHADER);
+    renderProgram = linkProgram(gl, renderProgram);
 
+    renderCanvas.textures = [];
+    var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+    for(var i = 0; i < 2; i++) {
+        renderCanvas.textures.push(gl.createTexture());
+        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[i]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
+                      renderCanvas.canvas.width, renderCanvas.canvas.height,
+                      0, gl.RGB, type, null);
+    }
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    
+    var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
+    
     var vertex = [
             -1, -1,
             -1, 1,
@@ -308,6 +340,9 @@ function setupSchottkyProgram(scene, renderCanvas){
     ];
     var vertexBuffer = createVbo(gl, vertex);
     var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
+    var renderVertexAttribute = gl.getAttribLocation(program, 'a_vertex');
+    
+    var framebuffer = gl.createFramebuffer();
 
     var switchProgram = function(){
         gl.useProgram(program);
@@ -319,12 +354,30 @@ function setupSchottkyProgram(scene, renderCanvas){
     var render = function(){
         gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT );
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
+        gl.useProgram(program);
         setUniformVariables(scene, renderCanvas, gl, uniLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
+                                renderCanvas.textures[1], 0);
+        gl.enableVertexAttribArray(vAttribLocation);
+        gl.vertexAttribPointer(vAttribLocation, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        renderCanvas.textures.reverse();
+
+        gl.useProgram(renderProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.vertexAttribPointer(renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
+
+        //        renderCanvas.numSamples++;
     }
 
     switchProgram();
@@ -469,62 +522,62 @@ window.addEventListener('load', function(event){
             }
             break;
         case 'ArrowRight':
-            if(scene.transformByPlanes[0] == undefined) return;
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             event.preventDefault();
-            scene.transformByPlanes[0].phi += 10;
-            scene.transformByPlanes[0].update();
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].phi += 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'ArrowLeft':
-            if(scene.transformByPlanes[0] == undefined) return;
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             event.preventDefault();
-            scene.transformByPlanes[0].phi -= 10;
-            scene.transformByPlanes[0].update();
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].phi -= 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'ArrowUp':
-            if(scene.transformByPlanes[0] == undefined) return;
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             event.preventDefault();
-            scene.transformByPlanes[0].theta += 10;
-            scene.transformByPlanes[0].update();
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].theta += 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'ArrowDown':
-            if(scene.transformByPlanes[0] == undefined) return;
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             event.preventDefault();
-            scene.transformByPlanes[0].theta -= 10;
-            scene.transformByPlanes[0].update();
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].theta -= 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'p':
-            if(scene.transformByPlanes[0] == undefined) return;
-            scene.transformByPlanes[0].twist += 10;
-            scene.transformByPlanes[0].update();
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].twist += 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'n':
-            if(scene.transformByPlanes[0] == undefined) return;
-            scene.transformByPlanes[0].twist -= 10;
-            scene.transformByPlanes[0].update();
+            if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].twist -= 10;
+            scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'y':
-            if(scene.compoundParabolic[0] == undefined) return;
-            scene.compoundParabolic[0].theta += 10;
-            scene.compoundParabolic[0].update();
+            if(scene.objects[ID_COMPOUND_PARABOLIC][0] == undefined) return;
+            scene.objects[ID_COMPOUND_PARABOLIC][0].theta += 10;
+            scene.objects[ID_COMPOUND_PARABOLIC][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
         case 'g':
-            if(scene.compoundParabolic[0] == undefined) return;
-            scene.compoundParabolic[0].theta -= 10;
-            scene.compoundParabolic[0].update();
+            if(scene.objects[ID_COMPOUND_PARABOLIC][0] == undefined) return;
+            scene.objects[ID_COMPOUND_PARABOLIC][0].theta -= 10;
+            scene.objects[ID_COMPOUND_PARABOLIC][0].update();
             orbitCanvas.render();
             schottkyCanvas.render();
             break;
