@@ -1,8 +1,14 @@
+const RAY_TRACER = 0;
+const PATH_TRACER = 1;
+
 var RenderCanvas = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
+    this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
+    this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
+    
     this.camera = new Camera([0, 0, 0], 60, 1500, [0, 1, 0]);
 
     this.selectedObjectId = -1;
@@ -23,6 +29,9 @@ var RenderCanvas = function(canvasId, templateId){
     this.sphereCenterOnScreen;
     this.prevObject;
 
+    this.renderer = RAY_TRACER;
+    this.isSampling = false;
+    
     this.numSamples = 0;
     this.textures = [];
     
@@ -63,6 +72,26 @@ RenderCanvas.prototype = {
         this.selectedObjectId = -1;
         this.selectedObjectIndex = -1;
         this.selectedComponentId = -1;
+    },
+    switchSampling: function(){
+        this.numSamples = 0;
+        this.isSampling = !this.isSampling;
+    },
+    update: function(){
+        this.numSamples = 0;
+        this.render();
+    },
+    getTracerTemplate: function(){
+        if(this.renderer == PATH_TRACER)
+            return this.orbitPathTracerTemplate;
+        else
+            return this.template;
+    },
+    setPathTracer: function(){
+        this.renderer = PATH_TRACER;
+    },
+    setRayTracer: function(){
+        this.renderer = RAY_TRACER;
     }
 };
 
@@ -194,6 +223,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
             renderCanvas.camera.theta = prevTheta + (renderCanvas.prevMousePos[0] - px) * 0.01;
             renderCanvas.camera.phi = prevPhi -(renderCanvas.prevMousePos[1] - py) * 0.01;
             renderCanvas.camera.update();
+            renderCanvas.numSamples = 0;
             renderCanvas.isRendering = true;
         }else if(event.button == 2){
             var dx = px - renderCanvas.prevMousePos[0];
@@ -205,6 +235,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
                                              sum(scale(vec[0], -dx * 5),
                                                  scale(vec[1], -dy * 5)));
             renderCanvas.camera.update();
+            renderCanvas.numSamples = 0;
             renderCanvas.isRendering = true;
         }
     });
@@ -230,6 +261,7 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
             renderCanvas.camera.eyeDist += 100;
         }
         renderCanvas.camera.update();
+        renderCanvas.numSamples = 0;
         renderCanvas.render();
     }, false);
 }
@@ -291,6 +323,7 @@ function setUniformVariables(scene, renderCanvas, gl, uniLocation){
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
+    renderCanvas.numSamples = 0;
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
     var numSchottkySpheres = scene.objects[ID_SCHOTTKY_SPHERE].length;
@@ -299,12 +332,15 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numTransformBySpheres = scene.objects[ID_TRANSFORM_BY_SPHERES].length;
     var numCompoundParabolic = scene.objects[ID_COMPOUND_PARABOLIC].length;
     var numCompoundLoxodromic = scene.objects[ID_COMPOUND_LOXODROMIC].length;
-    var shaderStr = renderCanvas.template.render({numSchottkySpheres: numSchottkySpheres,
-                                                  numBaseSpheres: numBaseSpheres,
-                                                  numTransformByPlanes: numTransformByPlanes,
-                                                  numTransformBySpheres: numTransformBySpheres,
-                                                  numCompoundParabolic: numCompoundParabolic,
-                                                  numCompoundLoxodromic: numCompoundLoxodromic});
+
+    var renderTemplate = renderCanvas.getTracerTemplate();
+    var shaderStr = renderTemplate.render({distKlein: renderCanvas.kleinTemplate,
+                                           numSchottkySpheres: numSchottkySpheres,
+                                           numBaseSpheres: numBaseSpheres,
+                                           numTransformByPlanes: numTransformByPlanes,
+                                           numTransformBySpheres: numTransformBySpheres,
+                                           numCompoundParabolic: numCompoundParabolic,
+                                           numCompoundLoxodromic: numCompoundLoxodromic});
     attachShaderFromString(gl,
                            shaderStr,
                            program,
@@ -344,17 +380,10 @@ function setupSchottkyProgram(scene, renderCanvas){
     
     var framebuffer = gl.createFramebuffer();
 
-    var switchProgram = function(){
-        gl.useProgram(program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.enableVertexAttribArray(vAttribLocation);
-        gl.vertexAttribPointer(vAttribLocation, 2, gl.FLOAT, false, 0, 0);
-    }
-
     var render = function(){
         gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+//        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+//        gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.useProgram(program);
         setUniformVariables(scene, renderCanvas, gl, uniLocation);
@@ -377,21 +406,17 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
 
-        //        renderCanvas.numSamples++;
+        if(renderCanvas.isSampling)
+            renderCanvas.numSamples++;
+//        console.log(renderCanvas.numSamples);
     }
 
-    switchProgram();
-    return [switchProgram, render];
+    return render;
 }
 
 function updateShaders(scene, schottkyCanvas, orbitCanvas){
-    [schottkyCanvas.switch,
-     schottkyCanvas.render] = setupSchottkyProgram(scene, schottkyCanvas);
-    [orbitCanvas.switch,
-     orbitCanvas.render] = setupSchottkyProgram(scene, orbitCanvas);
-    schottkyCanvas.switch();
-    orbitCanvas.switch();
-
+    schottkyCanvas.render = setupSchottkyProgram(scene, schottkyCanvas);
+    orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
     schottkyCanvas.render();
     orbitCanvas.render();
 }
@@ -416,8 +441,8 @@ window.addEventListener('load', function(event){
             schottkyCanvas.selectedAxis = -1;
             schottkyCanvas.render();
         }
-        schottkyCanvas.isRendering = false;
-        orbitCanvas.isRendering = false;
+//        schottkyCanvas.isRendering = false;
+//        orbitCanvas.isRendering = false;
     });
 
     schottkyCanvas.canvas.addEventListener('mousedown', function(event){
@@ -449,17 +474,19 @@ window.addEventListener('load', function(event){
             mouse = schottkyCanvas.calcPixel(event);
             if (schottkyCanvas.pressingKey != ''){
                 scene.move(schottkyCanvas.selectedObjectId,
-                             schottkyCanvas.selectedObjectIndex,
-                             schottkyCanvas.selectedComponentId,
-                             schottkyCanvas.selectedAxis,
-                             mouse, schottkyCanvas.prevMousePos,
-                             schottkyCanvas.prevObject,
-                             schottkyCanvas.axisVecOnScreen,
-                             schottkyCanvas.camera,
-                             schottkyCanvas.canvas.width,
-                             schottkyCanvas.canvas.height);
+                           schottkyCanvas.selectedObjectIndex,
+                           schottkyCanvas.selectedComponentId,
+                           schottkyCanvas.selectedAxis,
+                           mouse, schottkyCanvas.prevMousePos,
+                           schottkyCanvas.prevObject,
+                           schottkyCanvas.axisVecOnScreen,
+                           schottkyCanvas.camera,
+                           schottkyCanvas.canvas.width,
+                           schottkyCanvas.canvas.height);
+                
                 schottkyCanvas.isRendering = true;
                 orbitCanvas.isRendering = true;
+                orbitCanvas.numSamples = 0;
             }
         }
     });
@@ -513,12 +540,12 @@ window.addEventListener('load', function(event){
             break;
         case '+':
             orbitCanvas.numIterations++;
-            orbitCanvas.render();
+            orbitCanvas.update();
             break;
         case '-':
             if(orbitCanvas.numIterations != 0){
                 orbitCanvas.numIterations--;
-                orbitCanvas.render();
+                orbitCanvas.update();
             }
             break;
         case 'ArrowRight':
@@ -526,7 +553,7 @@ window.addEventListener('load', function(event){
             event.preventDefault();
             scene.objects[ID_TRANSFORM_BY_PLANES][0].phi += 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'ArrowLeft':
@@ -534,7 +561,7 @@ window.addEventListener('load', function(event){
             event.preventDefault();
             scene.objects[ID_TRANSFORM_BY_PLANES][0].phi -= 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'ArrowUp':
@@ -542,7 +569,7 @@ window.addEventListener('load', function(event){
             event.preventDefault();
             scene.objects[ID_TRANSFORM_BY_PLANES][0].theta += 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'ArrowDown':
@@ -550,35 +577,35 @@ window.addEventListener('load', function(event){
             event.preventDefault();
             scene.objects[ID_TRANSFORM_BY_PLANES][0].theta -= 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'p':
             if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].twist += 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'n':
             if(scene.objects[ID_TRANSFORM_BY_PLANES][0] == undefined) return;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].twist -= 10;
             scene.objects[ID_TRANSFORM_BY_PLANES][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'y':
             if(scene.objects[ID_COMPOUND_PARABOLIC][0] == undefined) return;
             scene.objects[ID_COMPOUND_PARABOLIC][0].theta += 10;
             scene.objects[ID_COMPOUND_PARABOLIC][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'g':
             if(scene.objects[ID_COMPOUND_PARABOLIC][0] == undefined) return;
             scene.objects[ID_COMPOUND_PARABOLIC][0].theta -= 10;
             scene.objects[ID_COMPOUND_PARABOLIC][0].update();
-            orbitCanvas.render();
+            orbitCanvas.update();
             schottkyCanvas.render();
             break;
         case 'l':
@@ -597,6 +624,17 @@ window.addEventListener('load', function(event){
             a.href = orbitCanvas.canvas.toDataURL();
             a.download = "orbit.png"
             a.click();
+            break;
+        case 'r':
+            orbitCanvas.switchSampling();
+            break;
+        case 'f':
+            orbitCanvas.setPathTracer();
+            updateShaders(scene, schottkyCanvas, orbitCanvas);
+            break;
+        case 'v':
+            orbitCanvas.setRayTracer();
+            updateShaders(scene, schottkyCanvas, orbitCanvas);
             break;
         case '0':
         case '1':
@@ -622,7 +660,8 @@ window.addEventListener('load', function(event){
         if(schottkyCanvas.isRendering){
             schottkyCanvas.render();
         }
-        if(orbitCanvas.isRendering){
+        if(orbitCanvas.isRendering ||
+           orbitCanvas.isSampling){
             orbitCanvas.render();
         }
         requestAnimationFrame(arguments.callee);
