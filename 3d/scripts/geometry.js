@@ -4,6 +4,7 @@ const ID_TRANSFORM_BY_PLANES = 2;
 const ID_TRANSFORM_BY_SPHERES = 3;
 const ID_COMPOUND_PARABOLIC  = 4;
 const ID_COMPOUND_LOXODROMIC = 5;
+const ID_INFINITE_SPHERE = 6;
 
 const AXIS_X = 0;
 const AXIS_Y = 1;
@@ -109,6 +110,77 @@ Sphere.prototype = {
     }
 }
 
+// A sphere which have infinite radius.
+// It is expressed by plane.
+var InfiniteSphere = function(center, theta, phi){
+    this.center = center;
+    this.theta = theta;
+    this.phi = phi;
+    
+    this.rotationMat3;
+    this.invRotationMat3;
+
+    this.update();
+
+    this.size = 1200;
+}
+
+InfiniteSphere.prototype = {
+    clone: function(){
+        return new InfiniteSphere(this.center.slice(0), this.theta, this.phi);
+    },
+    update: function(){
+	var rotateX = getRotationXAxis(radians(this.theta));
+	var rotateY = getRotationYAxis(radians(this.phi));
+	this.rotationMat3 = prodMat3(rotateX, rotateY);
+	rotateX = getRotationXAxis(radians(-this.theta));
+	rotateY = getRotationYAxis(radians(-this.phi));
+	this.invRotationMat3 = prodMat3(rotateY, rotateX);
+    },
+    exportJson: function(){
+        return {
+            "center": this.center,
+            "thetaDegree": this.theta,
+            "phiDegree": this.phi
+        }
+    },
+    getUniformArray: function(){
+	return this.center.concat([this.size]);
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_infiniteSphere'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_rotateInfiniteSphereMat3'+ index));
+	uniLocation.push(gl.getUniformLocation(program,
+					       'u_invRotateInfiniteSphereMat3'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	gl.uniform4fv(uniLocation[uniIndex++],
+		      this.getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.rotationMat3);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++],
+			    false, this.invRotationMat3);
+	return uniIndex;
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectInfiniteSphere(objectId, index, 0,
+			               this.center,
+			               this.size,
+			               this.invRotationMat3,
+			               this.rotationMat3,
+			               eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.center, camera, width, height);
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+    }
+}
+
 const PARABOLIC_TRANSFORM_PLANE1 = 0;
 const PARABOLOC_TRANSFORM_PLANE2 = 1;
 // Initially planes are aligned along the z-axis
@@ -191,13 +263,13 @@ ParabolicTransformation.prototype = {
     },
     castRay: function(objectId, index, eye, ray, isect){
         isect = intersectRect(objectId, index, PARABOLIC_TRANSFORM_PLANE1,
-			      this.distToP1,
+			      [0, 0, this.distToP1],
 			      this.size,
 			      this.invRotationMat3,
 			      this.rotationMat3,
 			      eye, ray, isect);
 	isect = intersectRect(objectId, index, PARABOLOC_TRANSFORM_PLANE2,
-			      this.distToP2,
+			      [0, 0, this.distToP2],
 			      this.size,
 			      prodMat3(this.invTwistMat3,
 				       this.invRotationMat3),
@@ -681,7 +753,8 @@ const GENERATORS_NAME_ID_MAP = {
     "transformByPlanes": ID_TRANSFORM_BY_PLANES,
     "transformBySpheres": ID_TRANSFORM_BY_SPHERES,
     "compoundParabolic": ID_COMPOUND_PARABOLIC,
-    "compoundLoxodromic": ID_COMPOUND_LOXODROMIC
+    "compoundLoxodromic": ID_COMPOUND_LOXODROMIC,
+    "infiniteSpheres": ID_INFINITE_SPHERE
 }
 
 const GENERATORS_ID_NAME_MAP = {};
@@ -691,6 +764,7 @@ GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_PLANES] = "transformByPlanes";
 GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_SPHERES] = "transformBySpheres";
 GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "compoundParabolic";
 GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "compoundLoxodromic";
+GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "infiniteSpheres";
 
 var Scene = function(){
     this.objects = {};

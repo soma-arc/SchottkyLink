@@ -52,9 +52,7 @@
 	 gl_Position = vec4(a_vertex, 0., 1.0);
      }
     </script>
-
-    <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
-     precision mediump float;
+    <script id="uniformVariables" type="x-shader/x-fragment">
      uniform sampler2D u_accTexture;
      uniform int u_numSamples;
      uniform float u_textureWeight;
@@ -68,23 +66,36 @@
      uniform vec3 u_up;
      uniform vec3 u_target;
      uniform float u_fov;
-     {% for n in range(0,  numSchottkySpheres ) %}
+     uniform int u_numIterations;
+     uniform bool u_displayGenerators;
+     
+     {% for n  in range(0,  numSchottkySpheres ) %}
      uniform vec4 u_schottkySphere{{ n }};
      {% endfor %}
 
-     {% for n in range(0,  numBaseSpheres ) %}
+     {% for n  in range(0,  numSchottkySpheres ) %}
+     float u_schottkySphere{{ n }}r2 = u_schottkySphere{{ n }}.w * u_schottkySphere{{ n }}.w;
+     {% endfor %}
+
+     {% for n  in range(0,  numBaseSpheres ) %}
      uniform vec4 u_baseSphere{{ n }};
      {% endfor %}
 
+     {% for n in range(0,  numInfiniteSpheres ) %}
+     // [center.x, center.y, center,z, size]
+     uniform vec4 u_infiniteSphere{{ n }};
+     uniform mat3 u_rotateInfiniteSphereMat3{{ n }};
+     uniform mat3 u_invRotateInfiniteSphereMat3{{ n }};
+     {% endfor %}
+     
      {% for n in range(0,  numTransformByPlanes ) %}
-     //[distToP1, distToP2, size, thetaRad, phiRad, twist]
      uniform float u_transformByPlanes{{ n }}[6];
      uniform mat3 u_rotatePlaneMat3{{ n }};
      uniform mat3 u_invRotatePlaneMat3{{ n }};
      uniform mat3 u_twistPlaneMat3{{ n }};
      uniform mat3 u_invTwistPlaneMat3{{ n }};
      {% endfor %}
-     
+
      {% for n in range(0, numTransformBySpheres) %}
      //[innerSphere, outerSphere, invertedSphere]
      uniform vec4 u_transformBySpheres{{ n }}[3];
@@ -93,11 +104,22 @@
      {% for n in range(0, numCompoundParabolic) %}
      //[innerSphere, outerSphere, invertedSphere]
      uniform vec4 u_compoundParabolic{{ n }}[3];
+     uniform mat3 u_compoundRotateMat3{{ n }};
+     uniform mat3 u_invCompoundRotateMat3{{ n }};
      {% endfor %}
 
      {% for n in range(0, numCompoundLoxodromic) %}
+     //[innerSphere, outerSphere, invertedSphere, s3, s4, p, q1, q2]
      uniform vec4 u_compoundLoxodromic{{ n }}[8];
      {% endfor %}
+
+     
+    </script>
+
+    <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
+     precision mediump float;
+
+     {% include uniformVariables %}
 
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, float sampleIndex) {
@@ -114,6 +136,7 @@
      const int ID_TRANSFORM_BY_SPHERES = 3;
      const int ID_COMPOUND_PARABOLIC = 4;
      const int ID_COMPOUND_LOXODROMIC = 5;
+     const int ID_INFINITE_SPHERE = 6;
      
      const int ID_AXIS_CYLINDER = 100;
      
@@ -129,6 +152,15 @@
      int g_objIndex = -1;
      int g_objComponentId = -1;
      bool g_isHit = false;
+
+     const vec3 BLACK = vec3(0);
+     const vec3 WHITE = vec3(1);
+     const vec3 RED = vec3(1, 0, 0);
+     const vec3 GREEN = vec3(0, 1, 0);
+     const vec3 BLUE = vec3(0, 0, 1);
+     const vec3 YELLOW = vec3(1, 1, 0);
+     const vec3 PINK = vec3(1, 0, 1);
+     const vec3 LIGHT_BLUE = vec3(0, 1, 1);
 
      vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
 			  vec3 sphereCenter, float radius, 
@@ -234,11 +266,12 @@
      }
 
      // default plane is aligned the z-axis
+     // Rotation center is origin
      vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
-			 float distToOrigin, float size, mat3 rotation, mat3 invRotation,
+			 vec3 center, float size, mat3 rotation, mat3 invRotation,
 			 vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
-	 vec3 c = vec3(0, 0, distToOrigin);
+	 vec3 c = center;
 	 const vec3 defaultN = vec3(0, 0, 1);
 	 vec3 n = rotation * defaultN;
 	 float d = -dot(rotation * c, n);
@@ -261,30 +294,50 @@
 	 return isect;
      }
 
+     // Represent a sphere which have infinite radius
+     // default plane is aligned the z-axis
+     // Rotation center is plane's center
+     vec4 intersectInfiniteSphere (int objId, int objIndex, int objComponentId, int mtl,
+			           vec3 center, float size, mat3 rotation, mat3 invRotation,
+			           vec3 rayOrigin, vec3 rayDir, vec4 isect) {
+	 g_isHit = false;
+	 vec3 c = center;
+         rayOrigin -= center;
+	 const vec3 defaultN = vec3(0, 0, 1);
+	 vec3 n = rotation * defaultN;
+	 float d = -dot(rotation * c, n);
+	 float v = dot(n, rayDir);
+	 float t = -(dot(n, rayOrigin) + d) / v;
+	 if(EPSILON < t && t < isect.x){
+	     float hSize = size * 0.5;
+    	     vec3 p = rayOrigin + t * rayDir;
+	     p = invRotation * p;
+             if(-hSize < p.x && p.x < hSize &&
+		-hSize < p.y && p.y < hSize ){
+		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
+		 g_mtl = mtl;
+		 g_isHit = true;
+        	 return vec4(t, n);
+             }
+	 }
+	 return isect;
+     }
+     
      vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
 							    const vec3 lightPos, const vec3 lightPower){
   	 vec3 v = lightPos - p;
   	 float d = dot(n, normalize(v));
   	 float r = length(v);
-  	 return (d > 0. 
-     // && lightVisibility(p, lightPos) == 1.
-         ) ?
-    		(lightPower * (abs(d) / (PI_4 * r * r))) * diffuseColor
-    	      : vec3(0.0);
+  	 return (d > 0.) ?
+    		(lightPower * (abs(d) / (PI_4 * r * r))) * diffuseColor : BLACK;
      }
 
      const vec3 lightPos = vec3(900, 450, 0);
      const vec3 lightPower = vec3(1000000.);
      const vec3 ambientFactor = vec3(0.1);
      const int MAX_TRACE_DEPTH = 7;
-     const vec3 BLACK = vec3(0);
-     const vec3 WHITE = vec3(1);
-     const vec3 RED = vec3(1, 0, 0);
-     const vec3 GREEN = vec3(0, 1, 0);
-     const vec3 BLUE = vec3(0, 0, 1);
-     const vec3 YELLOW = vec3(1, 1, 0);
-     const vec3 PINK = vec3(1, 0, 1);
-     const vec3 LIGHT_BLUE = vec3(0, 1, 1);
      float transparency = 0.8;
      vec3 calcColor(vec3 eye, vec3 ray){
 	 vec3 l = BLACK;
@@ -329,15 +382,24 @@
 	     }
 	     {% endfor %}
 
+             {% for n in range(0,  numInfiniteSpheres ) %}
+             result = intersectInfiniteSphere(ID_INFINITE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
+                                              u_infiniteSphere{{ n }}.xyz,
+                                              u_infiniteSphere{{ n }}.w,
+                                              u_rotateInfiniteSphereMat3{{ n }},
+                                              u_invRotateInfiniteSphereMat3{{ n }},
+                                              eye, ray, result);
+             {% endfor %}
+
 	     {% for n in range(0,  numTransformByPlanes ) %}
 	     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
-				    u_transformByPlanes{{ n }}[0],
+				    vec3(0, 0, u_transformByPlanes{{ n }}[0]),
 				    u_transformByPlanes{{ n }}[2],
 				    u_rotatePlaneMat3{{ n }},
 				    u_invRotatePlaneMat3{{ n }},
 				    eye, ray, result);
 	     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
-				    u_transformByPlanes{{ n }}[1],
+				    vec3(0, 0, u_transformByPlanes{{ n }}[1]),
 				    u_transformByPlanes{{ n }}[2],
 				    u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
 				    u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
@@ -536,7 +598,10 @@
 		 }else if(g_objId == ID_BASE_SPHERE){
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
-		 }else if(g_objId == ID_AXIS_CYLINDER){
+		 }else if(g_objId == ID_INFINITE_SPHERE){
+                     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
+                 }else if(g_objId == ID_AXIS_CYLINDER){
 		     matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
 		 }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		     matColor = (g_objId == u_selectedObjectId &&
@@ -762,6 +827,21 @@
 		 loopNum++;
 	     }
 	     {% endif %}
+
+             {% for n in range(0,  numInfiniteSpheres ) %}
+             pos -= u_infiniteSphere{{ n }}.xyz;
+             pos = u_invRotateInfiniteSphereMat3{{ n }} * pos;
+             if(pos.z > 0.){
+                 pos.z *= -1.;
+                 loopEnd = false;
+                 loopNum++;
+             }             
+             pos = u_rotateInfiniteSphereMat3{{ n }} * pos;
+             pos += u_infiniteSphere{{ n }}.xyz;
+
+             {% endfor %}
+             
+             
 	     {% for n in range(0,  numTransformByPlanes ) %}
 	     pos = u_invRotatePlaneMat3{{ n }} * pos;
 	     if(pos.z < u_transformByPlanes{{ n }}[0] || u_transformByPlanes{{ n }}[1] < pos.z){
@@ -844,59 +924,8 @@
     </script>
     <script id="3dOrbitTemplate" type="x-shader/x-fragment">
      precision mediump float;
-     uniform sampler2D u_accTexture;
-     uniform int u_numSamples;
-     uniform float u_textureWeight;
-     uniform vec2 u_iResolution;
-     uniform float u_iGlobalTime;
-     uniform int u_selectedObjectId;
-     uniform int u_selectedObjectIndex;
-     uniform int u_selectedComponentId;
-     uniform int u_selectedAxis;
-     uniform vec3 u_eye;
-     uniform vec3 u_up;
-     uniform vec3 u_target;
-     uniform float u_fov;
-     uniform int u_numIterations;
-     
-     {% for n  in range(0,  numSchottkySpheres ) %}
-     uniform vec4 u_schottkySphere{{ n }};
-     {% endfor %}
 
-     {% for n  in range(0,  numSchottkySpheres ) %}
-     float u_schottkySphere{{ n }}r2 = u_schottkySphere{{ n }}.w * u_schottkySphere{{ n }}.w;
-     {% endfor %}
-
-     {% for n  in range(0,  numBaseSpheres ) %}
-     uniform vec4 u_baseSphere{{ n }};
-     {% endfor %}
-
-     {% for n in range(0,  numTransformByPlanes ) %}
-     uniform float u_transformByPlanes{{ n }}[6];
-     uniform mat3 u_rotatePlaneMat3{{ n }};
-     uniform mat3 u_invRotatePlaneMat3{{ n }};
-     uniform mat3 u_twistPlaneMat3{{ n }};
-     uniform mat3 u_invTwistPlaneMat3{{ n }};
-     {% endfor %}
-
-     {% for n in range(0, numTransformBySpheres) %}
-     //[innerSphere, outerSphere, invertedSphere]
-     uniform vec4 u_transformBySpheres{{ n }}[3];
-     {% endfor %}
-
-     {% for n in range(0, numCompoundParabolic) %}
-     //[innerSphere, outerSphere, invertedSphere]
-     uniform vec4 u_compoundParabolic{{ n }}[3];
-     uniform mat3 u_compoundRotateMat3{{ n }};
-     uniform mat3 u_invCompoundRotateMat3{{ n }};
-     {% endfor %}
-
-     {% for n in range(0, numCompoundLoxodromic) %}
-     //[innerSphere, outerSphere, invertedSphere, s3, s4, p, q1, q2]
-     uniform vec4 u_compoundLoxodromic{{ n }}[8];
-     {% endfor %}
-     
-     uniform bool u_displayGenerators;
+     {% include uniformVariables %}
      
      int g_mtl = -1;
      int g_objId = -1;
@@ -910,7 +939,8 @@
      const int ID_TRANSFORM_BY_SPHERES = 3;
      const int ID_COMPOUND_PARABOLIC = 4;
      const int ID_COMPOUND_LOXODROMIC = 5;
-
+     const int ID_INFINITE_SPHERE = 6;
+     
      const int ID_AXIS_CYLINDER = 100;
      const int ID_KLEIN_ORBIT = 101;
 
@@ -955,10 +985,41 @@
 
      // default plane is aligned the z-axis
      vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
-			 float distToOrigin, float size, mat3 rotation, mat3 invRotation,
+			 vec3 center, float size, mat3 rotation, mat3 invRotation,
 			 vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
-	 vec3 c = vec3(0, 0, distToOrigin);
+	 vec3 c = center;
+	 const vec3 defaultN = vec3(0, 0, 1);
+	 vec3 n = rotation * defaultN;
+	 float d = -dot(rotation * c, n);
+	 float v = dot(n, rayDir);
+	 float t = -(dot(n, rayOrigin) + d) / v;
+	 if(EPSILON < t && t < isect.x){
+	     float hSize = size * 0.5;
+    	     vec3 p = rayOrigin + t * rayDir;
+	     p = invRotation * p;
+             if(-hSize < p.x && p.x < hSize &&
+		-hSize < p.y && p.y < hSize ){
+		 g_objId = objId;
+		 g_objIndex = objIndex;
+		 g_objComponentId = objComponentId;
+		 g_mtl = mtl;
+		 g_isHit = true;
+        	 return vec4(t, n);
+             }
+	 }
+	 return isect;
+     }
+
+     // Represent a sphere which have infinite radius
+     // default plane is aligned the z-axis
+     // Rotation center is plane's center
+     vec4 intersectInfiniteSphere (int objId, int objIndex, int objComponentId, int mtl,
+			           vec3 center, float size, mat3 rotation, mat3 invRotation,
+			           vec3 rayOrigin, vec3 rayDir, vec4 isect) {
+	 g_isHit = false;
+	 vec3 c = center;
+         rayOrigin -= center;
 	 const vec3 defaultN = vec3(0, 0, 1);
 	 vec3 n = rotation * defaultN;
 	 float d = -dot(rotation * c, n);
@@ -1093,18 +1154,26 @@
 		 result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
 					  u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w,
 					  eye, ray, result);
-		 
 		 {% endfor %}
 
+                 {% for n in range(0,  numInfiniteSpheres ) %}
+                 result = intersectInfiniteSphere(ID_INFINITE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
+                                                  u_infiniteSphere{{ n }}.xyz,
+                                                  u_infiniteSphere{{ n }}.w,
+                                                  u_rotateInfiniteSphereMat3{{ n }},
+                                                  u_invRotateInfiniteSphereMat3{{ n }},
+                                                  eye, ray, result);
+                 {% endfor %}
+                 
 		 {% for n in range(0,  numTransformByPlanes ) %}
 		 result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
-					u_transformByPlanes{{ n }}[0],
+					vec3(0, 0, u_transformByPlanes{{ n }}[0]),
 					u_transformByPlanes{{ n }}[2],
 					u_rotatePlaneMat3{{ n }},
 					u_invRotatePlaneMat3{{ n }},
 					eye, ray, result);
 		 result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
-					u_transformByPlanes{{ n }}[1],
+					vec3(0, 0, u_transformByPlanes{{ n }}[1]),
 					u_transformByPlanes{{ n }}[2],
 					u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
 					u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
@@ -1191,7 +1260,10 @@
 		 }else if(g_objId == ID_BASE_SPHERE){
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
-		 }else if(g_objId == ID_AXIS_CYLINDER){
+		 }else if(g_objId == ID_INFINITE_SPHERE){
+                     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
+                 }else if(g_objId == ID_AXIS_CYLINDER){
 		     matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
 		 }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		     matColor = (g_objId == u_selectedObjectId &&
@@ -1261,59 +1333,8 @@
     </script>
     <script id="3dOrbitPathTraceTemplate" type="x-shader/x-fragment">
      precision mediump float;
-     uniform sampler2D u_accTexture;
-     uniform int u_numSamples;
-     uniform float u_textureWeight;
-     uniform vec2 u_iResolution;
-     uniform float u_iGlobalTime;
-     uniform int u_selectedObjectId;
-     uniform int u_selectedObjectIndex;
-     uniform int u_selectedComponentId;
-     uniform int u_selectedAxis;
-     uniform vec3 u_eye;
-     uniform vec3 u_up;
-     uniform vec3 u_target;
-     uniform float u_fov;
-     uniform int u_numIterations;
-     
-     {% for n  in range(0,  numSchottkySpheres ) %}
-     uniform vec4 u_schottkySphere{{ n }};
-     {% endfor %}
 
-     {% for n  in range(0,  numSchottkySpheres ) %}
-     float u_schottkySphere{{ n }}r2 = u_schottkySphere{{ n }}.w * u_schottkySphere{{ n }}.w;
-     {% endfor %}
-
-     {% for n  in range(0,  numBaseSpheres ) %}
-     uniform vec4 u_baseSphere{{ n }};
-     {% endfor %}
-
-     {% for n in range(0,  numTransformByPlanes ) %}
-     uniform float u_transformByPlanes{{ n }}[6];
-     uniform mat3 u_rotatePlaneMat3{{ n }};
-     uniform mat3 u_invRotatePlaneMat3{{ n }};
-     uniform mat3 u_twistPlaneMat3{{ n }};
-     uniform mat3 u_invTwistPlaneMat3{{ n }};
-     {% endfor %}
-
-     {% for n in range(0, numTransformBySpheres) %}
-     //[innerSphere, outerSphere, invertedSphere]
-     uniform vec4 u_transformBySpheres{{ n }}[3];
-     {% endfor %}
-
-     {% for n in range(0, numCompoundParabolic) %}
-     //[innerSphere, outerSphere, invertedSphere]
-     uniform vec4 u_compoundParabolic{{ n }}[3];
-     uniform mat3 u_compoundRotateMat3{{ n }};
-     uniform mat3 u_invCompoundRotateMat3{{ n }};
-     {% endfor %}
-
-     {% for n in range(0, numCompoundLoxodromic) %}
-     //[innerSphere, outerSphere, invertedSphere, s3, s4, p, q1, q2]
-     uniform vec4 u_compoundLoxodromic{{ n }}[8];
-     {% endfor %}
-     
-     uniform bool u_displayGenerators;
+     {% include uniformVariables %}
      
      int g_mtl = -1;
      int g_objId = -1;

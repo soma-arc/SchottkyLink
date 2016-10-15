@@ -341,10 +341,10 @@ function intersectOverlappingSphere(objectId, objectIndex,
 }
 
 function intersectRect (objectId, objectIndex, componentId,
-			distToOrigin, size,
+			center, size,
 			rotationMat3, invRotationMat3,
 			rayOrigin, rayDir, isect) {    
-    var c = [0, 0, distToOrigin];
+    var c = center;
     var defaultN = [0, 0, 1];
     var n = applyMat3(rotationMat3, defaultN);
     var cc =  applyMat3(rotationMat3, c)
@@ -354,6 +354,33 @@ function intersectRect (objectId, objectIndex, componentId,
     if(RAYTRACE_EPSILON < t && t < isect[0]){
 	hSize = size * 0.5;
     	var p = sum(rayOrigin, scale(rayDir, t));
+	p = applyMat3(invRotationMat3, p);
+        if(-hSize < p[0] && p[0] < hSize &&
+	   -hSize < p[1] && p[1] < hSize ){
+            return [t, objectId, objectIndex, componentId];
+        }
+    }
+    return isect;
+}
+
+// Represent a sphere which have infinite radius
+// default plane is aligned the z-axis
+// Rotation center is plane's center
+function intersectInfiniteSphere (objectId, objectIndex, componentId,
+			          center, size,
+			          rotationMat3, invRotationMat3,
+			          rayOrigin, rayDir, isect) {    
+    var c = center;
+    var eye = diff(rayOrigin, center);
+    var defaultN = [0, 0, 1];
+    var n = applyMat3(rotationMat3, defaultN);
+    var cc =  applyMat3(rotationMat3, c)
+    var d = -dot(cc, n);
+    var v = dot(n, rayDir);
+    var t = -(dot(n, eye) + d) / v;
+    if(RAYTRACE_EPSILON < t && t < isect[0]){
+	hSize = size * 0.5;
+    	var p = sum(eye, scale(rayDir, t));
 	p = applyMat3(invRotationMat3, p);
         if(-hSize < p[0] && p[0] < hSize &&
 	   -hSize < p[1] && p[1] < hSize ){

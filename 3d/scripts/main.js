@@ -6,6 +6,7 @@ var RenderCanvas = function(canvasId, templateId){
     this.canvas = document.getElementById(canvasId);
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
+    this.uniformVariables = nunjucks.compile(document.getElementById('uniformVariables').text);
     this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
     this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
     
@@ -132,6 +133,7 @@ const PRESET_PARAMS = [
                          new Sphere(0, 0, 424.26, 300),
                         ],
         baseSpheres:[new Sphere(0, 0, 0, 125)],
+        infiniteSpheres:[new InfiniteSphere([0, 0, 150], 0, 0)],
     },
     {
         schottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -334,13 +336,17 @@ function setupSchottkyProgram(scene, renderCanvas){
     var numCompoundLoxodromic = scene.objects[ID_COMPOUND_LOXODROMIC].length;
 
     var renderTemplate = renderCanvas.getTracerTemplate();
-    var shaderStr = renderTemplate.render({distKlein: renderCanvas.kleinTemplate,
-                                           numSchottkySpheres: numSchottkySpheres,
-                                           numBaseSpheres: numBaseSpheres,
-                                           numTransformByPlanes: numTransformByPlanes,
-                                           numTransformBySpheres: numTransformBySpheres,
-                                           numCompoundParabolic: numCompoundParabolic,
-                                           numCompoundLoxodromic: numCompoundLoxodromic});
+    var shaderStr = renderTemplate.render(
+        {uniformVariables: renderCanvas.uniformVariables,
+         distKlein: renderCanvas.kleinTemplate,
+         numSchottkySpheres: numSchottkySpheres,
+         numBaseSpheres: numBaseSpheres,
+         numTransformByPlanes: numTransformByPlanes,
+         numTransformBySpheres: numTransformBySpheres,
+         numCompoundParabolic: numCompoundParabolic,
+         numCompoundLoxodromic: numCompoundLoxodromic,
+         numInfiniteSpheres: scene.objects[ID_INFINITE_SPHERE].length,
+        });
     attachShaderFromString(gl,
                            shaderStr,
                            program,
