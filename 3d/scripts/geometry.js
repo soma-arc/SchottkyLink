@@ -308,10 +308,27 @@ ParabolicTransformation.prototype = {
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
-        return [];
+        return calcAxisOnScreen([0, 0, 0], camera, width, height);
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        if(selectedAxis == AXIS_Z){
+            var dx = mouse[0] - prevMouse[0];
+            var dy = mouse[1] - prevMouse[1];
+            var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+            if(componentId == PARABOLIC_TRANSFORM_PLANE1){
+                var p = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				        selectedAxis, v, [0, 0, prevObject.distToP1],
+				        lengthOnAxis);
+                this.distToP1 = p[selectedAxis];
+            }else{
+                var p = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				        selectedAxis, v, [0, 0, prevObject.distToP2],
+				        lengthOnAxis);
+                this.distToP2 = p[selectedAxis];
+            }
+        }
     }
 }
 

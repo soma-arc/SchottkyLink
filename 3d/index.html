@@ -470,6 +470,12 @@
 				    u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
 				    u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
 				    eye, ray, result);
+             if(u_selectedObjectId == ID_TRANSFORM_BY_PLANES &&
+		u_selectedObjectIndex == {{ n }} ){
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., vec3(0),
+					      eye, ray, result);
+	     }
 	     
 	     {% endfor %}
 

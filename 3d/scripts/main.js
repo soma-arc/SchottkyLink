@@ -308,7 +308,7 @@ function getUniLocations(scene, renderCanvas, gl, program){
     var s = new Date().getTime();
     uniLocation.push(gl.getUniformLocation(program,
                                            'u_accTexture'));
-    console.log(new Date().getTime() - s);
+    console.log('getUniLocation '+ (new Date().getTime() - s));
     uniLocation.push(gl.getUniformLocation(program,
                                            'u_numSamples'));
     uniLocation.push(gl.getUniformLocation(program,
