@@ -125,6 +125,9 @@ var InfiniteSphere = function(center, theta, phi){
     this.size = 1200;
 }
 
+const INFINITE_SPHERE_BODY = 0;
+const INFINITE_SPHERE_CONTROL_POINT = 1;
+
 InfiniteSphere.prototype = {
     clone: function(){
         return new InfiniteSphere(this.center.slice(0), this.theta, this.phi);
@@ -170,7 +173,7 @@ InfiniteSphere.prototype = {
 			               this.size,
 			               this.invRotationMat3,
 			               this.rotationMat3,
-			               eye, ray, isect);
+			                eye, ray, isect);
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
@@ -748,23 +751,23 @@ Camera.prototype = {
 }
 
 const GENERATORS_NAME_ID_MAP = {
-    "schottkySpheres": ID_SCHOTTKY_SPHERE,
-    "baseSpheres": ID_BASE_SPHERE,
-    "transformByPlanes": ID_TRANSFORM_BY_PLANES,
-    "transformBySpheres": ID_TRANSFORM_BY_SPHERES,
-    "compoundParabolic": ID_COMPOUND_PARABOLIC,
-    "compoundLoxodromic": ID_COMPOUND_LOXODROMIC,
-    "infiniteSpheres": ID_INFINITE_SPHERE
+    "SchottkySpheres": ID_SCHOTTKY_SPHERE,
+    "BaseSpheres": ID_BASE_SPHERE,
+    "TransformByPlanes": ID_TRANSFORM_BY_PLANES,
+    "TransformBySpheres": ID_TRANSFORM_BY_SPHERES,
+    "CompoundParabolic": ID_COMPOUND_PARABOLIC,
+    "CompoundLoxodromic": ID_COMPOUND_LOXODROMIC,
+    "InfiniteSpheres": ID_INFINITE_SPHERE
 }
 
 const GENERATORS_ID_NAME_MAP = {};
-GENERATORS_ID_NAME_MAP[ID_SCHOTTKY_SPHERE] = "schottkySpheres";
-GENERATORS_ID_NAME_MAP[ID_BASE_SPHERE] = "baseSpheres";
-GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_PLANES] = "transformByPlanes";
-GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_SPHERES] = "transformBySpheres";
-GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "compoundParabolic";
-GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "compoundLoxodromic";
-GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "infiniteSpheres";
+GENERATORS_ID_NAME_MAP[ID_SCHOTTKY_SPHERE] = "SchottkySpheres";
+GENERATORS_ID_NAME_MAP[ID_BASE_SPHERE] = "BaseSpheres";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_PLANES] = "TransformByPlanes";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_SPHERES] = "TransformBySpheres";
+GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "CompoundParabolic";
+GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "CompoundLoxodromic";
+GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "InfiniteSpheres";
 
 var Scene = function(){
     this.objects = {};
@@ -781,6 +784,11 @@ Scene.prototype = {
             this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
                 (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
 
+        }
+    },
+    setRenderContext: function(context){
+        for(objectName in GENERATORS_NAME_ID_MAP){
+            context['num'+ objectName] = this.objects[GENERATORS_NAME_ID_MAP[objectName]].length;
         }
     },
     clone: function(objects){

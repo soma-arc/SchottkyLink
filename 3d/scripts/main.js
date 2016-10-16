@@ -1,3 +1,4 @@
+
 const RAY_TRACER = 0;
 const PATH_TRACER = 1;
 
@@ -9,6 +10,22 @@ var RenderCanvas = function(canvasId, templateId){
     this.uniformVariables = nunjucks.compile(document.getElementById('uniformVariables').text);
     this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
     this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
+
+    this.renderProgram = this.gl.createProgram();
+    attachShader(this.gl, 'render-frag', this.renderProgram, this.gl.FRAGMENT_SHADER);
+    attachShader(this.gl, 'render-vert', this.renderProgram, this.gl.VERTEX_SHADER);
+    this.renderProgram = linkProgram(this.gl, this.renderProgram);
+    this.renderVertexAttribute = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
+
+
+    var vertex = [
+            -1, -1,
+            -1, 1,
+             1, -1,
+             1, 1
+    ];
+    this.vertexBuffer = createVbo(this.gl, vertex);
+    this.framebuffer = this.gl.createFramebuffer();
     
     this.camera = new Camera([0, 0, 0], 60, 1500, [0, 1, 0]);
 
@@ -93,68 +110,83 @@ RenderCanvas.prototype = {
     },
     setRayTracer: function(){
         this.renderer = RAY_TRACER;
+    },
+    initializeTextures: function(){
+        this.textures = [];
+        var gl = this.gl;
+        var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+        for(var i = 0; i < 2; i++) {
+            this.textures.push(gl.createTexture());
+            gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
+                          this.canvas.width, this.canvas.height,
+                          0, gl.RGB, type, null);
+        }
+        this.gl.bindTexture(gl.TEXTURE_2D, null);
     }
 };
 
 const PRESET_PARAMS = [
     {
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300)],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        compoundParabolic:[new CompoundParabolic(new Sphere(0, 0, 1000, 500),
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        CompoundParabolic:[new CompoundParabolic(new Sphere(0, 0, 1000, 500),
                                                  new Sphere(0, 0, 900, 600),
                                                  0)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300)],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        compoundLoxodromic:[new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        CompoundLoxodromic:[new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
                                                    new Sphere(100, 100, 900, 700),
                                                    [0, 1000, 100],
                                                    [100, -1000, 100],
                                                    [1000, 0, 90])]
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                         ],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        infiniteSpheres:[new InfiniteSphere([0, 0, 150], 0, 0)],
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        InfiniteSpheres:[new InfiniteSphere([0, 0, 150], 0, 0)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                         ],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300)],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
@@ -163,37 +195,37 @@ const PRESET_PARAMS = [
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300),
                         ],
-        baseSpheres:[new Sphere(0, 0, 0, 125),
+        BaseSpheres:[new Sphere(0, 0, 0, 125),
                      new Sphere(300 + 100 * Math.sqrt(3), 0, 0, 50),
                      new Sphere(-300 -100 * Math.sqrt(3), 0, 0, 50)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300)],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        transformBySpheres: [],
-        transformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        TransformBySpheres: [],
+        TransformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
     },
     {
-        schottkySpheres:[new Sphere(300, 300, 0, 300),
+        SchottkySpheres:[new Sphere(300, 300, 0, 300),
                          new Sphere(300, -300, 0, 300),
                          new Sphere(-300, 300, 0, 300),
                          new Sphere(-300, -300, 0, 300),
                          new Sphere(0, 0, 424.26, 300),
                          new Sphere(0, 0, -424.26, 300)],
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        transformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        TransformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
                                                    new Sphere(0, 0, 900, 600))],
     },
     {
-        baseSpheres:[new Sphere(0, 0, 0, 125)],
-        transformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
+        BaseSpheres:[new Sphere(0, 0, 0, 125)],
+        TransformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
                                                    new Sphere(0, 0, 900, 600))],
-        transformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
+        TransformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
     }
     
 ];
@@ -269,33 +301,33 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 }
 
 function getUniLocations(scene, renderCanvas, gl, program){
-    var uniLocation = new Array();
+    var uniLocation = [];
     var n = 0;
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_accTexture');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_numSamples');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_textureWeight');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_iResolution');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_iGlobalTime');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedObjectId');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedObjectIndex');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedComponentId');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_selectedAxis');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_eye');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_up');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_target');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_fov');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_numIterations');
-    uniLocation[n++] = gl.getUniformLocation(program,
-                                             'u_displayGenerators');
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_accTexture'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_numSamples'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_textureWeight'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_iResolution'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_iGlobalTime'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_selectedObjectId'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_selectedObjectIndex'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_selectedComponentId'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_selectedAxis'));
+    uniLocation.push(gl.getUniformLocation(program, 'u_eye'));
+    uniLocation.push(gl.getUniformLocation(program, 'u_up'));
+    uniLocation.push(gl.getUniformLocation(program, 'u_target'));
+    uniLocation.push(gl.getUniformLocation(program, 'u_fov'));
+    uniLocation.push(gl.getUniformLocation(program, 'u_numIterations'));
+    uniLocation.push(gl.getUniformLocation(program,
+                                           'u_displayGenerators'));
     scene.setUniformLocation(uniLocation, gl, program);
     
     return uniLocation;
@@ -328,25 +360,13 @@ function setupSchottkyProgram(scene, renderCanvas){
     renderCanvas.numSamples = 0;
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
-    var numSchottkySpheres = scene.objects[ID_SCHOTTKY_SPHERE].length;
-    var numBaseSpheres = scene.objects[ID_BASE_SPHERE].length;
-    var numTransformByPlanes = scene.objects[ID_TRANSFORM_BY_PLANES].length;
-    var numTransformBySpheres = scene.objects[ID_TRANSFORM_BY_SPHERES].length;
-    var numCompoundParabolic = scene.objects[ID_COMPOUND_PARABOLIC].length;
-    var numCompoundLoxodromic = scene.objects[ID_COMPOUND_LOXODROMIC].length;
 
+    var renderContext = {uniformVariables: renderCanvas.uniformVariables,
+                         distKlein: renderCanvas.kleinTemplate,
+                        };
+    scene.setRenderContext(renderContext);
     var renderTemplate = renderCanvas.getTracerTemplate();
-    var shaderStr = renderTemplate.render(
-        {uniformVariables: renderCanvas.uniformVariables,
-         distKlein: renderCanvas.kleinTemplate,
-         numSchottkySpheres: numSchottkySpheres,
-         numBaseSpheres: numBaseSpheres,
-         numTransformByPlanes: numTransformByPlanes,
-         numTransformBySpheres: numTransformBySpheres,
-         numCompoundParabolic: numCompoundParabolic,
-         numCompoundLoxodromic: numCompoundLoxodromic,
-         numInfiniteSpheres: scene.objects[ID_INFINITE_SPHERE].length,
-        });
+    var shaderStr = renderTemplate.render(renderContext);
     attachShaderFromString(gl,
                            shaderStr,
                            program,
@@ -354,47 +374,21 @@ function setupSchottkyProgram(scene, renderCanvas){
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
 
-    var renderProgram = gl.createProgram();
-    attachShader(gl, 'render-frag', renderProgram, gl.FRAGMENT_SHADER);
-    attachShader(gl, 'render-vert', renderProgram, gl.VERTEX_SHADER);
-    renderProgram = linkProgram(gl, renderProgram);
+    renderCanvas.initializeTextures();
 
-    renderCanvas.textures = [];
-    var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
-    for(var i = 0; i < 2; i++) {
-        renderCanvas.textures.push(gl.createTexture());
-        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[i]);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
-                      renderCanvas.canvas.width, renderCanvas.canvas.height,
-                      0, gl.RGB, type, null);
-    }
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    
     var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
-    
-    var vertex = [
-            -1, -1,
-            -1, 1,
-            1, -1,
-            1, 1
-    ];
-    var vertexBuffer = createVbo(gl, vertex);
     var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
-    var renderVertexAttribute = gl.getAttribLocation(program, 'a_vertex');
-    
-    var framebuffer = gl.createFramebuffer();
 
     var render = function(){
+        renderCanvas.isRendering = false;
         gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
 //        gl.clearColor(0.0, 0.0, 0.0, 1.0);
 //        gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.useProgram(program);
         setUniformVariables(scene, renderCanvas, gl, uniLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, renderCanvas.framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
                                 renderCanvas.textures[1], 0);
         gl.enableVertexAttribArray(vAttribLocation);
@@ -404,19 +398,17 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         renderCanvas.textures.reverse();
 
-        gl.useProgram(renderProgram);
+        gl.useProgram(renderCanvas.renderProgram);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.vertexAttribPointer(renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.vertexAttribPointer(renderCanvas.renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
 
         if(renderCanvas.isSampling)
             renderCanvas.numSamples++;
-//        console.log(renderCanvas.numSamples);
     }
-
     return render;
 }
 
@@ -510,6 +502,7 @@ window.addEventListener('load', function(event){
         schottkyCanvas.pressingKey = event.key;
         switch(event.key){
         case ' ':
+            event.preventDefault();
             scene.addSchottkySphere(schottkyCanvas, orbitCanvas);
             break;
         case 'b':
@@ -636,11 +629,13 @@ window.addEventListener('load', function(event){
             break;
         case 'f':
             orbitCanvas.setPathTracer();
-            updateShaders(scene, schottkyCanvas, orbitCanvas);
+            orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+            orbitCanvas.render();
             break;
         case 'v':
             orbitCanvas.setRayTracer();
-            updateShaders(scene, schottkyCanvas, orbitCanvas);
+            orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+            orbitCanvas.render();
             break;
         case '0':
         case '1':

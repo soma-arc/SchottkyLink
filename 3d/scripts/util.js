@@ -101,10 +101,11 @@ function resizeCanvasFullscreen(canvas){
 
 function attachShader(gl, shaderId, program, shaderType){
     var shader = gl.createShader(shaderType);
-    elem = document.getElementById(shaderId).text;
+    var elem = document.getElementById(shaderId).text;
     gl.shaderSource(shader, elem);
     gl.compileShader(shader);
-    if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
+    var param = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if(param){
         gl.attachShader(program, shader);
     }else{
 	alert(gl.getShaderInfoLog(shader));
@@ -126,12 +127,14 @@ function attachShaderFromString(gl, shaderStr, program, shaderType){
 
 function linkProgram(gl, program){
     gl.linkProgram(program);
-    if(gl.getProgramParameter(program, gl.LINK_STATUS)){
-	gl.useProgram(program);
-	return program;
-    }else{
-	return null;
-    }
+    return program;
+    // Sometimes getProgramParameter take much time
+    // var param = gl.getProgramParameter(program, gl.LINK_STATUS);
+    // if(param){
+    //     return program;
+    // }else{
+    //     return null;
+    // }
 }
 
 function createVbo(gl, data){
