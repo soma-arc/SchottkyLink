@@ -371,7 +371,9 @@ function intersectInfiniteSphere (objectId, objectIndex, componentId,
 			          rotationMat3, invRotationMat3,
 			          rayOrigin, rayDir, isect) {    
     var c = center;
-    var eye = diff(rayOrigin, center);
+    var eye = [rayOrigin[0] - center[0],
+               rayOrigin[1] - center[1],
+               rayOrigin[2]];
     var defaultN = [0, 0, 1];
     var n = applyMat3(rotationMat3, defaultN);
     var cc =  applyMat3(rotationMat3, c)

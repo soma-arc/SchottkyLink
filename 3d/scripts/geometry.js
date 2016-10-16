@@ -10,6 +10,8 @@ const AXIS_X = 0;
 const AXIS_Y = 1;
 const AXIS_Z = 2;
 const AXIS_RADIUS = 3;
+const AXIS_PHI = 4;
+const AXIS_THETA = 5;
 
 const SPHERE_BODY = 0;
 var Sphere = function(x, y, z, r){
@@ -67,7 +69,8 @@ Sphere.prototype = {
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
-        if(selectedAxis == AXIS_RADIUS){
+        switch(selectedAxis){
+        case AXIS_RADIUS:
             //set radius
             //We assume that prevObject is Sphere.
 	    var spherePosOnScreen = calcPointOnScreen(prevObject.getPosition(),
@@ -85,7 +88,10 @@ Sphere.prototype = {
             var scaleFactor = 3;
 	    //TODO: calculate tangent sphere
 	    this.r = prevObject.r + d * scaleFactor;
-        }else{
+            break;
+        case AXIS_X:
+        case AXIS_Y:
+        case AXIS_Z:
             // Move this sphere along the selected axis.
             var dx = mouse[0] - prevMouse[0];
             var dy = mouse[1] - prevMouse[1];
@@ -95,6 +101,7 @@ Sphere.prototype = {
 				    selectedAxis, v, prevObject.getPosition(),
 				    lengthOnAxis);
 	    this.set(selectedAxis, p[selectedAxis]);
+            break;
         }
     },
     getComponentFromId: function(id){
@@ -126,7 +133,6 @@ var InfiniteSphere = function(center, theta, phi){
 }
 
 const INFINITE_SPHERE_BODY = 0;
-const INFINITE_SPHERE_CONTROL_POINT = 1;
 
 InfiniteSphere.prototype = {
     clone: function(){
@@ -181,6 +187,26 @@ InfiniteSphere.prototype = {
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        if(selectedAxis == AXIS_THETA){
+            var dx = mouse[0] - prevMouse[0];
+            var dy = mouse[1] - prevMouse[1];
+            this.theta = prevObject.theta + dx * 5.;
+            this.update();
+        }else if(selectedAxis == AXIS_PHI){
+            var dx = mouse[0] - prevMouse[0];
+            var dy = mouse[1] - prevMouse[1];
+            this.phi = prevObject.phi + dy;
+            this.update();
+        }else{
+            var dx = mouse[0] - prevMouse[0];
+            var dy = mouse[1] - prevMouse[1];
+            var v = axisVecOnScreen[selectedAxis];
+	    var lengthOnAxis = v[0] * dx + v[1] * dy;
+	    var p = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				    selectedAxis, v, prevObject.center,
+				    lengthOnAxis);
+	    this.center[selectedAxis] = p[selectedAxis];
+        }
     }
 }
 

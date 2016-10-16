@@ -9,6 +9,8 @@ var RenderCanvas = function(canvasId, templateId){
     this.template = nunjucks.compile(document.getElementById(templateId).text);
     this.uniformVariables = nunjucks.compile(document.getElementById('uniformVariables').text);
     this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
+    this.intersectFunctions = nunjucks.compile(document.getElementById('intersectFunctions').text);
+    
     this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
 
     this.renderProgram = this.gl.createProgram();
@@ -302,9 +304,11 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 
 function getUniLocations(scene, renderCanvas, gl, program){
     var uniLocation = [];
-    var n = 0;
+    // Sometimes first getUniformLocation takes too much time.
+    var s = new Date().getTime();
     uniLocation.push(gl.getUniformLocation(program,
                                            'u_accTexture'));
+    console.log(new Date().getTime() - s);
     uniLocation.push(gl.getUniformLocation(program,
                                            'u_numSamples'));
     uniLocation.push(gl.getUniformLocation(program,
@@ -333,7 +337,7 @@ function getUniLocations(scene, renderCanvas, gl, program){
     return uniLocation;
 }
 
-function setUniformVariables(scene, renderCanvas, gl, uniLocation){
+function setUniformVariables(scene, renderCanvas, gl, uniLocation){ 
     var uniI = 0;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
@@ -352,7 +356,6 @@ function setUniformVariables(scene, renderCanvas, gl, uniLocation){
     gl.uniform1f(uniLocation[uniI++], renderCanvas.camera.fovDegree);
     gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
     gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
-
     uniI = scene.setUniformValues(uniLocation, gl, uniI);
 }
 
@@ -363,7 +366,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 
     var renderContext = {uniformVariables: renderCanvas.uniformVariables,
                          distKlein: renderCanvas.kleinTemplate,
-                        };
+                         intersectFunctions: renderCanvas.intersectFunctions};
     scene.setRenderContext(renderContext);
     var renderTemplate = renderCanvas.getTracerTemplate();
     var shaderStr = renderTemplate.render(renderContext);
@@ -373,9 +376,7 @@ function setupSchottkyProgram(scene, renderCanvas){
                            gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
-
     renderCanvas.initializeTextures();
-
     var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
     var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
 
@@ -413,8 +414,12 @@ function setupSchottkyProgram(scene, renderCanvas){
 }
 
 function updateShaders(scene, schottkyCanvas, orbitCanvas){
+    var s = new Date().getTime();
     schottkyCanvas.render = setupSchottkyProgram(scene, schottkyCanvas);
+    console.log('schott '+(new Date().getTime() - s));
+    var s = new Date().getTime();
     orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+    console.log('orbit '+(new Date().getTime() - s));
     schottkyCanvas.render();
     orbitCanvas.render();
 }
@@ -531,6 +536,18 @@ window.addEventListener('load', function(event){
         case 's':
             if(schottkyCanvas.selectedAxis != AXIS_RADIUS){
                 schottkyCanvas.selectedAxis = AXIS_RADIUS;
+            }
+            break;
+        case 'a':
+            if(schottkyCanvas.selectedAxis != AXIS_THETA){
+                schottkyCanvas.selectedAxis = AXIS_THETA;
+                schottkyCanvas.render();
+            }
+            break;
+        case 'q':
+            if(schottkyCanvas.selectedAxis != AXIS_PHI){
+                schottkyCanvas.selectedAxis = AXIS_PHI;
+                schottkyCanvas.render();
             }
             break;
         case 'd':

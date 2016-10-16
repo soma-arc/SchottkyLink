@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html><head>
     <title>SchottkyLink</title>
@@ -116,35 +117,7 @@
      
     </script>
 
-    <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
-     precision mediump float;
-
-     {% include uniformVariables %}
-
-     // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
-     vec2 rand2n(vec2 co, float sampleIndex) {
-	 vec2 seed = co * (sampleIndex + 1.0);
-	 seed+=vec2(-1,1);
-	 // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
-	 return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
-                     fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
-     }
-
-     const int ID_SCHOTTKY_SPHERE = 0;
-     const int ID_BASE_SPHERE = 1;
-     const int ID_TRANSFORM_BY_PLANES = 2;
-     const int ID_TRANSFORM_BY_SPHERES = 3;
-     const int ID_COMPOUND_PARABOLIC = 4;
-     const int ID_COMPOUND_LOXODROMIC = 5;
-     const int ID_INFINITE_SPHERE = 6;
-     
-     const int ID_AXIS_CYLINDER = 100;
-     
-     const float PI = 3.14159265359;
-     const float PI_2 = PI/2.;
-     const float PI_4 = 12.566368;
-     const float EPSILON = 0.001;
-
+    <script id="intersectFunctions" type="x-shadee/x-fragment">
      const int MTL_DIFFUSE = 0;
      const int MTL_TRANSPARENT = 1;
      int g_mtl = MTL_DIFFUSE;
@@ -152,16 +125,7 @@
      int g_objIndex = -1;
      int g_objComponentId = -1;
      bool g_isHit = false;
-
-     const vec3 BLACK = vec3(0);
-     const vec3 WHITE = vec3(1);
-     const vec3 RED = vec3(1, 0, 0);
-     const vec3 GREEN = vec3(0, 1, 0);
-     const vec3 BLUE = vec3(0, 0, 1);
-     const vec3 YELLOW = vec3(1, 1, 0);
-     const vec3 PINK = vec3(1, 0, 1);
-     const vec3 LIGHT_BLUE = vec3(0, 1, 1);
-
+     
      vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
 			  vec3 sphereCenter, float radius, 
 			  vec3 rayOrigin, vec3 rayDir, vec4 isect){
@@ -302,7 +266,7 @@
 			           vec3 rayOrigin, vec3 rayDir, vec4 isect) {
 	 g_isHit = false;
 	 vec3 c = center;
-         rayOrigin -= center;
+         rayOrigin.xy -= center.xy;
 	 const vec3 defaultN = vec3(0, 0, 1);
 	 vec3 n = rotation * defaultN;
 	 float d = -dot(rotation * c, n);
@@ -324,6 +288,92 @@
 	 }
 	 return isect;
      }
+
+     vec2 distRotationTorus(const vec3 rayPos, const float radius, const float pipeRadius,
+                            const int xzComponentId, const int yzComponentId){
+         vec2 q1 = vec2(length(vec2(length(rayPos.yz) - radius, rayPos.x)) - pipeRadius, yzComponentId);
+         vec2 q2 = vec2(length(vec2(length(rayPos.xz) - radius, rayPos.y)) - pipeRadius, xzComponentId);
+         return (q1.x < q2.x) ? q1 : q2;
+     }
+     
+     vec4 intersectRotationTorus (int objId, int objIndex, int xzComponentId, int yzComponentId, int mtl,
+			          vec3 center, float radius, float pipeRadius, float marchThreshold,
+			          vec3 rayOrigin, vec3 rayDir, vec4 isect){
+         vec3 origin = rayOrigin - center;
+         vec2 dist;
+         vec3 rayPos = origin;
+	 float rayLength = 0.;
+	 for(int i = 0 ; i < 300 ; i++){
+             dist = distRotationTorus(rayPos, radius, pipeRadius, xzComponentId, yzComponentId);
+	     rayLength += dist.x;
+	     rayPos = origin + rayDir * rayLength;
+	     if(dist.x < marchThreshold) break;
+	 }
+	 if(dist.x < EPSILON && rayLength < isect.x){
+	     g_objId = objId;
+	     g_objIndex = objIndex;
+	     g_objComponentId = int(dist.y);
+	     g_mtl = mtl;
+	     g_isHit = true;
+             const vec2 D = vec2(0.01, 0.);
+	     return vec4(rayLength,
+                         normalize(vec3(distRotationTorus(rayPos + D.xyy, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x -
+                                        distRotationTorus(rayPos - D.xyy, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x,
+                                        distRotationTorus(rayPos + D.yxy, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x -
+                                        distRotationTorus(rayPos - D.yxy, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x,
+                                        distRotationTorus(rayPos + D.yyx, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x -
+                                        distRotationTorus(rayPos - D.yyx, radius, pipeRadius,
+                                                          xzComponentId, yzComponentId).x)));
+	 }else{
+	     return isect;
+	 }
+     }
+    </script>
+    
+    <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
+     precision mediump float;
+
+     {% include uniformVariables %}
+
+     // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
+     vec2 rand2n(vec2 co, float sampleIndex) {
+	 vec2 seed = co * (sampleIndex + 1.0);
+	 seed+=vec2(-1,1);
+	 // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+	 return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+                     fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
+     }
+
+     const int ID_SCHOTTKY_SPHERE = 0;
+     const int ID_BASE_SPHERE = 1;
+     const int ID_TRANSFORM_BY_PLANES = 2;
+     const int ID_TRANSFORM_BY_SPHERES = 3;
+     const int ID_COMPOUND_PARABOLIC = 4;
+     const int ID_COMPOUND_LOXODROMIC = 5;
+     const int ID_INFINITE_SPHERE = 6;
+     
+     const int ID_AXIS_CYLINDER = 100;
+     
+     const float PI = 3.14159265359;
+     const float PI_2 = PI/2.;
+     const float PI_4 = 12.566368;
+     const float EPSILON = 0.001;
+
+     const vec3 BLACK = vec3(0);
+     const vec3 WHITE = vec3(1);
+     const vec3 RED = vec3(1, 0, 0);
+     const vec3 GREEN = vec3(0, 1, 0);
+     const vec3 BLUE = vec3(0, 0, 1);
+     const vec3 YELLOW = vec3(1, 1, 0);
+     const vec3 PINK = vec3(1, 0, 1);
+     const vec3 LIGHT_BLUE = vec3(0, 1, 1);
+
+     {% include intersectFunctions %}
      
      vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
 							    const vec3 lightPos, const vec3 lightPower){
@@ -389,6 +439,22 @@
                                               u_rotateInfiniteSphereMat3{{ n }},
                                               u_invRotateInfiniteSphereMat3{{ n }},
                                               eye, ray, result);
+             result = intersectRotationTorus(ID_INFINITE_SPHERE, {{ n }}, 4, 5, MTL_DIFFUSE,
+                                             u_infiniteSphere{{ n }}.xyz,
+                                             u_infiniteSphere{{ n }}.w * 0.5, 10., 0.001,
+                                             eye, ray, result);
+             if(u_selectedObjectId == ID_INFINITE_SPHERE &&
+		u_selectedObjectIndex == {{ n }}){
+		 result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+					      10., u_infiniteSphere{{ n }}.xyz,
+					      eye, ray, result);
+		 result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+					      10., u_infiniteSphere{{ n }}.xyz,
+					      eye, ray, result);
+		 result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+					      10., u_infiniteSphere{{ n }}.xyz,
+					      eye, ray, result);
+	     }
              {% endfor %}
 
 	     {% for n in range(0,  numTransformByPlanes ) %}
@@ -599,13 +665,19 @@
 		     matColor = (g_objId == u_selectedObjectId &&
 				 g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
 		 }else if(g_objId == ID_INFINITE_SPHERE){
+                     matColor = (g_objComponentId == 0) ? BLUE : WHITE;
                      matColor = (g_objId == u_selectedObjectId &&
-				 g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
+				 g_objIndex == u_selectedObjectIndex &&
+                                 g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     matColor = (g_objId == u_selectedObjectId &&
+				 g_objIndex == u_selectedObjectIndex &&
+                                 g_objComponentId == u_selectedAxis) ? RED : matColor;
                  }else if(g_objId == ID_AXIS_CYLINDER){
 		     matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
 		 }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		     matColor = (g_objId == u_selectedObjectId &&
-				 g_objIndex == u_selectedObjectIndex)?
+				 g_objIndex == u_selectedObjectIndex &&
+                                 g_objComponentId == u_selectedComponentId)?
 				RED : BLUE;
 		 }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
 		     matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
@@ -676,7 +748,7 @@
   	 return normalize(origin + (focalXAxis * coord.x) + (focalYAxis * (height - coord.y)));
      }
 
-     const float SAMPLE_NUM = 10.;
+     const float SAMPLE_NUM = 5.;
      void main(){	 
 	 vec3 sum = vec3(0);
 	 for(float i = 0. ; i < SAMPLE_NUM ; i++){
@@ -926,12 +998,6 @@
      precision mediump float;
 
      {% include uniformVariables %}
-     
-     int g_mtl = -1;
-     int g_objId = -1;
-     int g_objIndex = -1;
-     int g_objComponentId = -1;
-     bool g_isHit = false;
 
      const int ID_SCHOTTKY_SPHERE = 0;
      const int ID_BASE_SPHERE = 1;
@@ -945,9 +1011,6 @@
      const int ID_KLEIN_ORBIT = 101;
 
      const float EPSILON = 0.01;
-
-     const int MTL_DIFFUSE = 0;
-     const int MTL_TRANSPARENT = 1;
      
      // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
      vec2 rand2n(vec2 co, int sampleIndex) {
@@ -958,89 +1021,7 @@
                      fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
      }
 
-     vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
-			  vec3 sphereCenter, float radius, 
-			  vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	 g_isHit = false;
-	 vec3 v = rayOrigin - sphereCenter;
-	 float b = dot(rayDir, v);
-	 float c = dot(v, v) - radius * radius;
-	 float d = b * b - c;
-	 if(d >= 0.){
-             float s = sqrt(d);
-             float t = -b - s;
-             if(t <= EPSILON) t = -b + s;
-             if(EPSILON < t && t < isect.x){
-		 vec3 p = (rayOrigin + t * rayDir);
-		 g_objId = objId;
-		 g_objIndex = objIndex;
-		 g_objComponentId = objComponentId;
-		 g_mtl = mtl;
-		 g_isHit = true;
-		 return vec4(t, normalize(p - sphereCenter));
-             }
-	 }
-	 return isect;
-     }
-
-     // default plane is aligned the z-axis
-     vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
-			 vec3 center, float size, mat3 rotation, mat3 invRotation,
-			 vec3 rayOrigin, vec3 rayDir, vec4 isect) {
-	 g_isHit = false;
-	 vec3 c = center;
-	 const vec3 defaultN = vec3(0, 0, 1);
-	 vec3 n = rotation * defaultN;
-	 float d = -dot(rotation * c, n);
-	 float v = dot(n, rayDir);
-	 float t = -(dot(n, rayOrigin) + d) / v;
-	 if(EPSILON < t && t < isect.x){
-	     float hSize = size * 0.5;
-    	     vec3 p = rayOrigin + t * rayDir;
-	     p = invRotation * p;
-             if(-hSize < p.x && p.x < hSize &&
-		-hSize < p.y && p.y < hSize ){
-		 g_objId = objId;
-		 g_objIndex = objIndex;
-		 g_objComponentId = objComponentId;
-		 g_mtl = mtl;
-		 g_isHit = true;
-        	 return vec4(t, n);
-             }
-	 }
-	 return isect;
-     }
-
-     // Represent a sphere which have infinite radius
-     // default plane is aligned the z-axis
-     // Rotation center is plane's center
-     vec4 intersectInfiniteSphere (int objId, int objIndex, int objComponentId, int mtl,
-			           vec3 center, float size, mat3 rotation, mat3 invRotation,
-			           vec3 rayOrigin, vec3 rayDir, vec4 isect) {
-	 g_isHit = false;
-	 vec3 c = center;
-         rayOrigin -= center;
-	 const vec3 defaultN = vec3(0, 0, 1);
-	 vec3 n = rotation * defaultN;
-	 float d = -dot(rotation * c, n);
-	 float v = dot(n, rayDir);
-	 float t = -(dot(n, rayOrigin) + d) / v;
-	 if(EPSILON < t && t < isect.x){
-	     float hSize = size * 0.5;
-    	     vec3 p = rayOrigin + t * rayDir;
-	     p = invRotation * p;
-             if(-hSize < p.x && p.x < hSize &&
-		-hSize < p.y && p.y < hSize ){
-		 g_objId = objId;
-		 g_objIndex = objIndex;
-		 g_objComponentId = objComponentId;
-		 g_mtl = mtl;
-		 g_isHit = true;
-        	 return vec4(t, n);
-             }
-	 }
-	 return isect;
-     }
+     {% include intersectFunctions %}
      
      vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
 	 return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
