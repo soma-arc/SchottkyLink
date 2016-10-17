@@ -117,6 +117,12 @@ Sphere.prototype = {
     }
 }
 
+Sphere.createFromJson = function(obj){
+    var p = obj['position'];
+    return new Sphere(p[0], p[1], p[2], obj['radius']);
+}
+    
+
 // A sphere which have infinite radius.
 // It is expressed by plane.
 var InfiniteSphere = function(center, theta, phi){
@@ -210,6 +216,10 @@ InfiniteSphere.prototype = {
     }
 }
 
+InfiniteSphere.createFromJson = function(obj){
+    return new InfiniteSphere(obj['center'], obj['thetaDegree', obj['phiDegree']]);
+}
+
 const TRANSFORM_BY_PLANES1 = 0;
 const TRANSFORM_BY_PLANES2 = 1;
 // Initially planes are aligned along the z-axis
@@ -232,21 +242,28 @@ var TransformByPlanes = function(distToP1, distToP2, theta, phi, twist){
     this.size = 1200;
 }
 
+TransformByPlanes.createFromJson = function(obj){
+    return new TransformByPlanes(obj['distToP1'],
+				 obj['distToP2'],
+				 obj['thetaDegree'],
+				 obj['phiDegree'],
+				 obj['twistDegree']);
+}
+
 TransformByPlanes.prototype = {
     clone: function(){
 	return new TransformByPlanes(this.distToP1,
-                                           this.distToP2,
-                                           this.theta,
-                                           this.phi,
-                                           this.twist);
+                                     this.distToP2,
+                                     this.theta,
+                                     this.phi,
+                                     this.twist);
     },
     exportJson: function(){
         return {"distToP1": this.distToP1,
                 "distToP2": this.distToP2,
-                "theta": this.theta,
-                "phi": this.phi,
-                "size": this.size,
-                "twist": this.twist,};
+                "thetaDegree": this.theta,
+                "phiDegree": this.phi,
+                "twistDegree": this.twist,};
     },
     getUniformArray: function(){
 	return [this.distToP1, this.distToP2, this.size,
@@ -346,6 +363,12 @@ var CompoundParabolic = function(innerSphere, outerSphere, thetaDegree){
     this.rotationMat3;
     this.invRotationMat3;
     this.update();
+}
+
+CompoundParabolic.createFromJson = function(obj){
+    return new CompoundParabolic(Sphere.createFromJson(obj['innerSphere']),
+				 Sphere.createFromJson(obj['outerSphere']),
+				 obj['thetaDegree']);
 }
 
 CompoundParabolic.prototype = {
@@ -474,6 +497,12 @@ var TransformBySpheres = function(innerSphere, outerSphere){
     this.update();
 }
 
+TransformBySpheres.createFromJson = function(obj){
+     return new TransformBySpheres(Sphere.createFromJson(obj['innerSphere']),
+				   Sphere.createFromJson(obj['outerSphere'])
+				   );
+}
+
 TransformBySpheres.prototype = {
     getUniformArray: function(){
 	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
@@ -593,6 +622,14 @@ const COMPOUND_LOXODROMIC_S4 = 4;
 const COMPOUND_LOXODROMIC_POINT = 5;
 const COMPOUND_LOXODROMIC_Q1 = 6;
 const COMPOUND_LOXODROMIC_Q2 = 7;
+
+CompoundLoxodromic.createFromJson = function(obj){
+    return new CompoundLoxodromic(Sphere.createFromJson(obj['innerSphere']),
+				  Sphere.createFromJson(obj['outerSphere']),
+				  obj['point'],
+				  obj['q1'],
+				  obj['q2']);
+}
 
 CompoundLoxodromic.prototype = {
     update: function(){
@@ -826,7 +863,6 @@ Scene.prototype = {
         for(objectName in GENERATORS_NAME_ID_MAP){
             this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
                 (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
-
         }
     },
     setRenderContext: function(context){
