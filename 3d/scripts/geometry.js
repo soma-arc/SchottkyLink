@@ -210,12 +210,12 @@ InfiniteSphere.prototype = {
     }
 }
 
-const PARABOLIC_TRANSFORM_PLANE1 = 0;
-const PARABOLOC_TRANSFORM_PLANE2 = 1;
+const TRANSFORM_BY_PLANES1 = 0;
+const TRANSFORM_BY_PLANES2 = 1;
 // Initially planes are aligned along the z-axis
 // Rotation is defined by theta and phi
 // center is (0, 0, 0)
-var ParabolicTransformation = function(distToP1, distToP2, theta, phi, twist){
+var TransformByPlanes = function(distToP1, distToP2, theta, phi, twist){
     this.distToP1 = distToP1;
     this.distToP2 = distToP2;
     this.theta = theta; // Degree
@@ -232,9 +232,9 @@ var ParabolicTransformation = function(distToP1, distToP2, theta, phi, twist){
     this.size = 1200;
 }
 
-ParabolicTransformation.prototype = {
+TransformByPlanes.prototype = {
     clone: function(){
-	return new ParabolicTransformation(this.distToP1,
+	return new TransformByPlanes(this.distToP1,
                                            this.distToP2,
                                            this.theta,
                                            this.phi,
@@ -291,7 +291,7 @@ ParabolicTransformation.prototype = {
 	this.invTwistMat3 = getRotationZAxis(radians(-this.twist));
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectRect(objectId, index, PARABOLIC_TRANSFORM_PLANE1,
+        isect = intersectRect(objectId, index, TRANSFORM_BY_PLANES1,
 			      [0, 0, this.distToP1],
 			      this.size,
 			      this.invRotationMat3,
@@ -317,7 +317,7 @@ ParabolicTransformation.prototype = {
             var dy = mouse[1] - prevMouse[1];
             var v = axisVecOnScreen[selectedAxis];
 	    var lengthOnAxis = v[0] * dx + v[1] * dy;
-            if(componentId == PARABOLIC_TRANSFORM_PLANE1){
+            if(componentId == TRANSFORM_BY_PLANES1){
                 var p = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
 				        selectedAxis, v, [0, 0, prevObject.distToP1],
 				        lengthOnAxis);

@@ -1,4 +1,3 @@
-
 const RAY_TRACER = 0;
 const PATH_TRACER = 1;
 
@@ -210,7 +209,7 @@ const PRESET_PARAMS = [
                          new Sphere(0, 0, -424.26, 300)],
         BaseSpheres:[new Sphere(0, 0, 0, 125)],
         TransformBySpheres: [],
-        TransformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
+        TransformByPlanes:[new TransformByPlanes(-300, 300, 0, 0, 0)],
     },
     {
         SchottkySpheres:[new Sphere(300, 300, 0, 300),
@@ -227,7 +226,7 @@ const PRESET_PARAMS = [
         BaseSpheres:[new Sphere(0, 0, 0, 125)],
         TransformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
                                                    new Sphere(0, 0, 900, 600))],
-        TransformByPlanes:[new ParabolicTransformation(-300, 300, 0, 0, 0)],
+        TransformByPlanes:[new TransformByPlanes(-300, 300, 0, 0, 0)],
     }
     
 ];
