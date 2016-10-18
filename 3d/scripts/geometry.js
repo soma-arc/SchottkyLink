@@ -217,7 +217,7 @@ InfiniteSphere.prototype = {
 }
 
 InfiniteSphere.createFromJson = function(obj){
-    return new InfiniteSphere(obj['center'], obj['thetaDegree', obj['phiDegree']]);
+    return new InfiniteSphere(obj['center'].slice(0), obj['thetaDegree'], obj['phiDegree']);
 }
 
 const TRANSFORM_BY_PLANES1 = 0;
@@ -626,9 +626,9 @@ const COMPOUND_LOXODROMIC_Q2 = 7;
 CompoundLoxodromic.createFromJson = function(obj){
     return new CompoundLoxodromic(Sphere.createFromJson(obj['innerSphere']),
 				  Sphere.createFromJson(obj['outerSphere']),
-				  obj['point'],
-				  obj['q1'],
-				  obj['q2']);
+				  obj['point'].slice(0),
+				  obj['q1'].slice(0),
+				  obj['q2'].slice(0));
 }
 
 CompoundLoxodromic.prototype = {
@@ -840,6 +840,17 @@ const GENERATORS_NAME_ID_MAP = {
     "InfiniteSpheres": ID_INFINITE_SPHERE
 }
 
+const GENERATORS_NAME_CLASS_MAP = {
+    "SchottkySpheres": Sphere,
+    "BaseSpheres": Sphere,
+    "TransformByPlanes": TransformByPlanes,
+    "TransformBySpheres": TransformBySpheres,
+    "CompoundParabolic": CompoundParabolic,
+    "CompoundLoxodromic": CompoundLoxodromic,
+    "InfiniteSpheres": InfiniteSphere
+}
+    
+
 const GENERATORS_ID_NAME_MAP = {};
 GENERATORS_ID_NAME_MAP[ID_SCHOTTKY_SPHERE] = "SchottkySpheres";
 GENERATORS_ID_NAME_MAP[ID_BASE_SPHERE] = "BaseSpheres";
@@ -863,6 +874,19 @@ Scene.prototype = {
         for(objectName in GENERATORS_NAME_ID_MAP){
             this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
                 (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
+        }
+    },
+    loadParameterFromJson: function(param){
+        this.objects = {};
+        var generators = param['generators'];
+        for(generatorName in GENERATORS_NAME_ID_MAP){
+            this.objects[GENERATORS_NAME_ID_MAP[generatorName]] = [];
+            var objects = generators[generatorName];
+            if(objects == undefined) continue;
+            for(var i = 0 ; i < objects.length ; i++){
+                var obj = GENERATORS_NAME_CLASS_MAP[generatorName].createFromJson(generators[generatorName][i]);
+                this.objects[GENERATORS_NAME_ID_MAP[generatorName]].push(obj);
+            }
         }
     },
     setRenderContext: function(context){

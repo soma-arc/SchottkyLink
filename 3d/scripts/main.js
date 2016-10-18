@@ -129,108 +129,6 @@ RenderCanvas.prototype = {
     }
 };
 
-const PRESET_PARAMS = [
-    {
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300)],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        CompoundParabolic:[new CompoundParabolic(new Sphere(0, 0, 1000, 500),
-                                                 new Sphere(0, 0, 900, 600),
-                                                 0)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300)],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        CompoundLoxodromic:[new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
-                                                   new Sphere(100, 100, 900, 700),
-                                                   [0, 1000, 100],
-                                                   [100, -1000, 100],
-                                                   [1000, 0, 90])]
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                        ],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        InfiniteSpheres:[new InfiniteSphere([0, 0, 150], 0, 0)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                        ],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300)],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(300 + 300. * Math.sqrt(3), 0, 0, 300),
-                         new Sphere(-300 - 300 * Math.sqrt(3), 0, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300),
-                        ],
-        BaseSpheres:[new Sphere(0, 0, 0, 125),
-                     new Sphere(300 + 100 * Math.sqrt(3), 0, 0, 50),
-                     new Sphere(-300 -100 * Math.sqrt(3), 0, 0, 50)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300)],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        TransformBySpheres: [],
-        TransformByPlanes:[new TransformByPlanes(-300, 300, 0, 0, 0)],
-    },
-    {
-        SchottkySpheres:[new Sphere(300, 300, 0, 300),
-                         new Sphere(300, -300, 0, 300),
-                         new Sphere(-300, 300, 0, 300),
-                         new Sphere(-300, -300, 0, 300),
-                         new Sphere(0, 0, 424.26, 300),
-                         new Sphere(0, 0, -424.26, 300)],
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        TransformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
-                                                   new Sphere(0, 0, 900, 600))],
-    },
-    {
-        BaseSpheres:[new Sphere(0, 0, 0, 125)],
-        TransformBySpheres:[new TransformBySpheres(new Sphere(0, 0, 1000, 500),
-                                                   new Sphere(0, 0, 900, 600))],
-        TransformByPlanes:[new TransformByPlanes(-300, 300, 0, 0, 0)],
-    }
-    
-];
-
 function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
     var prevTheta, prevPhi;
@@ -425,7 +323,8 @@ function updateShaders(scene, schottkyCanvas, orbitCanvas){
 
 window.addEventListener('load', function(event){
     var scene = new Scene();
-    scene.loadParameter(PRESET_PARAMS[0]);
+    //    scene.loadParameter(PRESET_PARAMS[0]);
+    scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
     var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
     var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
 
@@ -664,10 +563,10 @@ window.addEventListener('load', function(event){
         case '8':
         case '9':
             var i = parseInt(event.key);
-            var param = PRESET_PARAMS[i];
+            var param = PRESET_PARAMETERS[i];
             if(param != undefined){
                 schottkyCanvas.releaseObject();
-                scene.loadParameter(param);
+                scene.loadParameterFromJson(param);
                 updateShaders(scene, schottkyCanvas, orbitCanvas);
             }
             break;
