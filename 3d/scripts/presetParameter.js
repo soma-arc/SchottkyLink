@@ -418,7 +418,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "TransformBySpheres",
+        "name": "TransformBySpheresParabolic",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -485,18 +485,18 @@ const PRESET_PARAMETERS = [
                     "innerSphere": {
                         "position": [
                             0,
-                            0,
-                            1000
+                            665.0462361544822,
+                            633.2648594288207
                         ],
                         "radius": 500
                     },
                     "outerSphere": {
                         "position": [
                             0,
-                            0,
-                            900
+                            665.0462361544822,
+                            472.1829455752595
                         ],
-                        "radius": 600
+                        "radius": 661.0819138535611
                     }
                 }
             ]
