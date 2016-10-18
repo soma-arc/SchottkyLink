@@ -1,0 +1,79 @@
+@charset "utf-8";
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: "Times New Roman";
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.header {
+    overflow:hidden;
+    font-size: 2rem;
+    padding-left: 0.9rem;
+    height: 50px;
+    background-color: silver;
+    display: flex;
+    align-items: center;
+}
+
+.modeSelect {
+    display: flex;
+    align-items: center;
+    justify-content:space-around;
+    list-style: none;
+    height:100%;
+}
+
+.myBtn {
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.myBtn:hover{
+    background-color: gray;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+}
+
+.renderPanel {
+    flex-grow: 1;
+    display: flex;
+}
+
+.propertyPanel {
+    background-color: blue;
+    flex-basis: 300px;
+    
+}
+
+.panel1 {
+    background-color: red;
+    flex: 1;
+}
+
+.panel2 {
+    background-color: green;
+    flex: 1;
+}
+
+.footer {
+    height: 50px;
+    background-color: silver;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 0.9rem;
+}
