@@ -56,8 +56,7 @@ const PRESET_PARAMS = [
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
-    this.defaultWidth = canvas.width;
-    this.defaultHeight = canvas.height;
+    this.parentPanel = document.getElementById("panel1");
     this.center = [0, 0];
     this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
 
@@ -81,31 +80,33 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.translate = [0, 0];
 
     this.isFullScreen = false;
+
+    this.usingPixelRatio = 1;
     
 }
 
 RenderCanvas2D.prototype = {
-    resizeCanvas: function(width, height){
-	this.canvas.style.width = width + 'px';
-	this.canvas.style.height = height + 'px';
-	this.canvas.width = width * window.devicePixelRatio;
-	this.canvas.height = height * window.devicePixelRatio;
+    resizeCanvas: function(){
+        this.usingPixelRatio = window.devicePixelRatio;
+
+	this.canvas.width = this.parentPanel.clientWidth * this.usingPixelRatio;
+	this.canvas.height = this.parentPanel.clientHeight * this.usingPixelRatio;
+        
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     resizeCanvasFullscreen: function(){
-	this.canvas.style.width = window.innerWidth + 'px';
-	this.canvas.style.height = window.innerHeight + 'px';
-	this.canvas.width = window.innerWidth * window.devicePixelRatio;
-	this.canvas.height = window.innerHeight * window.devicePixelRatio;
+        this.usingPixelRatio = window.devicePixelRatio;
+	this.canvas.width = window.innerWidth * this.usingPixelRatio;
+	this.canvas.height = window.innerHeight * this.usingPixelRatio;
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     calcPixel: function(){
 	var rect = event.target.getBoundingClientRect();
-	return [this.scale * (((event.clientX - rect.left) * devicePixelRatio) / this.canvas.height - this.canvasRatio) +
+	return [this.scale * (((event.clientX - rect.left) * this.usingPixelRatio) / this.canvas.height - this.canvasRatio) +
 		this.translate[0],
-		this.scale * -(((event.clientY - rect.top) * devicePixelRatio) / this.canvas.height - 0.5) +
+		this.scale * -(((event.clientY - rect.top) * this.usingPixelRatio) / this.canvas.height - 0.5) +
 		this.translate[1]];
     },
     requestFullScreen: function(){
@@ -354,10 +355,8 @@ window.addEventListener('load', function(event){
     
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
-    
     addMouseListeners(scene, renderCanvas);
-    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
-			      renderCanvas.defaultHeight);
+    renderCanvas.resizeCanvas();
 
     updateShaders(scene, renderCanvas);
 
@@ -365,8 +364,7 @@ window.addEventListener('load', function(event){
     	if(renderCanvas.isFullScreen){
     	    renderCanvas.resizeCanvasFullscreen();
     	}else{
-    	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
-				      renderCanvas.defaultHeight);
+    	    renderCanvas.resizeCanvas();
     	}
     	renderCanvas.render(0);
     }, false);
@@ -376,8 +374,7 @@ window.addEventListener('load', function(event){
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
-				      renderCanvas.defaultHeight);
+	    renderCanvas.resizeCanvas();
 	    renderCanvas.render(0);
 	}
     });
@@ -387,8 +384,7 @@ window.addEventListener('load', function(event){
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
-				      renderCanvas.defaultHeight);
+	    renderCanvas.resizeCanvas();
 	    renderCanvas.render(0);
 	}
     });
@@ -398,8 +394,7 @@ window.addEventListener('load', function(event){
 	    renderCanvas.isFullScreen = true;
 	}else{
 	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas(renderCanvas.defaultWidth,
-				      renderCanvas.defaultHeight);
+	    renderCanvas.resizeCanvas();
 	    renderCanvas.render(0);
 	}
     });
