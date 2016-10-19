@@ -14,6 +14,9 @@ body {
 
 
 .header {
+    border-style: ridge;
+    border-color: gray;
+    
     overflow:hidden;
     font-size: 2rem;
     padding-left: 0.9rem;
@@ -63,22 +66,36 @@ body {
 }
 
 .propertyPanel {
-    background-color: gray;
+    border-style: ridge;
+    border-color: gray;
+    background-color: silver;
     flex-basis: 300px;
     
 }
 
 #panel1 {
-    background-color: red;
+    border-style: ridge;
+    border-color: gray;
+    background-color: gray;
     flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #panel2 {
-    background-color: green;
+    border-style: ridge;
+    border-color: gray;
+    background-color: gray;
     flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .footer {
+    border-style: ridge;
+    border-color: gray;
     height: 50px;
     background-color: silver;
     display: flex;
