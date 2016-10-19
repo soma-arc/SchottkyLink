@@ -21,7 +21,7 @@ body {
     font-size: 2rem;
     padding-left: 0.9rem;
     height: 50px;
-    background-color: silver;
+    background-color: Gainsboro;
     display: flex;
     align-items: center;
     user-select: none;
@@ -68,7 +68,7 @@ body {
 .propertyPanel {
     border-style: ridge;
     border-color: gray;
-    background-color: silver;
+    background-color: Gainsboro;
     flex-basis: 300px;
     
 }
@@ -97,7 +97,7 @@ body {
     border-style: ridge;
     border-color: gray;
     height: 50px;
-    background-color: silver;
+    background-color: Gainsboro;
     display: flex;
     justify-content: flex-end;
     align-items: center;
