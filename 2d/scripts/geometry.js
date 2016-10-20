@@ -473,8 +473,8 @@ Scene.prototype = {
     },
     getMinRadiusToOtherCircles: function(c){
         var minRad = Number.MAX_VALUE;
-        for(var i = 0 ; i < this.circles.length ; i++){
-            var oc = this.circles[i];
+        for(var i = 0 ; i < this.objects[ID_CIRCLE].length ; i++){
+            var oc = this.objects[ID_CIRCLE][i];
             if(c == oc) continue;
             var nr = vec2Len(vec2Diff(c.getPosition(), oc.getPosition())) - oc.r;
             if(nr < minRad){
