@@ -356,26 +356,17 @@
 
          const vec3 BLACK = vec3(0);
          const vec3 WHITE = vec3(1);
+         const vec3 LIGHT_GRAY = vec3(0.78);
          const vec3 RED = vec3(1, 0, 0);
-         const vec3 GREEN = vec3(0, 1, 0);
+         const vec3 GREEN = vec3(0, .78, 0);
          const vec3 BLUE = vec3(0, 0, 1);
          const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(1, 0, 1);
+         const vec3 PINK = vec3(.78, 0, .78);
          const vec3 LIGHT_BLUE = vec3(0, 1, 1);
 
          {% include intersectFunctions %}
          
-         vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
-							        const vec3 lightPos, const vec3 lightPower){
-  	     vec3 v = lightPos - p;
-  	     float d = dot(n, normalize(v));
-  	     float r = length(v);
-  	     return (d > 0.) ?
-    		    (lightPower * (abs(d) / (PI_4 * r * r))) * diffuseColor : BLACK;
-         }
-
-         const vec3 lightPos = vec3(900, 450, 0);
-         const vec3 lightPower = vec3(1000000.);
+         const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
          const vec3 ambientFactor = vec3(0.1);
          const int MAX_TRACE_DEPTH = 7;
          float transparency = 0.8;
@@ -652,16 +643,16 @@
 	         {% endfor %}
 	         
   	         if(result.x != 99999.){
-		     vec3 matColor = WHITE;
+		     vec3 matColor = LIGHT_GRAY;
 		     if( g_objId == ID_SCHOTTKY_SPHERE){
 		         g_mtl = MTL_TRANSPARENT;
 		         matColor = (g_objIndex == u_selectedObjectIndex &&
-				     g_objId == u_selectedObjectId) ? RED : WHITE;
+				     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
 		     }else if(g_objId == ID_BASE_SPHERE){
 		         matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
 		     }else if(g_objId == ID_INFINITE_SPHERE){
-                         matColor = (g_objComponentId == 0) ? BLUE : WHITE;
+                         matColor = (g_objComponentId == 0) ? BLUE : LIGHT_GRAY;
                          matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
@@ -669,7 +660,7 @@
 				     g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedAxis) ? RED : matColor;
                      }else if(g_objId == ID_AXIS_CYLINDER){
-		         matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
+		         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
 		     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		         matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex &&
@@ -693,8 +684,8 @@
 		         matColor = (g_objComponentId == 3) ? PINK : matColor;
 		         matColor = (g_objComponentId == 4) ? GREEN : matColor;
 		         matColor = (g_objComponentId == 5) ? BLUE : matColor;
-		         matColor = (g_objComponentId == 6) ? WHITE : matColor;
-		         matColor = (g_objComponentId == 7) ? WHITE : matColor;
+		         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
+		         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
                          matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex &&
 				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
@@ -702,7 +693,8 @@
 		     
     		     vec3 intersection = eye + ray * result.x;
 		     vec3 normal = result.yzw;
-		     vec3 diffuse = diffuseLighting(intersection, normal, matColor, lightPos, lightPower);
+                     // diffuse lighting by directionalLight
+  	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
 		     vec3 ambient = matColor * ambientFactor;
 		     if(g_mtl == MTL_TRANSPARENT){
 		         coeff *= transparency;
@@ -1057,22 +1049,8 @@
          }
 
          const float PI_4 = 12.566368;
-         const vec3 LIGHTING_FACT = vec3(0.);
          const vec3 BLACK = vec3(0);
-         vec3 diffuseLighting(const vec3 p, const vec3 n, const vec3 diffuseColor,
-			                                        const vec3 lightPos, const vec3 lightPower){
-	     vec3 v = lightPos - p;
-	     float dot = dot(n, normalize(v));
-	     float r = length(v);
-	     return (dot > 0.) ?
-		    (lightPower * (dot / (PI_4 * r * r))) * diffuseColor
-	          : BLACK;
-         }
-
-         const vec3 lightPos = vec3(400, 400, 400);
-         const vec3 lightPos2 = vec3(400., -400., -400);
-         const vec3 lightPower = vec3(2000000.);
-
+         const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
          const int MAX_MARCHING_LOOP = 800;
          vec4 march(int objId, int objIndex, int objComponentId, int mtl,
 		    const vec3 origin, const  vec3 ray,
@@ -1101,11 +1079,12 @@
          const int MAX_TRACE_DEPTH = 5;
          vec3 ambientFactor = vec3(0.1);
          const vec3 WHITE = vec3(1);
+         const vec3 LIGHT_GRAY = vec3(0.78);
          const vec3 RED = vec3(1, 0, 0);
-         const vec3 GREEN = vec3(0, 1, 0);
+         const vec3 GREEN = vec3(0, .78, 0);
          const vec3 BLUE = vec3(0, 0, 1);
          const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(1, 0, 1);
+         const vec3 PINK = vec3(.78, 0, .78);
          const vec3 LIGHT_BLUE = vec3(0, 1, 1);
          float transparency = 0.8;
          vec3 calcColor(vec3 eye, vec3 ray){
@@ -1229,11 +1208,11 @@
 		     vec3 normal = result.yzw;
 		     vec3 intersection = eye + ray * result.x;
 
-		     vec3 matColor = WHITE;
+		     vec3 matColor = LIGHT_GRAY;
 		     if( g_objId == ID_SCHOTTKY_SPHERE){
 		         g_mtl = MTL_TRANSPARENT;
 		         matColor = (g_objIndex == u_selectedObjectIndex &&
-				     g_objId == u_selectedObjectId) ? RED : WHITE;
+				     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
 		     }else if(g_objId == ID_BASE_SPHERE){
 		         matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
@@ -1241,7 +1220,7 @@
                          matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
                      }else if(g_objId == ID_AXIS_CYLINDER){
-		         matColor = (g_objComponentId == u_selectedAxis) ? RED : WHITE;
+		         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
 		     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
 		         matColor = (g_objId == u_selectedObjectId &&
 				     g_objIndex == u_selectedObjectIndex)?
@@ -1264,15 +1243,15 @@
 		         matColor = (g_objComponentId == 3) ? PINK : matColor;
 		         matColor = (g_objComponentId == 4) ? GREEN : matColor;
 		         matColor = (g_objComponentId == 5) ? BLUE : matColor;
-		         matColor = (g_objComponentId == 6) ? WHITE : matColor;
-		         matColor = (g_objComponentId == 7) ? WHITE : matColor;
+		         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
+		         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
 		     }else if(g_objId == ID_KLEIN_ORBIT){
 		         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
 		         normal = getNormal(intersection);
 		     }
 
-		     vec3 diffuse = diffuseLighting(intersection, normal, matColor,
-						    lightPos, lightPower);
+                     // diffuse lighting by directionalLight
+  	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
 		     vec3 ambient = matColor * ambientFactor;
 		     if(g_mtl == MTL_TRANSPARENT){
 		         coeff *= transparency;
@@ -1437,12 +1416,13 @@
          }
 
          const int MAX_TRACE_DEPTH = 3;
-         const vec3 WHITE = vec3(1);
+         const vec3 WHITE = vec3(1.);
+         const vec3 LIGHT_GRAY = vec3(0.78);
          const vec3 RED = vec3(1, 0, 0);
          const vec3 GREEN = vec3(0, 1, 0);
-         const vec3 BLUE = vec3(0, 0, 1);
+         const vec3 BLUE = vec3(0, 0, .78);
          const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(1, 0, 1);
+         const vec3 PINK = vec3(.78, 0, .78);
          const vec3 LIGHT_BLUE = vec3(0, 1, 1);
          
          vec3 skyColor(vec3 dir){
