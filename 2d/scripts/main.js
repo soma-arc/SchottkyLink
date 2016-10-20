@@ -169,6 +169,12 @@ function addMouseListeners(scene, renderCanvas){
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#prop',
+        
+    });
+    
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
     var numCircles = scene.objects[ID_CIRCLE].length;

@@ -3,8 +3,12 @@
     <head>
         <title>SchottkyLink</title>
         <meta charset="UTF-8" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="../lib/keen-ui.min.css">
         <link rel="stylesheet" href="../css/style.css">
         <link rel="shortcut icon" href="../img/favicon.ico">
+        <script type="text/javascript" src="../lib/vue.min.js"></script>
+        <script type="text/javascript" src="../lib/keen-ui.min.js"></script>
         <script type="text/javascript" src="../lib/nunjucks.min.js"></script>
         <script type="text/javascript" src="scripts/raytrace.js"></script>
         <script type="text/javascript" src="scripts/util.js"></script>
@@ -1494,7 +1498,13 @@
                     <canvas id="orbitCanvas" width="512" height="512"></canvas>
                 </div>
             </div>
-            <div class="propertyPanel">
+            <div class="propertyPanel" id="prop">
+                <ui-tabs fullwidth>
+                    <ui-tab header="Generator" id="tab-1">
+                    </ui-tab>
+                    <ui-tab header="Scene" id="tab-2">
+                    </ui-tab>
+                </ui-tabs>
             </div>
         </div>
         <footer class="footer">

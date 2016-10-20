@@ -257,6 +257,11 @@ function setUniformVariables(scene, renderCanvas, gl, uniLocation){
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#prop',
+    });
+    
     renderCanvas.numSamples = 0;
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
