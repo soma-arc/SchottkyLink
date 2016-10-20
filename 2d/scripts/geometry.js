@@ -71,6 +71,11 @@ Circle.prototype = {
     }
 }
 
+Circle.createFromJson = function(obj){
+    var p = obj['position'];
+    return new Circle(p[0], p[1], obj['radius']);
+}
+
 const INFINITE_CIRCLE_CONTROL_POINT = 0;
 const INFINITE_CIRCLE_BODY = 1;
 const INFINITE_CIRCLE_ROTATION = 2;
@@ -87,6 +92,12 @@ var InfiniteCircle = function(x, y, thetaDegree){
     this.controlPointRadius = 10;
     this.rotationControlCircleRadius = 50.;
     this.rotationControlCircleThickness = 2;
+}
+
+InfiniteCircle.createFromJson = function(obj){
+    return new InfiniteCircle(obj['position'][0],
+                              obj['position'][1],
+                              obj['rotation']);
 }
 
 InfiniteCircle.prototype = {
@@ -162,6 +173,11 @@ var TransformByCircles = function(innerCircle, outerCircle){
     this.inner = innerCircle;
     this.outer = outerCircle;
     this.inverted = circleInvert(this.inner, this.outer);
+}
+
+TransformByCircles.createFromJson = function(obj){
+    return new TransformByCircles(Circle.createFromJson(obj['innerCircle']),
+                                  Circle.createFromJson(obj['outerCircle']));
 }
 
 TransformByCircles.prototype = {
@@ -259,6 +275,12 @@ var TwistedLoxodromic = function(innerCircle, outerCircle, p){
     this.lineThickness = 10;
 
     this.update();
+}
+
+TwistedLoxodromic.createFromJson = function(obj){
+    return new TwistedLoxodromic(Circle.createFromJson(obj['innerCircle']),
+                                 Circle.createFromJson(obj['outerCircle']),
+                                 obj['point'].slice(0));
 }
 
 TwistedLoxodromic.prototype = {
@@ -369,24 +391,31 @@ TwistedLoxodromic.prototype = {
 }
 
 const GENERATORS_NAME_ID_MAP = {
-    "circles": ID_CIRCLE,
-    "infiniteCircles": ID_INFINITE_CIRCLE,
-    "transformByCircles": ID_TRANSFORM_BY_CIRCLES,
-    "twistedLoxodromic": ID_TWISTED_LOXODROMIC,
+    "Circles": ID_CIRCLE,
+    "InfiniteCircles": ID_INFINITE_CIRCLE,
+    "TransformByCircles": ID_TRANSFORM_BY_CIRCLES,
+    "TwistedLoxodromic": ID_TWISTED_LOXODROMIC,
 }
 
 const GENERATORS_ID_NAME_MAP = {};
-GENERATORS_ID_NAME_MAP[ID_CIRCLE] = "circles";
-GENERATORS_ID_NAME_MAP[ID_INFINITE_CIRCLE] = "infiniteCircles";
-GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "transformByCircles";
-GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "twistedLoxodromic";
+GENERATORS_ID_NAME_MAP[ID_CIRCLE] = "Circles";
+GENERATORS_ID_NAME_MAP[ID_INFINITE_CIRCLE] = "InfiniteCircles";
+GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "TransformByCircles";
+GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "TwistedLoxodromic";
+
+const GENERATORS_NAME_CLASS_MAP = {
+    "Circles": Circle,
+    "InfiniteCircles": InfiniteCircle,
+    "TransformByCircles": TransformByCircles,
+    "TwistedLoxodromic": TwistedLoxodromic,
+};
 
 var Scene = function(){
     this.objects = {};
     for(objectName in GENERATORS_NAME_ID_MAP){
         this.objects[GENERATORS_NAME_ID_MAP[objectName]] = [];
     }
-}
+};
 
 Scene.prototype = {
     loadParameter: function(param){
@@ -395,6 +424,19 @@ Scene.prototype = {
             this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
                 (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
 
+        }
+    },
+    loadParameterFromJson: function(param){
+        this.objects = {};
+        var generators = param['generators'];
+        for(generatorName in GENERATORS_NAME_ID_MAP){
+            this.objects[GENERATORS_NAME_ID_MAP[generatorName]] = [];
+            var objects = generators[generatorName];
+            if(objects == undefined) continue;
+            for(var i = 0 ; i < objects.length ; i++){
+                var obj = GENERATORS_NAME_CLASS_MAP[generatorName].createFromJson(generators[generatorName][i]);
+                this.objects[GENERATORS_NAME_ID_MAP[generatorName]].push(obj);
+            }
         }
     },
     clone: function(objects){

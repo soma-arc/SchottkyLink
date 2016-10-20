@@ -1,58 +1,3 @@
-const PRESET_PARAMS = [
-    {
-        circles:[new Circle(100, -100, 100),
-		 new Circle(100, 100, 100),
-		 new Circle(-100, -100, 100),
-		 new Circle(-100, 100, 100)],
-    },
-    {
-        circles:[new Circle(400, 400, 400),
-		 new Circle(-400, 400, 400),
-		 new Circle(0, 100, 100)],
-        infiniteCircles:[new InfiniteCircle(0, 0, 90)],
-    },
-    {
-        circles:[new Circle(100, -100, 100),
-		 new Circle(100, 100, 100),
-		 new Circle(-100, -100, 100),
-		 new Circle(-100, 100, 100)],
-        infiniteCircles:[new InfiniteCircle(200, 0, 0),
-                         new InfiniteCircle(-200, 0, 180)],
-    },
-    {
-        circles:[new Circle(226, -139, 108),
-                 new Circle(263, 106, 100),
-                 new Circle(47, -209, 78),
-                 new Circle(93, 200, 95),
-                 new Circle(154, 4, 53)],
-        transformByCircles:[new TransformByCircles(new Circle(-50, 0, 150),
-                                                   new Circle(0, 0, 200))],
-    },
-    {
-        circles:[new Circle(-161, 132, 61),
-                 new Circle(200, 65, 66),
-                 new Circle(30, -203, 48),
-                 new Circle(169, -119, 55),
-                 new Circle(-185, -90, 50),
-                 new Circle(18, 210, 68)],
-        transformByCircles:[new TransformByCircles(new Circle(-4, -7, 150),
-                                                   new Circle(0, 0, 200))],
-    },
-    {
-        twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
-                                                 new Circle(0, 0, 200),
-                                                 [100, 10])],
-    },
-    {
-        twistedLoxodromic:[new TwistedLoxodromic(new Circle(-4, -7, 150),
-                                                 new Circle(0, 0, 200),
-                                                 [100, 10]),
-                           new TwistedLoxodromic(new Circle(-704, -107, 150),
-                                                 new Circle(-700, -100, 200),
-                                                 [-400, -100])],
-    }
-]
-
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
@@ -351,8 +296,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 
 window.addEventListener('load', function(event){
     var scene = new Scene();
-    scene.loadParameter(PRESET_PARAMS[0]);
-    
+    scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
     addMouseListeners(scene, renderCanvas);
@@ -495,9 +439,9 @@ window.addEventListener('load', function(event){
 	case '8':
 	case '9':
 	    var i = parseInt(event.key);
-	    var param = PRESET_PARAMS[i];
+            var param = PRESET_PARAMETERS[i];
 	    if(param != undefined){
-		scene.loadParameter(param);
+                scene.loadParameterFromJson(param);
 		updateShaders(scene, renderCanvas);
 	    }
 	    break;
