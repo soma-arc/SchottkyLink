@@ -15,10 +15,10 @@
         <script type="text/javascript" src="scripts/presetParameter.js"></script>
         <script type="text/javascript" src="scripts/main.js"></script>
         <script id="vs" type="x-shader/x-vertex">
-         attribute vec3 position;
+         attribute vec2 a_vertex;
 
          void main(void){
-	     gl_Position = vec4(position, 1.0);
+	     gl_Position = vec4(a_vertex, 0., 1.0);
          }
         </script>
         <script id="kissingSchottkyTemplate" type="x-shader/x-fragment">
@@ -346,6 +346,38 @@
         <div class="propertyPanel" id="prop">
             <ui-tabs fullwidth>
                 <ui-tab header="Generator" id="tab-1">
+                    <div class="imgBtn">
+                        <div class="row">
+                            <img src="../img/circle.png" width="128px" height="128px" />
+                        </div>
+                        <div class="row">
+                            Circle
+                        </div>
+                    </div>
+                    <div class="imgBtn">
+                    <div class="row">
+                        <img src="../img/infiniteCircle.png" width="128px" height="128px" />
+                    </div>
+                    <div class="row">
+                        Infinite Circle
+                    </div>
+                    </div>
+                    <div class="imgBtn">
+                        <div class="row">
+                            <img src="../img/compositionParabolic.png" width="128px" height="128px" />
+                        </div>
+                        <div class="row">
+                            Composition (Parabolic)
+                        </div>
+                    </div>
+                    <div class="imgBtn">
+                        <div class="row">
+                            <img src="../img/compositionLoxodromic.png" width="128px" height="128px" />
+                        </div>
+                        <div class="row">
+                            Composition (Loxodromic)
+                        </div>
+                    </div>
                 </ui-tab>
                 <ui-tab header="Scene" id="tab-2">
                 </ui-tab>

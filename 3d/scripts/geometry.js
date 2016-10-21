@@ -314,7 +314,7 @@ TransformByPlanes.prototype = {
 			      this.invRotationMat3,
 			      this.rotationMat3,
 			      eye, ray, isect);
-	isect = intersectRect(objectId, index, TRANSFORM_BY_PLANE2,
+	isect = intersectRect(objectId, index, TRANSFORM_BY_PLANES2,
 			      [0, 0, this.distToP2],
 			      this.size,
 			      prodMat3(this.invTwistMat3,

@@ -91,9 +91,18 @@ body {
 }
 
 
+.imgBtn {
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+}
+.imgBtn:hover { background-color:silver; }
+
 .row {
+    padding: 5px 0px 0px;
     display: flex;
     justify-content: center;
+    width: 200px;
 }
 
 

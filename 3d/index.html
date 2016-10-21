@@ -424,12 +424,12 @@
                                                   u_rotateInfiniteSphereMat3{{ n }},
                                                   u_invRotateInfiniteSphereMat3{{ n }},
                                                   eye, ray, result);
-                 result = intersectRotationTorus(ID_INFINITE_SPHERE, {{ n }}, 4, 5, MTL_DIFFUSE,
-                                                 u_infiniteSphere{{ n }}.xyz,
-                                                 u_infiniteSphere{{ n }}.w * 0.5, 10., 0.001,
-                                                 eye, ray, result);
                  if(u_selectedObjectId == ID_INFINITE_SPHERE &&
 		    u_selectedObjectIndex == {{ n }}){
+                     result = intersectRotationTorus(ID_INFINITE_SPHERE, {{ n }}, 4, 5, MTL_DIFFUSE,
+                                                     u_infiniteSphere{{ n }}.xyz,
+                                                     u_infiniteSphere{{ n }}.w * 0.5, 10., 0.001,
+                                                     eye, ray, result);
 		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
 					          10., u_infiniteSphere{{ n }}.xyz,
 					          eye, ray, result);
@@ -1501,6 +1501,54 @@
             <div class="propertyPanel" id="prop">
                 <ui-tabs fullwidth>
                     <ui-tab header="Generator" id="tab-1">
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/baseSphere.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Base Sphere
+                            </div>
+                        </div>
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/sphere.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Sphere
+                            </div>
+                        </div>
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/infiniteSphere.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Infinite Sphere
+                            </div>
+                        </div>
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/translation.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Translation
+                            </div>
+                        </div>
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/compositionSphere.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Composition
+                            </div>
+                        </div>
+                        <div class="imgBtn">
+                            <div class="row">
+                                <img src="../img/compoundLoxodromic.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Compound Loxodromic
+                            </div>
+                        </div>
                     </ui-tab>
                     <ui-tab header="Scene" id="tab-2">
                     </ui-tab>
