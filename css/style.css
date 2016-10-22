@@ -132,7 +132,7 @@ body {
     height: 50px;
     background-color: Gainsboro;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     padding-right: 0.9rem;
 
@@ -158,3 +158,15 @@ a:link   {color:#000000;}
 a:visited{color:#000000;}
 a:hover  {color:#000000;}
 a:active {color:#000000;}
+
+/* 
+* Link to GitHub
+*/
+
+.imgLink{
+    padding: 10px;
+}
+
+#ghLink {
+    height: 50px;
+}
