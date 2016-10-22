@@ -35,6 +35,15 @@ Circle.prototype = {
     exportJson: function(){
         return {"position": [this.x, this.y], "radius": this.r};
     },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_schottkyCircle'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_schottkyCircleUIParam'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
+        return uniIndex;
+    },
     move: function(scene, componentId, mouse, diff){
 	if(componentId == CIRCLE_CIRCUMFERENCE){
 	    var dx = mouse[0] - this.x;
@@ -122,6 +131,19 @@ InfiniteCircle.prototype = {
 		this.rotationControlCircleRadius,
 		this.rotationControlCircleThickness];
     },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_infiniteCircle'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_infiniteCircleUIParam'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_infiniteCircleRotationMat2'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_invInfiniteCircleRotationMat2'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+	gl.uniform3fv(uniLocation[uniIndex++], this.getUIParamArray());
+	gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.rotationMat2);
+	gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.invRotationMat2);
+        return uniIndex;
+    },
     move: function(scene, componentId, mouse, diff){
 	if(componentId == INFINITE_CIRCLE_CONTROL_POINT ||
 	   componentId == INFINITE_CIRCLE_BODY){
@@ -195,6 +217,13 @@ TransformByCircles.prototype = {
     exportJson: function(){
         return {"innerCircle": this.inner.exportJson(),
                 "outerCircle": this.outer.exportJson()};
+    },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_transformByCircles'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
@@ -313,6 +342,21 @@ TwistedLoxodromic.prototype = {
         return {"innerCircle": this.inner.exportJson(),
                 "outerCircle": this.outer.exportJson(),
                 "point": this.point};
+    },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromic'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicRotationMat2'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_invTwistedLoxodromicRotationMat2'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodomicUIParam'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
+			    this.rotationMat2);
+        gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
+			    this.invRotationMat2);
+        gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
+        return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
         var prevOuterX = this.outer.x; 
@@ -516,5 +560,32 @@ Scene.prototype = {
 	   obj.removable(mouse, diff)){
 	    objArray.splice(index, 1);
 	}
+    },
+    setUniformLocation: function(uniLocation, gl, program){
+	for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		objArray[i].setUniformLocation(uniLocation, gl, program, i);
+	    }
+	}
+	return uniLocation;
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	for(objectId in Object.keys(this.objects)){
+	    objectId = parseInt(objectId);
+	    var objArray = this.objects[objectId];
+            if(objArray.length == 0) continue;
+	    for(var i = 0 ; i < objArray.length ; i++){
+		uniIndex = objArray[i].setUniformValues(uniLocation, gl, uniIndex);
+	    }
+	}
+	return uniIndex;
+    },
+    setRenderContext: function(context){
+        for(objectName in GENERATORS_NAME_ID_MAP){
+            context['num'+ objectName] = this.objects[GENERATORS_NAME_ID_MAP[objectName]].length;
+        }
     }
 }

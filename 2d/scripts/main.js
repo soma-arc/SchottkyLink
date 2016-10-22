@@ -85,6 +85,33 @@ RenderCanvas2D.prototype = {
 	this.selectedObjectId = -1;
 	this.selectedObjectIndex = -1;
 	this.selectedComponentId = -1;
+    },
+    setUniformLocation: function(uniLocation, gl, program){
+        uniLocation.push(gl.getUniformLocation(program, 'u_iResolution'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_iGlobalTime'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_translate'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_scale'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_iterations'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_initialHue'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_hueStep'));
+	uniLocation.push(gl.getUniformLocation(program, 'u_numSamples'));
+	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectId'));
+	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectIndex'));
+	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
+    },
+    setUniformValues: function(uniLocation, gl, uniI, width, height){
+        gl.uniform2fv(uniLocation[uniI++], [width, height]);
+        gl.uniform1f(uniLocation[uniI++], 0);
+	gl.uniform2fv(uniLocation[uniI++], this.translate);
+	gl.uniform1f(uniLocation[uniI++], this.scale);
+	gl.uniform1i(uniLocation[uniI++], this.iterations);
+	gl.uniform1f(uniLocation[uniI++], this.initialHue);
+	gl.uniform1f(uniLocation[uniI++], this.hueStep);
+	gl.uniform1f(uniLocation[uniI++], this.numSamples);
+	gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
+	gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
+	gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
+        return uniI;
     }
 }
 
@@ -92,7 +119,7 @@ function updateShaders(scene, canvas){
     [canvas.switch,
      canvas.render] = setupSchottkyProgram(scene, canvas);
     canvas.switch();
-    canvas.render(0);
+    canvas.render();
 }
 
 function addMouseListeners(scene, renderCanvas){
@@ -106,7 +133,7 @@ function addMouseListeners(scene, renderCanvas){
     renderCanvas.canvas.addEventListener('mouseup', function(event){
 	renderCanvas.isMousePressing = false;
 	renderCanvas.isRendering = false;
-	renderCanvas.render(0);
+	renderCanvas.render();
     }, false);
 
     renderCanvas.canvas.addEventListener('mousemove', function(event){
@@ -141,7 +168,7 @@ function addMouseListeners(scene, renderCanvas){
         }
         renderCanvas.prevMousePos = mouse;
 	renderCanvas.isMousePressing = true;
-	renderCanvas.render(0);
+	renderCanvas.render();
     }, false);
 
     renderCanvas.canvas.addEventListener('dblclick', function(event){
@@ -164,65 +191,25 @@ function addMouseListeners(scene, renderCanvas){
 	}else{
 	    renderCanvas.scale += 100;
 	}
-	renderCanvas.render(0);
+	renderCanvas.render();
     })
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
-    Vue.use(Keen);
-    var app = new Vue({
-        el: '#prop',
-        
-    });
-    
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
-    var numCircles = scene.objects[ID_CIRCLE].length;
-    var numInfiniteCircles = scene.objects[ID_INFINITE_CIRCLE].length;
-    var numTransformByCircles = scene.objects[ID_TRANSFORM_BY_CIRCLES].length;
-    var numTwistedLoxodromic = scene.objects[ID_TWISTED_LOXODROMIC].length;
+    var renderContext = {};
+    scene.setRenderContext(renderContext);
     attachShaderFromString(gl,
-			   renderCanvas.template.render({numCircles: numCircles,
-							 numInfiniteCircles: numInfiniteCircles,
-							 numTransformByCircles: numTransformByCircles,
-                                                         numTwistedLoxodromic: numTwistedLoxodromic}),
+			   renderCanvas.template.render(renderContext),
 			   program,
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
 
-    var uniLocation = new Array();
-    var n = 0;
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_iResolution');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_iGlobalTime');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_translate');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_scale');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_iterations');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_initialHue');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_hueStep');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_numSamples');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectId');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectIndex');
-    uniLocation[n++] = gl.getUniformLocation(program, 'u_selectedObjectComponentId');
-    for(var i = 0 ; i < numCircles ; i++){
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircle'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program, 'u_schottkyCircleUIParam'+ i);
-    }
-    for(var i = 0 ; i < numInfiniteCircles ; i++){
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircle'+ i);
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleUIParam'+ i);
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_infiniteCircleRotationMat2'+ i);
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_invInfiniteCircleRotationMat2'+ i);
-    }
-    for(var i = 0 ; i < numTransformByCircles ; i++){
-	uniLocation[n++] = gl.getUniformLocation(program, 'u_transformByCircles'+ i);
-    }
-    for(var i = 0 ; i < numTwistedLoxodromic ; i++){
-        uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromic'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromicRotationMat2'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program, 'u_invTwistedLoxodromicRotationMat2'+ i);
-        uniLocation[n++] = gl.getUniformLocation(program, 'u_twistedLoxodromicUIParam'+ i);
-    }
+    var uniLocation = [];
+    renderCanvas.setUniformLocation(uniLocation, gl, program);
+    scene.setUniformLocation(uniLocation, gl, program);
     
     var vertex = [
             -1, -1,
@@ -243,49 +230,16 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
     }
 
-    var render = function(elapsedTime){
+    var render = function(){
         gl.viewport(0, 0,
 		    renderCanvas.canvas.width,
 		    renderCanvas.canvas.height);
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var uniI = 0;
-        gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width,
-					    renderCanvas.canvas.height]);
-        gl.uniform1f(uniLocation[uniI++], elapsedTime * 0.001);
-	gl.uniform2fv(uniLocation[uniI++], renderCanvas.translate);
-	gl.uniform1f(uniLocation[uniI++], renderCanvas.scale);
-	gl.uniform1i(uniLocation[uniI++], renderCanvas.iterations);
-	gl.uniform1f(uniLocation[uniI++], renderCanvas.initialHue);
-	gl.uniform1f(uniLocation[uniI++], renderCanvas.hueStep);
-	gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples);
-	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
-	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
-	gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
-	for(var i = 0 ; i < numCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_CIRCLE][i].getUniformArray());
-            gl.uniform2fv(uniLocation[uniI++], scene.objects[ID_CIRCLE][i].getUIParamArray());
-	}
-	for(var i = 0 ; i < numInfiniteCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_INFINITE_CIRCLE][i].getUniformArray());
-	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_INFINITE_CIRCLE][i].getUIParamArray());
-	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.objects[ID_INFINITE_CIRCLE][i].rotationMat2);
-	    gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.objects[ID_INFINITE_CIRCLE][i].invRotationMat2);
-	}
-	for(var i = 0 ; i < numTransformByCircles ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_TRANSFORM_BY_CIRCLES][i].getUniformArray());
-	}
-	for(var i = 0 ; i < numTwistedLoxodromic ; i++){
-	    gl.uniform3fv(uniLocation[uniI++], scene.objects[ID_TWISTED_LOXODROMIC][i].getUniformArray());
-            gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.objects[ID_TWISTED_LOXODROMIC][i].rotationMat2);
-            gl.uniformMatrix2fv(uniLocation[uniI++], false,
-				scene.objects[ID_TWISTED_LOXODROMIC][i].invRotationMat2);
-            gl.uniform2fv(uniLocation[uniI++], scene.objects[ID_TWISTED_LOXODROMIC][i].getUIParamArray());
-	}
+        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI,
+                                             renderCanvas.canvas.width,
+                                             renderCanvas.canvas.height);
+        uniI = scene.setUniformValues(uniLocation, gl, uniI);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 	gl.flush();
@@ -295,6 +249,12 @@ function setupSchottkyProgram(scene, renderCanvas){
 }
 
 window.addEventListener('load', function(event){
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#prop',
+        
+    });
+    
     var scene = new Scene();
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
     var renderCanvas = new RenderCanvas2D('canvas',
@@ -310,7 +270,7 @@ window.addEventListener('load', function(event){
     	}else{
     	    renderCanvas.resizeCanvas();
     	}
-    	renderCanvas.render(0);
+    	renderCanvas.render();
     }, false);
 
     document.addEventListener('webkitfullscreenchange', function(event){
@@ -319,7 +279,7 @@ window.addEventListener('load', function(event){
 	}else{
 	    renderCanvas.isFullScreen = false;
 	    renderCanvas.resizeCanvas();
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	}
     });
 
@@ -329,7 +289,7 @@ window.addEventListener('load', function(event){
 	}else{
 	    renderCanvas.isFullScreen = false;
 	    renderCanvas.resizeCanvas();
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	}
     });
 
@@ -339,7 +299,7 @@ window.addEventListener('load', function(event){
 	}else{
 	    renderCanvas.isFullScreen = false;
 	    renderCanvas.resizeCanvas();
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	}
     });
     
@@ -347,49 +307,49 @@ window.addEventListener('load', function(event){
 	switch(event.key){
 	case '+':
 	    renderCanvas.iterations++;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case '-':
 	    if(renderCanvas.iterations > 1){
 		renderCanvas.iterations--;
-		renderCanvas.render(0);
+		renderCanvas.render();
 	    }
 	    break;
 	case 'p':
 	    renderCanvas.numSamples++;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'n':
 	    if(renderCanvas.numSamples > 1){
 		renderCanvas.numSamples--;
-		renderCanvas.render(0);
+		renderCanvas.render();
 	    }
 	    break;
 	case 'a':
 	    if(renderCanvas.initialHue > 0){
 		renderCanvas.initialHue -= 0.05;
-		renderCanvas.render(0);
+		renderCanvas.render();
 	    }
 	    break;
 	case 's':
 	    renderCanvas.initialHue += 0.05;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'z':
 	    if(renderCanvas.hueStep > 0){
 		renderCanvas.hueStep -= 0.01;
-		renderCanvas.render(0);
+		renderCanvas.render();
 	    }
 	    break;
 	case 'x':
 	    renderCanvas.hueStep += 0.01;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'r':
 	    renderCanvas.requestFullScreen();
 	    break;
         case 'o':
-            renderCanvas.render(0);
+            renderCanvas.render();
             var a = document.createElement('a');
             a.href = renderCanvas.canvas.toDataURL();
             a.download = "schottky.png"
@@ -401,22 +361,22 @@ window.addEventListener('load', function(event){
 	case 'ArrowRight':
 	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'ArrowLeft':
 	    event.preventDefault();
 	    renderCanvas.translate[0] -= renderCanvas.scale / 10;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'ArrowUp':
 	    event.preventDefault();
 	    renderCanvas.translate[1] += renderCanvas.scale / 10;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
 	case 'ArrowDown':
 	    event.preventDefault();
 	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
-	    renderCanvas.render(0);
+	    renderCanvas.render();
 	    break;
         case 'v':
             if(renderCanvas.selectedObjectId == ID_CIRCLE){
