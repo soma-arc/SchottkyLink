@@ -53,8 +53,16 @@ var RenderCanvas = function(canvasId, templateId){
     
     this.numSamples = 0;
     this.textures = [];
+
+    // texture for low resolution rendering
+    this.lowResTextures = [];
+    this.lowResRatio = 0.5;
     
     this.displayGenerators = false;
+
+    this.render = function(){};
+    this.renderLowRes = function(){};
+    this.renderTimerID = undefined;
 }
 
 RenderCanvas.prototype = {
@@ -112,20 +120,77 @@ RenderCanvas.prototype = {
     setRayTracer: function(){
         this.renderer = RAY_TRACER;
     },
-    initializeTextures: function(){
-        this.textures = [];
-        var gl = this.gl;
+    createTextures: function(gl, width, height){
+        var textures = [];
         var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
         for(var i = 0; i < 2; i++) {
-            this.textures.push(gl.createTexture());
-            gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
+            textures.push(gl.createTexture());
+            gl.bindTexture(gl.TEXTURE_2D, textures[i]);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
-                          this.canvas.width, this.canvas.height,
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
                           0, gl.RGB, type, null);
         }
-        this.gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return textures;
+    },
+    initializeTextures: function(){
+        this.textures = this.createTextures(this.gl, this.canvas.width, this.canvas.height);
+        this.lowResTextures = this.createTextures(this.gl,
+                                                  this.canvas.width * this.lowResRatio,
+                                                  this.canvas.height * this.lowResRatio)
+    },
+    setUniformLocation: function(uniLocation, gl, program){
+        // Sometimes first getUniformLocation takes too much time.
+        var s = new Date().getTime();
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_accTexture'));
+        console.log('getUniLocation '+ (new Date().getTime() - s));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_numSamples'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_textureWeight'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_iResolution'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_iGlobalTime'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_selectedObjectId'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_selectedObjectIndex'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_selectedComponentId'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_selectedAxis'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_eye'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_up'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_target'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_fov'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_numIterations'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_displayGenerators'));
+    },
+    setUniformValues: function(uniLocation, gl, uniI, width, height){
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
+        gl.uniform1i(uniLocation[uniI++], this.textures[0]);
+        gl.uniform1i(uniLocation[uniI++], this.numSamples);
+        gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
+        gl.uniform2fv(uniLocation[uniI++], [width, height]);
+        gl.uniform1f(uniLocation[uniI++], 0);
+        gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
+        gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
+        gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
+        gl.uniform1i(uniLocation[uniI++], this.selectedAxis);
+        gl.uniform3fv(uniLocation[uniI++], this.camera.position);
+        gl.uniform3fv(uniLocation[uniI++], this.camera.up);
+        gl.uniform3fv(uniLocation[uniI++], this.camera.target);
+        gl.uniform1f(uniLocation[uniI++], this.camera.fovDegree);
+        gl.uniform1i(uniLocation[uniI++], this.numIterations);
+        gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
+        return uniI;
     }
 };
 
@@ -195,73 +260,12 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
         }
         renderCanvas.camera.update();
         renderCanvas.numSamples = 0;
-        renderCanvas.render();
+        renderCanvas.renderLowRes();
     }, false);
 }
 
-function getUniLocations(scene, renderCanvas, gl, program){
-    var uniLocation = [];
-    // Sometimes first getUniformLocation takes too much time.
-    var s = new Date().getTime();
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_accTexture'));
-    console.log('getUniLocation '+ (new Date().getTime() - s));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_numSamples'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_textureWeight'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_iResolution'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_iGlobalTime'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_selectedObjectId'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_selectedObjectIndex'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_selectedComponentId'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_selectedAxis'));
-    uniLocation.push(gl.getUniformLocation(program, 'u_eye'));
-    uniLocation.push(gl.getUniformLocation(program, 'u_up'));
-    uniLocation.push(gl.getUniformLocation(program, 'u_target'));
-    uniLocation.push(gl.getUniformLocation(program, 'u_fov'));
-    uniLocation.push(gl.getUniformLocation(program, 'u_numIterations'));
-    uniLocation.push(gl.getUniformLocation(program,
-                                           'u_displayGenerators'));
-    scene.setUniformLocation(uniLocation, gl, program);
-    
-    return uniLocation;
-}
-
-function setUniformVariables(scene, renderCanvas, gl, uniLocation){ 
-    var uniI = 0;
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.textures[0]);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.numSamples);
-    gl.uniform1f(uniLocation[uniI++], renderCanvas.numSamples / (renderCanvas.numSamples + 1));
-    gl.uniform2fv(uniLocation[uniI++], [renderCanvas.canvas.width, renderCanvas.canvas.height]);
-    gl.uniform1f(uniLocation[uniI++], 0);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectId);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedObjectIndex);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedComponentId);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.selectedAxis);
-    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.position);
-    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.up);
-    gl.uniform3fv(uniLocation[uniI++], renderCanvas.camera.target);
-    gl.uniform1f(uniLocation[uniI++], renderCanvas.camera.fovDegree);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.numIterations);
-    gl.uniform1i(uniLocation[uniI++], renderCanvas.displayGenerators);
-    uniI = scene.setUniformValues(uniLocation, gl, uniI);
-}
-
 function setupSchottkyProgram(scene, renderCanvas){
-    Vue.use(Keen);
-    var app = new Vue({
-        el: '#prop',
-    });
-    
+    renderCanvas.renderTimerID = undefined;
     renderCanvas.numSamples = 0;
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
@@ -279,54 +283,86 @@ function setupSchottkyProgram(scene, renderCanvas){
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
     renderCanvas.initializeTextures();
-    var uniLocation = getUniLocations(scene, renderCanvas, gl, program);
+    var uniLocation = [];
+    renderCanvas.setUniformLocation(uniLocation, gl, program);
+    scene.setUniformLocation(uniLocation, gl, program);
+
     var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
 
-    var render = function(){
-        renderCanvas.isRendering = false;
-        gl.viewport(0, 0, renderCanvas.canvas.width, renderCanvas.canvas.height);
-//        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-//        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        gl.useProgram(program);
-        setUniformVariables(scene, renderCanvas, gl, uniLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+    var renderToTexture = function(textures, width, height){
         gl.bindFramebuffer(gl.FRAMEBUFFER, renderCanvas.framebuffer);
+        gl.viewport(0, 0, width, height);
+        gl.useProgram(program);
+        var uniI = 0;
+        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height);
+        uniI = scene.setUniformValues(uniLocation, gl, uniI);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
-                                renderCanvas.textures[1], 0);
+                                textures[1], 0);
         gl.enableVertexAttribArray(vAttribLocation);
         gl.vertexAttribPointer(vAttribLocation, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        renderCanvas.textures.reverse();
+        textures.reverse();
+    }
 
+    var renderToCanvas = function(textures, width, height){
+        gl.viewport(0, 0, width, height);
         gl.useProgram(renderCanvas.renderProgram);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
         gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
         gl.vertexAttribPointer(renderCanvas.renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
+    }
+
+    var render = function(){
+        renderCanvas.renderTimerID = undefined;
+        renderCanvas.isRendering = false;
+
+        renderToTexture(renderCanvas.textures,
+                        renderCanvas.canvas.width, renderCanvas.canvas.height);
+        renderToCanvas(renderCanvas.textures,
+                       renderCanvas.canvas.width, renderCanvas.canvas.height);
 
         if(renderCanvas.isSampling)
             renderCanvas.numSamples++;
     }
-    return render;
+
+    var renderLowRes = function(){
+        window.clearTimeout(renderCanvas.renderTimerID);
+        renderCanvas.isRendering = false;
+        
+        renderToTexture(renderCanvas.lowResTextures,
+                        renderCanvas.canvas.width * renderCanvas.lowResRatio,
+                        renderCanvas.canvas.height * renderCanvas.lowResRatio);
+        renderToCanvas(renderCanvas.lowResTextures,
+                       renderCanvas.canvas.width, renderCanvas.canvas.height);
+        renderCanvas.renderTimerID = window.setTimeout(render, 500);
+    }
+    
+    renderCanvas.render = render;
+    renderCanvas.renderLowRes = renderLowRes;
 }
 
 function updateShaders(scene, schottkyCanvas, orbitCanvas){
     var s = new Date().getTime();
-    schottkyCanvas.render = setupSchottkyProgram(scene, schottkyCanvas);
+    setupSchottkyProgram(scene, schottkyCanvas);
     console.log('schott '+(new Date().getTime() - s));
     var s = new Date().getTime();
-    orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+    setupSchottkyProgram(scene, orbitCanvas);
     console.log('orbit '+(new Date().getTime() - s));
     schottkyCanvas.render();
     orbitCanvas.render();
 }
 
 window.addEventListener('load', function(event){
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#prop',
+    });
+    
     var scene = new Scene();
     //    scene.loadParameter(PRESET_PARAMS[0]);
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
@@ -549,12 +585,12 @@ window.addEventListener('load', function(event){
             break;
         case 'f':
             orbitCanvas.setPathTracer();
-            orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+            setupSchottkyProgram(scene, orbitCanvas);
             orbitCanvas.render();
             break;
         case 'v':
             orbitCanvas.setRayTracer();
-            orbitCanvas.render = setupSchottkyProgram(scene, orbitCanvas);
+            setupSchottkyProgram(scene, orbitCanvas);
             orbitCanvas.render();
             break;
         case '0':
@@ -581,8 +617,10 @@ window.addEventListener('load', function(event){
         if(schottkyCanvas.isRendering){
             schottkyCanvas.render();
         }
-        if(orbitCanvas.isRendering ||
-           orbitCanvas.isSampling){
+        if(orbitCanvas.isRendering){
+            orbitCanvas.renderLowRes();
+        }else if(orbitCanvas.isSampling &&
+                 orbitCanvas.renderTimerID == undefined){
             orbitCanvas.render();
         }
         requestAnimationFrame(arguments.callee);
