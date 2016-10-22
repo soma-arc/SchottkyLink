@@ -1,7 +1,8 @@
 const RAY_TRACER = 0;
 const PATH_TRACER = 1;
 
-var RenderCanvas = function(canvasId, templateId){
+var RenderCanvas = function(parentId, canvasId, templateId){
+    this.parentPanel = document.getElementById(parentId);
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
@@ -43,7 +44,7 @@ var RenderCanvas = function(canvasId, templateId){
     this.pressingKey = '';
     this.numIterations = 10;
 
-    this.pixelRatio = 1;//window.devicePixelRatio;
+    this.pixelRatio = window.devicePixelRatio;
 
     this.sphereCenterOnScreen;
     this.prevObject;
@@ -56,7 +57,7 @@ var RenderCanvas = function(canvasId, templateId){
 
     // texture for low resolution rendering
     this.lowResTextures = [];
-    this.lowResRatio = 0.5;
+    this.lowResRatio = 0.25;
     
     this.displayGenerators = false;
 
@@ -71,6 +72,10 @@ RenderCanvas.prototype = {
         this.canvas.style.height = height + 'px';
         this.canvas.width = width * this.pixelRatio;
         this.canvas.height = height * this.pixelRatio;
+    },
+    resize: function(){
+	this.canvas.width = this.parentPanel.clientWidth * this.pixelRatio;
+	this.canvas.height = this.parentPanel.clientHeight * this.pixelRatio;
     },
     calcPixel: function(mouseEvent){
         var rect = mouseEvent.target.getBoundingClientRect();
@@ -366,17 +371,28 @@ window.addEventListener('load', function(event){
     var scene = new Scene();
     //    scene.loadParameter(PRESET_PARAMS[0]);
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
-    var schottkyCanvas = new RenderCanvas('canvas', '3dSchottkyTemplate');
-    var orbitCanvas = new RenderCanvas('orbitCanvas', '3dOrbitTemplate');
+    var schottkyCanvas = new RenderCanvas('panel1', 'schottkyCanvas', '3dSchottkyTemplate');
+    var orbitCanvas = new RenderCanvas('panel2', 'orbitCanvas', '3dOrbitTemplate');
 
-    schottkyCanvas.resizeCanvas(256, 256);
-    orbitCanvas.resizeCanvas(256, 256);
+    schottkyCanvas.resize();
+    orbitCanvas.resize();
     
     addMouseListenersToSchottkyCanvas(schottkyCanvas);
     addMouseListenersToSchottkyCanvas(orbitCanvas);
 
     updateShaders(scene, schottkyCanvas, orbitCanvas);
 
+    var resizeTimerId = undefined;
+    var resized = function(){
+        schottkyCanvas.resize();
+        orbitCanvas.resize();
+        updateShaders(scene, schottkyCanvas, orbitCanvas);
+    }
+    window.addEventListener('resize', function(event){
+        window.clearTimeout(resizeTimerId);
+        resizeTimerId = window.setTimeout(resized, 500);
+    });
+    
     window.addEventListener('keyup', function(event){
         schottkyCanvas.pressingKey = '';
         if(schottkyCanvas.selectedAxis != -1){

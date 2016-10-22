@@ -90,6 +90,9 @@ body {
     display: flex;
 }
 
+.ui-tab-header-item-text {
+    font-family: "Times New Roman";
+}
 
 .imgBtn {
     padding: 5px;
