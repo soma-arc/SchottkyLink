@@ -588,6 +588,19 @@ window.addEventListener('load', function(event){
             a.download = "orbit.png"
             a.click();
             break;
+        case 'm':
+            var reader = new FileReader();
+            reader.addEventListener('load', function(){
+                scene.loadParameterFromJson(JSON.parse(reader.result));
+                updateShaders(scene, schottkyCanvas, orbitCanvas);
+            });
+            var a = document.createElement('input');
+            a.type = 'file';
+            a.addEventListener('change', function(event){
+                var files = event.target.files;
+                reader.readAsText(files[0]);
+            });
+            a.click();
         case 'r':
             orbitCanvas.switchSampling();
             break;

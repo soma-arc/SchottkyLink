@@ -357,6 +357,20 @@ window.addEventListener('load', function(event){
         case 'l':
             scene.saveSceneAsJson();
             break;
+        case 'm':
+            var reader = new FileReader();
+            reader.addEventListener('load', function(){
+                scene.loadParameterFromJson(JSON.parse(reader.result));
+                updateShaders(scene, renderCanvas);
+            });
+            var a = document.createElement('input');
+            a.type = 'file';
+            a.addEventListener('change', function(event){
+                var files = event.target.files;
+                reader.readAsText(files[0]);
+            });
+            a.click();
+            break;
 	case 'ArrowRight':
 	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;
