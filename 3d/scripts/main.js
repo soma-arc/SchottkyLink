@@ -601,6 +601,7 @@ window.addEventListener('load', function(event){
                 reader.readAsText(files[0]);
             });
             a.click();
+            break;
         case 'r':
             orbitCanvas.switchSampling();
             break;
