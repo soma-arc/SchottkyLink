@@ -357,14 +357,14 @@ function updateShaders(scene, schottkyCanvas, orbitCanvas){
 window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
-        el: '#prop',
+        el: '#contentElem',
     });
     
     var scene = new Scene();
     //    scene.loadParameter(PRESET_PARAMS[0]);
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
-    var schottkyCanvas = new RenderCanvas('panel1', 'schottkyCanvas', '3dSchottkyTemplate');
-    var orbitCanvas = new RenderCanvas('panel2', 'orbitCanvas', '3dOrbitTemplate');
+    var schottkyCanvas = new RenderCanvas('canvasParent1', 'schottkyCanvas', '3dSchottkyTemplate');
+    var orbitCanvas = new RenderCanvas('canvasParent2', 'orbitCanvas', '3dOrbitTemplate');
 
     schottkyCanvas.resize();
     orbitCanvas.resize();

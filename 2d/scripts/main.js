@@ -1,7 +1,7 @@
 var RenderCanvas2D = function(canvasId, templateId){
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId);
-    this.parentPanel = document.getElementById("panel1");
+    this.parentPanel = document.getElementById("canvasParent1");
     this.center = [0, 0];
     this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
 
@@ -251,8 +251,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
-        el: '#prop',
-        
+        el: '#content',
     });
     
     var scene = new Scene();

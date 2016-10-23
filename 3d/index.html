@@ -1486,16 +1486,40 @@
                 <li class="myBtn"><a class="btnLink" href="./index.html">3D</a></li>
             </ul>
         </header>
-        <div class="content">
+        <div class="content" id="contentElem">
             <div class="renderPanel">
-                <div id="panel1">
-                    <canvas id="schottkyCanvas" class="renderCanvas"></canvas>
+                <div class="renderCanvasPanel" id="panel1">
+                    <div id="canvasParent1" class="canvasParent">
+                        <canvas id="schottkyCanvas" class="renderCanvas"></canvas>
+                    </div>
+                    <div class="renderPropertyPanel">
+                        <ui-button text="save">
+                        </ui-button>
+                    </div>
                 </div>
-                <div id="panel2">
-                    <canvas id="orbitCanvas" class="renderCanvas"></canvas>
+                <div class="renderCanvasPanel" id="panel2">
+                    <div id="canvasParent2" class="canvasParent">
+                        <canvas id="orbitCanvas" class="renderCanvas"></canvas>
+                    </div>
+                    <div class="renderPropertyPanel">
+                        <ui-button text="save">
+                        </ui-button>
+                        <div class="switchColumn">
+                            <span>Display Gen</span>
+                            <ui-switch hide-label></ui-switch>
+                        </div>
+                        <div class="switchColumn">
+                            <span> Sampling  </span>
+                            <ui-switch hide-label></ui-switch>
+                        </div>
+                        <div class="switchColumn">
+                            <span>GI</span>
+                            <ui-switch hide-label></ui-switch>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="propertyPanel" id="prop">
+            <div class="propertyPanel">
                 <ui-tabs fullwidth>
                     <ui-tab header="Generator" id="tab-1">
                         <div class="imgBtn">
