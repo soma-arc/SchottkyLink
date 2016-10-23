@@ -52,15 +52,12 @@
          uniform int u_numSamples;
          uniform float u_textureWeight;
          uniform vec2 u_iResolution;
-         uniform float u_iGlobalTime;
          uniform int u_selectedObjectId;
          uniform int u_selectedObjectIndex;
          uniform int u_selectedComponentId;
          uniform int u_selectedAxis;
-         uniform vec3 u_eye;
-         uniform vec3 u_up;
-         uniform vec3 u_target;
-         uniform float u_fov;
+         // [eye, target, up, [fovDegree, 0, 0]]
+         uniform vec3 u_camera[4];
          uniform int u_numIterations;
          uniform bool u_displayGenerators;
          
@@ -746,11 +743,11 @@
 	     for(float i = 0. ; i < SAMPLE_NUM ; i++){
                  vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
                  
-                 vec3 ray = calcRay(u_eye, u_target, u_up, u_fov,
+                 vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
     		               	    u_iResolution.x, u_iResolution.y,
         		            gl_FragCoord.xy + coordOffset);
                  
-                 sum += calcColor(u_eye, ray);
+                 sum += calcColor(u_camera[0], ray);
 	     }
 	     vec3 col = (sum/SAMPLE_NUM);
              
@@ -1282,12 +1279,12 @@
          void main(){
              //	 const vec2 coordOffset = vec2(0.5);
              vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
-	     vec3 ray = calcRay(u_eye, u_target, u_up, u_fov,
+	     vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
 			        u_iResolution.x, u_iResolution.y,
 			        gl_FragCoord.xy + coordOffset);
 
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
-             gl_FragColor = vec4(mix(calcColor(u_eye, ray), texCol,
+             gl_FragColor = vec4(mix(calcColor(u_camera[0], ray), texCol,
                                      u_textureWeight), 1.0);
          }
         </script>
@@ -1471,12 +1468,12 @@
 
          void main(){
              vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
-	     vec3 ray = calcRay(u_eye, u_target, u_up, u_fov,
+	     vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
 			        u_iResolution.x, u_iResolution.y,
 			        gl_FragCoord.xy + coordOffset);
 
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
-             gl_FragColor = vec4(mix(calcColor(u_eye, ray), texCol,
+             gl_FragColor = vec4(mix(calcColor(u_camera[0], ray), texCol,
                                      u_textureWeight), 1.0);
          }
         </script>

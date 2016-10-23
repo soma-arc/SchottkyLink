@@ -160,8 +160,6 @@ RenderCanvas.prototype = {
         uniLocation.push(gl.getUniformLocation(program,
                                                'u_iResolution'));
         uniLocation.push(gl.getUniformLocation(program,
-                                               'u_iGlobalTime'));
-        uniLocation.push(gl.getUniformLocation(program,
                                                'u_selectedObjectId'));
         uniLocation.push(gl.getUniformLocation(program,
                                                'u_selectedObjectIndex'));
@@ -169,13 +167,11 @@ RenderCanvas.prototype = {
                                                'u_selectedComponentId'));
         uniLocation.push(gl.getUniformLocation(program,
                                                'u_selectedAxis'));
-        uniLocation.push(gl.getUniformLocation(program, 'u_eye'));
-        uniLocation.push(gl.getUniformLocation(program, 'u_up'));
-        uniLocation.push(gl.getUniformLocation(program, 'u_target'));
-        uniLocation.push(gl.getUniformLocation(program, 'u_fov'));
+        uniLocation.push(gl.getUniformLocation(program, 'u_camera'));
         uniLocation.push(gl.getUniformLocation(program, 'u_numIterations'));
         uniLocation.push(gl.getUniformLocation(program,
                                                'u_displayGenerators'));
+
     },
     setUniformValues: function(uniLocation, gl, uniI, width, height){
         gl.activeTexture(gl.TEXTURE0);
@@ -184,15 +180,11 @@ RenderCanvas.prototype = {
         gl.uniform1i(uniLocation[uniI++], this.numSamples);
         gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
-        gl.uniform1f(uniLocation[uniI++], 0);
         gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
         gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
         gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
         gl.uniform1i(uniLocation[uniI++], this.selectedAxis);
-        gl.uniform3fv(uniLocation[uniI++], this.camera.position);
-        gl.uniform3fv(uniLocation[uniI++], this.camera.up);
-        gl.uniform3fv(uniLocation[uniI++], this.camera.target);
-        gl.uniform1f(uniLocation[uniI++], this.camera.fovDegree);
+        gl.uniform3fv(uniLocation[uniI++], this.camera.getUniformArray());
         gl.uniform1i(uniLocation[uniI++], this.numIterations);
         gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;

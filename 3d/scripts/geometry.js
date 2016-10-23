@@ -827,6 +827,11 @@ Camera.prototype = {
 	}else{
 	    this.up = [0, 1, 0];
 	}
+    },
+    getUniformArray: function(){
+        return this.position.concat(this.target,
+                                    this.up,
+                                    [this.fovDegree, 0, 0]);
     }
 }
 
@@ -928,10 +933,14 @@ Scene.prototype = {
     },
     addSchottkySphere: function(schottkyCanvas, orbitCanvas){
 	this.objects[ID_SCHOTTKY_SPHERE].push(new Sphere(500, 500, 0, 300));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
 	updateShaders(this, schottkyCanvas, orbitCanvas);
     },
     addBaseSphere: function(schottkyCanvas, orbitCanvas){
 	this.objects[ID_BASE_SPHERE].push(new Sphere(500, 500, 0, 125));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
 	updateShaders(this, schottkyCanvas, orbitCanvas);
     },
     getSelectedObject: function(eye, ray){
