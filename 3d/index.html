@@ -1478,22 +1478,26 @@
          }
         </script>
     </head>
-    <body>
+    <body id="bodyElem">
         <header class="header">
-            <a>Schottky Link</a>
-            <ul class="modeSelect">
+            <ul class="headerLeft">
+                <li class="myBtn"><a class="btnLink" href="../index.html">SchottkyLink</a></li>
                 <li class="myBtn"><a class="btnLink" href="../2d/index.html">2D</a></li>
                 <li class="myBtn"><a class="btnLink" href="./index.html">3D</a></li>
             </ul>
+            <ul class="headerRight">
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene"></ui-button></li>
+            </ul>
         </header>
-        <div class="content" id="contentElem">
+        <div class="content">
             <div class="renderPanel">
                 <div class="renderCanvasPanel" id="panel1">
                     <div id="canvasParent1" class="canvasParent">
                         <canvas id="schottkyCanvas" class="renderCanvas"></canvas>
                     </div>
                     <div class="renderPropertyPanel">
-                        <ui-button text="save">
+                        <ui-button text="save" raised>
                         </ui-button>
                     </div>
                 </div>
@@ -1502,7 +1506,7 @@
                         <canvas id="orbitCanvas" class="renderCanvas"></canvas>
                     </div>
                     <div class="renderPropertyPanel">
-                        <ui-button text="save">
+                        <ui-button text="save" raised>
                         </ui-button>
                         <div class="switchColumn">
                             <span>Display Gen</span>

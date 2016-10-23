@@ -251,7 +251,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
-        el: '#content',
+        el: '#bodyElem',
     });
     
     var scene = new Scene();

@@ -357,7 +357,7 @@ function updateShaders(scene, schottkyCanvas, orbitCanvas){
 window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
-        el: '#contentElem',
+        el: '#bodyElem',
     });
     
     var scene = new Scene();
