@@ -347,7 +347,7 @@ TwistedLoxodromic.prototype = {
         uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromic'+ index));
         uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicRotationMat2'+ index));
         uniLocation.push(gl.getUniformLocation(program, 'u_invTwistedLoxodromicRotationMat2'+ index));
-        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodomicUIParam'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicUIParam'+ index));
     },
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
