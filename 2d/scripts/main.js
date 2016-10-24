@@ -249,10 +249,6 @@ function setupSchottkyProgram(scene, renderCanvas){
 }
 
 window.addEventListener('load', function(event){
-    Vue.use(Keen);
-    var app = new Vue({
-        el: '#bodyElem',
-    });
     
     var scene = new Scene();
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
@@ -420,6 +416,40 @@ window.addEventListener('load', function(event){
 	    break;
 	}
     });
+
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#bodyElem',
+        data: {scene: scene},
+        methods:{
+            saveScene: function(){
+                scene.saveSceneAsJson();
+            },
+            loadScene: function(){
+                var reader = new FileReader();
+                reader.addEventListener('load', function(){
+                    scene.loadParameterFromJson(JSON.parse(reader.result));
+                    updateShaders(scene, renderCanvas);
+                });
+                var a = document.createElement('input');
+                a.type = 'file';
+                a.addEventListener('change', function(event){
+                    var files = event.target.files;
+                    reader.readAsText(files[0]);
+                });
+                a.click();
+            },
+            saveImage: function(){
+                renderCanvas.render();
+                var a = document.createElement('a');
+                a.href = renderCanvas.canvas.toDataURL();
+                a.download = "schottky.png"
+                a.click();
+            }
+        }
+        
+    });
+    
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;

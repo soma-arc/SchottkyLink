@@ -355,11 +355,6 @@ function updateShaders(scene, schottkyCanvas, orbitCanvas){
 }
 
 window.addEventListener('load', function(event){
-    Vue.use(Keen);
-    var app = new Vue({
-        el: '#bodyElem',
-    });
-    
     var scene = new Scene();
     //    scene.loadParameter(PRESET_PARAMS[0]);
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
@@ -634,8 +629,67 @@ window.addEventListener('load', function(event){
             }
             break;
         }});
+
+    Vue.use(Keen);
+    var app = new Vue({
+        el: '#bodyElem',
+        data: {
+            schottkyCanvas: schottkyCanvas,
+            orbitCanvas: orbitCanvas
+        },
+        methods: {
+            saveScene: function(){
+                scene.saveSceneAsJson();
+            },
+            loadScene: function(){
+                var reader = new FileReader();
+                reader.addEventListener('load', function(){
+                    scene.loadParameterFromJson(JSON.parse(reader.result));
+                    updateShaders(scene, schottkyCanvas, orbitCanvas);
+                });
+                var a = document.createElement('input');
+                a.type = 'file';
+                a.addEventListener('change', function(event){
+                    var files = event.target.files;
+                    reader.readAsText(files[0]);
+                });
+                a.click();
+            },
+            saveOrbitImage: function(){
+                orbitCanvas.render();
+                var a = document.createElement('a');
+                a.href = orbitCanvas.canvas.toDataURL();
+                a.download = "orbit.png"
+                a.click();
+            },
+            saveSchottkyImage: function(){
+                schottkyCanvas.render();
+                var a = document.createElement('a');
+                a.href = schottkyCanvas.canvas.toDataURL();
+                a.download = "schottky.png"
+                a.click();
+            },
+            renderOrbit: function(){
+                orbitCanvas.render();
+            },
+            orbitSwitchSampling: function(){
+                orbitCanvas.numSamples = 0;
+                orbitCanvas.render();
+            },
+            orbitSwitchGI: function(){
+                if(orbitCanvas.renderer == RAY_TRACER){
+                    orbitCanvas.setPathTracer();
+                }else if(orbitCanvas.renderer == PATH_TRACER){
+                    orbitCanvas.setRayTracer();
+                }
+                setupSchottkyProgram(scene, orbitCanvas);
+                orbitCanvas.render();
+            }
+        },
+    });
     
     (function(){
+
         if(schottkyCanvas.isRendering){
             schottkyCanvas.render();
         }

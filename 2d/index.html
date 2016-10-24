@@ -337,8 +337,8 @@
                 <li class="myBtn"><a class="btnLink" href="../3d/index.html">3D</a></li>
             </ul>
             <ul class="headerRight">
-                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene"></ui-button></li>
-                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene" @click="saveScene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene" @click="loadScene"></ui-button></li>
             </ul>
     </header>
     <div class="content">
@@ -348,7 +348,7 @@
                     <canvas class="renderCanvas" id="canvas"></canvas>
                 </div>
                 <div class="renderPropertyPanel">
-                    <ui-button text="save" raised>
+                    <ui-button text="save" raised @click="saveImage">
                     </ui-button>
                 </div>
             </div>

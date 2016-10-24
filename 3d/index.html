@@ -1486,8 +1486,8 @@
                 <li class="myBtn"><a class="btnLink" href="./index.html">3D</a></li>
             </ul>
             <ul class="headerRight">
-                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene"></ui-button></li>
-                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene" @click="saveScene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene" @click="loadScene"></ui-button></li>
             </ul>
         </header>
         <div class="content">
@@ -1497,7 +1497,7 @@
                         <canvas id="schottkyCanvas" class="renderCanvas"></canvas>
                     </div>
                     <div class="renderPropertyPanel">
-                        <ui-button text="save" raised>
+                        <ui-button text="save" raised @click="saveSchottkyImage">
                         </ui-button>
                     </div>
                 </div>
@@ -1506,19 +1506,19 @@
                         <canvas id="orbitCanvas" class="renderCanvas"></canvas>
                     </div>
                     <div class="renderPropertyPanel">
-                        <ui-button text="save" raised>
+                        <ui-button text="save" raised @click="saveOrbitImage">
                         </ui-button>
                         <div class="switchColumn">
                             <span>Display Gen</span>
-                            <ui-switch hide-label></ui-switch>
+                            <ui-switch hide-label :value.sync="orbitCanvas.displayGenerators" @change="renderOrbit"></ui-switch>
                         </div>
                         <div class="switchColumn">
                             <span> Sampling  </span>
-                            <ui-switch hide-label></ui-switch>
+                            <ui-switch hide-label :value.sync="orbitCanvas.isSampling" @change="orbitSwitchSampling"></ui-switch>
                         </div>
                         <div class="switchColumn">
                             <span>GI</span>
-                            <ui-switch hide-label></ui-switch>
+                            <ui-switch hide-label @change="orbitSwitchGI"></ui-switch>
                         </div>
                     </div>
                 </div>
