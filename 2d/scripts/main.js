@@ -420,7 +420,8 @@ window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
         el: '#bodyElem',
-        data: {scene: scene},
+        data: {scene: scene,
+               presetList: PRESET_PARAMETERS},
         methods:{
             saveScene: function(){
                 scene.saveSceneAsJson();
@@ -445,6 +446,10 @@ window.addEventListener('load', function(event){
                 a.href = renderCanvas.canvas.toDataURL();
                 a.download = "schottky.png"
                 a.click();
+            },
+            presetSelected: function(option){
+                scene.loadParameterFromJson(option);
+                updateShaders(scene, renderCanvas);
             }
         }
         

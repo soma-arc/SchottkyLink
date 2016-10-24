@@ -1,6 +1,6 @@
 const PRESET_PARAMETERS = [
     {
-        "name": "FourCircles",
+        "text": "FourCircles",
         "generators": {
             "Circles": [
                 {
@@ -23,7 +23,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "Apollonian",
+        "text": "Apollonian",
         "generators": {
             "Circles": [
                 {
@@ -48,7 +48,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "Translation",
+        "text": "Translation",
         "generators": {
             "Circles": [
                 {
@@ -81,7 +81,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "Parabolic",
+        "text": "Parabolic",
         "generators": {
             "Circles": [
                 {
@@ -120,7 +120,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "Loxodromic",
+        "text": "Loxodromic",
         "generators": {
             "Circles": [
                 {
@@ -164,7 +164,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "TwistedLoxodromic",
+        "text": "TwistedLoxodromic",
         "generators": {
             "Circles": [
                 {
@@ -189,7 +189,7 @@ const PRESET_PARAMETERS = [
         }
     },
         {
-        "name": "TwistedLoxodromic2",
+        "text": "TwistedLoxodromic2",
         "generators": {
             "Circles": [
                 {

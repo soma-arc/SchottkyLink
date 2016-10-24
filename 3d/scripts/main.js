@@ -634,8 +634,10 @@ window.addEventListener('load', function(event){
     var app = new Vue({
         el: '#bodyElem',
         data: {
+            scene: scene,
             schottkyCanvas: schottkyCanvas,
-            orbitCanvas: orbitCanvas
+            orbitCanvas: orbitCanvas,
+            presetList: PRESET_PARAMETERS
         },
         methods: {
             saveScene: function(){
@@ -673,7 +675,6 @@ window.addEventListener('load', function(event){
                 orbitCanvas.render();
             },
             orbitSwitchSampling: function(){
-                orbitCanvas.numSamples = 0;
                 orbitCanvas.render();
             },
             orbitSwitchGI: function(){
@@ -684,6 +685,10 @@ window.addEventListener('load', function(event){
                 }
                 setupSchottkyProgram(scene, orbitCanvas);
                 orbitCanvas.render();
+            },
+            presetSelected: function(option){
+                scene.loadParameterFromJson(option);
+                updateShaders(scene, schottkyCanvas, orbitCanvas);
             }
         },
     });

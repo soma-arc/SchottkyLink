@@ -1488,6 +1488,9 @@
             <ul class="headerRight">
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene" @click="saveScene"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene" @click="loadScene"></ui-button></li>
+                <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Preset"
+                                                    open-dropdown-on="hover" :menu-options="presetList"
+                                                    @menu-option-selected="presetSelected" has-dropdown-menu></ui-button></li>
             </ul>
         </header>
         <div class="content">

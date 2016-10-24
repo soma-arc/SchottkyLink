@@ -1,6 +1,6 @@
 const PRESET_PARAMETERS = [
     {
-        "name": "BaseOnly",
+        "text": "BaseOnly",
         "generators": {
             "BaseSpheres": [
                 {
@@ -11,145 +11,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "CompoundParabolic",
-        "generators": {
-            "SchottkySpheres": [
-                {
-                    "position": [300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, 424.26],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, -424.26],
-                    "radius": 300
-                }
-            ],
-            "BaseSpheres": [
-                {
-                    "position": [0, 0, 0],
-                    "radius": 125
-                }
-            ],
-            "CompoundParabolic": [
-                {
-                    "innerSphere": {
-                        "position": [0, 0, 1000],
-                        "radius": 500
-                    },
-                    "outerSphere": {
-                        "position": [0, 0, 900],
-                        "radius": 600
-                    },
-                    "thetaDegree": 0
-                }
-            ]
-        }
-    },
-    {
-        "name": "CompoundLoxodromic",
-        "generators": {
-            "SchottkySpheres": [
-                {
-                    "position": [300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, 424.26],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, -424.26],
-                    "radius": 300
-                }
-            ],
-            "BaseSpheres": [
-                {
-                    "position": [0,0,0],
-                    "radius": 125
-                }
-            ],
-            "CompoundLoxodromic": [
-                {
-                    "innerSphere": {
-                        "position": [10,50,900],
-                        "radius": 400
-                    },
-                    "outerSphere": {
-                        "position": [100,100,900],
-                        "radius": 700
-                    },
-                    "point": [0,1000,100],
-                    "q1": [100,-1000,100],
-                    "q2": [1000,0,90]
-                }
-            ]
-        }
-    },
-    {
-        "name": "InfinitePlane",
-        "generators": {
-            "SchottkySpheres": [
-                {
-                    "position": [300,300,0],
-                    "radius": 300
-                },
-                {
-                    "position": [300,-300,0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300,300,0],
-                    "radius": 300
-                },
-                {
-                    "position": [0,0,424.26],
-                    "radius": 300
-                }
-            ],
-            "BaseSpheres": [
-                {
-                    "position": [0,0,0],
-                    "radius": 125
-                }
-            ],
-            "InfiniteSpheres": [
-                {
-                    "center": [0,0,150],
-                    "thetaDegree": 0,
-                    "phiDegree": 0
-                }
-            ]
-        }
-    },
-    {
-        "name": "5Spheres",
+        "text": "5Spheres",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -182,7 +44,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "6Spheres",
+        "text": "6Spheres",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -245,9 +107,8 @@ const PRESET_PARAMETERS = [
                 }
             ]
         }
-    },
-    {
-        "name": "complex",
+    },{
+        "text": "3 base spheres",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -344,7 +205,43 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "TransformByPlanes",
+        "text": "InfinitePlane",
+        "generators": {
+            "SchottkySpheres": [
+                {
+                    "position": [300,300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [300,-300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300,300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [0,0,424.26],
+                    "radius": 300
+                }
+            ],
+            "BaseSpheres": [
+                {
+                    "position": [0,0,0],
+                    "radius": 125
+                }
+            ],
+            "InfiniteSpheres": [
+                {
+                    "center": [0,0,150],
+                    "thetaDegree": 0,
+                    "phiDegree": 0
+                }
+            ]
+        }
+    },
+    {
+        "text": "TransformByPlanes",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -418,7 +315,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "TransformBySpheresParabolic",
+        "text": "TransformBySpheresParabolic",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -503,7 +400,109 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "name": "PlaneAndSphere",
+        "text": "CompoundLoxodromic",
+        "generators": {
+            "SchottkySpheres": [
+                {
+                    "position": [300, 300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [300, -300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300, 300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300, -300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [0, 0, 424.26],
+                    "radius": 300
+                },
+                {
+                    "position": [0, 0, -424.26],
+                    "radius": 300
+                }
+            ],
+            "BaseSpheres": [
+                {
+                    "position": [0,0,0],
+                    "radius": 125
+                }
+            ],
+            "CompoundLoxodromic": [
+                {
+                    "innerSphere": {
+                        "position": [10,50,900],
+                        "radius": 400
+                    },
+                    "outerSphere": {
+                        "position": [100,100,900],
+                        "radius": 700
+                    },
+                    "point": [0,1000,100],
+                    "q1": [100,-1000,100],
+                    "q2": [1000,0,90]
+                }
+            ]
+        }
+    },
+    {
+        "text": "CompoundParabolic",
+        "generators": {
+            "SchottkySpheres": [
+                {
+                    "position": [300, 300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [300, -300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300, 300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300, -300, 0],
+                    "radius": 300
+                },
+                {
+                    "position": [0, 0, 424.26],
+                    "radius": 300
+                },
+                {
+                    "position": [0, 0, -424.26],
+                    "radius": 300
+                }
+            ],
+            "BaseSpheres": [
+                {
+                    "position": [0, 0, 0],
+                    "radius": 125
+                }
+            ],
+            "CompoundParabolic": [
+                {
+                    "innerSphere": {
+                        "position": [0, 0, 1000],
+                        "radius": 500
+                    },
+                    "outerSphere": {
+                        "position": [0, 0, 900],
+                        "radius": 600
+                    },
+                    "thetaDegree": 0
+                }
+            ]
+        }
+    },
+    {
+        "text": "PlaneAndSphere",
         "generators": {
             "BaseSpheres": [
                 {
