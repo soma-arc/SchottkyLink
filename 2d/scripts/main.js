@@ -26,32 +26,30 @@ var RenderCanvas2D = function(canvasId, templateId){
 
     this.isFullScreen = false;
 
-    this.usingPixelRatio = 1;
+    this.pixelRatio = window.devicePixelRatio;
     
 }
 
 RenderCanvas2D.prototype = {
     resizeCanvas: function(){
-        this.usingPixelRatio = window.devicePixelRatio;
-
-	this.canvas.width = this.parentPanel.clientWidth * this.usingPixelRatio;
-	this.canvas.height = this.parentPanel.clientHeight * this.usingPixelRatio;
+	this.canvas.width = this.parentPanel.clientWidth * this.pixelRatio;
+	this.canvas.height = this.parentPanel.clientHeight * this.pixelRatio;
         
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     resizeCanvasFullscreen: function(){
         this.usingPixelRatio = window.devicePixelRatio;
-	this.canvas.width = window.innerWidth * this.usingPixelRatio;
-	this.canvas.height = window.innerHeight * this.usingPixelRatio;
+	this.canvas.width = window.innerWidth * this.pixelRatio;
+	this.canvas.height = window.innerHeight * this.pixelRatio;
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     calcPixel: function(){
 	var rect = event.target.getBoundingClientRect();
-	return [this.scale * (((event.clientX - rect.left) * this.usingPixelRatio) / this.canvas.height - this.canvasRatio) +
+	return [this.scale * (((event.clientX - rect.left) * this.pixelRatio) / this.canvas.height - this.canvasRatio) +
 		this.translate[0],
-		this.scale * -(((event.clientY - rect.top) * this.usingPixelRatio) / this.canvas.height - 0.5) +
+		this.scale * -(((event.clientY - rect.top) * this.pixelRatio) / this.canvas.height - 0.5) +
 		this.translate[1]];
     },
     requestFullScreen: function(){
@@ -421,7 +419,12 @@ window.addEventListener('load', function(event){
     var app = new Vue({
         el: '#bodyElem',
         data: {scene: scene,
-               presetList: PRESET_PARAMETERS},
+               presetList: PRESET_PARAMETERS,
+               pixelDensities:[{text: "1.0", value: 1.0},
+                               {text: "1.5", value: 1.5},
+                               {text: "2.0", value: 2.0}],
+               pixelDensitiesDefault: {text: String(window.devicePixelRatio),
+                                       value: window.devicePixelRatio}},
         methods:{
             saveScene: function(){
                 scene.saveSceneAsJson();
@@ -450,6 +453,12 @@ window.addEventListener('load', function(event){
             presetSelected: function(option){
                 scene.loadParameterFromJson(option);
                 updateShaders(scene, renderCanvas);
+            },
+            pixelDensitySelected: function(option){
+                renderCanvas.pixelRatio = option.value;
+                renderCanvas.resizeCanvas();
+                updateShaders(scene, renderCanvas);
+                renderCanvas.render();
             }
         }
         

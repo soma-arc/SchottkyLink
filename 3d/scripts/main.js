@@ -637,7 +637,12 @@ window.addEventListener('load', function(event){
             scene: scene,
             schottkyCanvas: schottkyCanvas,
             orbitCanvas: orbitCanvas,
-            presetList: PRESET_PARAMETERS
+            presetList: PRESET_PARAMETERS,
+            pixelDensities:[{text: "1.0", value: 1.0},
+                            {text: "1.5", value: 1.5},
+                            {text: "2.0", value: 2.0}],
+            pixelDensitiesDefault: {text: String(window.devicePixelRatio),
+                                    value: window.devicePixelRatio}
         },
         methods: {
             saveScene: function(){
@@ -689,10 +694,17 @@ window.addEventListener('load', function(event){
             presetSelected: function(option){
                 scene.loadParameterFromJson(option);
                 updateShaders(scene, schottkyCanvas, orbitCanvas);
+            },
+            pixelDensitySelected: function(option){
+                orbitCanvas.pixelRatio = option.value;
+                orbitCanvas.resize();
+                updateShaders(scene, schottkyCanvas, orbitCanvas);
+                orbitCanvas.render();
             }
         },
     });
-    
+
+
     (function(){
 
         if(schottkyCanvas.isRendering){

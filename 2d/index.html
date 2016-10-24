@@ -393,6 +393,13 @@
                     </div>
                 </ui-tab>
                 <ui-tab header="Scene" id="tab-2">
+                    <div class="row">
+                        Pixel Density
+                    </div>
+                    <ui-select name="Pixel Density" :default="pixelDensitiesDefault"
+                               @selected="pixelDensitySelected" :options="pixelDensities">
+                        
+                    </ui-select>
                 </ui-tab>
             </ui-tabs>
         </div>
