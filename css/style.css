@@ -63,8 +63,10 @@ body {
 }
 
 .btnLink {
+    margin-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
+    height: 100%;
 }
 
 .myBtn:hover{
@@ -218,4 +220,13 @@ a:active {color:#000000;}
     align-items: center;
     height: 100%;
     padding-right: 5px;
+}
+
+div {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    cursor: default;
 }
