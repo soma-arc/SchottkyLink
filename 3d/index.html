@@ -1529,7 +1529,7 @@
             <div class="propertyPanel">
                 <ui-tabs fullwidth>
                     <ui-tab header="Generator" id="tab-1">
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addBaseSphere">
                             <div class="row">
                                 <img src="../img/baseSphere.png" width="128px" height="128px" />
                             </div>
@@ -1537,7 +1537,7 @@
                                 Base Sphere
                             </div>
                         </div>
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addSchottkySphere">
                             <div class="row">
                                 <img src="../img/sphere.png" width="128px" height="128px" />
                             </div>
@@ -1545,7 +1545,7 @@
                                 Sphere
                             </div>
                         </div>
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addInfiniteSphere">
                             <div class="row">
                                 <img src="../img/infiniteSphere.png" width="128px" height="128px" />
                             </div>
@@ -1553,7 +1553,7 @@
                                 Infinite Sphere
                             </div>
                         </div>
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addTranslation">
                             <div class="row">
                                 <img src="../img/translation.png" width="128px" height="128px" />
                             </div>
@@ -1561,7 +1561,7 @@
                                 Translation
                             </div>
                         </div>
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addTransformBySpheres">
                             <div class="row">
                                 <img src="../img/compositionSphere.png" width="128px" height="128px" />
                             </div>
@@ -1569,7 +1569,7 @@
                                 Composition
                             </div>
                         </div>
-                        <div class="imgBtn">
+                        <div class="imgBtn" @click="addCompoundLoxodromic">
                             <div class="row">
                                 <img src="../img/compoundLoxodromic.png" width="128px" height="128px" />
                             </div>

@@ -943,6 +943,35 @@ Scene.prototype = {
         window.clearTimeout(orbitCanvas.renderTimerID);
 	updateShaders(this, schottkyCanvas, orbitCanvas);
     },
+    addInfiniteSphere: function(schottkyCanvas, orbitCanvas, pos){
+        this.objects[ID_INFINITE_SPHERE].push(new InfiniteSphere(pos, 0, 0));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
+	updateShaders(this, schottkyCanvas, orbitCanvas);
+    },
+    addTranslation: function(schottkyCanvas, orbitCanvas, pos){
+        this.objects[ID_TRANSFORM_BY_PLANES].push(new TransformByPlanes(300, -300, 0, 0, 0));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
+	updateShaders(this, schottkyCanvas, orbitCanvas);
+    },
+    addTransformBySpheres: function(schottkyCanvas, orbitCanvas, pos){
+        this.objects[ID_TRANSFORM_BY_SPHERES].push(new TransformBySpheres(new Sphere(0, 665, 633, 500),
+                                                                          new Sphere(0, 665, 472, 661)));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
+	updateShaders(this, schottkyCanvas, orbitCanvas);
+    },
+    addCompoundLoxodromic: function(schottkyCanvas, orbitCanvas, pos){
+        this.objects[ID_COMPOUND_LOXODROMIC].push(new CompoundLoxodromic(new Sphere(10, 50, 900, 400),
+                                                                         new Sphere(100, 100, 900, 700),
+                                                                         [0, 1000, 100],
+                                                                         [100, -1000, 100],
+                                                                         [1000, 0, 90]));
+        window.clearTimeout(schottkyCanvas.renderTimerID);
+        window.clearTimeout(orbitCanvas.renderTimerID);
+	updateShaders(this, schottkyCanvas, orbitCanvas);
+    },
     getSelectedObject: function(eye, ray){
         // [distance, objectId, index, componentId]
         var isect = [99999999, -1, -1, -1];

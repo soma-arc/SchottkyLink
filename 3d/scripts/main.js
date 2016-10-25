@@ -700,6 +700,24 @@ window.addEventListener('load', function(event){
                 orbitCanvas.resize();
                 updateShaders(scene, schottkyCanvas, orbitCanvas);
                 orbitCanvas.render();
+            },
+            addBaseSphere: function(){
+                scene.addBaseSphere(schottkyCanvas, orbitCanvas);
+            },
+            addSchottkySphere: function(){
+                scene.addSchottkySphere(schottkyCanvas, orbitCanvas);
+            },
+            addInfiniteSphere: function(){
+                scene.addInfiniteSphere(schottkyCanvas, orbitCanvas, [0, 0, 0]);
+            },
+            addTranslation: function(){
+                scene.addTranslation(schottkyCanvas, orbitCanvas, [0, 0, 0]);
+            },
+            addTransformBySpheres: function(){
+                scene.addTransformBySpheres(schottkyCanvas, orbitCanvas, [0, 0, 0]);
+            },
+            addCompoundLoxodromic: function(){
+                scene.addCompoundLoxodromic(schottkyCanvas, orbitCanvas, [0, 0, 0]);
             }
         },
     });
