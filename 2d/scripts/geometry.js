@@ -531,6 +531,21 @@ Scene.prototype = {
 	this.objects[ID_CIRCLE].push(new Circle(mouse[0], mouse[1], 100));
 	updateShaders(this, canvas);
     },
+    addInfiniteCircle: function(canvas, pos){
+        this.objects[ID_INFINITE_CIRCLE].push(new InfiniteCircle(pos[0], pos[1], 0));
+        updateShaders(this, canvas);
+    },
+    addTransformByCircles: function(canvas, pos){
+        this.objects[ID_TRANSFORM_BY_CIRCLES].push(new TransformByCircles(new Circle(pos[0]-50, pos[1], 150),
+                                                                          new Circle(pos[0], pos[1], 200)));
+        updateShaders(this, canvas);
+    },
+    addLoxodromic: function(canvas, pos){
+        this.objects[ID_TWISTED_LOXODROMIC].push(new TwistedLoxodromic(new Circle(pos[0]-50, pos[1], 150),
+                                                                       new Circle(pos[0], pos[1], 200),
+                                                                       [pos[0] + 200, pos[1] + 100]));
+        updateShaders(this, canvas);
+    },
     // return [objectId, objectIndex, objectComponentId,
     //         difference between object position and mouse position]
     getSelectedObject: function(mouse){

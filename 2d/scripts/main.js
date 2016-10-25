@@ -459,6 +459,18 @@ window.addEventListener('load', function(event){
                 renderCanvas.resizeCanvas();
                 updateShaders(scene, renderCanvas);
                 renderCanvas.render();
+            },
+            addCircle: function(){
+                scene.addCircle(renderCanvas, [0, 0]);
+            },
+            addInfiniteCircle: function(){
+                scene.addInfiniteCircle(renderCanvas, [0, 0]);
+            },
+            addTransformByCircles: function(){
+                scene.addTransformByCircles(renderCanvas, [0, 0]);
+            },
+            addLoxodromic: function(){
+                scene.addLoxodromic(renderCanvas, [0, 0]);
             }
         }
         

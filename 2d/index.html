@@ -359,7 +359,7 @@
         <div class="propertyPanel">
             <ui-tabs fullwidth>
                 <ui-tab header="Generator" id="tab-1">
-                    <div class="imgBtn">
+                    <div class="imgBtn" @click="addCircle">
                         <div class="row">
                             <img src="../img/circle.png" width="128px" height="128px" />
                         </div>
@@ -367,7 +367,7 @@
                             Circle
                         </div>
                     </div>
-                    <div class="imgBtn">
+                    <div class="imgBtn" @click="addInfiniteCircle">
                     <div class="row">
                         <img src="../img/infiniteCircle.png" width="128px" height="128px" />
                     </div>
@@ -375,7 +375,7 @@
                         Infinite Circle
                     </div>
                     </div>
-                    <div class="imgBtn">
+                    <div class="imgBtn" @click="addTransformByCircles">
                         <div class="row">
                             <img src="../img/compositionParabolic.png" width="128px" height="128px" />
                         </div>
@@ -383,7 +383,7 @@
                             Composition (Parabolic)
                         </div>
                     </div>
-                    <div class="imgBtn">
+                    <div class="imgBtn" @click="addLoxodromic">
                         <div class="row">
                             <img src="../img/compositionLoxodromic.png" width="128px" height="128px" />
                         </div>
