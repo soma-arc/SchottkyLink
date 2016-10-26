@@ -49,7 +49,7 @@ Circle.prototype = {
 	    var dx = mouse[0] - this.x;
 	    var dy = mouse[1] - this.y;
 	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    this.r = dist;
+	    this.r = dist + diff[0];
 	}else{
 	    this.x = mouse[0] - diff[0];
 	    this.y = mouse[1] - diff[1];
@@ -72,7 +72,8 @@ Circle.prototype = {
         var distFromCircumference = dist - this.r;
 	if(distFromCircumference < 0 &&
            Math.abs(distFromCircumference) < this.circumferenceThickness){
-	    return [CIRCLE_CIRCUMFERENCE, [dx, dy]];
+            var d = dist - (this.r - this.circumferenceThickness)
+	    return [CIRCLE_CIRCUMFERENCE, [d, d]];
 	}else if(dist < Math.abs(this.r - this.circumferenceThickness)){
 	    return [CIRCLE_BODY, [dx, dy]];
 	}
