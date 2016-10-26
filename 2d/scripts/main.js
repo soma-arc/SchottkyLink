@@ -10,7 +10,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.isRendering = false;
     this.isMousePressing = false;
     this.prevMousePos = [0, 0];
-    this.scale = 900;
+    this.scale = 1024;
 
     this.selectedObjectId = -1;
     this.selectedObjectIndex = -1;
@@ -45,11 +45,11 @@ RenderCanvas2D.prototype = {
 	this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
-    calcPixel: function(){
-	var rect = event.target.getBoundingClientRect();
-	return [this.scale * (((event.clientX - rect.left) * this.pixelRatio) / this.canvas.height - this.canvasRatio) +
+    calcPixel: function(mx, my){
+	var rect = this.canvas.getBoundingClientRect();
+	return [this.scale * (((mx - rect.left) * this.pixelRatio) / this.canvas.height - this.canvasRatio) +
 		this.translate[0],
-		this.scale * -(((event.clientY - rect.top) * this.pixelRatio) / this.canvas.height - 0.5) +
+		this.scale * -(((my - rect.top) * this.pixelRatio) / this.canvas.height - 0.5) +
 		this.translate[1]];
     },
     requestFullScreen: function(){
@@ -136,7 +136,7 @@ function addMouseListeners(scene, renderCanvas){
 
     renderCanvas.canvas.addEventListener('mousemove', function(event){
 	if(!renderCanvas.isMousePressing) return;
-	var mouse = renderCanvas.calcPixel();
+	var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
 	if(event.button == 0){
 	    scene.move(renderCanvas.selectedObjectId,
 			 renderCanvas.selectedObjectIndex,
@@ -144,7 +144,7 @@ function addMouseListeners(scene, renderCanvas){
 			 mouse, diff);
 	    renderCanvas.isRendering = true;
 	}else if(event.button == 2){
-            var d = vec2Scale(vec2Diff(mouse, renderCanvas.prevMousePos), 0.01);
+            var d = vec2Diff(mouse, renderCanvas.prevMousePos);
             renderCanvas.translate[0] -= d[0];
             renderCanvas.translate[1] -= d[1];
             renderCanvas.isRendering = true;
@@ -153,7 +153,7 @@ function addMouseListeners(scene, renderCanvas){
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
 	event.preventDefault();
-	var mouse = renderCanvas.calcPixel(event);
+	var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
 	if(event.button == 0){
 	    [renderCanvas.selectedObjectId,
 	     renderCanvas.selectedObjectIndex,
@@ -171,7 +171,7 @@ function addMouseListeners(scene, renderCanvas){
 
     renderCanvas.canvas.addEventListener('dblclick', function(event){
 	if(event.button == 0){
-	    var mouse = renderCanvas.calcPixel(event);
+	    var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
 	    scene.remove(renderCanvas.selectedObjectId,
 			   renderCanvas.selectedObjectIndex,
 			   mouse, diff);
@@ -183,11 +183,9 @@ function addMouseListeners(scene, renderCanvas){
     renderCanvas.canvas.addEventListener('mousewheel', function(event){
 	event.preventDefault();
 	if(event.wheelDelta > 0){
-	    if(renderCanvas.scale > 1){
-		renderCanvas.scale -= 100;
-	    }
+            renderCanvas.scale *= 0.5;
 	}else{
-	    renderCanvas.scale += 100;
+            renderCanvas.scale *= 2;
 	}
 	renderCanvas.render();
     })
