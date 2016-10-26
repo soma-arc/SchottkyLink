@@ -250,10 +250,10 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
 
     canvas.addEventListener('mousewheel', function(event){
         event.preventDefault();
-        if(event.wheelDelta > 0 && renderCanvas.camera.eyeDist > 100){
-            renderCanvas.camera.eyeDist -= 100;
+        if(event.wheelDelta > 0){
+            renderCanvas.camera.eyeDist *= 0.75;
         }else{
-            renderCanvas.camera.eyeDist += 100;
+            renderCanvas.camera.eyeDist *= 1.5;
         }
         renderCanvas.camera.update();
         renderCanvas.numSamples = 0;
