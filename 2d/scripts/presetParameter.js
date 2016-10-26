@@ -193,33 +193,18 @@ const PRESET_PARAMETERS = [
         "generators": {
             "Circles": [
                 {
-                    "position": [115, 190],
-                    "radius": 100
+                    "position": [457, -230],
+                    "radius": 90
                 }
             ],
-            "TwistedLoxodromic": [
+            "TwistedLoxodromicFromFixedPoints": [
                 {
-                    "innerCircle": {
-                        "position": [-4, -7],
-                        "radius": 150
-                    },
-                    "outerCircle": {
-                        "position": [0, 0],
-                        "radius": 200
-                    },
-                    "point": [100, 10]
+                    "fixedPoint1": [241, -41],
+                    "fixedPoint2": [-200, 100],
+                    "point": [0, 42],
+                    "q1":[157, 61],
+                    "q2":[133, -59]
                 },
-                {
-                    "innerCircle": {
-                        "position": [-704, -107],
-                        "radius": 150
-                    },
-                    "outerCircle": {
-                        "position": [-700, -100],
-                        "radius": 200
-                    },
-                    "point": [-400, -100]
-                }
             ]
         }
     }

@@ -469,6 +469,9 @@ window.addEventListener('load', function(event){
             },
             addLoxodromic: function(){
                 scene.addLoxodromic(renderCanvas, [0, 0]);
+            },
+            addLoxodromicFromFixedPoints: function(){
+                scene.addLoxodromicFromFixedPoints(renderCanvas, [0, 0]);
             }
         }
         

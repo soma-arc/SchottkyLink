@@ -57,6 +57,14 @@ function circleInvertOnPoint(p, c){
                    center);
 }
 
+function lineInvertOnPoint(p, center, lineDir, invRotationMat2, rotationMat2){
+    var pos = vec2Diff(p, center);
+    var rotated = applyMat2(invRotationMat2, pos);
+    rotated[0] *= -1;
+    rotated = applyMat2(rotationMat2, rotated);
+    return vec2Sum(rotated, center);
+}
+
 function makeCircleFromPoints(a, b, c){
     var lA = vec2Len(vec2Diff(b, c));
     var lB = vec2Len(vec2Diff(a, c));
@@ -78,10 +86,6 @@ function makeLineFromPoints(a, b){
 
 var RT_2 = Math.sqrt(2);
 function circleInvert(invertCircle, genCircle){
-    // var center = invertCircle.getPosition();
-    // var nCenter = circleInvertOnPoint(center, genCircle);
-    // var p = circleInvertOnPoint(vec2Sum(center, [invertCircle.x , 0]) , genCircle);
-    // return new Circle(nCenter[0], nCenter[1], vec2Len(vec2Diff(p, nCenter)));
     var [x, y] = invertCircle.getPosition();
     var r = invertCircle.r;
     coeffR = r * RT_2 / 2;

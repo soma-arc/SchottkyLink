@@ -2,6 +2,7 @@ const ID_CIRCLE = 0;
 const ID_INFINITE_CIRCLE = 1;
 const ID_TRANSFORM_BY_CIRCLES = 2;
 const ID_TWISTED_LOXODROMIC = 3;
+const ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS = 4;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
@@ -173,6 +174,8 @@ InfiniteCircle.prototype = {
 	    return [INFINITE_CIRCLE_CONTROL_POINT, [dx, dy]];
 	}
 	var p = vec2Diff(mouse, this.getPosition());
+        // Rotation matrix doesn't work same as GLSL
+        // We have to swap rotaion matrix and inversed matrix
 	var rot = applyMat2(this.rotationMat2, p);
 	if(rot[0] > 0){
 	    return [INFINITE_CIRCLE_BODY, p];
@@ -435,11 +438,169 @@ TwistedLoxodromic.prototype = {
     },
 }
 
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP1 = 0;
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP2 = 1;
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_POINT = 2;
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q1 = 3;
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q2 = 4;
+const TWISTED_LOXODROMIC_FROM_FIXED_POINTS_OUTER_BODY = 5;
+
+var TwistedLoxodromicFromFixedPoints = function(fp1, fp2, point, q1, q2){
+    this.fp1 = fp1;
+    this.fp2 = fp2;
+    this.point = point;
+    this.q1 = q1;
+    this.q2 = q2;
+
+    this.controlPointRadius = 10;
+    this.lineThickness = 10;
+
+    this.update();
+}
+
+TwistedLoxodromicFromFixedPoints.createFromJson = function(obj){
+    return new TwistedLoxodromicFromFixedPoints(obj['fixedPoint1'].slice(0),
+                                                obj['fixedPoint2'].slice(0),
+                                                obj['point'].slice(0),
+                                                obj['q1'].slice(0),
+                                                obj['q2'].slice(0));
+}
+
+TwistedLoxodromicFromFixedPoints.prototype = {
+    update: function(){
+        this.lineDir = vec2Diff(this.fp1, this.fp2);
+        this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI / 2.;
+        this.rotationMat2 = getRotationMat2(this.theta);
+        this.invRotationMat2 = getRotationMat2(-this.theta);
+        this.c3 = makeCircleFromPoints(this.point, this.fp1, this.fp2);
+
+
+        this.q1C3Inv = circleInvertOnPoint(this.q1, this.c3);
+        // Rotation matrix doesn't work same as GLSL
+        // We have to swap rotaion matrix and inversed matrix
+        this.q1LineInv = lineInvertOnPoint(this.q1, this.fp1, this.lineDir,
+                                           this.rotationMat2, this.invRotationMat2);
+        this.q2C3Inv = circleInvertOnPoint(this.q2, this.c3);
+        this.q2LineInv = lineInvertOnPoint(this.q2, this.fp1, this.lineDir,
+                                           this.rotationMat2, this.invRotationMat2);
+
+        var c1 = makeCircleFromPoints(this.q1, this.q1C3Inv, this.q1LineInv);
+        var c2 = makeCircleFromPoints(this.q2, this.q2C3Inv, this.q2LineInv);
+        if(c1.r < c2.r){
+            this.inner = c1;
+            this.outer = c2;
+        }else{
+            this.inner = c2;
+            this.outer = c1;
+        }
+
+        this.inverted = circleInvert(this.inner, this.outer);
+    },
+    getUniformArray: function(){
+	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						   this.inverted.getUniformArray(),
+                                                   this.c3.getUniformArray(),
+                                                   this.point, [0],
+                                                   this.q1, [0],
+                                                   this.q2, [0],
+                                                   this.fp1, [0],
+                                                   this.fp2, [0]);
+    },
+    getUIParamArray: function(){
+        return [this.controlPointRadius, this.lineThickness];
+    },
+    clone: function(){
+        return new TwistedLoxodromicFromFixedPoints(this.fp1.slice(0),
+                                                    this.fp2.slice(0),
+                                                    this.point.slice(0),
+                                                    this.q1.slice(0),
+                                                    this.q2.slice(0));
+    },
+    exportJson: function(){
+        return {"fp1": this.fp1,
+                "fp2": this.fp2,
+                "point": this.point,
+                "q1": this.q1,
+                "q2": this.q2};
+    },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicFromFixedPoints'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicFromFixedPointsRotationMat2'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_invTwistedLoxodromicFromFixedPointsRotationMat2'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_twistedLoxodromicFromFixedPointsUIParam'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
+			    this.rotationMat2);
+        gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
+			    this.invRotationMat2);
+        gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
+        return uniIndex;
+    },
+    move: function(scene, componentId, mouse, diff){
+        var prevOuterX = this.outer.x; 
+        var prevOuterY = this.outer.y;
+        switch (componentId) {
+        case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP1:
+            this.fp1 = vec2Diff(mouse, diff);
+            break;
+        case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP2:
+            this.fp2 = vec2Diff(mouse, diff);
+            break;
+        case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_POINT:
+            this.point = vec2Diff(mouse, diff);
+            break;
+        case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q1:
+            this.q1 = vec2Diff(mouse, diff);
+            break;
+        case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q2:
+            this.q2 = vec2Diff(mouse, diff);
+            break;
+        }
+        this.update();
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){        
+        var diff = vec2Diff(this.fp1, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP1, diff];
+        }
+        diff = vec2Diff(this.fp2, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP2, diff];
+        }
+        diff = vec2Diff(this.point, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_POINT, diff];
+        }
+        diff = vec2Diff(this.q1, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q1, diff];
+        }
+        diff = vec2Diff(this.q2, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_Q2, diff];
+        }
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_OUTER_BODY, diff];
+        }
+        
+	return [-1, [0, 0]];
+    },
+}
+
 const GENERATORS_NAME_ID_MAP = {
     "Circles": ID_CIRCLE,
     "InfiniteCircles": ID_INFINITE_CIRCLE,
     "TransformByCircles": ID_TRANSFORM_BY_CIRCLES,
     "TwistedLoxodromic": ID_TWISTED_LOXODROMIC,
+    "TwistedLoxodromicFromFixedPoints": ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS,
 }
 
 const GENERATORS_ID_NAME_MAP = {};
@@ -447,12 +608,14 @@ GENERATORS_ID_NAME_MAP[ID_CIRCLE] = "Circles";
 GENERATORS_ID_NAME_MAP[ID_INFINITE_CIRCLE] = "InfiniteCircles";
 GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "TransformByCircles";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "TwistedLoxodromic";
+GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS] = "TwistedLoxodromicFromFixedPoints";
 
 const GENERATORS_NAME_CLASS_MAP = {
     "Circles": Circle,
     "InfiniteCircles": InfiniteCircle,
     "TransformByCircles": TransformByCircles,
     "TwistedLoxodromic": TwistedLoxodromic,
+    "TwistedLoxodromicFromFixedPoints": TwistedLoxodromicFromFixedPoints,    
 };
 
 var Scene = function(){
@@ -545,6 +708,14 @@ Scene.prototype = {
         this.objects[ID_TWISTED_LOXODROMIC].push(new TwistedLoxodromic(new Circle(pos[0]-50, pos[1], 150),
                                                                        new Circle(pos[0], pos[1], 200),
                                                                        [pos[0] + 200, pos[1] + 100]));
+        updateShaders(this, canvas);
+    },
+    addLoxodromicFromFixedPoints: function(canvas, pos){
+        this.objects[ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS].push(new TwistedLoxodromicFromFixedPoints([241,-41],
+                                                                                                        [-200, 100],
+                                                                                                        [0, 42],
+                                                                                                        [157, 61],
+                                                                                                        [133, -59]));
         updateShaders(this, canvas);
     },
     // return [objectId, objectIndex, objectComponentId,

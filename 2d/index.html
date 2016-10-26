@@ -68,6 +68,25 @@
          // [controlPointRadius, lineThickness]
          uniform vec2 u_twistedLoxodromicUIParam{{ n }};
          {% endfor %}
+
+         {% for n in range(0, numTwistedLoxodromicFromFixedPoints) %}
+         // [innerCircle, outerCircle, invertedCircle, c3, p, q1, q2, fp1, fp2]
+         uniform vec3 u_twistedLoxodromicFromFixedPoints{{ n }}[9];
+         uniform mat2 u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }};
+         uniform mat2 u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }};
+         // [controlPointRadius, lineThickness]
+         uniform vec2 u_twistedLoxodromicFromFixedPointsUIParam{{ n }};
+         {% endfor %}
+
+         const vec3 BLACK = vec3(0);
+         const vec3 WHITE = vec3(1);
+         const vec3 LIGHT_GRAY = vec3(0.78);
+         const vec3 RED = vec3(1, 0, 0);
+         const vec3 GREEN = vec3(0, .78, 0);
+         const vec3 BLUE = vec3(0, 0, 1);
+         const vec3 YELLOW = vec3(1, 1, 0);
+         const vec3 PINK = vec3(.78, 0, .78);
+         const vec3 LIGHT_BLUE = vec3(0, 1, 1);
          
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, float sampleIndex) {
@@ -155,13 +174,6 @@
 
                  {% for n in range(0, numTwistedLoxodromic) %}
                  if(distance(pos, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){                 
-                     /* vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
-                      * vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
-                      * vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
-                      * vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
-                      * float d{{ n }} = length(n{{ n }});
-                      * pos += -2. * d{{ n }} * n{{ n }};*/
-
                      pos -= u_twistedLoxodromic{{ n }}[0].xy;
 	             pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
 		     pos.x *= -1.;
@@ -184,17 +196,50 @@
 		     pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
 
                      pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
-                     /* vec2 v2{{ n }} = pos - u_twistedLoxodromic{{ n }}[0].xy;
-                      * vec2 v1{{ n }} = normalize(u_twistedLoxodromic{{ n }}[1].xy - u_twistedLoxodromic{{ n }}[0].xy);
-                      * vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
-                      * vec2 n{{ n }} = normalize(v2{{ n }} - projection{{ n }});
-                      * float d{{ n }} = length(n{{ n }});
-                      * pos += -2. * d{{ n }} * n{{ n }};*/
+
                      pos -= u_twistedLoxodromic{{ n }}[0].xy;
 	             pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
 		     pos.x *= -1.;
 	             pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
                      pos += u_twistedLoxodromic{{ n }}[0].xy;
+
+                     
+		     cont = true;
+                     //		 loopNum++;
+	         }
+                 
+                 {% endfor %}
+
+                 {% for n in range(0, numTwistedLoxodromicFromFixedPoints) %}
+                 if(distance(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[0].z){                 
+                     pos -= u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
+	             pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+		     pos.x *= -1.;
+	             pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+                     pos += u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
+
+                     
+                     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[3].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[3].z);
+                     
+
+
+
+                     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[0].z);
+                     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[1].z);
+                     
+		     cont = true;
+                     //		 loopNum++;
+	         }else if(distance(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) >= u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
+		     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[1].z);
+		     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[0].z);
+
+                     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[3].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[3].z);
+
+                     pos -= u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
+	             pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+		     pos.x *= -1.;
+	             pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+                     pos += u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
 
                      
 		     cont = true;
@@ -213,8 +258,6 @@
 	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
-         const vec3 BLACK = vec3(0);
-         const vec3 WHITE = vec3(1);
          vec3 renderUI(const vec2 position){
              {% for n in range(0, numCircles) %}
              if(u_selectedObjectId == ID_CIRCLE){
@@ -258,18 +301,65 @@
 
              // control point
              if(distance(position, u_twistedLoxodromic{{ n }}[4].xy) < u_twistedLoxodromicUIParam{{ n }}.x){
-	         return vec3(1.);
+	         return LIGHT_BLUE;
              }
 
 	     if(distance(position, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
                  // inner circle
-	         return mix(vec3(1., 0, 0), col, 0.5);
+	         return mix(RED, col, 0.5);
 	     }else if(distance(position, u_twistedLoxodromic{{ n }}[1].xy) < u_twistedLoxodromic{{ n }}[1].z){
                  // outer circle
-	         return mix(vec3(0, 1., 0), col, 0.5);
+	         return mix(GREEN, col, 0.5);
 	     }else if(distance(position, u_twistedLoxodromic{{ n }}[2].xy) < u_twistedLoxodromic{{ n }}[2].z){
                  // inverted circle
-	         return mix(vec3(0, 0, 1.), col, 0.5);
+	         return mix(BLUE, col, 0.5);
+	     }else if(col != vec3(0.)){
+                 return col;
+             }
+	     {% endfor %}
+
+             {% for n in range(0, numTwistedLoxodromicFromFixedPoints) %}
+
+             // control point
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[4].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
+	         return LIGHT_BLUE;
+             }
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[5].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
+	         return PINK;
+             }
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[6].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
+	         return PINK;
+             }
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[7].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
+	         return RED;
+             }
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[8].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
+	         return RED;
+             }
+             
+             // line
+             vec2 v2{{ n }} = position - u_twistedLoxodromicFromFixedPoints{{ n }}[7].xy;
+             vec2 v1{{ n }} = normalize(u_twistedLoxodromicFromFixedPoints{{ n }}[8].xy - u_twistedLoxodromicFromFixedPoints{{ n }}[7].xy);
+             vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+             vec2 n{{ n }} = v2{{ n }} - projection{{ n }};
+             float d{{ n }} = length(n{{ n }});
+             if(d{{ n }} < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.y){
+                 return vec3(1);
+             }
+
+             if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[3].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[3].z){
+	         col = vec3(0.5, .5, 0);
+	     }
+
+	     if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[0].z){
+                 // inner circle
+	         return mix(RED, col, 0.5);
+	     }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[1].z){
+                 // outer circle
+	         return mix(GREEN, col, 0.5);
+	     }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
+                 // inverted circle
+	         return mix(BLUE, col, 0.5);
 	     }else if(col != vec3(0.)){
                  return col;
              }
@@ -388,7 +478,15 @@
                             <img src="../img/compositionLoxodromic.png" width="128px" height="128px" />
                         </div>
                         <div class="row">
-                            Composition (Loxodromic)
+                            Loxodromic
+                        </div>
+                    </div>
+                    <div class="imgBtn" @click="addLoxodromicFromFixedPoints">
+                        <div class="row">
+                            <img src="../img/loxoFromFixedPoints.png" width="128px" height="128px" />
+                        </div>
+                        <div class="row">
+                            Loxodromic (Fixed Points)
                         </div>
                     </div>
                 </ui-tab>
