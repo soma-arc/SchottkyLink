@@ -1512,7 +1512,7 @@
                         <ui-button text="save" raised @click="saveOrbitImage">
                         </ui-button>
                         <div class="switchColumn">
-                            <span>Display Gen</span>
+                            <span>DisplayGen</span>
                             <ui-switch hide-label :value.sync="orbitCanvas.displayGenerators" @change="renderOrbit"></ui-switch>
                         </div>
                         <div class="switchColumn">
@@ -1522,6 +1522,10 @@
                         <div class="switchColumn">
                             <span>GI</span>
                             <ui-switch hide-label @change="orbitSwitchGI"></ui-switch>
+                        </div>
+			<div class="switchColumn">
+                            <span>LowRes</span>
+                            <ui-switch hide-label :value.sync="orbitCanvas.isRenderingLowResolution"></ui-switch>
                         </div>
                     </div>
                 </div>

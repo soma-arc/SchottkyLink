@@ -56,6 +56,7 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.textures = [];
 
     // texture for low resolution rendering
+    this.isRenderingLowResolution = false;
     this.lowResTextures = [];
     this.lowResRatio = 0.25;
     
@@ -257,7 +258,10 @@ function addMouseListenersToSchottkyCanvas(renderCanvas){
         }
         renderCanvas.camera.update();
         renderCanvas.numSamples = 0;
-        renderCanvas.renderLowRes();
+	if(renderCanvas.isRenderingLowResolution)
+            renderCanvas.renderLowRes();
+	else
+	    renderCanvas.render();
     }, false);
 }
 
@@ -718,7 +722,7 @@ window.addEventListener('load', function(event){
             },
             addCompoundLoxodromic: function(){
                 scene.addCompoundLoxodromic(schottkyCanvas, orbitCanvas, [0, 0, 0]);
-            }
+            },
         },
     });
 
@@ -729,7 +733,10 @@ window.addEventListener('load', function(event){
             schottkyCanvas.render();
         }
         if(orbitCanvas.isRendering){
-            orbitCanvas.renderLowRes();
+	    if(orbitCanvas.isRenderingLowResolution)
+		orbitCanvas.renderLowRes();
+	    else
+		orbitCanvas.render();
         }else if(orbitCanvas.isSampling &&
                  orbitCanvas.renderTimerID == undefined){
             orbitCanvas.render();
