@@ -646,7 +646,7 @@ window.addEventListener('load', function(event){
                             {text: "1.5", value: 1.5},
                             {text: "2.0", value: 2.0}],
             pixelDensitiesDefault: {text: String(window.devicePixelRatio),
-                                    value: window.devicePixelRatio}
+                                    value: 1.0}
         },
         methods: {
             saveScene: function(){
