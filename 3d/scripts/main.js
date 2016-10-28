@@ -702,8 +702,11 @@ window.addEventListener('load', function(event){
             pixelDensitySelected: function(option){
                 orbitCanvas.pixelRatio = option.value;
                 orbitCanvas.resize();
+                schottkyCanvas.pixelRatio = option.value;
+                schottkyCanvas.resize();
                 updateShaders(scene, schottkyCanvas, orbitCanvas);
                 orbitCanvas.render();
+                schottkyCanvas.render();
             },
             addBaseSphere: function(){
                 scene.addBaseSphere(schottkyCanvas, orbitCanvas);
