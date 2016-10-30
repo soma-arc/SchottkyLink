@@ -35,7 +35,9 @@
          uniform int u_selectedObjectId;
          uniform int u_selectedObjectIndex;
          uniform int u_selectedObjectComponentId;
-         
+
+	 uniform bool u_displayGenerators;
+	 
          {% for n  in range(0,  numCircles ) %}
          // [x, y, r, r * r]
          uniform vec3 u_schottkyCircle{{ n }};
@@ -402,7 +404,9 @@
 	         position = position * u_scale;
 	         position += u_translate;
 
-	         vec3 col = renderUI(position);
+	         vec3 col = BLACK;
+		 if(u_displayGenerators)
+		     col = renderUI(position);
 	         float loopNum = IIS(position);
 	         if(loopNum > 0.){
 		     vec3 hsv = vec3(u_initialHue + u_hueStep * loopNum, 1.0, 1.0);
@@ -443,6 +447,10 @@
                 <div class="renderPropertyPanel">
                     <ui-button text="save" raised @click="saveImage">
                     </ui-button>
+		    <div class="switchColumn">
+			<span>DisplayGen</span>
+			<ui-switch hide-label :value.sync="renderCanvas.displayGenerators" @change="render"></ui-switch>
+                    </div>
                 </div>
             </div>
         </div>

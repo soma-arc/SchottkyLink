@@ -27,7 +27,8 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.isFullScreen = false;
 
     this.pixelRatio = window.devicePixelRatio;
-    
+
+    this.displayGenerators = true;
 }
 
 RenderCanvas2D.prototype = {
@@ -96,6 +97,7 @@ RenderCanvas2D.prototype = {
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectId'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectIndex'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
+	uniLocation.push(gl.getUniformLocation(program, 'u_displayGenerators'));
     },
     setUniformValues: function(uniLocation, gl, uniI, width, height){
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
@@ -109,6 +111,7 @@ RenderCanvas2D.prototype = {
 	gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
 	gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
 	gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
+	gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;
     }
 }
@@ -416,7 +419,8 @@ window.addEventListener('load', function(event){
     Vue.use(Keen);
     var app = new Vue({
         el: '#bodyElem',
-        data: {scene: scene,
+        data: {renderCanvas: renderCanvas,
+               scene: scene,
                presetList: PRESET_PARAMETERS,
                pixelDensities:[{text: "1.0", value: 1.0},
                                {text: "1.5", value: 1.5},
@@ -472,7 +476,10 @@ window.addEventListener('load', function(event){
             },
             addLoxodromicFromFixedPoints: function(){
                 scene.addLoxodromicFromFixedPoints(renderCanvas, [0, 0]);
-            }
+            },
+	    render: function(){
+		renderCanvas.render();
+	    }
         }
         
     });
