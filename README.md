@@ -32,17 +32,17 @@ Access to the URL: [schottky.jp](http://schottky.jp) or download the source code
 
 ## Generators
 ### 2 Dimensional
-- #### Circle
-- #### Circle with infinite radius
-- #### Composition of two circles
-- #### Loxodromic
+- Circle
+- Circle with infinite radius
+- Composition of two circles
+- Loxodromic
 
 ### 3 Dimensional
-- #### Sphere
-- #### Sphere with infinite radius
-- #### Translation
-- #### Composition of two spheres
-- #### Compound Loxodromic
+- Sphere
+- Sphere with infinite radius
+- Translation
+- Composition of two spheres
+- Compound Loxodromic
 
 ## Algorithm
 Conventionally, to visualize Schottky groups we traversed Cayley graph composed of its generators.
