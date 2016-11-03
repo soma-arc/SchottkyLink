@@ -29,6 +29,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.pixelRatio = window.devicePixelRatio;
 
     this.displayGenerators = true;
+    this.isDisplayingInstruction = false;
 }
 
 RenderCanvas2D.prototype = {
@@ -416,6 +417,7 @@ window.addEventListener('load', function(event){
 	}
     });
 
+    var isDisplayingInstruction = false;
     Vue.use(Keen);
     var app = new Vue({
         el: '#bodyElem',
@@ -479,7 +481,10 @@ window.addEventListener('load', function(event){
             },
 	    render: function(){
 		renderCanvas.render();
-	    }
+	    },
+            switchInstructionModal: function(){
+                renderCanvas.isDisplayingInstruction = true;
+            }
         }
         
     });

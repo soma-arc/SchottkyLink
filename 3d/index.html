@@ -1486,6 +1486,7 @@
                 <li class="myBtn"><a class="btnLink" href="./index.html">3D</a></li>
             </ul>
             <ul class="headerRight">
+                <li class="headerButton"><ui-button text="Usage" type="flat" raised color="primary" @click="switchInstructionModal"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene" @click="saveScene"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene" @click="loadScene"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Preset"
@@ -1493,6 +1494,25 @@
                                                     @menu-option-selected="presetSelected" has-dropdown-menu></ui-button></li>
             </ul>
         </header>
+        <ui-modal id="modal1" :show.sync="orbitCanvas.isDisplayingInstruction">
+            <div slot="header" class="ui-modal-header-text">
+                Usage
+            </div>
+            <div class="ui-modal-body">
+                <ul>
+                    <li>Left Click: Select a generator</li>
+                    <li>Right Click: Move on screen</li>
+                    <li>Wheel Drag: Rotate camera</li>
+		    <li>Wheel: Zoom</li>
+		    <li>Double Left Click: Remove a generator</li>
+		    <li>z + Drag : Move selected object along the x axis</li>
+		    <li>x + Drag : Move selected object along the y axis</li>
+		    <li>c + Drag : Move selected object along the z axis</li>
+		    <li>s + Drag : Tweak radius of selected sphere</li>
+		    <li>+ / - : Increase / Decrease maximum iterations</li>
+                </ul>
+            </div>
+        </ui-modal>
         <div class="content">
             <div class="renderPanel">
                 <div class="renderCanvasPanel" id="panel1">

@@ -104,6 +104,27 @@ body {
     overflow: hidden;
 }
 
+.instructionPanel {
+    padding: 10px;
+    flex: 1;
+    background-color: Gainsboro;
+}
+
+.ui-modal-header-text {
+    font-family: "Times New Roman";
+    font-size: 3rem;
+}
+
+.ui-modal-body {
+    font-family: "Times New Roman";
+    font-size: 1.2rem;
+}
+
+.instructionHeading {
+    margin: 0;
+}
+
+
 .canvasParent {
     flex: 1;
     display: flex;

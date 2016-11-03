@@ -65,6 +65,8 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.render = function(){};
     this.renderLowRes = function(){};
     this.renderTimerID = undefined;
+
+    this.isDisplayingInstruction = false;
 }
 
 RenderCanvas.prototype = {
@@ -726,6 +728,9 @@ window.addEventListener('load', function(event){
             addCompoundLoxodromic: function(){
                 scene.addCompoundLoxodromic(schottkyCanvas, orbitCanvas, [0, 0, 0]);
             },
+            switchInstructionModal: function(){
+                orbitCanvas.isDisplayingInstruction = true;
+            }
         },
     });
 

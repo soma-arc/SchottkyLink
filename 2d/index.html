@@ -431,91 +431,107 @@
                 <li class="myBtn"><a class="btnLink" href="../3d/index.html">3D</a></li>
             </ul>
             <ul class="headerRight">
+                <li class="headerButton"><ui-button text="Usage" type="flat" raised color="primary" @click="switchInstructionModal"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Save Scene" @click="saveScene"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Scene" @click="loadScene"></ui-button></li>
                 <li class="headerButton"><ui-button type="flat" raised color="primary" text="Load Preset"
                                                     open-dropdown-on="hover" :menu-options="presetList"
                                                     @menu-option-selected="presetSelected" has-dropdown-menu></ui-button></li>
             </ul>
-    </header>
-    <div class="content">
-        <div class="renderPanel">
-            <div class="renderCanvasPanel" id="panel1">
-                <div id="canvasParent1" class="canvasParent">
-                    <canvas class="renderCanvas" id="canvas"></canvas>
-                </div>
-                <div class="renderPropertyPanel">
-                    <ui-button text="save" raised @click="saveImage">
-                    </ui-button>
-		    <div class="switchColumn">
-			<span>DisplayGen</span>
-			<ui-switch hide-label :value.sync="renderCanvas.displayGenerators" @change="render"></ui-switch>
+        </header>
+        <ui-modal :show.sync="renderCanvas.isDisplayingInstruction">
+            <div slot="header" class="ui-modal-header-text">
+                Usage
+            </div>
+            <ul>
+                <li>Left Click: Select a generator</li>
+	        <li>Right Click: Move on screen</li>
+	        <li>Wheel Click: Add a Circle</li>
+	        <li>Wheel: Zoom</li>
+	        <li>Double Left Click: Remove a generator</li>
+	        <li>+ / - : Increase / Decrease maximum iterations</li>
+            </ul>
+        </ui-modal>
+        <div class="content">
+            <div class="renderPanel">
+                <div class="renderCanvasPanel" id="panel1">
+                    <div id="canvasParent1" class="canvasParent">
+                        <canvas class="renderCanvas" id="canvas"></canvas>
+                    </div>
+                    <div class="renderPropertyPanel">
+                        <ui-button text="save" raised @click="saveImage">
+                        </ui-button>
+		        <div class="switchColumn">
+			    <span>DisplayGen</span>
+			    <ui-switch hide-label :value.sync="renderCanvas.displayGenerators" @change="render"></ui-switch>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div class="propertyPanel">
+                <ui-tabs fullwidth>
+                    <ui-tab header="Generator" id="tab-1">
+                        <div class="imgBtn" @click="addCircle">
+                            <div class="row">
+                                <img src="../img/circle.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Circle
+                            </div>
+                        </div>
+                        <div class="imgBtn" @click="addInfiniteCircle">
+                            <div class="row">
+                                <img src="../img/infiniteCircle.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Infinite Circle
+                            </div>
+                        </div>
+                        <div class="imgBtn" @click="addTransformByCircles">
+                            <div class="row">
+                                <img src="../img/compositionParabolic.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Composition (Parabolic)
+                            </div>
+                        </div>
+                        <div class="imgBtn" @click="addLoxodromic">
+                            <div class="row">
+                                <img src="../img/compositionLoxodromic.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Loxodromic
+                            </div>
+                        </div>
+                        <div class="imgBtn" @click="addLoxodromicFromFixedPoints">
+                            <div class="row">
+                                <img src="../img/loxoFromFixedPoints.png" width="128px" height="128px" />
+                            </div>
+                            <div class="row">
+                                Loxodromic (Fixed Points)
+                            </div>
+                        </div>
+                    </ui-tab>
+                    <ui-tab header="Scene" id="tab-2">
+                        <div class="row">
+                            Pixel Density
+                        </div>
+                        <ui-select name="Pixel Density" :default="pixelDensitiesDefault"
+                                   @selected="pixelDensitySelected" :options="pixelDensities">
+                            
+                        </ui-select>
+                    </ui-tab>
+                </ui-tabs>
+            </div>
         </div>
-        <div class="propertyPanel">
-            <ui-tabs fullwidth>
-                <ui-tab header="Generator" id="tab-1">
-                    <div class="imgBtn" @click="addCircle">
-                        <div class="row">
-                            <img src="../img/circle.png" width="128px" height="128px" />
-                        </div>
-                        <div class="row">
-                            Circle
-                        </div>
-                    </div>
-                    <div class="imgBtn" @click="addInfiniteCircle">
-                    <div class="row">
-                        <img src="../img/infiniteCircle.png" width="128px" height="128px" />
-                    </div>
-                    <div class="row">
-                        Infinite Circle
-                    </div>
-                    </div>
-                    <div class="imgBtn" @click="addTransformByCircles">
-                        <div class="row">
-                            <img src="../img/compositionParabolic.png" width="128px" height="128px" />
-                        </div>
-                        <div class="row">
-                            Composition (Parabolic)
-                        </div>
-                    </div>
-                    <div class="imgBtn" @click="addLoxodromic">
-                        <div class="row">
-                            <img src="../img/compositionLoxodromic.png" width="128px" height="128px" />
-                        </div>
-                        <div class="row">
-                            Loxodromic
-                        </div>
-                    </div>
-                    <div class="imgBtn" @click="addLoxodromicFromFixedPoints">
-                        <div class="row">
-                            <img src="../img/loxoFromFixedPoints.png" width="128px" height="128px" />
-                        </div>
-                        <div class="row">
-                            Loxodromic (Fixed Points)
-                        </div>
-                    </div>
-                </ui-tab>
-                <ui-tab header="Scene" id="tab-2">
-                    <div class="row">
-                        Pixel Density
-                    </div>
-                    <ui-select name="Pixel Density" :default="pixelDensitiesDefault"
-                               @selected="pixelDensitySelected" :options="pixelDensities">
-                        
-                    </ui-select>
-                </ui-tab>
-            </ui-tabs>
-        </div>
-    </div>
-    <footer class="footer">
-        <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
-           target="_blank">
-            <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
-        </a>
-        Created by soma_arc
-    </footer>
+        <footer class="footer">
+            <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
+               target="_blank">
+                <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
+            </a>
+            <div>
+                Created by soma_arc
+            </div>
+        </footer>
     </body>
 </html>
