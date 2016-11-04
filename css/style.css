@@ -231,10 +231,7 @@ a:active {color:#000000;}
 }
 
 .ui-textbox {
-    background-color: whiteSmoke;
-    margin-left: 10px;
     margin-bottom: -5px;
-    width: 40px;
 }
 
 .headerButton {

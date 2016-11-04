@@ -1609,6 +1609,10 @@
                         <ui-select name="Pixel Density" :default="pixelDensitiesDefault"
                                    @selected="pixelDensitySelected" :options="pixelDensities">
                         </ui-select>
+			<ui-textbox name="iterations" type="number" :value.sync="orbitCanvas.numIterations"
+			:min="minIterations" @changed="renderOrbit">
+                            
+                        </ui-textbox>
                     </ui-tab>
                 </ui-tabs>
             </div>

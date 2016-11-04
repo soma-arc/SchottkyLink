@@ -255,7 +255,6 @@ window.addEventListener('load', function(event){
     var renderCanvas = new RenderCanvas2D('canvas',
 					  'kissingSchottkyTemplate');
     addMouseListeners(scene, renderCanvas);
-    renderCanvas.resizeCanvas();
 
     updateShaders(scene, renderCanvas);
 
@@ -428,7 +427,8 @@ window.addEventListener('load', function(event){
                                {text: "1.5", value: 1.5},
                                {text: "2.0", value: 2.0}],
                pixelDensitiesDefault: {text: String(window.devicePixelRatio),
-                                       value: window.devicePixelRatio}},
+                                       value: window.devicePixelRatio},
+	       minIterations: 1},
         methods:{
             saveScene: function(){
                 scene.saveSceneAsJson();
@@ -488,7 +488,9 @@ window.addEventListener('load', function(event){
         }
         
     });
-    
+
+    renderCanvas.resizeCanvas();
+    renderCanvas.render();
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;

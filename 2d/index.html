@@ -520,6 +520,13 @@
                                    @selected="pixelDensitySelected" :options="pixelDensities">
                             
                         </ui-select>
+			<div class="row">
+			    Max iterations
+                        </div>
+                        <ui-textbox name="iterations" type="number" :value.sync="renderCanvas.iterations"
+			:min="minIterations" @changed="render">
+                            
+                        </ui-textbox>
                     </ui-tab>
                 </ui-tabs>
             </div>
