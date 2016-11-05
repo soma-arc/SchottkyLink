@@ -428,7 +428,10 @@ window.addEventListener('load', function(event){
                                {text: "2.0", value: 2.0}],
                pixelDensitiesDefault: {text: String(window.devicePixelRatio),
                                        value: window.devicePixelRatio},
-	       minIterations: 1},
+	       minIterations: 1,
+	       minHue: 0,
+	       hueStep: 0.01,
+	       initialHueStep: 0.01},
         methods:{
             saveScene: function(){
                 scene.saveSceneAsJson();

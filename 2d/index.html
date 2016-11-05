@@ -527,6 +527,20 @@
 			:min="minIterations" @changed="render">
                             
                         </ui-textbox>
+			<div class="row">
+			    Initial Hue
+                        </div>
+			<ui-textbox type="number" :value.sync="renderCanvas.initialHue"
+				    :min="hueMin"
+				    :step="initialHueStep"
+				    @changed="render"></ui-textbox>
+			<div class="row">
+			    Hue Step
+                        </div>
+			<ui-textbox type="number" :value.sync="renderCanvas.hueStep"
+				    :min="hueMin"
+				    :step="hueStep"
+				    @changed="render"></ui-textbox>
                     </ui-tab>
                 </ui-tabs>
             </div>
