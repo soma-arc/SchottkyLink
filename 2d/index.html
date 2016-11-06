@@ -14,6 +14,23 @@
         <script type="text/javascript" src="scripts/geometry.js"></script>
         <script type="text/javascript" src="scripts/presetParameter.js"></script>
         <script type="text/javascript" src="scripts/main.js"></script>
+        <script id="render-vert" type="x-shader/x-vertex">
+         attribute vec3 a_vertex;
+         varying vec2 v_texCoord;
+         void main(void){
+             v_texCoord = a_vertex.xy * 0.5 + 0.5;
+             gl_Position = vec4(a_vertex, 1.0);
+         }
+        </script>
+        <script id="render-frag" type="x-shader/x-vertex">
+         precision mediump float;
+         varying vec2 v_texCoord;
+         uniform sampler2D u_texture;
+
+         void main(void){
+             gl_FragColor = texture2D(u_texture, v_texCoord);
+         }
+        </script>
         <script id="vs" type="x-shader/x-vertex">
          attribute vec2 a_vertex;
 
@@ -23,6 +40,9 @@
         </script>
         <script id="kissingSchottkyTemplate" type="x-shader/x-fragment">
          precision mediump float;
+         uniform sampler2D u_accTexture;
+         uniform int u_numSamples;
+         uniform float u_textureWeight;
          uniform float u_iGlobalTime;
          uniform vec2  u_iResolution;
          uniform vec2 u_translate;
@@ -30,7 +50,6 @@
          uniform int u_iterations;
          uniform float u_initialHue;
          uniform float u_hueStep;
-         uniform float u_numSamples;
 
          uniform int u_selectedObjectId;
          uniform int u_selectedObjectIndex;
@@ -394,12 +413,11 @@
 	     return BLACK;
          }
 
-         const float MAX_SAMPLE = 100.;
+         const float MAX_SAMPLE = 10.;
          void main(){
 	     vec3 sum = vec3(0);
 	     float ratio = u_iResolution.x / u_iResolution.y / 2.0;
 	     for(float i = 0. ; i < MAX_SAMPLE ; i++){
-	         if(i >= u_numSamples) break;
 	         vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_iResolution.yy ) - vec2(ratio, 0.5);
 	         position = position * u_scale;
 	         position += u_translate;
@@ -419,7 +437,9 @@
                      sum += col;
                  }
 	     }
-	     gl_FragColor = vec4(sum/u_numSamples, 1.);
+             vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
+             gl_FragColor = vec4(mix(sum/MAX_SAMPLE, texCol, u_textureWeight),
+                                 1.0);
          }
         </script>
     </head>

@@ -7,6 +7,24 @@ var RenderCanvas2D = function(canvasId, templateId){
 
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
+
+        
+    var vertex = [
+            -1, -1,
+            -1, 1,
+             1, -1,
+             1, 1
+    ];
+    this.vertexBuffer = createVbo(this.gl, vertex);
+    this.framebuffer = this.gl.createFramebuffer();
+
+    this.renderProgram = this.gl.createProgram();
+    attachShader(this.gl, 'render-frag', this.renderProgram, this.gl.FRAGMENT_SHADER);
+    attachShader(this.gl, 'render-vert', this.renderProgram, this.gl.VERTEX_SHADER);
+    this.renderProgram = linkProgram(this.gl, this.renderProgram);
+    this.renderVertexAttribute = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
+
+    
     this.isRendering = false;
     this.isMousePressing = false;
     this.prevMousePos = [0, 0];
@@ -16,12 +34,9 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.selectedObjectIndex = -1;
     this.selectedComponentId = -1;
     
-    this.switch;
-    this.render;
     this.iterations = 10;
     this.initialHue = 0;
     this.hueStep = 0.03
-    this.numSamples = 10;
     this.translate = [0, 0];
 
     this.isFullScreen = false;
@@ -30,6 +45,20 @@ var RenderCanvas2D = function(canvasId, templateId){
 
     this.displayGenerators = true;
     this.isDisplayingInstruction = false;
+
+
+    this.numSamples = 0;
+    this.textures = [];
+    this.isSampling = false
+
+    // texture for low resolution rendering
+    this.isRenderingLowResolution = false;
+    this.lowResTextures = [];
+    this.lowResRatio = 0.25;
+
+    this.render = function(){};
+    this.renderLowRes = function(){};
+    this.renderTimerID = undefined;
 }
 
 RenderCanvas2D.prototype = {
@@ -87,6 +116,12 @@ RenderCanvas2D.prototype = {
 	this.selectedComponentId = -1;
     },
     setUniformLocation: function(uniLocation, gl, program){
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_accTexture'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_numSamples'));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               'u_textureWeight'));
         uniLocation.push(gl.getUniformLocation(program, 'u_iResolution'));
         uniLocation.push(gl.getUniformLocation(program, 'u_iGlobalTime'));
         uniLocation.push(gl.getUniformLocation(program, 'u_translate'));
@@ -94,13 +129,17 @@ RenderCanvas2D.prototype = {
         uniLocation.push(gl.getUniformLocation(program, 'u_iterations'));
         uniLocation.push(gl.getUniformLocation(program, 'u_initialHue'));
         uniLocation.push(gl.getUniformLocation(program, 'u_hueStep'));
-	uniLocation.push(gl.getUniformLocation(program, 'u_numSamples'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectId'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectIndex'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
 	uniLocation.push(gl.getUniformLocation(program, 'u_displayGenerators'));
     },
     setUniformValues: function(uniLocation, gl, uniI, width, height){
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
+        gl.uniform1i(uniLocation[uniI++], this.textures[0]);
+        gl.uniform1i(uniLocation[uniI++], this.numSamples);
+        gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
         gl.uniform1f(uniLocation[uniI++], 0);
 	gl.uniform2fv(uniLocation[uniI++], this.translate);
@@ -108,19 +147,38 @@ RenderCanvas2D.prototype = {
 	gl.uniform1i(uniLocation[uniI++], this.iterations);
 	gl.uniform1f(uniLocation[uniI++], this.initialHue);
 	gl.uniform1f(uniLocation[uniI++], this.hueStep);
-	gl.uniform1f(uniLocation[uniI++], this.numSamples);
 	gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
 	gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
 	gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
 	gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;
-    }
+    },
+    createTextures: function(gl, width, height){
+        var textures = [];
+        var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+        for(var i = 0; i < 2; i++) {
+            textures.push(gl.createTexture());
+            gl.bindTexture(gl.TEXTURE_2D, textures[i]);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
+                          0, gl.RGB, type, null);
+        }
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return textures;
+    },
+    initializeTextures: function(){
+        this.textures = this.createTextures(this.gl, this.canvas.width, this.canvas.height);
+        this.lowResTextures = this.createTextures(this.gl,
+                                                  this.canvas.width * this.lowResRatio,
+                                                  this.canvas.height * this.lowResRatio)
+    },
 }
 
 function updateShaders(scene, canvas){
-    [canvas.switch,
-     canvas.render] = setupSchottkyProgram(scene, canvas);
-    canvas.switch();
+    setupSchottkyProgram(scene, canvas);
     canvas.render();
 }
 
@@ -196,6 +254,8 @@ function addMouseListeners(scene, renderCanvas){
 }
 
 function setupSchottkyProgram(scene, renderCanvas){
+    renderCanvas.renderTimerID = undefined;
+    renderCanvas.numSamples = 0;
     var gl = renderCanvas.gl;
     var program = gl.createProgram();
     var renderContext = {};
@@ -206,46 +266,70 @@ function setupSchottkyProgram(scene, renderCanvas){
 			   gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
-
+    renderCanvas.initializeTextures();
     var uniLocation = [];
     renderCanvas.setUniformLocation(uniLocation, gl, program);
     scene.setUniformLocation(uniLocation, gl, program);
-    
-    var vertex = [
-            -1, -1,
-            -1, 1,
-             1, -1,
-             1, 1
-    ];
-    var vPosition = createVbo(gl, vertex);
-    var vAttLocation = gl.getAttribLocation(program, 'a_vertex');
-    gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
-    gl.enableVertexAttribArray(vAttLocation);
-    gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
 
-    var switchProgram = function(){
+    var vAttribLocation = gl.getAttribLocation(program, 'a_vertex');
+
+    var renderToTexture = function(textures, width, height){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, renderCanvas.framebuffer);
+        gl.viewport(0, 0, width, height);
         gl.useProgram(program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vPosition);
-        gl.enableVertexAttribArray(vAttLocation);
-        gl.vertexAttribPointer(vAttLocation, 2, gl.FLOAT, false, 0, 0);
+        var uniI = 0;
+        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height);
+        uniI = scene.setUniformValues(uniLocation, gl, uniI);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
+                                textures[1], 0);
+        gl.enableVertexAttribArray(vAttribLocation);
+        gl.vertexAttribPointer(vAttribLocation, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        textures.reverse();
+    }
+    
+
+    var renderToCanvas = function(textures, width, height){
+        gl.viewport(0, 0, width, height);
+        gl.useProgram(renderCanvas.renderProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.vertexAttribPointer(renderCanvas.renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.flush();
     }
 
     var render = function(){
-        gl.viewport(0, 0,
-		    renderCanvas.canvas.width,
-		    renderCanvas.canvas.height);
+        renderCanvas.renderTimerID = undefined;
+        renderCanvas.isRendering = false;
 
-	var uniI = 0;
-        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI,
-                                             renderCanvas.canvas.width,
-                                             renderCanvas.canvas.height);
-        uniI = scene.setUniformValues(uniLocation, gl, uniI);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        renderToTexture(renderCanvas.textures,
+                        renderCanvas.canvas.width, renderCanvas.canvas.height);
+        renderToCanvas(renderCanvas.textures,
+                       renderCanvas.canvas.width, renderCanvas.canvas.height);
 
-	gl.flush();
+        if(renderCanvas.isSampling)
+            renderCanvas.numSamples++;
     }
 
-    return [switchProgram, render];
+    var renderLowRes = function(){
+        window.clearTimeout(renderCanvas.renderTimerID);
+        renderCanvas.isRendering = false;
+        
+        renderToTexture(renderCanvas.lowResTextures,
+                        renderCanvas.canvas.width * renderCanvas.lowResRatio,
+                        renderCanvas.canvas.height * renderCanvas.lowResRatio);
+        renderToCanvas(renderCanvas.lowResTextures,
+                       renderCanvas.canvas.width, renderCanvas.canvas.height);
+        renderCanvas.renderTimerID = window.setTimeout(render, 500);
+    }
+    
+
+    renderCanvas.render = render;
+    renderCanvas.renderLowRes = renderLowRes;
 }
 
 window.addEventListener('load', function(event){
