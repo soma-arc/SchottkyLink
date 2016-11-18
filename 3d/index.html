@@ -107,10 +107,41 @@
 
          
         </script>
+        <script id="constants" type="x-shader/x-fragment">
+         const int ID_SCHOTTKY_SPHERE = 0;
+         const int ID_BASE_SPHERE = 1;
+         const int ID_TRANSFORM_BY_PLANES = 2;
+         const int ID_TRANSFORM_BY_SPHERES = 3;
+         const int ID_COMPOUND_PARABOLIC = 4;
+         const int ID_COMPOUND_LOXODROMIC = 5;
+         const int ID_INFINITE_SPHERE = 6;
+         
+         const int ID_AXIS_CYLINDER = 100;
+         const int ID_KLEIN_ORBIT = 101;
+        
+         const float PI = 3.14159265359;
+         const float PI_4 = 12.566368;
+         const float EPSILON = 0.01;
 
-        <script id="intersectFunctions" type="x-shadee/x-fragment">
+         const vec3 BLACK = vec3(0);
+         const vec3 WHITE = vec3(1);
+         const vec3 LIGHT_GRAY = vec3(0.78);
+         const vec3 RED = vec3(1, 0, 0);
+         const vec3 GREEN = vec3(0, .78, 0);
+         const vec3 BLUE = vec3(0, 0, 1);
+         const vec3 YELLOW = vec3(1, 1, 0);
+         const vec3 PINK = vec3(.78, 0, .78);
+         const vec3 LIGHT_BLUE = vec3(0, 1, 1);
+
+         const vec3 AMBIENT_FACTOR = vec3(0.1);
+
+         const float NO_HIT = 99999.;
+
          const int MTL_DIFFUSE = 0;
          const int MTL_TRANSPARENT = 1;
+        </script>
+
+        <script id="intersectFunctions" type="x-shadee/x-fragment">
          int g_mtl = MTL_DIFFUSE;
          int g_objId = -1;
          int g_objIndex = -1;
@@ -340,35 +371,11 @@
                          fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
          }
 
-         const int ID_SCHOTTKY_SPHERE = 0;
-         const int ID_BASE_SPHERE = 1;
-         const int ID_TRANSFORM_BY_PLANES = 2;
-         const int ID_TRANSFORM_BY_SPHERES = 3;
-         const int ID_COMPOUND_PARABOLIC = 4;
-         const int ID_COMPOUND_LOXODROMIC = 5;
-         const int ID_INFINITE_SPHERE = 6;
-         
-         const int ID_AXIS_CYLINDER = 100;
-         
-         const float PI = 3.14159265359;
-         const float PI_2 = PI/2.;
-         const float PI_4 = 12.566368;
-         const float EPSILON = 0.001;
-
-         const vec3 BLACK = vec3(0);
-         const vec3 WHITE = vec3(1);
-         const vec3 LIGHT_GRAY = vec3(0.78);
-         const vec3 RED = vec3(1, 0, 0);
-         const vec3 GREEN = vec3(0, .78, 0);
-         const vec3 BLUE = vec3(0, 0, 1);
-         const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(.78, 0, .78);
-         const vec3 LIGHT_BLUE = vec3(0, 1, 1);
+         {% include constants %}
 
          {% include intersectFunctions %}
          
          const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
-         const vec3 ambientFactor = vec3(0.1);
          const int MAX_TRACE_DEPTH = 7;
          float transparency = 0.8;
          vec3 calcColor(vec3 eye, vec3 ray){
@@ -696,7 +703,7 @@
 		     vec3 normal = result.yzw;
                      // diffuse lighting by directionalLight
   	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
-		     vec3 ambient = matColor * ambientFactor;
+		     vec3 ambient = matColor * AMBIENT_FACTOR;
 		     if(g_mtl == MTL_TRANSPARENT){
 		         coeff *= transparency;
 		         l += (diffuse + ambient) * coeff;
@@ -715,14 +722,6 @@
 	     const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 	     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
 	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-         }
-
-
-         const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
-         vec3 gammaCorrect(vec3 rgb) {
-	     return vec3((min(pow(rgb.r, DISPLAY_GAMMA_COEFF), 1.)),
-                         (min(pow(rgb.g, DISPLAY_GAMMA_COEFF), 1.)),
-                         (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
          }
 
          vec3 calcRay (const vec3 eye, const vec3 target,
@@ -988,18 +987,7 @@
 
          {% include uniformVariables %}
 
-         const int ID_SCHOTTKY_SPHERE = 0;
-         const int ID_BASE_SPHERE = 1;
-         const int ID_TRANSFORM_BY_PLANES = 2;
-         const int ID_TRANSFORM_BY_SPHERES = 3;
-         const int ID_COMPOUND_PARABOLIC = 4;
-         const int ID_COMPOUND_LOXODROMIC = 5;
-         const int ID_INFINITE_SPHERE = 6;
-         
-         const int ID_AXIS_CYLINDER = 100;
-         const int ID_KLEIN_ORBIT = 101;
-
-         const float EPSILON = 0.01;
+         {% include constants %}
          
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, int sampleIndex) {
@@ -1015,8 +1003,6 @@
          vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
 	     return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
-
-         const float NO_HIT = 99999.;
 
          float loopNum = 0.;
          {% include distKlein %}
@@ -1049,8 +1035,6 @@
                                    distFunc(p + d.yyx) - distFunc(p - d.yyx)));
          }
 
-         const float PI_4 = 12.566368;
-         const vec3 BLACK = vec3(0);
          const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
          const int MAX_MARCHING_LOOP = 800;
          vec4 march(int objId, int objIndex, int objComponentId, int mtl,
@@ -1078,15 +1062,7 @@
          }
 
          const int MAX_TRACE_DEPTH = 5;
-         vec3 ambientFactor = vec3(0.1);
-         const vec3 WHITE = vec3(1);
-         const vec3 LIGHT_GRAY = vec3(0.78);
-         const vec3 RED = vec3(1, 0, 0);
-         const vec3 GREEN = vec3(0, .78, 0);
-         const vec3 BLUE = vec3(0, 0, 1);
-         const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(.78, 0, .78);
-         const vec3 LIGHT_BLUE = vec3(0, 1, 1);
+
          float transparency = 0.8;
          vec3 calcColor(vec3 eye, vec3 ray){
 	     vec3 l = BLACK;
@@ -1253,7 +1229,7 @@
 
                      // diffuse lighting by directionalLight
   	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
-		     vec3 ambient = matColor * ambientFactor;
+		     vec3 ambient = matColor * AMBIENT_FACTOR;
 		     if(g_mtl == MTL_TRANSPARENT){
 		         coeff *= transparency;
 		         l += (diffuse + ambient) * coeff;
@@ -1266,13 +1242,6 @@
 	         break;
 	     }
 	     return l;
-         }
-
-         const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
-         vec3 gammaCorrect(vec3 rgb) {
-	     return vec3((min(pow(rgb.r, DISPLAY_GAMMA_COEFF), 1.)),
-		         (min(pow(rgb.g, DISPLAY_GAMMA_COEFF), 1.)),
-		         (min(pow(rgb.b, DISPLAY_GAMMA_COEFF), 1.)));
          }
 
          const float SAMPLE_NUM = 1.;
@@ -1292,28 +1261,14 @@
          precision mediump float;
 
          {% include uniformVariables %}
+
+         {% include constants %}
          
          int g_mtl = -1;
          int g_objId = -1;
          int g_objIndex = -1;
          int g_objComponentId = -1;
          bool g_isHit = false;
-
-         const float PI = 3.14159265359;
-         const float PI_4 = 12.566368;
-         const int ID_SCHOTTKY_SPHERE = 0;
-         const int ID_BASE_SPHERE = 1;
-         const int ID_TRANSFORM_BY_PLANES = 2;
-         const int ID_TRANSFORM_BY_SPHERES = 3;
-         const int ID_COMPOUND_PARABOLIC = 4;
-         const int ID_COMPOUND_LOXODROMIC = 5;
-
-         const int ID_AXIS_CYLINDER = 100;
-         const int ID_KLEIN_ORBIT = 101;
-
-         const float EPSILON = 0.01;
-
-         const int MTL_DIFFUSE = 0;
 
          //------------------------------------------------------------------
          // random functions based on Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -1357,8 +1312,6 @@
 	     return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
 
-         const float NO_HIT = 99999.;
-
          float loopNum = 0.;
          {% include distKlein %}
 
@@ -1390,7 +1343,6 @@
                                    distFunc(p + d.yyx) - distFunc(p - d.yyx)));
          }
 
-         const vec3 BLACK = vec3(0);
          const int MAX_MARCHING_LOOP = 800;
          vec4 march(int objId, int objIndex, int objComponentId, int mtl,
 		    const vec3 origin, const  vec3 ray,
@@ -1417,14 +1369,6 @@
          }
 
          const int MAX_TRACE_DEPTH = 3;
-         const vec3 WHITE = vec3(1.);
-         const vec3 LIGHT_GRAY = vec3(0.78);
-         const vec3 RED = vec3(1, 0, 0);
-         const vec3 GREEN = vec3(0, 1, 0);
-         const vec3 BLUE = vec3(0, 0, .78);
-         const vec3 YELLOW = vec3(1, 1, 0);
-         const vec3 PINK = vec3(.78, 0, .78);
-         const vec3 LIGHT_BLUE = vec3(0, 1, 1);
          
          vec3 skyColor(vec3 dir){
              return WHITE;

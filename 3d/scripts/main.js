@@ -10,6 +10,7 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.uniformVariables = nunjucks.compile(document.getElementById('uniformVariables').text);
     this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
     this.intersectFunctions = nunjucks.compile(document.getElementById('intersectFunctions').text);
+    this.constants = nunjucks.compile(document.getElementById('constants').text);
     
     this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
 
@@ -275,7 +276,8 @@ function setupSchottkyProgram(scene, renderCanvas){
 
     var renderContext = {uniformVariables: renderCanvas.uniformVariables,
                          distKlein: renderCanvas.kleinTemplate,
-                         intersectFunctions: renderCanvas.intersectFunctions};
+                         intersectFunctions: renderCanvas.intersectFunctions,
+                         constants: renderCanvas.constants};
     scene.setRenderContext(renderContext);
     var renderTemplate = renderCanvas.getTracerTemplate();
     var shaderStr = renderTemplate.render(renderContext);
