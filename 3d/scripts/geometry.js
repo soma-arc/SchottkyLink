@@ -181,10 +181,10 @@ InfiniteSphere.prototype = {
     },
     castRay: function(objectId, index, eye, ray, isect){
         isect = intersectInfiniteSphere(objectId, index, 0,
-			               this.center,
-			               this.size,
-			               this.invRotationMat3,
-			               this.rotationMat3,
+			                this.center,
+			                this.size,
+			                this.invRotationMat3,
+			                this.rotationMat3,
 			                eye, ray, isect);
         return isect;
     },

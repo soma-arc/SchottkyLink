@@ -251,6 +251,36 @@
 	     return isect;
          }
 
+         // Represent a sphere which have infinite radius
+         // default plane is aligned the z-axis
+         // Rotation center is plane's center
+         vec4 intersectInfiniteSphere(int objId, int objIndex, int objComponentId, int mtl,
+			              vec3 center, float size, mat3 rotation, mat3 invRotation,
+			              vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             vec3 n = rotation * vec3(0, 0, 1);
+             vec3 xAxis = rotation * vec3(1, 0, 0);
+             vec3 yAxis = rotation * vec3(0, 1, 0);
+             float d = -dot(center, n);
+             float v = dot(n, rayDir);
+             float t = -(dot(n, rayOrigin) + d) / v;
+             if(EPSILON < t && t < isect.x){
+                 vec3 p = rayOrigin + t * rayDir;
+                 float hSize = size * .5;
+                 float x = dot(p - center, xAxis);
+                 float y = dot(p - center, yAxis);
+                 if(-hSize <= x && x <= hSize &&
+                    -hSize <= y && y <= hSize ){
+                     g_objId = objId;
+		     g_objIndex = objIndex;
+		     g_objComponentId = objComponentId;
+		     g_mtl = mtl;
+		     g_isHit = true;
+    	             return vec4(t, n);
+                 }
+             }
+             return isect;
+         }
+
          // default plane is aligned the z-axis
          // Rotation center is origin
          vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
@@ -280,36 +310,6 @@
 	     return isect;
          }
 
-         // Represent a sphere which have infinite radius
-         // default plane is aligned the z-axis
-         // Rotation center is plane's center
-         vec4 intersectInfiniteSphere (int objId, int objIndex, int objComponentId, int mtl,
-			               vec3 center, float size, mat3 rotation, mat3 invRotation,
-			               vec3 rayOrigin, vec3 rayDir, vec4 isect) {
-	     g_isHit = false;
-	     vec3 c = center;
-             rayOrigin.xy -= center.xy;
-	     const vec3 defaultN = vec3(0, 0, 1);
-	     vec3 n = rotation * defaultN;
-	     float d = -dot(rotation * c, n);
-	     float v = dot(n, rayDir);
-	     float t = -(dot(n, rayOrigin) + d) / v;
-	     if(EPSILON < t && t < isect.x){
-	         float hSize = size * 0.5;
-    	         vec3 p = rayOrigin + t * rayDir;
-	         p = invRotation * p;
-                 if(-hSize < p.x && p.x < hSize &&
-		    -hSize < p.y && p.y < hSize ){
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-        	     return vec4(t, n);
-                 }
-	     }
-	     return isect;
-         }
 
          vec2 distRotationTorus(const vec3 rayPos, const float radius, const float pipeRadius,
                                                                              const int xzComponentId, const int yzComponentId){

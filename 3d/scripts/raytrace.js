@@ -369,25 +369,23 @@ function intersectRect (objectId, objectIndex, componentId,
 function intersectInfiniteSphere (objectId, objectIndex, componentId,
 			          center, size,
 			          rotationMat3, invRotationMat3,
-			          rayOrigin, rayDir, isect) {    
-    var c = center;
-    var eye = [rayOrigin[0] - center[0],
-               rayOrigin[1] - center[1],
-               rayOrigin[2]];
-    var defaultN = [0, 0, 1];
-    var n = applyMat3(rotationMat3, defaultN);
-    var cc =  applyMat3(rotationMat3, c)
-    var d = -dot(cc, n);
+			          rayOrigin, rayDir, isect){
+    var n = applyMat3(rotationMat3, [0, 0, 1]);
+    var xAxis = applyMat3(rotationMat3, [1, 0, 0]);
+    var yAxis = applyMat3(rotationMat3, [0, 1, 0]);
+    var d = -dot(center, n);
     var v = dot(n, rayDir);
-    var t = -(dot(n, eye) + d) / v;
+    var t = -(dot(n, rayOrigin) + d) / v;
     if(RAYTRACE_EPSILON < t && t < isect[0]){
-	hSize = size * 0.5;
-    	var p = sum(eye, scale(rayDir, t));
-	p = applyMat3(invRotationMat3, p);
-        if(-hSize < p[0] && p[0] < hSize &&
-	   -hSize < p[1] && p[1] < hSize ){
+        var hSize = size * 0.5;
+        var p = sum(rayOrigin, scale(rayDir, t));
+        var x = dot(diff(p, center), xAxis);
+        var y = dot(diff(p, center), yAxis);
+        if(-hSize <= x && x <= hSize &&
+           -hSize <= y && y <= hSize){
             return [t, objectId, objectIndex, componentId];
         }
     }
     return isect;
+    
 }
