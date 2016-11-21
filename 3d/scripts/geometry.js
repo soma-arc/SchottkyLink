@@ -184,7 +184,6 @@ InfiniteSphere.prototype = {
 			                this.center,
 			                this.size,
 			                this.invRotationMat3,
-			                this.rotationMat3,
 			                eye, ray, isect);
         return isect;
     },
@@ -310,20 +309,13 @@ TransformByPlanes.prototype = {
 	this.invTwistMat3 = getRotationZAxis(radians(-this.twist));
     },
     castRay: function(objectId, index, eye, ray, isect){
-        isect = intersectRect(objectId, index, TRANSFORM_BY_PLANES1,
-			      [0, 0, this.distToP1],
-			      this.size,
-			      this.invRotationMat3,
-			      this.rotationMat3,
-			      eye, ray, isect);
-	isect = intersectRect(objectId, index, TRANSFORM_BY_PLANES2,
-			      [0, 0, this.distToP2],
-			      this.size,
-			      prodMat3(this.invTwistMat3,
-				       this.invRotationMat3),
-			      prodMat3(this.rotationMat3,
-				       this.twistMat3),
-			      eye, ray, isect);
+        isect = intersectParallelPlanes(objectId, index,
+                                        TRANSFORM_BY_PLANES1,
+                                        TRANSFORM_BY_PLANES2,
+                                        this.center, this.distToP1, this.distToP2,
+                                        this.size, this.invRotationMat3, this.invTwistMat3,
+                                        eye, ray, isect);
+ 
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){

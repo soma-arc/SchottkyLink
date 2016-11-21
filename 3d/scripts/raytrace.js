@@ -340,35 +340,12 @@ function intersectOverlappingSphere(objectId, objectIndex,
     return isect;
 }
 
-function intersectRect (objectId, objectIndex, componentId,
-			center, size,
-			rotationMat3, invRotationMat3,
-			rayOrigin, rayDir, isect) {    
-    var c = center;
-    var defaultN = [0, 0, 1];
-    var n = applyMat3(rotationMat3, defaultN);
-    var cc =  applyMat3(rotationMat3, c)
-    var d = -dot(cc, n);
-    var v = dot(n, rayDir);
-    var t = -(dot(n, rayOrigin) + d) / v;
-    if(RAYTRACE_EPSILON < t && t < isect[0]){
-	hSize = size * 0.5;
-    	var p = sum(rayOrigin, scale(rayDir, t));
-	p = applyMat3(invRotationMat3, p);
-        if(-hSize < p[0] && p[0] < hSize &&
-	   -hSize < p[1] && p[1] < hSize ){
-            return [t, objectId, objectIndex, componentId];
-        }
-    }
-    return isect;
-}
-
 // Represent a sphere which have infinite radius
 // default plane is aligned the z-axis
 // Rotation center is plane's center
 function intersectInfiniteSphere (objectId, objectIndex, componentId,
 			          center, size,
-			          rotationMat3, invRotationMat3,
+			          rotationMat3,
 			          rayOrigin, rayDir, isect){
     var n = applyMat3(rotationMat3, [0, 0, 1]);
     var xAxis = applyMat3(rotationMat3, [1, 0, 0]);
@@ -388,4 +365,20 @@ function intersectInfiniteSphere (objectId, objectIndex, componentId,
     }
     return isect;
     
+}
+
+function intersectParallelPlanes(objectId, objectIndex,
+                                 plane1Id, plane2Id,
+                                 center, distPlane1, distPlane2, size,
+                                 rotationMat3, twistMat3,
+                                 rayOrigin, rayDir, isect){
+    isect = intersectInfiniteSphere(objectId, objectIndex, plane1Id,
+                                    applyMat3(rotationMat3, sum(center, [0, 0, distPlane1])),
+                                    size, rotationMat3,
+                                    rayOrigin, rayDir, isect);
+    isect = intersectInfiniteSphere(objectId, objectIndex, plane2Id,
+                                    applyMat3(rotationMat3, sum(center, [0, 0, distPlane2])),
+                                    size, prodMat3(rotationMat3, twistMat3),
+                                    rayOrigin, rayDir, isect);
+    return isect;
 }
