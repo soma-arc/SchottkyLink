@@ -81,7 +81,8 @@
          {% endfor %}
          
          {% for n in range(0,  numTransformByPlanes ) %}
-         uniform float u_transformByPlanes{{ n }}[6];
+         // [centerX, centerY, centerZ, distToP1, distToP2, size, thetaRad, phiRad, twist]
+         uniform float u_transformByPlanes{{ n }}[9];
          uniform mat3 u_rotatePlaneMat3{{ n }};
          uniform mat3 u_invRotatePlaneMat3{{ n }};
          uniform mat3 u_twistPlaneMat3{{ n }};
@@ -255,8 +256,9 @@
          // default plane is aligned the z-axis
          // Rotation center is plane's center
          vec4 intersectInfiniteSphere(int objId, int objIndex, int objComponentId, int mtl,
-			              vec3 center, float size, mat3 rotation, mat3 invRotation,
+			              vec3 center, float size, mat3 rotation, 
 			              vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             g_isHit = false;
              vec3 n = rotation * vec3(0, 0, 1);
              vec3 xAxis = rotation * vec3(1, 0, 0);
              vec3 yAxis = rotation * vec3(0, 1, 0);
@@ -281,35 +283,24 @@
              return isect;
          }
 
-         // default plane is aligned the z-axis
-         // Rotation center is origin
-         vec4 intersectRect (int objId, int objIndex, int objComponentId, int mtl,
-			     vec3 center, float size, mat3 rotation, mat3 invRotation,
-			     vec3 rayOrigin, vec3 rayDir, vec4 isect) {
-	     g_isHit = false;
-	     vec3 c = center;
-	     const vec3 defaultN = vec3(0, 0, 1);
-	     vec3 n = rotation * defaultN;
-	     float d = -dot(rotation * c, n);
-	     float v = dot(n, rayDir);
-	     float t = -(dot(n, rayOrigin) + d) / v;
-	     if(EPSILON < t && t < isect.x){
-	         float hSize = size * 0.5;
-    	         vec3 p = rayOrigin + t * rayDir;
-	         p = invRotation * p;
-                 if(-hSize < p.x && p.x < hSize &&
-		    -hSize < p.y && p.y < hSize ){
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-        	     return vec4(t, n);
-                 }
-	     }
-	     return isect;
+         vec4 intersectParallelPlanes (int objId, int objIndex, int mtl,
+			               vec3 center, float distPlane1, float distPlane2,
+                                       float size, mat3 rotation, float twistDegree,
+			               vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             float theta = radians(twistDegree);
+	     float cosTheta = cos(theta);
+	     float sinTheta = sin(theta);
+	     mat3 twist = mat3(cosTheta, -sinTheta, 0,
+			       sinTheta, cosTheta, 0,
+			       0, 0, 1);
+             isect = intersectInfiniteSphere(objId, objIndex, 0, mtl,
+                                             rotation * (center + vec3(0, 0, distPlane1)), size, rotation,
+                                             rayOrigin, rayDir, isect);
+             isect = intersectInfiniteSphere(objId, objIndex, 1, mtl,
+                                             rotation * (center + vec3(0, 0, distPlane2)), size, rotation * twist,
+                                             rayOrigin, rayDir, isect);
+             return isect;
          }
-
 
          vec2 distRotationTorus(const vec3 rayPos, const float radius, const float pipeRadius,
                                                                              const int xzComponentId, const int yzComponentId){
@@ -426,7 +417,6 @@
                                                   u_infiniteSphere{{ n }}.xyz,
                                                   u_infiniteSphere{{ n }}.w,
                                                   u_rotateInfiniteSphereMat3{{ n }},
-                                                  u_invRotateInfiniteSphereMat3{{ n }},
                                                   eye, ray, result);
                  if(u_selectedObjectId == ID_INFINITE_SPHERE &&
 		    u_selectedObjectIndex == {{ n }}){
@@ -447,18 +437,16 @@
                  {% endfor %}
 
 	         {% for n in range(0,  numTransformByPlanes ) %}
-	         result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
-				        vec3(0, 0, u_transformByPlanes{{ n }}[0]),
-				        u_transformByPlanes{{ n }}[2],
-				        u_rotatePlaneMat3{{ n }},
-				        u_invRotatePlaneMat3{{ n }},
-				        eye, ray, result);
-	         result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
-				        vec3(0, 0, u_transformByPlanes{{ n }}[1]),
-				        u_transformByPlanes{{ n }}[2],
-				        u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
-				        u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
-				        eye, ray, result);
+                 result = intersectParallelPlanes(ID_TRANSFORM_BY_PLANES, {{ n }}, MTL_DIFFUSE,
+				                  vec3(u_transformByPlanes{{ n }}[0],
+                                                       u_transformByPlanes{{ n }}[1],
+                                                       u_transformByPlanes{{ n }}[2]),
+				                  u_transformByPlanes{{ n }}[3],
+                                                  u_transformByPlanes{{ n }}[4],
+                                                  u_transformByPlanes{{ n }}[5],
+				                  u_rotatePlaneMat3{{ n }},
+				                  u_transformByPlanes{{ n }}[8],
+				                  eye, ray, result);
                  if(u_selectedObjectId == ID_TRANSFORM_BY_PLANES &&
 		    u_selectedObjectIndex == {{ n }} ){
 		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
@@ -903,14 +891,15 @@
                  
                  
 	         {% for n in range(0,  numTransformByPlanes ) %}
+                 pos -= vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
 	         pos = u_invRotatePlaneMat3{{ n }} * pos;
-	         if(pos.z < u_transformByPlanes{{ n }}[0] || u_transformByPlanes{{ n }}[1] < pos.z){
-		     pos.z -= u_transformByPlanes{{ n }}[0];
-		     float nn = floor(pos.z / (u_transformByPlanes{{n}}[1] - u_transformByPlanes{{ n }}[0]));
+	         if(pos.z < u_transformByPlanes{{ n }}[3] || u_transformByPlanes{{ n }}[4] < pos.z){
+		     pos.z -= u_transformByPlanes{{ n }}[3];
+		     float nn = floor(pos.z / (u_transformByPlanes{{n}}[4] - u_transformByPlanes{{ n }}[3]));
 		     pos.z = mod(pos.z,
-			         u_transformByPlanes{{ n }}[1] - u_transformByPlanes{{ n }}[0]);
-		     pos.z += u_transformByPlanes{{ n }}[0];
-		     float theta = -radians(u_transformByPlanes{{ n }}[5]) * nn;
+			         u_transformByPlanes{{ n }}[4] - u_transformByPlanes{{ n }}[3]);
+		     pos.z += u_transformByPlanes{{ n }}[3];
+		     float theta = -radians(u_transformByPlanes{{ n }}[8]) * nn;
 		     float cosTheta = cos(theta);
 		     float sinTheta = sin(theta);
 		     mat3 m = mat3(cosTheta, -sinTheta, 0,
@@ -922,6 +911,7 @@
 		     loopNum ++;
 	         }
 	         pos = u_rotatePlaneMat3{{ n }} * pos;
+                 pos += vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
 	         {% endfor %}
                  {% for n in range(0, numCompoundLoxodromic) %}
                  if(distance(pos, u_compoundLoxodromic{{ n }}[0].xyz) < u_compoundLoxodromic{{ n }}[0].w){
@@ -1094,24 +1084,20 @@
                                                       u_infiniteSphere{{ n }}.xyz,
                                                       u_infiniteSphere{{ n }}.w,
                                                       u_rotateInfiniteSphereMat3{{ n }},
-                                                      u_invRotateInfiniteSphereMat3{{ n }},
                                                       eye, ray, result);
                      {% endfor %}
                      
 		     {% for n in range(0,  numTransformByPlanes ) %}
-		     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 0, MTL_DIFFUSE,
-					    vec3(0, 0, u_transformByPlanes{{ n }}[0]),
-					    u_transformByPlanes{{ n }}[2],
-					    u_rotatePlaneMat3{{ n }},
-					    u_invRotatePlaneMat3{{ n }},
-					    eye, ray, result);
-		     result = intersectRect(ID_TRANSFORM_BY_PLANES, {{ n }}, 1, MTL_DIFFUSE,
-					    vec3(0, 0, u_transformByPlanes{{ n }}[1]),
-					    u_transformByPlanes{{ n }}[2],
-					    u_rotatePlaneMat3{{ n }} * u_twistPlaneMat3{{ n }},
-					    u_invTwistPlaneMat3{{ n }} * u_invRotatePlaneMat3{{ n }},
-					    eye, ray, result);
-		     
+                     result = intersectParallelPlanes(ID_TRANSFORM_BY_PLANES, {{ n }}, MTL_DIFFUSE,
+				                      vec3(u_transformByPlanes{{ n }}[0],
+                                                           u_transformByPlanes{{ n }}[1],
+                                                           u_transformByPlanes{{ n }}[2]),
+				                      u_transformByPlanes{{ n }}[3],
+                                                      u_transformByPlanes{{ n }}[4],
+                                                      u_transformByPlanes{{ n }}[5],
+				                      u_rotatePlaneMat3{{ n }},
+				                      u_transformByPlanes{{ n }}[8],
+				                      eye, ray, result);
 		     {% endfor %}
 
 		     {% for n in range(0, numTransformBySpheres) %}

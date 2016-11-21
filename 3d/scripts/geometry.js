@@ -226,6 +226,7 @@ const TRANSFORM_BY_PLANES2 = 1;
 // Rotation is defined by theta and phi
 // center is (0, 0, 0)
 var TransformByPlanes = function(distToP1, distToP2, theta, phi, twist){
+    this.center = [0, 0, 0];
     this.distToP1 = distToP1;
     this.distToP2 = distToP2;
     this.theta = theta; // Degree
@@ -266,7 +267,8 @@ TransformByPlanes.prototype = {
                 "twistDegree": this.twist,};
     },
     getUniformArray: function(){
-	return [this.distToP1, this.distToP2, this.size,
+	return [this.center[0], this.center[1], this.center[2],
+                this.distToP1, this.distToP2, this.size,
 		radians(this.theta), radians(this.phi), this.twist];
     },
     setUniformLocation: function(uniLocation, gl, program, id, index){
