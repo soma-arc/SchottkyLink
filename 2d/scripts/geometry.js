@@ -79,6 +79,9 @@ Circle.prototype = {
 	    return [CIRCLE_BODY, [dx, dy]];
 	}
 	return [-1, [0, 0]];
+    },
+    applyTransformation: function(circle){
+        return circleInvert(circle, this);
     }
 }
 
@@ -187,6 +190,14 @@ InfiniteCircle.prototype = {
 	}
 	
 	return [-1, [0, 0]];
+    },
+    applyTransformation: function(circle){
+        var p = [circle.x, circle.y];
+        p = vec2Diff(p, [this.x, this.y]);
+        p = applyMat2(this.invRotationMat2, p);
+        p[0] *= -1;
+        p = applyMat2(this.rotationMat2, p);
+        p = vec2Sum(p, [this.x, this.y]);
     }
 }
 
@@ -631,7 +642,6 @@ Scene.prototype = {
         for(objectName in GENERATORS_NAME_ID_MAP){
             this.objects[GENERATORS_NAME_ID_MAP[objectName]] =
                 (param[objectName] == undefined) ? [] : this.clone(param[objectName]);
-
         }
     },
     loadParameterFromJson: function(param){
@@ -774,5 +784,11 @@ Scene.prototype = {
         for(objectName in GENERATORS_NAME_ID_MAP){
             context['num'+ objectName] = this.objects[GENERATORS_NAME_ID_MAP[objectName]].length;
         }
+    },
+    calcOrbits: function(){
+        var gen = this.objects[ID_CIRCLE];
+        var bfs = new BfsManager(gen);
+        var orbits = bfs.run();
+        return orbits;
     }
 }
