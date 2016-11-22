@@ -342,11 +342,18 @@ window.addEventListener('load', function(event){
 
     updateShaders(scene, renderCanvas);
 
+    var resizeTimerId = undefined
+    var resized = function(){
+        renderCanvas.resizeCanvas();
+        updateShaders(scene, renderCanvas);
+    }
     window.addEventListener('resize', function(event){
     	if(renderCanvas.isFullScreen){
     	    renderCanvas.resizeCanvasFullscreen();
+            updateShaders(scene, renderCanvas);
     	}else{
-    	    renderCanvas.resizeCanvas();
+    	    window.clearTimeout(resizeTimerId);
+            resizeTimerId = window.setTimeout(resized, 500);
     	}
     	renderCanvas.render();
     }, false);
