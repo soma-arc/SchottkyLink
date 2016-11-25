@@ -28,8 +28,16 @@
          varying vec2 v_texCoord;
          uniform sampler2D u_texture;
 
+         const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
+         vec4 gammaCorrect(vec4 rgba) {
+             return vec4((min(pow(rgba.r, DISPLAY_GAMMA_COEFF), 1.)),
+                         (min(pow(rgba.g, DISPLAY_GAMMA_COEFF), 1.)),
+                         (min(pow(rgba.b, DISPLAY_GAMMA_COEFF), 1.)),
+                         rgba.a);
+         }
+         
          void main(void){
-             gl_FragColor = texture2D(u_texture, v_texCoord);
+             gl_FragColor = gammaCorrect(texture2D(u_texture, v_texCoord));
          }
         </script>
         <script id="vs" type="x-shader/x-vertex">
@@ -428,7 +436,7 @@
 		     col = renderUI(position);
 	         float loopNum = IIS(position);
 	         if(loopNum > 0.){
-		     vec3 hsv = vec3(u_initialHue + u_hueStep * loopNum, 1.0, 1.0);
+		     vec3 hsv = vec3(u_initialHue + u_hueStep * (loopNum -1.), 1.0, 1.0);
                      if(!all(equal(col, BLACK))){
                          sum += mix(hsv2rgb(hsv), col, 0.5);
                      }else{

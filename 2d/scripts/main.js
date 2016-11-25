@@ -35,7 +35,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.selectedComponentId = -1;
     
     this.iterations = 10;
-    this.initialHue = 0;
+    this.initialHue = 0.01;
     this.hueStep = 0.03
     this.translate = [0, 0];
 
