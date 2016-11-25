@@ -410,53 +410,9 @@ window.addEventListener('load', function(event){
 		renderCanvas.render();
 	    }
 	    break;
-	case 'a':
-	    if(renderCanvas.initialHue > 0){
-		renderCanvas.initialHue -= 0.05;
-		renderCanvas.render();
-	    }
-	    break;
-	case 's':
-	    renderCanvas.initialHue += 0.05;
-	    renderCanvas.render();
-	    break;
-	case 'z':
-	    if(renderCanvas.hueStep > 0){
-		renderCanvas.hueStep -= 0.01;
-		renderCanvas.render();
-	    }
-	    break;
-	case 'x':
-	    renderCanvas.hueStep += 0.01;
-	    renderCanvas.render();
-	    break;
 	case 'r':
 	    renderCanvas.requestFullScreen();
 	    break;
-        case 'o':
-            renderCanvas.render();
-            var a = document.createElement('a');
-            a.href = renderCanvas.canvas.toDataURL();
-            a.download = "schottky.png"
-            a.click();
-            break;
-        case 'l':
-            scene.saveSceneAsJson();
-            break;
-        case 'm':
-            var reader = new FileReader();
-            reader.addEventListener('load', function(){
-                scene.loadParameterFromJson(JSON.parse(reader.result));
-                updateShaders(scene, renderCanvas);
-            });
-            var a = document.createElement('input');
-            a.type = 'file';
-            a.addEventListener('change', function(event){
-                var files = event.target.files;
-                reader.readAsText(files[0]);
-            });
-            a.click();
-            break;
 	case 'ArrowRight':
 	    event.preventDefault();
 	    renderCanvas.translate[0] += renderCanvas.scale / 10;
@@ -487,24 +443,7 @@ window.addEventListener('load', function(event){
                 scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NORMAL;
             }
             break;
-        case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-	    var i = parseInt(event.key);
-            var param = PRESET_PARAMETERS[i];
-	    if(param != undefined){
-                scene.loadParameterFromJson(param);
-		updateShaders(scene, renderCanvas);
-	    }
-	    break;
-	}
+        }
     });
 
     var isDisplayingInstruction = false;
@@ -580,7 +519,6 @@ window.addEventListener('load', function(event){
                 renderCanvas.isDisplayingInstruction = true;
             }
         }
-        
     });
 
     renderCanvas.resizeCanvas();

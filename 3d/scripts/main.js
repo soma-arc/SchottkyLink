@@ -618,24 +618,6 @@ window.addEventListener('load', function(event){
             setupSchottkyProgram(scene, orbitCanvas);
             orbitCanvas.render();
             break;
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            var i = parseInt(event.key);
-            var param = PRESET_PARAMETERS[i];
-            if(param != undefined){
-                schottkyCanvas.releaseObject();
-                scene.loadParameterFromJson(param);
-                updateShaders(scene, schottkyCanvas, orbitCanvas);
-            }
-            break;
         }});
 
     Vue.use(Keen);
