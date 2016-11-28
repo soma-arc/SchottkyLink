@@ -333,6 +333,9 @@ function setupSchottkyProgram(scene, renderCanvas){
 }
 
 window.addEventListener('load', function(event){
+    var userAgent = window.navigator.userAgent.toLowerCase();
+    if(userAgent.indexOf('chrome') == -1)
+        window.alert('Sorry...\nCurrently, this application supports Google Chrome only.');
     
     var scene = new Scene();
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
