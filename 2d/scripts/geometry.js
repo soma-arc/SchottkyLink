@@ -3,6 +3,7 @@ const ID_INFINITE_CIRCLE = 1;
 const ID_TRANSFORM_BY_CIRCLES = 2;
 const ID_TWISTED_LOXODROMIC = 3;
 const ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS = 4;
+const ID_PARABOLIC = 5;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
@@ -302,6 +303,98 @@ TransformByCircles.prototype = {
         }
 	return [-1, [0, 0]];
     },
+}
+
+const PARABOLIC_OUTER_BODY = 0;
+const PARABOLIC_OUTER_CIRCUMFERENCE = 1;
+const PARABOLIC_INNER_CENTER = 2;
+const PARABOLIC_CONTACT_POINT = 3;
+var Parabolic = function(outerCircle, contactDegree, innerRadius){
+    this.outer = outerCircle;
+    this.contactDegree = contactDegree;
+    this.innerRadius = innerRadius;
+
+    this.controlPointRadius = 10;
+    this.lineThickness = 10;
+
+    this.update();
+}
+
+Parabolic.createFromJson = function(obj){
+    return new Parabolic(Circle.createFromJson(obj["innerCircle"]),
+                         obj["contactDegree"],
+                         obj["innerRadius"]);
+}
+
+Parabolic.prototype = {
+    update: function(){
+        let rad = radians(this.contactDegree);
+        this.contactPoint = [this.outer.r * Math.cos(rad),
+                             this.outer.r * Math.sin(rad)]
+        this.inner = new Circle(this.contactPoint[0] - this.innerRadius * Math.cos(rad),
+                                this.contactPoint[1] - this.innerRadius * Math.sin(rad),
+                                this.innerRadius);
+        this.inverted = circleInvert(this.inner, this.outer);
+
+        let circleOnContact = new Circle(this.contactPoint[0],
+                                         this.contactPoint[1],
+                                         this.innerRadius);
+        let innerP1 = [this.inner.x + this.inner.r * Math.cos(Math.PI / 4.),
+                       this.inner.x + this.inner.r * Math.sin(Math.PI / 4.)];
+        let innerP2 = [this.inner.x + this.inner.r * Math.cos(Math.PI * 3. / 4.),
+                       this.inner.x + this.inner.r * Math.sin(Math.PI * 3. / 4.)];
+        let invertedP1 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI / 4.),
+                          this.inverted.x + this.inverted.r * Math.sin(Math.PI / 4.)];
+        let invertedP2 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI * 3. / 4.),
+                          this.inverted.x + this.inverted.r * Math.sin(Math.PI * 3. / 4.)];
+        let innerLineVec = vec2Diff(circleInvertOnPoint(innerP1, circleOnContact),
+                                    circleInvertOnPoint(innerP2, circleOnContact));
+        let outerLineVec = vec2Diff(circleInvertOnPoint(invertedP1, circleOnContact),
+                                    circleInvertOnPoint(invertedP2, circleOnContact))
+    },
+    clone: function(){
+        return new Parabolic(this.outer.clone(),
+                             this.contactDegree,
+                             this.innerRadius);
+    },
+    exportJson: function(){
+        return {"innerCircle": this.inner.exportJson(),
+                "contactDegree": this.contactDegree,
+                "innerRadius": this.innerRadius};
+    }
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_parabolic'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_parabolicRotationMat'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
+			    this.rotationMat2);
+        return uniIndex;
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    selectable: function(mouse, scene){
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [PARABOLIC_OUTER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [PARABOLIC_OUTER_CIRCUMFERENCE, diff];
+        }
+        let diff = vec2Diff(this.contactPoint, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [PARABOLIC_CONTACT_POINT, diff];
+        }
+        diff = vec2Diff(this.innerCircle.getPosition(), mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [PARABOLIC_INNER_CENTER, diff];
+        }
+        return [-1, [0, 0]]
+    }
+    move: function(scene, componentId, mouse, diff){
+        
+    }
 }
 
 const TWISTED_LOXODROMIC_INNER_BODY = 0;
@@ -612,6 +705,7 @@ const GENERATORS_NAME_ID_MAP = {
     "TransformByCircles": ID_TRANSFORM_BY_CIRCLES,
     "TwistedLoxodromic": ID_TWISTED_LOXODROMIC,
     "TwistedLoxodromicFromFixedPoints": ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS,
+    "Parabolic": ID_PARABOLIC,
 }
 
 const GENERATORS_ID_NAME_MAP = {};
@@ -620,13 +714,15 @@ GENERATORS_ID_NAME_MAP[ID_INFINITE_CIRCLE] = "InfiniteCircles";
 GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "TransformByCircles";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "TwistedLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS] = "TwistedLoxodromicFromFixedPoints";
+GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
 
 const GENERATORS_NAME_CLASS_MAP = {
     "Circles": Circle,
     "InfiniteCircles": InfiniteCircle,
     "TransformByCircles": TransformByCircles,
     "TwistedLoxodromic": TwistedLoxodromic,
-    "TwistedLoxodromicFromFixedPoints": TwistedLoxodromicFromFixedPoints,    
+    "TwistedLoxodromicFromFixedPoints": TwistedLoxodromicFromFixedPoints,
+    "Parabolic": Parabolic,
 };
 
 var Scene = function(){
