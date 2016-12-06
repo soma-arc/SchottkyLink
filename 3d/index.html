@@ -461,8 +461,8 @@
 				          u_compoundParabolic{{ n }}[0].xyz,
 				          u_compoundParabolic{{ n }}[0].w,
 				          eye, ray, result);
-                 if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
-		    u_selectedObjectIndex == {{ n }} &&
+             if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
+		        u_selectedObjectIndex == {{ n }} &&
 		    u_selectedComponentId == 0){
 		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
 					          10., u_compoundParabolic{{ n }}[0].xyz,
@@ -894,24 +894,24 @@
                  pos -= vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
 	         pos = u_invRotatePlaneMat3{{ n }} * pos;
 	         if(pos.z < u_transformByPlanes{{ n }}[3] || u_transformByPlanes{{ n }}[4] < pos.z){
-		     pos.z -= u_transformByPlanes{{ n }}[3];
-		     float nn = floor(pos.z / (u_transformByPlanes{{n}}[4] - u_transformByPlanes{{ n }}[3]));
-		     pos.z = mod(pos.z,
-			         u_transformByPlanes{{ n }}[4] - u_transformByPlanes{{ n }}[3]);
-		     pos.z += u_transformByPlanes{{ n }}[3];
-		     float theta = -radians(u_transformByPlanes{{ n }}[8]) * nn;
-		     float cosTheta = cos(theta);
-		     float sinTheta = sin(theta);
-		     mat3 m = mat3(cosTheta, -sinTheta, 0,
-			           sinTheta, cosTheta, 0,
-			           0, 0, 1);
-		     pos = m * pos;
+		         pos.z -= u_transformByPlanes{{ n }}[3];
+		         float nn = floor(pos.z / (u_transformByPlanes{{n}}[4] - u_transformByPlanes{{ n }}[3]));
+		         pos.z = mod(pos.z,
+			                 u_transformByPlanes{{ n }}[4] - u_transformByPlanes{{ n }}[3]);
+		         pos.z += u_transformByPlanes{{ n }}[3];
+		         float theta = -radians(u_transformByPlanes{{ n }}[8]) * nn;
+		         float cosTheta = cos(theta);
+		         float sinTheta = sin(theta);
+		         mat3 m = mat3(cosTheta, -sinTheta, 0,
+			                   sinTheta, cosTheta, 0,
+			                   0, 0, 1);
+		         pos = m * pos;
 
-		     loopEnd = false;
-		     loopNum ++;
+		         loopEnd = false;
+		         loopNum ++;
 	         }
 	         pos = u_rotatePlaneMat3{{ n }} * pos;
-                 pos += vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
+             pos += vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
 	         {% endfor %}
                  {% for n in range(0, numCompoundLoxodromic) %}
                  if(distance(pos, u_compoundLoxodromic{{ n }}[0].xyz) < u_compoundLoxodromic{{ n }}[0].w){
