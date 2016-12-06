@@ -120,6 +120,21 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "ParabolicMod",
+        "generators": {
+            "Parabolic": [
+                {
+                    "OuterCircle": {
+                        "position": [0, 0],
+                        "radius": 200
+                    },
+                    "ContactDegree": 0,
+                    "InnerRadius": 150
+                }
+            ]
+        }
+    },
+    {
         "text": "Loxodromic",
         "generators": {
             "Circles": [

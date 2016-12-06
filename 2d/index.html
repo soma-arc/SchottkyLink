@@ -64,8 +64,8 @@
          uniform int u_selectedObjectIndex;
          uniform int u_selectedObjectComponentId;
 
-	 uniform bool u_displayGenerators;
-	 
+	     uniform bool u_displayGenerators;
+	     
          {% for n  in range(0,  numCircles ) %}
          // [x, y, r, r * r]
          uniform vec3 u_schottkyCircle{{ n }};
@@ -84,10 +84,17 @@
 
          const int ID_CIRCLE = 0;
          const int ID_INFINITE_CIRCLE = 1;
+
+         {% for n in range(0, numParabolic) %}
+         //[innerCircle, outerCircle, invertedCircle]
+         uniform vec3 u_parabolic{{ n }}[3];
+         {% endfor %}
          
          {% for n in range(0, numTransformByCircles) %}
          //[innerCircle, outerCircle, invertedCircle]
          uniform vec3 u_transformByCircles{{ n }}[3];
+         //[rotation, invRotation]
+         uniform mat2 u_parabolicRotationMat{{ n }}[2];
          {% endfor %}
 
          {% for n in range(0, numTwistedLoxodromic) %}
@@ -293,23 +300,34 @@
              if(u_selectedObjectId == ID_CIRCLE){
                  if(u_selectedObjectIndex == {{n}}){
                      float dist = distance(position, u_schottkyCircle{{ n }}.xy);
-		     if(dist - u_schottkyCircle{{ n }}.z < 0. &&
+		             if(dist - u_schottkyCircle{{ n }}.z < 0. &&
                         dist > u_schottkyCircle{{ n }}.z - u_schottkyCircleUIParam{{ n }}.y ){
-		         return WHITE;
-		     }
-	         }
+		                 return WHITE;
+		             }
+	             }
              }
              {% endfor %}
              
-	     {% for n in range(0, numTransformByCircles) %}
-	     if(distance(position, u_transformByCircles{{ n }}[0].xy) < u_transformByCircles{{ n }}[0].z){
-	         return vec3(.5, 0, 0);
-	     }else if(distance(position, u_transformByCircles{{ n }}[1].xy) < u_transformByCircles{{ n }}[1].z){
-	         return vec3(0, .5, 0);
-	     }else if(distance(position, u_transformByCircles{{ n }}[2].xy) < u_transformByCircles{{ n }}[2].z){
-	         return vec3(0, 0, .5);
-	     }	     
-	     {% endfor %}
+	         {% for n in range(0, numTransformByCircles) %}
+	         if(distance(position, u_transformByCircles{{ n }}[0].xy) < u_transformByCircles{{ n }}[0].z){
+	             return vec3(.5, 0, 0);
+	         }else if(distance(position, u_transformByCircles{{ n }}[1].xy) < u_transformByCircles{{ n }}[1].z){
+	             return vec3(0, .5, 0);
+	         }else if(distance(position, u_transformByCircles{{ n }}[2].xy) < u_transformByCircles{{ n }}[2].z){
+	             return vec3(0, 0, .5);
+	         }
+	         {% endfor %}
+
+             {% for n in range(0, numParabolic)%}
+	         if(distance(position, u_parabolic{{ n }}[0].xy) < u_parabolic{{ n }}[0].z){
+	             return vec3(.5, 0, 0);
+	         }else if(distance(position, u_parabolic{{ n }}[1].xy) < u_parabolic{{ n }}[1].z){
+	             return vec3(0, .5, 0);
+	         }else if(distance(position, u_parabolic{{ n }}[2].xy) < u_parabolic{{ n }}[2].z){
+	             return vec3(0, 0, .5);
+	         }	     
+             
+             {% endfor %}
 
              vec3 col = vec3(0.);
 
@@ -326,45 +344,45 @@
              }
 
              if(distance(position, u_twistedLoxodromic{{ n }}[3].xy) < u_twistedLoxodromic{{ n }}[3].z){
-	         col = vec3(0.5, .5, 0);
-	     }
+	             col = vec3(0.5, .5, 0);
+	         }
 
              // control point
              if(distance(position, u_twistedLoxodromic{{ n }}[4].xy) < u_twistedLoxodromicUIParam{{ n }}.x){
-	         return LIGHT_BLUE;
+	             return LIGHT_BLUE;
              }
 
-	     if(distance(position, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
+	         if(distance(position, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
                  // inner circle
-	         return mix(RED, col, 0.5);
-	     }else if(distance(position, u_twistedLoxodromic{{ n }}[1].xy) < u_twistedLoxodromic{{ n }}[1].z){
+	             return mix(RED, col, 0.5);
+	         }else if(distance(position, u_twistedLoxodromic{{ n }}[1].xy) < u_twistedLoxodromic{{ n }}[1].z){
                  // outer circle
-	         return mix(GREEN, col, 0.5);
-	     }else if(distance(position, u_twistedLoxodromic{{ n }}[2].xy) < u_twistedLoxodromic{{ n }}[2].z){
+	             return mix(GREEN, col, 0.5);
+	         }else if(distance(position, u_twistedLoxodromic{{ n }}[2].xy) < u_twistedLoxodromic{{ n }}[2].z){
                  // inverted circle
-	         return mix(BLUE, col, 0.5);
-	     }else if(col != vec3(0.)){
+	             return mix(BLUE, col, 0.5);
+	         }else if(col != vec3(0.)){
                  return col;
              }
-	     {% endfor %}
+	         {% endfor %}
 
              {% for n in range(0, numTwistedLoxodromicFromFixedPoints) %}
 
              // control point
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[4].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
-	         return LIGHT_BLUE;
+	             return LIGHT_BLUE;
              }
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[5].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
-	         return PINK;
+	             return PINK;
              }
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[6].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
-	         return PINK;
+	             return PINK;
              }
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[7].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
-	         return RED;
+	             return RED;
              }
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[8].xy) < u_twistedLoxodromicFromFixedPointsUIParam{{ n }}.x){
-	         return RED;
+	             return RED;
              }
              
              // line
@@ -378,48 +396,48 @@
              }
 
              if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[3].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[3].z){
-	         col = vec3(0.5, .5, 0);
-	     }
+	             col = vec3(0.5, .5, 0);
+	         }
 
-	     if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[0].z){
+	         if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[0].z){
                  // inner circle
-	         return mix(RED, col, 0.5);
-	     }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[1].z){
+	             return mix(RED, col, 0.5);
+	         }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[1].z){
                  // outer circle
-	         return mix(GREEN, col, 0.5);
-	     }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
+	             return mix(GREEN, col, 0.5);
+	         }else if(distance(position, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
                  // inverted circle
-	         return mix(BLUE, col, 0.5);
-	     }else if(col != vec3(0.)){
+	             return mix(BLUE, col, 0.5);
+	         }else if(col != vec3(0.)){
                  return col;
              }
-	     {% endfor %}
-             
-	     {% if numInfiniteCircles > 0 %}
-	     if(u_selectedObjectId == ID_INFINITE_CIRCLE){
-	         {% for n in range(0,  numInfiniteCircles ) %}
-	         if(u_selectedObjectIndex == {{n}}){
-		     if(distance(position, u_infiniteCircle{{ n }}.xy) < u_infiniteCircleUIParam{{ n }}.x){
-		         return WHITE;
-		     }
-		     vec2 cp = vec2(u_infiniteCircleUIParam{{ n }}.y, 0);
-		     vec2 pos = (position - (u_infiniteCircle{{ n }}.xy - u_infiniteCircleRotationMat2{{ n }} * cp));
-		     if(length(pos) < u_infiniteCircleUIParam{{ n }}.x){
-		         if(u_selectedObjectComponentId == 2){
-			     return vec3(1, 0, 1);
-		         }else{
-			     return vec3(0, 1, 1);
-		         }
-		     }else if(abs(u_infiniteCircleUIParam{{ n }}.y - distance(position, u_infiniteCircle{{ n }}.xy)) <
-		         u_infiniteCircleUIParam{{ n }}.z){
-		         return WHITE;
-		     }
-	         }
 	         {% endfor %}
-	     }
+             
+	         {% if numInfiniteCircles > 0 %}
+	         if(u_selectedObjectId == ID_INFINITE_CIRCLE){
+	             {% for n in range(0,  numInfiniteCircles ) %}
+	             if(u_selectedObjectIndex == {{n}}){
+		             if(distance(position, u_infiniteCircle{{ n }}.xy) < u_infiniteCircleUIParam{{ n }}.x){
+		                 return WHITE;
+		             }
+		             vec2 cp = vec2(u_infiniteCircleUIParam{{ n }}.y, 0);
+		             vec2 pos = (position - (u_infiniteCircle{{ n }}.xy - u_infiniteCircleRotationMat2{{ n }} * cp));
+		             if(length(pos) < u_infiniteCircleUIParam{{ n }}.x){
+		                 if(u_selectedObjectComponentId == 2){
+			                 return vec3(1, 0, 1);
+		                 }else{
+			                 return vec3(0, 1, 1);
+		                 }
+		             }else if(abs(u_infiniteCircleUIParam{{ n }}.y - distance(position, u_infiniteCircle{{ n }}.xy)) <
+		                 u_infiniteCircleUIParam{{ n }}.z){
+		                 return WHITE;
+		             }
+	             }
+	             {% endfor %}
+	         }
 	     
-	     {% endif %}
-	     return BLACK;
+	         {% endif %}
+	         return BLACK;
          }
 
          const float MAX_SAMPLE = 10.;

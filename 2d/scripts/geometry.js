@@ -117,8 +117,8 @@ InfiniteCircle.createFromJson = function(obj){
 
 InfiniteCircle.prototype = {
     update: function(){
-	this.rotationMat2 = getRotationMat2(radians(this.thetaDegree));
-	this.invRotationMat2 = getRotationMat2(radians(-this.thetaDegree));
+	    this.rotationMat2 = getRotationMat2(radians(this.thetaDegree));
+	    this.invRotationMat2 = getRotationMat2(radians(-this.thetaDegree));
     },
     getPosition: function(){
 	return [this.x, this.y];
@@ -321,16 +321,16 @@ var Parabolic = function(outerCircle, contactDegree, innerRadius){
 }
 
 Parabolic.createFromJson = function(obj){
-    return new Parabolic(Circle.createFromJson(obj["innerCircle"]),
-                         obj["contactDegree"],
-                         obj["innerRadius"]);
+    return new Parabolic(Circle.createFromJson(obj["OuterCircle"]),
+                         obj["ContactDegree"],
+                         obj["InnerRadius"]);
 }
 
 Parabolic.prototype = {
     update: function(){
         let rad = radians(this.contactDegree);
-        this.contactPoint = [this.outer.r * Math.cos(rad),
-                             this.outer.r * Math.sin(rad)]
+        this.contactPoint = [this.outer.x + this.outer.r * Math.cos(rad),
+                             this.outer.y + this.outer.r * Math.sin(rad)]
         this.inner = new Circle(this.contactPoint[0] - this.innerRadius * Math.cos(rad),
                                 this.contactPoint[1] - this.innerRadius * Math.sin(rad),
                                 this.innerRadius);
@@ -339,18 +339,23 @@ Parabolic.prototype = {
         let circleOnContact = new Circle(this.contactPoint[0],
                                          this.contactPoint[1],
                                          this.innerRadius);
-        let innerP1 = [this.inner.x + this.inner.r * Math.cos(Math.PI / 4.),
-                       this.inner.x + this.inner.r * Math.sin(Math.PI / 4.)];
-        let innerP2 = [this.inner.x + this.inner.r * Math.cos(Math.PI * 3. / 4.),
-                       this.inner.x + this.inner.r * Math.sin(Math.PI * 3. / 4.)];
-        let invertedP1 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI / 4.),
-                          this.inverted.x + this.inverted.r * Math.sin(Math.PI / 4.)];
-        let invertedP2 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI * 3. / 4.),
-                          this.inverted.x + this.inverted.r * Math.sin(Math.PI * 3. / 4.)];
+        let innerP1 = [this.inner.x + this.inner.r * Math.cos(Math.PI / 5.5),
+                       this.inner.y + this.inner.r * Math.sin(Math.PI / 5.5)];
+        let innerP2 = [this.inner.x + this.inner.r * Math.cos(Math.PI * 3. / 6.5),
+                       this.inner.y + this.inner.r * Math.sin(Math.PI * 3. / 6.5)];
+        let invertedP1 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI / 4.5),
+                          this.inverted.y + this.inverted.r * Math.sin(Math.PI / 4.5)];
+        let invertedP2 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI * 3. / 7.5),
+                          this.inverted.y + this.inverted.r * Math.sin(Math.PI * 3. / 7.5)];
         let innerLineVec = vec2Diff(circleInvertOnPoint(innerP1, circleOnContact),
                                     circleInvertOnPoint(innerP2, circleOnContact));
         let outerLineVec = vec2Diff(circleInvertOnPoint(invertedP1, circleOnContact),
-                                    circleInvertOnPoint(invertedP2, circleOnContact))
+                                    circleInvertOnPoint(invertedP2, circleOnContact));
+
+        this.theta = Math.atan2(-innerLineVec[1], innerLineVec[0]) + Math.PI / 2.;
+        this.rotationMat2 = getRotationMat2(this.theta);
+        this.invRotationMat2 = getRotationMat2(-this.theta);
+
     },
     clone: function(){
         return new Parabolic(this.outer.clone(),
@@ -358,10 +363,14 @@ Parabolic.prototype = {
                              this.innerRadius);
     },
     exportJson: function(){
-        return {"innerCircle": this.inner.exportJson(),
-                "contactDegree": this.contactDegree,
-                "innerRadius": this.innerRadius};
-    }
+        return {"OuterCircle": this.inner.exportJson(),
+                "ContactDegree": this.contactDegree,
+                "InnerRadius": this.innerRadius};
+    },
+    getUniformArray: function(){
+        return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+                                                   this.inverted.getUniformArray());
+    },
     setUniformLocation: function(uniLocation, gl, program, index){
         uniLocation.push(gl.getUniformLocation(program, 'u_parabolic'+ index));
         uniLocation.push(gl.getUniformLocation(program, 'u_parabolicRotationMat'+ index));
@@ -369,29 +378,29 @@ Parabolic.prototype = {
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
         gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
-			    this.rotationMat2);
+                            this.rotationMat2.concat(this.invRotationMat2));
         return uniIndex;
     },
     removable: function(mouse, diff){
         return this.outer.removable(mouse, diff);
     },
     selectable: function(mouse, scene){
+        let diff = vec2Diff(this.contactPoint, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [PARABOLIC_CONTACT_POINT, diff];
+        }
+        diff = vec2Diff(this.inner.getPosition(), mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [PARABOLIC_INNER_CENTER, diff];
+        }
         [componentId, diff] = this.outer.selectable(mouse, scene);
         if(componentId == CIRCLE_BODY){
             return [PARABOLIC_OUTER_BODY, diff];
         }else if(componentId == CIRCLE_CIRCUMFERENCE){
             return [PARABOLIC_OUTER_CIRCUMFERENCE, diff];
         }
-        let diff = vec2Diff(this.contactPoint, mouse);
-        if(vec2Len(diff) < this.controlPointRadius){
-            return [PARABOLIC_CONTACT_POINT, diff];
-        }
-        diff = vec2Diff(this.innerCircle.getPosition(), mouse);
-        if(vec2Len(diff) < this.controlPointRadius){
-            return [PARABOLIC_INNER_CENTER, diff];
-        }
-        return [-1, [0, 0]]
-    }
+        return [-1, [0, 0]];
+    },
     move: function(scene, componentId, mouse, diff){
         
     }
