@@ -48,6 +48,15 @@ function vec2Scale(a, k){
     return [a[0] * k, a[1] * k];
 }
 
+function vec2Normalize(v){
+    var l = vec2Len(v);
+    return [v[0] / l, v[1] / l];
+}
+
+function distance(p1, p2){
+    return vec2Len(vec2Diff(p1, p2));
+}
+
 function circleInvertOnPoint(p, c){
     var center = c.getPosition();
     var r2 = c.r * c.r;
@@ -99,6 +108,18 @@ function circleInvert(invertCircle, genCircle){
                                   y - coeffR,
                                  ], genCircle);
     return makeCircleFromPoints(p1, p2, p3);
+}
+
+function calcLineIntersection(x1, y1, x2, y2,
+                          x3, y3, x4, y4){
+    let ksi   = ( y4-y3 )*( x4-x1 ) - ( x4-x3 )*( y4-y1 );
+    let eta   = ( x2-x1 )*( y4-y1 ) - ( y2-y1 )*( x4-x1 );
+    let delta = ( x2-x1 )*( y4-y3 ) - ( y2-y1 )*( x4-x3 );
+
+    let lambda = ksi / delta;
+    let mu    = eta / delta;
+    return [x1 + lambda*( x2-x1 ),
+            y1 + lambda*( y2-y1 )];
 }
 
 function attachShader(gl, shaderId, program, shaderType){

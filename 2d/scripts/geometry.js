@@ -309,6 +309,7 @@ const PARABOLIC_OUTER_BODY = 0;
 const PARABOLIC_OUTER_CIRCUMFERENCE = 1;
 const PARABOLIC_INNER_CENTER = 2;
 const PARABOLIC_CONTACT_POINT = 3;
+const ROTATION_PI_2 = getRotationMat2(Math.PI / 2);
 var Parabolic = function(outerCircle, contactDegree, innerRadius){
     this.outer = outerCircle;
     this.contactDegree = contactDegree;
@@ -336,9 +337,9 @@ Parabolic.prototype = {
                                 this.innerRadius);
         this.inverted = circleInvert(this.inner, this.outer);
 
-        let circleOnContact = new Circle(this.contactPoint[0],
-                                         this.contactPoint[1],
-                                         this.innerRadius);
+        this.circleOnContactPoint = new Circle(this.contactPoint[0],
+                                               this.contactPoint[1],
+                                               this.innerRadius);
         let innerP1 = [this.inner.x + this.inner.r * Math.cos(Math.PI / 5.5),
                        this.inner.y + this.inner.r * Math.sin(Math.PI / 5.5)];
         let innerP2 = [this.inner.x + this.inner.r * Math.cos(Math.PI * 3. / 6.5),
@@ -347,15 +348,33 @@ Parabolic.prototype = {
                           this.inverted.y + this.inverted.r * Math.sin(Math.PI / 4.5)];
         let invertedP2 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI * 3. / 7.5),
                           this.inverted.y + this.inverted.r * Math.sin(Math.PI * 3. / 7.5)];
-        let innerLineVec = vec2Diff(circleInvertOnPoint(innerP1, circleOnContact),
-                                    circleInvertOnPoint(innerP2, circleOnContact));
-        let outerLineVec = vec2Diff(circleInvertOnPoint(invertedP1, circleOnContact),
-                                    circleInvertOnPoint(invertedP2, circleOnContact));
-
-        this.theta = Math.atan2(-innerLineVec[1], innerLineVec[0]) + Math.PI / 2.;
+        this.innerLinePoint = circleInvertOnPoint(innerP1, this.circleOnContactPoint);
+        this.innerLineVec = vec2Normalize(vec2Diff(this.innerLinePoint,
+                                                   circleInvertOnPoint(innerP2,
+                                                                       this.circleOnContactPoint)));
+        this.invertedLinePoint1 = circleInvertOnPoint(invertedP1,
+                                                   this.circleOnContactPoint);
+        let invertedLinePoint2 = circleInvertOnPoint(invertedP2,
+                                                  this.circleOnContactPoint);
+        this.invertedLineVec = vec2Normalize(vec2Diff(this.invertedLinePoint1, invertedLinePoint2));
+        if(Math.abs(this.innerLineVec[0]) <  0.00001){
+            this.translateDist = Math.abs(this.innerLinePoint[0] - this.invertedLinePoint1[0]);
+            this.translatePoint = this.innerLinePoint;
+            this.invertedLineIsect = vec2Sum(this.innerLinePoint, [this.translateDist, 0]);
+        }else{
+            let nVec = applyMat2(ROTATION_PI_2, this.innerLineVec);
+            this.invertedLineIsect = calcLineIntersection(this.innerLinePoint[0], this.innerLinePoint[1],
+                                                       this.innerLinePoint[0] + nVec[0],
+                                                       this.innerLinePoint[1] + nVec[1],
+                                                       this.invertedLinePoint1[0], this.invertedLinePoint1[1],
+                                                       invertedLinePoint2[0], invertedLinePoint2[1]);
+            let d = vec2Diff(this.innerLinePoint, this.invertedLineIsect);
+            this.translateDist = vec2Len(d);
+            this.translatePoint = this.innerLinePoint;
+        }
+        this.theta = Math.atan2(-this.innerLineVec[1], this.innerLineVec[0]) + Math.PI / 2.;
         this.rotationMat2 = getRotationMat2(this.theta);
         this.invRotationMat2 = getRotationMat2(-this.theta);
-
     },
     clone: function(){
         return new Parabolic(this.outer.clone(),
@@ -369,7 +388,15 @@ Parabolic.prototype = {
     },
     getUniformArray: function(){
         return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
-                                                   this.inverted.getUniformArray());
+                                                   this.inverted.getUniformArray(),
+                                                   this.circleOnContactPoint.getUniformArray(),
+                                                   this.translatePoint, [this.translateDist],
+                                                   this.contactPoint, [0],
+                                                   this.innerLineVec, [0],
+                                                   this.innerLinePoint, [0],
+                                                   this.invertedLineVec, [0],
+                                                   this.invertedLinePoint1, [0],
+                                                   this.invertedLineIsect, [0]);
     },
     setUniformLocation: function(uniLocation, gl, program, index){
         uniLocation.push(gl.getUniformLocation(program, 'u_parabolic'+ index));
@@ -402,7 +429,23 @@ Parabolic.prototype = {
         return [-1, [0, 0]];
     },
     move: function(scene, componentId, mouse, diff){
-
+        let m = vec2Diff(mouse, this.outer.getPosition());
+        switch(componentId){
+        case PARABOLIC_CONTACT_POINT:
+            this.contactDegree = degrees(Math.atan2(m[1], m[0]));
+            break;
+        case PARABOLIC_OUTER_BODY:
+            this.outer.x = mouse[0] - diff[0];
+	        this.outer.y = mouse[1] - diff[1];
+            break;
+        case PARABOLIC_OUTER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.outer.x;
+	        var dy = mouse[1] - this.outer.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.outer.r = dist;
+            break;
+        }
+        this.update();
     }
 }
 
