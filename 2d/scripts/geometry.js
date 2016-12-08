@@ -4,6 +4,7 @@ const ID_TRANSFORM_BY_CIRCLES = 2;
 const ID_TWISTED_LOXODROMIC = 3;
 const ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS = 4;
 const ID_PARABOLIC = 5;
+const ID_MOD_HYPERBOLIC = 6;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
@@ -300,6 +301,109 @@ TransformByCircles.prototype = {
             return [TRANSFORM_BY_CIRCLES_OUTER_BODY, diff];
         }else if(componentId == CIRCLE_CIRCUMFERENCE){
             return [TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE, diff];
+        }
+	    return [-1, [0, 0]];
+    },
+}
+
+const MOD_HYPERBOLIC_INNER_BODY = 0;
+const MOD_HYPERBOLIC_INNER_CIRCUMFERENCE = 1;
+const MOD_HYPERBOLIC_OUTER_BODY = 2;
+const MOD_HYPERBOLIC_OUTER_CIRCUMFERENCE = 3;
+
+var ModHyperbolic = function(innerCircle, outerCircle){
+    this.inner = innerCircle;
+    this.outer = outerCircle;
+    this.inverted = circleInvert(this.inner, this.outer);
+}
+
+ModHyperbolic.createFromJson = function(obj){
+    return new ModHyperbolic(Circle.createFromJson(obj['innerCircle']),
+                                  Circle.createFromJson(obj['outerCircle']));
+}
+
+ModHyperbolic.prototype = {
+    update: function(){
+        this.inverted = circleInvert(this.inner, this.outer);
+    },
+    getUniformArray: function(){
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray());
+    },
+    clone: function(){
+        return new ModHyperbolic(this.inner.clone(),
+                                      this.outer.clone());
+    },
+    exportJson: function(){
+        return {"innerCircle": this.inner.exportJson(),
+                "outerCircle": this.outer.exportJson()};
+    },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_transformByCircles'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        return uniIndex;
+    },
+    move: function(scene, componentId, mouse, diff){
+        var prevOuterX = this.outer.x;
+        var prevOuterY = this.outer.y;
+        switch (componentId) {
+        case MOD_HYPERBOLIC_OUTER_BODY:
+            this.outer.x = mouse[0] - diff[0];
+	        this.outer.y = mouse[1] - diff[1];
+            this.inner.x += this.outer.x - prevOuterX;
+            this.inner.y += this.outer.y - prevOuterY;
+            break;
+        case MOD_HYPERBOLIC_OUTER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.outer.x;
+	        var dy = mouse[1] - this.outer.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.outer.r = dist;
+            break;
+        case MOD_HYPERBOLIC_INNER_BODY:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            if(d <= this.outer.r - this.inner.r){
+                this.inner.x = np[0];
+                this.inner.y = np[1];
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case MOD_HYPERBOLIC_INNER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.inner.x;
+	        var dy = mouse[1] - this.inner.y;
+	        var nr = Math.sqrt((dx * dx) + (dy * dy));
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
+            if(d <= this.outer.r - nr){
+                this.inner.r = nr;
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        }
+        this.update();
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+        var [componentId, diff] = this.inner.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [MOD_HYPERBOLIC_INNER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [MOD_HYPERBOLIC_INNER_CIRCUMFERENCE, diff];
+        }
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [MOD_HYPERBOLIC_OUTER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [MOD_HYPERBOLIC_OUTER_CIRCUMFERENCE, diff];
         }
 	    return [-1, [0, 0]];
     },
@@ -758,6 +862,7 @@ const GENERATORS_NAME_ID_MAP = {
     "TwistedLoxodromic": ID_TWISTED_LOXODROMIC,
     "TwistedLoxodromicFromFixedPoints": ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS,
     "Parabolic": ID_PARABOLIC,
+    "ModHyperbolic": ID_MOD_HYPERBOLIC
 }
 
 const GENERATORS_ID_NAME_MAP = {};
@@ -767,6 +872,7 @@ GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_CIRCLES] = "TransformByCircles";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "TwistedLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS] = "TwistedLoxodromicFromFixedPoints";
 GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
+GENERATORS_ID_NAME_MAP[ID_MOD_HYPERBOLIC] = "ModHyperbolic";
 
 const GENERATORS_NAME_CLASS_MAP = {
     "Circles": Circle,
@@ -775,6 +881,7 @@ const GENERATORS_NAME_CLASS_MAP = {
     "TwistedLoxodromic": TwistedLoxodromic,
     "TwistedLoxodromicFromFixedPoints": TwistedLoxodromicFromFixedPoints,
     "Parabolic": Parabolic,
+    "ModHyperbolic": ModHyperbolic
 };
 
 var Scene = function(){
