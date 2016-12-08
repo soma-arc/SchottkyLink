@@ -58,14 +58,14 @@ const PRESET_PARAMETERS = [
                 {
                     "position": [
                         300,
-                            -300,
+                        -300,
                         0
                     ],
                     "radius": 300
                 },
                 {
                     "position": [
-                            -300,
+                        -300,
                         300,
                         0
                     ],
@@ -73,8 +73,8 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -300,
-                            -300,
+                        -300,
+                        -300,
                         0
                     ],
                     "radius": 300
@@ -91,7 +91,7 @@ const PRESET_PARAMETERS = [
                     "position": [
                         0,
                         0,
-                            -424.26
+                        -424.26
                     ],
                     "radius": 300
                 }
@@ -122,14 +122,14 @@ const PRESET_PARAMETERS = [
                 {
                     "position": [
                         300,
-                            -300,
+                        -300,
                         0
                     ],
                     "radius": 300
                 },
                 {
                     "position": [
-                            -300,
+                        -300,
                         300,
                         0
                     ],
@@ -137,8 +137,8 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -300,
-                            -300,
+                        -300,
+                        -300,
                         0
                     ],
                     "radius": 300
@@ -153,7 +153,7 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -819.6152422706632,
+                        -819.6152422706632,
                         0,
                         0
                     ],
@@ -171,7 +171,7 @@ const PRESET_PARAMETERS = [
                     "position": [
                         0,
                         0,
-                            -424.26
+                        -424.26
                     ],
                     "radius": 300
                 }
@@ -195,7 +195,7 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -473.2050807568877,
+                        -473.2050807568877,
                         0,
                         0
                     ],
@@ -255,14 +255,14 @@ const PRESET_PARAMETERS = [
                 {
                     "position": [
                         300,
-                            -300,
+                        -300,
                         0
                     ],
                     "radius": 300
                 },
                 {
                     "position": [
-                            -300,
+                        -300,
                         300,
                         0
                     ],
@@ -270,8 +270,8 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -300,
-                            -300,
+                        -300,
+                        -300,
                         0
                     ],
                     "radius": 300
@@ -288,7 +288,7 @@ const PRESET_PARAMETERS = [
                     "position": [
                         0,
                         0,
-                            -424.26
+                        -424.26
                     ],
                     "radius": 300
                 }
@@ -329,14 +329,14 @@ const PRESET_PARAMETERS = [
                 {
                     "position": [
                         300,
-                            -300,
+                        -300,
                         0
                     ],
                     "radius": 300
                 },
                 {
                     "position": [
-                            -300,
+                        -300,
                         300,
                         0
                     ],
@@ -344,8 +344,8 @@ const PRESET_PARAMETERS = [
                 },
                 {
                     "position": [
-                            -300,
-                            -300,
+                        -300,
+                        -300,
                         0
                     ],
                     "radius": 300
@@ -362,7 +362,7 @@ const PRESET_PARAMETERS = [
                     "position": [
                         0,
                         0,
-                            -424.26
+                        -424.26
                     ],
                     "radius": 300
                 }
@@ -401,103 +401,103 @@ const PRESET_PARAMETERS = [
     },
     {
         "text": "CompoundLoxodromic",
-	"generators": {
+	    "generators": {
             "SchottkySpheres": [
-		{
+		        {
                     "position": [
-			300,
-			300,
-			0
+			            300,
+			            300,
+			            0
                     ],
                     "radius": 300
-		},
-		{
+		        },
+		        {
                     "position": [
-			300,
-			    -300,
-			0
+			            300,
+			            -300,
+			            0
                     ],
                     "radius": 300
-		},
-		{
+		        },
+		        {
                     "position": [
-			    -300,
-			300,
-			0
+			            -300,
+			            300,
+			            0
                     ],
                     "radius": 300
-		},
-		{
+		        },
+		        {
                     "position": [
-			    -300,
-			    -300,
-			0
+			            -300,
+			            -300,
+			            0
                     ],
                     "radius": 300
-		},
-		{
+		        },
+		        {
                     "position": [
-			0,
-			0,
-			424.26
+			            0,
+			            0,
+			            424.26
                     ],
                     "radius": 300
-		},
-		{
+		        },
+		        {
                     "position": [
-			0,
-			0,
-			    -424.26
+			            0,
+			            0,
+			            -424.26
                     ],
                     "radius": 300
-		}
+		        }
             ],
             "BaseSpheres": [
-		{
+		        {
                     "position": [
-			0,
-			0,
-			0
+			            0,
+			            0,
+			            0
                     ],
                     "radius": 125
-		}
+		        }
             ],
             "CompoundLoxodromic": [
-		{
+		        {
                     "innerSphere": {
-			"position": [
+			            "position": [
                             10,
                             50,
                             664.3523402015614
-			],
-			"radius": 476.843462824442
+			            ],
+			            "radius": 476.843462824442
                     },
                     "outerSphere": {
-			"position": [
+			            "position": [
                             100,
                             100,
                             684.7052344274166
-			],
-			"radius": 700
+			            ],
+			            "radius": 700
                     },
                     "point": [
-			0,
-			1000,
-			    -115.2947655725834
+			            0,
+			            1000,
+			            -115.2947655725834
                     ],
                     "q1": [
-			100,
-			    -1000,
-			    -115.2947655725834
+			            100,
+			            -1000,
+			            -115.2947655725834
                     ],
                     "q2": [
-			1000,
-			0,
-			    -125.2947655725834
+			            1000,
+			            0,
+			            -125.2947655725834
                     ]
-		}
+		        }
             ]
-	}
+	    }
     },
     {
         "text": "CompoundParabolic",

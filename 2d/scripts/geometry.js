@@ -22,13 +22,13 @@ var Circle = function(x, y, r){
 
 Circle.prototype = {
     getPosition: function(){
-	return [this.x, this.y];
+	    return [this.x, this.y];
     },
     clone: function(){
-	return new Circle(this.x, this.y, this.r);
+	    return new Circle(this.x, this.y, this.r);
     },
     getUniformArray: function(){
-	return [this.x, this.y, this.r];
+	    return [this.x, this.y, this.r];
     },
     getUIParamArray: function(){
         return [this.centerRadius,
@@ -47,39 +47,39 @@ Circle.prototype = {
         return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
-	if(componentId == CIRCLE_CIRCUMFERENCE){
+	    if(componentId == CIRCLE_CIRCUMFERENCE){
+	        var dx = mouse[0] - this.x;
+	        var dy = mouse[1] - this.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.r = dist + diff[0];
+	    }else{
+	        this.x = mouse[0] - diff[0];
+	        this.y = mouse[1] - diff[1];
+            if(this.moveMode == CIRCLE_MOVE_MODE_NEAREST)
+                this.r = scene.getMinRadiusToOtherCircles(this);
+	    }
+    },
+    removable: function(mouse, diff){
 	    var dx = mouse[0] - this.x;
 	    var dy = mouse[1] - this.y;
 	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    this.r = dist + diff[0];
-	}else{
-	    this.x = mouse[0] - diff[0];
-	    this.y = mouse[1] - diff[1];
-            if(this.moveMode == CIRCLE_MOVE_MODE_NEAREST)
-                this.r = scene.getMinRadiusToOtherCircles(this);
-	}
-    },
-    removable: function(mouse, diff){
-	var dx = mouse[0] - this.x;
-	var dy = mouse[1] - this.y;
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	return (dist < this.r);
+	    return (dist < this.r);
     },
     // return [componentId,
     //         difference between object position and mouse position]
     selectable: function(mouse, scene){
-	var dx = mouse[0] - this.x;
-	var dy = mouse[1] - this.y;
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    var dx = mouse[0] - this.x;
+	    var dy = mouse[1] - this.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
         var distFromCircumference = dist - this.r;
-	if(distFromCircumference < 0 &&
+	    if(distFromCircumference < 0 &&
            Math.abs(distFromCircumference) < this.circumferenceThickness){
             var d = dist - (this.r - this.circumferenceThickness)
-	    return [CIRCLE_CIRCUMFERENCE, [d, d]];
-	}else if(dist < Math.abs(this.r - this.circumferenceThickness)){
-	    return [CIRCLE_BODY, [dx, dy]];
-	}
-	return [-1, [0, 0]];
+	        return [CIRCLE_CIRCUMFERENCE, [d, d]];
+	    }else if(dist < Math.abs(this.r - this.circumferenceThickness)){
+	        return [CIRCLE_BODY, [dx, dy]];
+	    }
+	    return [-1, [0, 0]];
     },
     applyTransformation: function(circle){
         return circleInvert(circle, this);
@@ -121,21 +121,21 @@ InfiniteCircle.prototype = {
 	    this.invRotationMat2 = getRotationMat2(radians(-this.thetaDegree));
     },
     getPosition: function(){
-	return [this.x, this.y];
+	    return [this.x, this.y];
     },
     exportJson: function(){
         return {"position": [this.x, this.y], "rotation": this.thetaDegree};
     },
     clone: function(){
-	return new InfiniteCircle(this.x, this.y, this.thetaDegree);
+	    return new InfiniteCircle(this.x, this.y, this.thetaDegree);
     },
     getUniformArray: function(){
-	return [this.x, this.y, this.thetaDegree];
+	    return [this.x, this.y, this.thetaDegree];
     },
     getUIParamArray: function(){
-	return [this.controlPointRadius,
-		this.rotationControlCircleRadius,
-		this.rotationControlCircleThickness];
+	    return [this.controlPointRadius,
+		        this.rotationControlCircleRadius,
+		        this.rotationControlCircleThickness];
     },
     setUniformLocation: function(uniLocation, gl, program, index){
         uniLocation.push(gl.getUniformLocation(program, 'u_infiniteCircle'+ index));
@@ -145,52 +145,52 @@ InfiniteCircle.prototype = {
     },
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
-	gl.uniform3fv(uniLocation[uniIndex++], this.getUIParamArray());
-	gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.rotationMat2);
-	gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.invRotationMat2);
+	    gl.uniform3fv(uniLocation[uniIndex++], this.getUIParamArray());
+	    gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.rotationMat2);
+	    gl.uniformMatrix2fv(uniLocation[uniIndex++], false, this.invRotationMat2);
         return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
-	if(componentId == INFINITE_CIRCLE_CONTROL_POINT ||
-	   componentId == INFINITE_CIRCLE_BODY){
-	    this.x = mouse[0] - diff[0];
-	    this.y = mouse[1] - diff[1];
-	}else if(componentId == INFINITE_CIRCLE_ROTATION){
-	    var x = mouse[0] - this.x;
-	    var y = mouse[1] - this.y;
-	    this.thetaDegree = degrees(Math.atan2(-y, x) + Math.PI);
-	    this.update();
-	}
+	    if(componentId == INFINITE_CIRCLE_CONTROL_POINT ||
+	       componentId == INFINITE_CIRCLE_BODY){
+	        this.x = mouse[0] - diff[0];
+	        this.y = mouse[1] - diff[1];
+	    }else if(componentId == INFINITE_CIRCLE_ROTATION){
+	        var x = mouse[0] - this.x;
+	        var y = mouse[1] - this.y;
+	        this.thetaDegree = degrees(Math.atan2(-y, x) + Math.PI);
+	        this.update();
+	    }
     },
     removable: function(mouse, diff){
-	var dx = mouse[0] - this.x;
-	var dy = mouse[1] - this.y;
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	return (dist < this.controlPointRadius);
+	    var dx = mouse[0] - this.x;
+	    var dy = mouse[1] - this.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    return (dist < this.controlPointRadius);
     },
     // return [componentId,
     //         difference between object position and mouse position]
     selectable: function(mouse, scene){
-	var dx = mouse[0] - this.x;
-	var dy = mouse[1] - this.y;
-	var dist = Math.sqrt((dx * dx) + (dy * dy));
-	if(dist < this.controlPointRadius){
-	    return [INFINITE_CIRCLE_CONTROL_POINT, [dx, dy]];
-	}
-	var p = vec2Diff(mouse, this.getPosition());
+	    var dx = mouse[0] - this.x;
+	    var dy = mouse[1] - this.y;
+	    var dist = Math.sqrt((dx * dx) + (dy * dy));
+	    if(dist < this.controlPointRadius){
+	        return [INFINITE_CIRCLE_CONTROL_POINT, [dx, dy]];
+	    }
+	    var p = vec2Diff(mouse, this.getPosition());
         // Rotation matrix doesn't work same as GLSL
         // We have to swap rotaion matrix and inversed matrix
-	var rot = applyMat2(this.rotationMat2, p);
-	if(rot[0] > 0){
-	    return [INFINITE_CIRCLE_BODY, p];
-	}
+	    var rot = applyMat2(this.rotationMat2, p);
+	    if(rot[0] > 0){
+	        return [INFINITE_CIRCLE_BODY, p];
+	    }
 
-	p = vec2Sum(p, applyMat2(this.invRotationMat2, [this.rotationControlCircleRadius, 0]));
-	if(vec2Len(p) < this.controlPointRadius){
-	    return [INFINITE_CIRCLE_ROTATION, p];
-	}
-	
-	return [-1, [0, 0]];
+	    p = vec2Sum(p, applyMat2(this.invRotationMat2, [this.rotationControlCircleRadius, 0]));
+	    if(vec2Len(p) < this.controlPointRadius){
+	        return [INFINITE_CIRCLE_ROTATION, p];
+	    }
+
+	    return [-1, [0, 0]];
     },
     applyTransformation: function(circle){
         var p = [circle.x, circle.y];
@@ -223,8 +223,8 @@ TransformByCircles.prototype = {
         this.inverted = circleInvert(this.inner, this.outer);
     },
     getUniformArray: function(){
-	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
-						   this.inverted.getUniformArray());
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray());
     },
     clone: function(){
         return new TransformByCircles(this.inner.clone(),
@@ -242,20 +242,20 @@ TransformByCircles.prototype = {
         return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
-        var prevOuterX = this.outer.x; 
+        var prevOuterX = this.outer.x;
         var prevOuterY = this.outer.y;
         switch (componentId) {
         case TRANSFORM_BY_CIRCLES_OUTER_BODY:
             this.outer.x = mouse[0] - diff[0];
-	    this.outer.y = mouse[1] - diff[1];
+	        this.outer.y = mouse[1] - diff[1];
             this.inner.x += this.outer.x - prevOuterX;
             this.inner.y += this.outer.y - prevOuterY;
             break;
         case TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE:
             var dx = mouse[0] - this.outer.x;
-	    var dy = mouse[1] - this.outer.y;
-	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    this.outer.r = dist;
+	        var dy = mouse[1] - this.outer.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.outer.r = dist;
             break;
         case TRANSFORM_BY_CIRCLES_INNER_BODY:
             var np = vec2Diff(mouse, diff);
@@ -270,8 +270,8 @@ TransformByCircles.prototype = {
             break;
         case TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE:
             var dx = mouse[0] - this.inner.x;
-	    var dy = mouse[1] - this.inner.y;
-	    var nr = Math.sqrt((dx * dx) + (dy * dy));
+	        var dy = mouse[1] - this.inner.y;
+	        var nr = Math.sqrt((dx * dx) + (dy * dy));
             var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
             if(d <= this.outer.r - nr){
                 this.inner.r = nr;
@@ -301,7 +301,7 @@ TransformByCircles.prototype = {
         }else if(componentId == CIRCLE_CIRCUMFERENCE){
             return [TRANSFORM_BY_CIRCLES_OUTER_CIRCUMFERENCE, diff];
         }
-	return [-1, [0, 0]];
+	    return [-1, [0, 0]];
     },
 }
 
@@ -402,7 +402,7 @@ Parabolic.prototype = {
         return [-1, [0, 0]];
     },
     move: function(scene, componentId, mouse, diff){
-        
+
     }
 }
 
@@ -435,15 +435,15 @@ TwistedLoxodromic.prototype = {
         this.pInnerInv = circleInvertOnPoint(this.point, this.inner);
         this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
         this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
-        
+
         this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
         this.theta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI / 2.;
         this.rotationMat2 = getRotationMat2(this.theta);
         this.invRotationMat2 = getRotationMat2(-this.theta);
     },
     getUniformArray: function(){
-	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
-						   this.inverted.getUniformArray(),
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray(),
                                                    this.c3.getUniformArray(),
                                                    this.point, [0]);
     },
@@ -469,19 +469,19 @@ TwistedLoxodromic.prototype = {
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
         gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
-			    this.rotationMat2);
+			                this.rotationMat2);
         gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
-			    this.invRotationMat2);
+			                this.invRotationMat2);
         gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
         return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
-        var prevOuterX = this.outer.x; 
+        var prevOuterX = this.outer.x;
         var prevOuterY = this.outer.y;
         switch (componentId) {
         case TWISTED_LOXODROMIC_OUTER_BODY:
             this.outer.x = mouse[0] - diff[0];
-	    this.outer.y = mouse[1] - diff[1];
+	        this.outer.y = mouse[1] - diff[1];
             this.inner.x += this.outer.x - prevOuterX;
             this.inner.y += this.outer.y - prevOuterY;
             this.point[0] += this.outer.x - prevOuterX;
@@ -489,9 +489,9 @@ TwistedLoxodromic.prototype = {
             break;
         case TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE:
             var dx = mouse[0] - this.outer.x;
-	    var dy = mouse[1] - this.outer.y;
-	    var dist = Math.sqrt((dx * dx) + (dy * dy));
-	    this.outer.r = dist;
+	        var dy = mouse[1] - this.outer.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.outer.r = dist;
             break;
         case TWISTED_LOXODROMIC_INNER_BODY:
             var np = vec2Diff(mouse, diff);
@@ -506,8 +506,8 @@ TwistedLoxodromic.prototype = {
             break;
         case TWISTED_LOXODROMIC_INNER_CIRCUMFERENCE:
             var dx = mouse[0] - this.inner.x;
-	    var dy = mouse[1] - this.inner.y;
-	    var nr = Math.sqrt((dx * dx) + (dy * dy));
+	        var dy = mouse[1] - this.inner.y;
+	        var nr = Math.sqrt((dx * dx) + (dy * dy));
             var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
             if(d <= this.outer.r - nr){
                 this.inner.r = nr;
@@ -530,7 +530,7 @@ TwistedLoxodromic.prototype = {
     },
     // return [componentId,
     //         difference between object position and mouse position]
-    selectable: function(mouse, scene){        
+    selectable: function(mouse, scene){
         var diff = vec2Diff(this.point, mouse);
         if(vec2Len(diff) < this.controlPointRadius){
             return [TWISTED_LOXODROMIC_POINT, diff];
@@ -547,7 +547,7 @@ TwistedLoxodromic.prototype = {
         }else if(componentId == CIRCLE_CIRCUMFERENCE){
             return [TWISTED_LOXODROMIC_OUTER_CIRCUMFERENCE, diff];
         }
-	return [-1, [0, 0]];
+	    return [-1, [0, 0]];
     },
 }
 
@@ -610,8 +610,8 @@ TwistedLoxodromicFromFixedPoints.prototype = {
         this.inverted = circleInvert(this.inner, this.outer);
     },
     getUniformArray: function(){
-	return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
-						   this.inverted.getUniformArray(),
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray(),
                                                    this.c3.getUniformArray(),
                                                    this.point, [0],
                                                    this.q1, [0],
@@ -645,14 +645,14 @@ TwistedLoxodromicFromFixedPoints.prototype = {
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
         gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
-			    this.rotationMat2);
+			                this.rotationMat2);
         gl.uniformMatrix2fv(uniLocation[uniIndex++], false,
-			    this.invRotationMat2);
+			                this.invRotationMat2);
         gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
         return uniIndex;
     },
     move: function(scene, componentId, mouse, diff){
-        var prevOuterX = this.outer.x; 
+        var prevOuterX = this.outer.x;
         var prevOuterY = this.outer.y;
         switch (componentId) {
         case TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP1:
@@ -678,7 +678,7 @@ TwistedLoxodromicFromFixedPoints.prototype = {
     },
     // return [componentId,
     //         difference between object position and mouse position]
-    selectable: function(mouse, scene){        
+    selectable: function(mouse, scene){
         var diff = vec2Diff(this.fp1, mouse);
         if(vec2Len(diff) < this.controlPointRadius){
             return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_FP1, diff];
@@ -703,8 +703,8 @@ TwistedLoxodromicFromFixedPoints.prototype = {
         if(componentId == CIRCLE_BODY){
             return [TWISTED_LOXODROMIC_FROM_FIXED_POINTS_OUTER_BODY, diff];
         }
-        
-	return [-1, [0, 0]];
+
+	    return [-1, [0, 0]];
     },
 }
 
@@ -763,26 +763,26 @@ Scene.prototype = {
         }
     },
     clone: function(objects){
-	var obj = [];
-	for(var i = 0 ; i < objects.length ; i++){
-	    obj.push(objects[i].clone());
-	}
-	return obj;
+	    var obj = [];
+	    for(var i = 0 ; i < objects.length ; i++){
+	        obj.push(objects[i].clone());
+	    }
+	    return obj;
     },
     exportJson: function(){
         var json = {};
         json["name"] = "scene";
         var generators = {};
         for(objectId in Object.keys(this.objects)){
-	    objectId = parseInt(objectId);
+	        objectId = parseInt(objectId);
             var objs = [];
-	    var objArray = this.objects[objectId];
+	        var objArray = this.objects[objectId];
             if(objArray.length == 0) continue;
-	    for(var i = 0 ; i < objArray.length ; i++){
-		objs.push(objArray[i].exportJson());
-	    }
+	        for(var i = 0 ; i < objArray.length ; i++){
+		        objs.push(objArray[i].exportJson());
+	        }
             generators[GENERATORS_ID_NAME_MAP[objectId]] = objs;
-	}
+	    }
         json["generators"] = generators;
         return json;
     },
@@ -807,8 +807,8 @@ Scene.prototype = {
         return minRad
     },
     addCircle: function(canvas, mouse){
-	this.objects[ID_CIRCLE].push(new Circle(mouse[0], mouse[1], 100));
-	updateShaders(this, canvas);
+	    this.objects[ID_CIRCLE].push(new Circle(mouse[0], mouse[1], 100));
+	    updateShaders(this, canvas);
     },
     addInfiniteCircle: function(canvas, pos){
         this.objects[ID_INFINITE_CIRCLE].push(new InfiniteCircle(pos[0], pos[1], 0));
@@ -836,54 +836,54 @@ Scene.prototype = {
     // return [objectId, objectIndex, objectComponentId,
     //         difference between object position and mouse position]
     getSelectedObject: function(mouse){
-	for(objectId in Object.keys(this.objects)){
-	    objectId = parseInt(objectId);
-	    var objArray = this.objects[objectId];
-	    for(var i = 0 ; i < objArray.length ; i++){
-		var [componentId, diff] = objArray[i].selectable(mouse, this);
-		if(componentId != -1)
-		    return [objectId, i, componentId, diff];
+	    for(objectId in Object.keys(this.objects)){
+	        objectId = parseInt(objectId);
+	        var objArray = this.objects[objectId];
+	        for(var i = 0 ; i < objArray.length ; i++){
+		        var [componentId, diff] = objArray[i].selectable(mouse, this);
+		        if(componentId != -1)
+		            return [objectId, i, componentId, diff];
+	        }
 	    }
-	}
-	return [-1, -1, -1, [0, 0]];
+	    return [-1, -1, -1, [0, 0]];
     },
     move: function(id, index, componentId, mouse, diff){
-	if(id == -1) return;
-	var obj = this.objects[id][index];
-	if(obj != undefined)
-	    obj.move(this, componentId, mouse, diff);
+	    if(id == -1) return;
+	    var obj = this.objects[id][index];
+	    if(obj != undefined)
+	        obj.move(this, componentId, mouse, diff);
     },
     remove: function(id, index, mouse, diff){
-	if(id == -1) return;
-	var objArray = this.objects[id];
-	var obj = objArray[index];
-	if(objArray != undefined &&
-	   objArray.length != 0 &&
-	   obj.removable(mouse, diff)){
-	    objArray.splice(index, 1);
-	}
+	    if(id == -1) return;
+	    var objArray = this.objects[id];
+	    var obj = objArray[index];
+	    if(objArray != undefined &&
+	       objArray.length != 0 &&
+	       obj.removable(mouse, diff)){
+	        objArray.splice(index, 1);
+	    }
     },
     setUniformLocation: function(uniLocation, gl, program){
-	for(objectId in Object.keys(this.objects)){
-	    objectId = parseInt(objectId);
-	    var objArray = this.objects[objectId];
+	    for(objectId in Object.keys(this.objects)){
+	        objectId = parseInt(objectId);
+	        var objArray = this.objects[objectId];
             if(objArray.length == 0) continue;
-	    for(var i = 0 ; i < objArray.length ; i++){
-		objArray[i].setUniformLocation(uniLocation, gl, program, i);
+	        for(var i = 0 ; i < objArray.length ; i++){
+		        objArray[i].setUniformLocation(uniLocation, gl, program, i);
+	        }
 	    }
-	}
-	return uniLocation;
+	    return uniLocation;
     },
     setUniformValues: function(uniLocation, gl, uniIndex){
-	for(objectId in Object.keys(this.objects)){
-	    objectId = parseInt(objectId);
-	    var objArray = this.objects[objectId];
+	    for(objectId in Object.keys(this.objects)){
+	        objectId = parseInt(objectId);
+	        var objArray = this.objects[objectId];
             if(objArray.length == 0) continue;
-	    for(var i = 0 ; i < objArray.length ; i++){
-		uniIndex = objArray[i].setUniformValues(uniLocation, gl, uniIndex);
+	        for(var i = 0 ; i < objArray.length ; i++){
+		        uniIndex = objArray[i].setUniformValues(uniLocation, gl, uniIndex);
+	        }
 	    }
-	}
-	return uniIndex;
+	    return uniIndex;
     },
     setRenderContext: function(context){
         for(objectName in GENERATORS_NAME_ID_MAP){

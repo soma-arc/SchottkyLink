@@ -8,12 +8,12 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
 
-        
+    
     var vertex = [
-            -1, -1,
-            -1, 1,
-             1, -1,
-             1, 1
+        -1, -1,
+        -1, 1,
+        1, -1,
+        1, 1
     ];
     this.vertexBuffer = createVbo(this.gl, vertex);
     this.framebuffer = this.gl.createFramebuffer();
@@ -63,57 +63,57 @@ var RenderCanvas2D = function(canvasId, templateId){
 
 RenderCanvas2D.prototype = {
     resizeCanvas: function(){
-	this.canvas.width = this.parentPanel.clientWidth * this.pixelRatio;
-	this.canvas.height = this.parentPanel.clientHeight * this.pixelRatio;
+	    this.canvas.width = this.parentPanel.clientWidth * this.pixelRatio;
+	    this.canvas.height = this.parentPanel.clientHeight * this.pixelRatio;
         
-	this.center = [this.canvas.width / 2, this.canvas.height / 2];
-	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
+	    this.center = [this.canvas.width / 2, this.canvas.height / 2];
+	    this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     resizeCanvasFullscreen: function(){
         this.usingPixelRatio = window.devicePixelRatio;
-	this.canvas.width = window.innerWidth * this.pixelRatio;
-	this.canvas.height = window.innerHeight * this.pixelRatio;
-	this.center = [this.canvas.width / 2, this.canvas.height / 2];
-	this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
+	    this.canvas.width = window.innerWidth * this.pixelRatio;
+	    this.canvas.height = window.innerHeight * this.pixelRatio;
+	    this.center = [this.canvas.width / 2, this.canvas.height / 2];
+	    this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
     calcPixel: function(mx, my){
-	var rect = this.canvas.getBoundingClientRect();
-	return [this.scale * (((mx - rect.left) * this.pixelRatio) / this.canvas.height - this.canvasRatio) +
-		this.translate[0],
-		this.scale * -(((my - rect.top) * this.pixelRatio) / this.canvas.height - 0.5) +
-		this.translate[1]];
+	    var rect = this.canvas.getBoundingClientRect();
+	    return [this.scale * (((mx - rect.left) * this.pixelRatio) / this.canvas.height - this.canvasRatio) +
+		        this.translate[0],
+		        this.scale * -(((my - rect.top) * this.pixelRatio) / this.canvas.height - 0.5) +
+		        this.translate[1]];
     },
     requestFullScreen: function(){
-	var ua = navigator.userAgent.toLowerCase();
-	var version = navigator.appVersion.toLowerCase();
+	    var ua = navigator.userAgent.toLowerCase();
+	    var version = navigator.appVersion.toLowerCase();
 
-	var requestFullScreen;
-	if(ua.indexOf('firefox') > -1){
-	    // firefox
-	    this.canvas.mozRequestFullscreen();
-	}else if((ua.indexOf('chrome') > -1) &&
-		 (ua.indexOf('edge') == -1)){
-	    // chrome
-	    this.canvas.webkitRequestFullscreen();
-	    
-	}else if((ua.indexOf('safari') > -1) && (ua.indexOf('chrome') == -1)){
-	    // safari
-	    this.canvas.webkitRequestFullscreen();
-	}else if(ua.indexOf('opera') > -1){
-	    // opera
-	    this.canvas.webkitRequestFullscreen();
-	}else if(ua.indexOf('trident/7') > -1){
-	    // IE11
-	    this.canvas.msRequestFullscreen();
-	}else if((ua.indexOf('Edge') > -1)){
-	    // Edge
-	    this.canvas.msRequestFullscreen();
-	}
+	    var requestFullScreen;
+	    if(ua.indexOf('firefox') > -1){
+	        // firefox
+	        this.canvas.mozRequestFullscreen();
+	    }else if((ua.indexOf('chrome') > -1) &&
+		         (ua.indexOf('edge') == -1)){
+	        // chrome
+	        this.canvas.webkitRequestFullscreen();
+	        
+	    }else if((ua.indexOf('safari') > -1) && (ua.indexOf('chrome') == -1)){
+	        // safari
+	        this.canvas.webkitRequestFullscreen();
+	    }else if(ua.indexOf('opera') > -1){
+	        // opera
+	        this.canvas.webkitRequestFullscreen();
+	    }else if(ua.indexOf('trident/7') > -1){
+	        // IE11
+	        this.canvas.msRequestFullscreen();
+	    }else if((ua.indexOf('Edge') > -1)){
+	        // Edge
+	        this.canvas.msRequestFullscreen();
+	    }
     },
     releaseObject: function(){
-	this.selectedObjectId = -1;
-	this.selectedObjectIndex = -1;
-	this.selectedComponentId = -1;
+	    this.selectedObjectId = -1;
+	    this.selectedObjectIndex = -1;
+	    this.selectedComponentId = -1;
     },
     setUniformLocation: function(uniLocation, gl, program){
         uniLocation.push(gl.getUniformLocation(program,
@@ -129,10 +129,10 @@ RenderCanvas2D.prototype = {
         uniLocation.push(gl.getUniformLocation(program, 'u_iterations'));
         uniLocation.push(gl.getUniformLocation(program, 'u_initialHue'));
         uniLocation.push(gl.getUniformLocation(program, 'u_hueStep'));
-	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectId'));
-	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectIndex'));
-	uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
-	uniLocation.push(gl.getUniformLocation(program, 'u_displayGenerators'));
+	    uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectId'));
+	    uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectIndex'));
+	    uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
+	    uniLocation.push(gl.getUniformLocation(program, 'u_displayGenerators'));
     },
     setUniformValues: function(uniLocation, gl, uniI, width, height){
         gl.activeTexture(gl.TEXTURE0);
@@ -142,15 +142,15 @@ RenderCanvas2D.prototype = {
         gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
         gl.uniform1f(uniLocation[uniI++], 0);
-	gl.uniform2fv(uniLocation[uniI++], this.translate);
-	gl.uniform1f(uniLocation[uniI++], this.scale);
-	gl.uniform1i(uniLocation[uniI++], this.iterations);
-	gl.uniform1f(uniLocation[uniI++], this.initialHue);
-	gl.uniform1f(uniLocation[uniI++], this.hueStep);
-	gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
-	gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
-	gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
-	gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
+	    gl.uniform2fv(uniLocation[uniI++], this.translate);
+	    gl.uniform1f(uniLocation[uniI++], this.scale);
+	    gl.uniform1i(uniLocation[uniI++], this.iterations);
+	    gl.uniform1f(uniLocation[uniI++], this.initialHue);
+	    gl.uniform1f(uniLocation[uniI++], this.hueStep);
+	    gl.uniform1i(uniLocation[uniI++], this.selectedObjectId);
+	    gl.uniform1i(uniLocation[uniI++], this.selectedObjectIndex);
+	    gl.uniform1i(uniLocation[uniI++], this.selectedComponentId);
+	    gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;
     },
     createTextures: function(gl, width, height){
@@ -186,26 +186,26 @@ function addMouseListeners(scene, renderCanvas){
     var diff = [0, 0];
 
     renderCanvas.canvas.addEventListener("contextmenu", function(e){
-	// disable right-click context-menu
+	    // disable right-click context-menu
         event.preventDefault();
     });
     
     renderCanvas.canvas.addEventListener('mouseup', function(event){
-	renderCanvas.isMousePressing = false;
-	renderCanvas.isRendering = false;
-	renderCanvas.render();
+	    renderCanvas.isMousePressing = false;
+	    renderCanvas.isRendering = false;
+	    renderCanvas.render();
     }, false);
 
     renderCanvas.canvas.addEventListener('mousemove', function(event){
-	if(!renderCanvas.isMousePressing) return;
-	var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
-	if(event.button == 0){
-	    scene.move(renderCanvas.selectedObjectId,
-			 renderCanvas.selectedObjectIndex,
-			 renderCanvas.selectedComponentId,
-			 mouse, diff);
-	    renderCanvas.isRendering = true;
-	}else if(event.button == 2){
+	    if(!renderCanvas.isMousePressing) return;
+	    var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
+	    if(event.button == 0){
+	        scene.move(renderCanvas.selectedObjectId,
+			           renderCanvas.selectedObjectIndex,
+			           renderCanvas.selectedComponentId,
+			           mouse, diff);
+	        renderCanvas.isRendering = true;
+	    }else if(event.button == 2){
             var d = vec2Diff(mouse, renderCanvas.prevMousePos);
             renderCanvas.translate[0] -= d[0];
             renderCanvas.translate[1] -= d[1];
@@ -214,42 +214,42 @@ function addMouseListeners(scene, renderCanvas){
     });
 
     renderCanvas.canvas.addEventListener('mousedown', function(event){
-	event.preventDefault();
-	var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
-	if(event.button == 0){
-	    [renderCanvas.selectedObjectId,
-	     renderCanvas.selectedObjectIndex,
-	     renderCanvas.selectedComponentId,
-	     diff] = scene.getSelectedObject(mouse);
-	}else if(event.button == 1){
-	    renderCanvas.releaseObject();
-	    scene.addCircle(renderCanvas, mouse);
-	}else if(event.button == 2){
+	    event.preventDefault();
+	    var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
+	    if(event.button == 0){
+	        [renderCanvas.selectedObjectId,
+	         renderCanvas.selectedObjectIndex,
+	         renderCanvas.selectedComponentId,
+	         diff] = scene.getSelectedObject(mouse);
+	    }else if(event.button == 1){
+	        renderCanvas.releaseObject();
+	        scene.addCircle(renderCanvas, mouse);
+	    }else if(event.button == 2){
         }
         renderCanvas.prevMousePos = mouse;
-	renderCanvas.isMousePressing = true;
-	renderCanvas.render();
+	    renderCanvas.isMousePressing = true;
+	    renderCanvas.render();
     }, false);
 
     renderCanvas.canvas.addEventListener('dblclick', function(event){
-	if(event.button == 0){
-	    var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
-	    scene.remove(renderCanvas.selectedObjectId,
-			   renderCanvas.selectedObjectIndex,
-			   mouse, diff);
-	    renderCanvas.releaseObject();
-	    updateShaders(scene, renderCanvas);
-	}
+	    if(event.button == 0){
+	        var mouse = renderCanvas.calcPixel(event.clientX, event.clientY);
+	        scene.remove(renderCanvas.selectedObjectId,
+			             renderCanvas.selectedObjectIndex,
+			             mouse, diff);
+	        renderCanvas.releaseObject();
+	        updateShaders(scene, renderCanvas);
+	    }
     });
 
     renderCanvas.canvas.addEventListener('mousewheel', function(event){
-	event.preventDefault();
-	if(event.wheelDelta > 0){
+	    event.preventDefault();
+	    if(event.wheelDelta > 0){
             renderCanvas.scale *= 0.5;
-	}else{
+	    }else{
             renderCanvas.scale *= 2;
-	}
-	renderCanvas.render();
+	    }
+	    renderCanvas.render();
     })
 }
 
@@ -261,9 +261,9 @@ function setupSchottkyProgram(scene, renderCanvas){
     var renderContext = {};
     scene.setRenderContext(renderContext);
     attachShaderFromString(gl,
-			   renderCanvas.template.render(renderContext),
-			   program,
-			   gl.FRAGMENT_SHADER);
+			               renderCanvas.template.render(renderContext),
+			               program,
+			               gl.FRAGMENT_SHADER);
     attachShader(gl, 'vs', program, gl.VERTEX_SHADER);
     program = linkProgram(gl, program);
     renderCanvas.initializeTextures();
@@ -340,7 +340,7 @@ window.addEventListener('load', function(event){
     var scene = new Scene();
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
     var renderCanvas = new RenderCanvas2D('canvas',
-					  'kissingSchottkyTemplate');
+					                      'kissingSchottkyTemplate');
     addMouseListeners(scene, renderCanvas);
 
     updateShaders(scene, renderCanvas);
@@ -362,80 +362,80 @@ window.addEventListener('load', function(event){
     }, false);
 
     document.addEventListener('webkitfullscreenchange', function(event){
-	if ( document.webkitFullscreenElement ) {
-	    renderCanvas.isFullScreen = true;
-	}else{
-	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas();
-	    renderCanvas.render();
-	}
+	    if ( document.webkitFullscreenElement ) {
+	        renderCanvas.isFullScreen = true;
+	    }else{
+	        renderCanvas.isFullScreen = false;
+	        renderCanvas.resizeCanvas();
+	        renderCanvas.render();
+	    }
     });
 
     document.addEventListener('mozfullscreenchange', function(event){
-	if ( document.mozFullscreenElement ) {
-	    renderCanvas.isFullScreen = true;
-	}else{
-	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas();
-	    renderCanvas.render();
-	}
+	    if ( document.mozFullscreenElement ) {
+	        renderCanvas.isFullScreen = true;
+	    }else{
+	        renderCanvas.isFullScreen = false;
+	        renderCanvas.resizeCanvas();
+	        renderCanvas.render();
+	    }
     });
 
     document.addEventListener('msfullscreenchange', function(event){
-	if ( document.msFullscreenElement ) {
-	    renderCanvas.isFullScreen = true;
-	}else{
-	    renderCanvas.isFullScreen = false;
-	    renderCanvas.resizeCanvas();
-	    renderCanvas.render();
-	}
+	    if ( document.msFullscreenElement ) {
+	        renderCanvas.isFullScreen = true;
+	    }else{
+	        renderCanvas.isFullScreen = false;
+	        renderCanvas.resizeCanvas();
+	        renderCanvas.render();
+	    }
     });
     
     window.addEventListener('keydown', function(event){
-	switch(event.key){
-	case '+':
-	    renderCanvas.iterations++;
-	    renderCanvas.render();
-	    break;
-	case '-':
-	    if(renderCanvas.iterations > 1){
-		renderCanvas.iterations--;
-		renderCanvas.render();
-	    }
-	    break;
-	case 'p':
-	    renderCanvas.numSamples++;
-	    renderCanvas.render();
-	    break;
-	case 'n':
-	    if(renderCanvas.numSamples > 1){
-		renderCanvas.numSamples--;
-		renderCanvas.render();
-	    }
-	    break;
-	case 'r':
-	    renderCanvas.requestFullScreen();
-	    break;
-	case 'ArrowRight':
-	    event.preventDefault();
-	    renderCanvas.translate[0] += renderCanvas.scale / 10;
-	    renderCanvas.render();
-	    break;
-	case 'ArrowLeft':
-	    event.preventDefault();
-	    renderCanvas.translate[0] -= renderCanvas.scale / 10;
-	    renderCanvas.render();
-	    break;
-	case 'ArrowUp':
-	    event.preventDefault();
-	    renderCanvas.translate[1] += renderCanvas.scale / 10;
-	    renderCanvas.render();
-	    break;
-	case 'ArrowDown':
-	    event.preventDefault();
-	    renderCanvas.translate[1] -= renderCanvas.scale / 10;
-	    renderCanvas.render();
-	    break;
+	    switch(event.key){
+	    case '+':
+	        renderCanvas.iterations++;
+	        renderCanvas.render();
+	        break;
+	    case '-':
+	        if(renderCanvas.iterations > 1){
+		        renderCanvas.iterations--;
+		        renderCanvas.render();
+	        }
+	        break;
+	    case 'p':
+	        renderCanvas.numSamples++;
+	        renderCanvas.render();
+	        break;
+	    case 'n':
+	        if(renderCanvas.numSamples > 1){
+		        renderCanvas.numSamples--;
+		        renderCanvas.render();
+	        }
+	        break;
+	    case 'r':
+	        renderCanvas.requestFullScreen();
+	        break;
+	    case 'ArrowRight':
+	        event.preventDefault();
+	        renderCanvas.translate[0] += renderCanvas.scale / 10;
+	        renderCanvas.render();
+	        break;
+	    case 'ArrowLeft':
+	        event.preventDefault();
+	        renderCanvas.translate[0] -= renderCanvas.scale / 10;
+	        renderCanvas.render();
+	        break;
+	    case 'ArrowUp':
+	        event.preventDefault();
+	        renderCanvas.translate[1] += renderCanvas.scale / 10;
+	        renderCanvas.render();
+	        break;
+	    case 'ArrowDown':
+	        event.preventDefault();
+	        renderCanvas.translate[1] -= renderCanvas.scale / 10;
+	        renderCanvas.render();
+	        break;
         case 'v':
             if(renderCanvas.selectedObjectId == ID_CIRCLE){
                 scene.objects[ID_CIRCLE][renderCanvas.selectedObjectIndex].moveMode = CIRCLE_MOVE_MODE_NEAREST;
@@ -461,10 +461,10 @@ window.addEventListener('load', function(event){
                                {text: "2.0", value: 2.0}],
                pixelDensitiesDefault: {text: String(window.devicePixelRatio),
                                        value: window.devicePixelRatio},
-	       minIterations: 1,
-	       minHue: 0,
-	       hueStep: 0.01,
-	       initialHueStep: 0.01},
+	           minIterations: 1,
+	           minHue: 0,
+	           hueStep: 0.01,
+	           initialHueStep: 0.01},
         methods:{
             saveScene: function(){
                 scene.saveSceneAsJson();
@@ -515,9 +515,9 @@ window.addEventListener('load', function(event){
             addLoxodromicFromFixedPoints: function(){
                 scene.addLoxodromicFromFixedPoints(renderCanvas, [0, 0]);
             },
-	    render: function(){
-		renderCanvas.render();
-	    },
+	        render: function(){
+		        renderCanvas.render();
+	        },
             switchInstructionModal: function(){
                 renderCanvas.isDisplayingInstruction = true;
             }
@@ -529,8 +529,8 @@ window.addEventListener('load', function(event){
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
-	if(renderCanvas.isRendering)
-	    renderCanvas.render(elapsedTime);
-	requestAnimationFrame(arguments.callee);
+	    if(renderCanvas.isRendering)
+	        renderCanvas.render(elapsedTime);
+	    requestAnimationFrame(arguments.callee);
     })();
 }, false);

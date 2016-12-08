@@ -44,7 +44,7 @@
          attribute vec2 a_vertex;
 
          void main(void){
-	     gl_Position = vec4(a_vertex, 0., 1.0);
+	         gl_Position = vec4(a_vertex, 0., 1.0);
          }
         </script>
         <script id="kissingSchottkyTemplate" type="x-shader/x-fragment">
@@ -127,94 +127,94 @@
          
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, float sampleIndex) {
-	     vec2 seed = co * (sampleIndex + 1.0);
-	     seed+=vec2(-1,1);
-	     // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
-	     return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+	         vec2 seed = co * (sampleIndex + 1.0);
+	         seed+=vec2(-1,1);
+	         // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+	         return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
                          fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
          }
          
          vec2 circleInvert(const vec2 pos, const vec2 circlePos, const float circleR){
-	     return ((pos - circlePos) * circleR * circleR)/(distance(pos, circlePos) * distance(pos, circlePos) ) + circlePos;
+	         return ((pos - circlePos) * circleR * circleR)/(distance(pos, circlePos) * distance(pos, circlePos) ) + circlePos;
          }
 
          const int MAX_ITERATIONS = 100;
          float IIS(vec2 pos){
-	     float loopNum = 0.;
-	     bool cont = false;
-	     for(int i = 0 ; i < MAX_ITERATIONS ; i++){
-	         if(i >= u_iterations) break;
-	         cont = false;
-	         {% if numCircles > 2 %}
-	         {% for n  in range(0,  numCircles ) %}
-	         {% if n == 0 %}
-	         if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
-		     pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
-		     cont = true;
-		     loopNum++;
-	         }
-	         {% else %}
-	         else if(distance(pos, u_schottkyCircle{{ n }}.xy) < u_schottkyCircle{{ n }}.z){
-		     pos = circleInvert(pos, u_schottkyCircle{{ n }}.xy, u_schottkyCircle{{ n }}.z);
-		     cont = true;
-		     loopNum++;
-	         }
-	         {% endif %}
-	         {% endfor %}
-	         {% elif numCircles == 2 %}
-	         if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
-		     pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
-		     cont = true;
-		     loopNum++;
-	         }else if(distance(pos, u_schottkyCircle1.xy) < u_schottkyCircle1.z){
-		     pos = circleInvert(pos, u_schottkyCircle1.xy, u_schottkyCircle1.z);
-		     cont = true;
-		     loopNum++;
-	         }
-	         {% elif numCircles == 1 %}
-	         if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
-		     pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
-		     cont = true;
-		     loopNum++;
-	         }
-	         {% endif %}
+	         float loopNum = 0.;
+	         bool cont = false;
+	         for(int i = 0 ; i < MAX_ITERATIONS ; i++){
+	             if(i >= u_iterations) break;
+	             cont = false;
+	             {% if numCircles > 2 %}
+	             {% for n  in range(0,  numCircles ) %}
+	             {% if n == 0 %}
+	             if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		             pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
+		             cont = true;
+		             loopNum++;
+	             }
+	             {% else %}
+	             else if(distance(pos, u_schottkyCircle{{ n }}.xy) < u_schottkyCircle{{ n }}.z){
+		             pos = circleInvert(pos, u_schottkyCircle{{ n }}.xy, u_schottkyCircle{{ n }}.z);
+		             cont = true;
+		             loopNum++;
+	             }
+	             {% endif %}
+	             {% endfor %}
+	             {% elif numCircles == 2 %}
+	             if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		             pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
+		             cont = true;
+		             loopNum++;
+	             }else if(distance(pos, u_schottkyCircle1.xy) < u_schottkyCircle1.z){
+		             pos = circleInvert(pos, u_schottkyCircle1.xy, u_schottkyCircle1.z);
+		             cont = true;
+		             loopNum++;
+	             }
+	             {% elif numCircles == 1 %}
+	             if(distance(pos, u_schottkyCircle0.xy) < u_schottkyCircle0.z){
+		             pos = circleInvert(pos, u_schottkyCircle0.xy, u_schottkyCircle0.z);
+		             cont = true;
+		             loopNum++;
+	             }
+	             {% endif %}
 
-	         {% for n in range(0,  numInfiniteCircles ) %}
-	         pos -= u_infiniteCircle{{ n }}.xy;
-	         pos = u_invInfiniteCircleRotationMat2{{ n }} * pos;
-	         if(pos.x > 0.){
-		     pos.x *= -1.;
-		     cont = true;
-		     loopNum++;
-	         }
-	         pos = u_infiniteCircleRotationMat2{{ n }} * pos;
-	         pos += u_infiniteCircle{{ n }}.xy;
-	         {% endfor %}
+	             {% for n in range(0,  numInfiniteCircles ) %}
+	             pos -= u_infiniteCircle{{ n }}.xy;
+	             pos = u_invInfiniteCircleRotationMat2{{ n }} * pos;
+	             if(pos.x > 0.){
+		             pos.x *= -1.;
+		             cont = true;
+		             loopNum++;
+	             }
+	             pos = u_infiniteCircleRotationMat2{{ n }} * pos;
+	             pos += u_infiniteCircle{{ n }}.xy;
+	             {% endfor %}
 
-	         {% for n in range(0, numTransformByCircles) %}
+	             {% for n in range(0, numTransformByCircles) %}
 
-	         if(distance(pos, u_transformByCircles{{ n }}[0].xy) < u_transformByCircles{{ n }}[0].z){
-		     pos = circleInvert(pos, u_transformByCircles{{ n }}[0].xy, u_transformByCircles{{ n }}[0].z);
-		     pos = circleInvert(pos, u_transformByCircles{{ n }}[1].xy, u_transformByCircles{{ n }}[1].z);
-		     
-		     cont = true;
+	             if(distance(pos, u_transformByCircles{{ n }}[0].xy) < u_transformByCircles{{ n }}[0].z){
+		             pos = circleInvert(pos, u_transformByCircles{{ n }}[0].xy, u_transformByCircles{{ n }}[0].z);
+		             pos = circleInvert(pos, u_transformByCircles{{ n }}[1].xy, u_transformByCircles{{ n }}[1].z);
+		             
+		             cont = true;
                      //		 loopNum++;
-	         }else if(distance(pos, u_transformByCircles{{ n }}[2].xy) >= u_transformByCircles{{ n }}[2].z){
-		     pos = circleInvert(pos, u_transformByCircles{{ n }}[1].xy, u_transformByCircles{{ n }}[1].z);
-		     pos = circleInvert(pos, u_transformByCircles{{ n }}[0].xy, u_transformByCircles{{ n }}[0].z);
+	             }else if(distance(pos, u_transformByCircles{{ n }}[2].xy) >= u_transformByCircles{{ n }}[2].z){
+		             pos = circleInvert(pos, u_transformByCircles{{ n }}[1].xy, u_transformByCircles{{ n }}[1].z);
+		             pos = circleInvert(pos, u_transformByCircles{{ n }}[0].xy, u_transformByCircles{{ n }}[0].z);
 
-		     cont = true;
+		             cont = true;
                      //		 loopNum++;
-	         }
-	         
-	         {% endfor %}
+	             }
+	             
+	             {% endfor %}
 
                  {% for n in range(0, numTwistedLoxodromic) %}
                  if(distance(pos, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){                 
                      pos -= u_twistedLoxodromic{{ n }}[0].xy;
-	             pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
-		     pos.x *= -1.;
-	             pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
+	                 pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
+		             pos.x *= -1.;
+	                 pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
                      pos += u_twistedLoxodromic{{ n }}[0].xy;
 
                      
@@ -226,33 +226,33 @@
                      pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
                      pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[1].xy, u_twistedLoxodromic{{ n }}[1].z);
                      
-		     cont = true;
+		             cont = true;
                      //		 loopNum++;
-	         }else if(distance(pos, u_twistedLoxodromic{{ n }}[2].xy) >= u_twistedLoxodromic{{ n }}[2].z){
-		     pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[1].xy, u_twistedLoxodromic{{ n }}[1].z);
-		     pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
+	             }else if(distance(pos, u_twistedLoxodromic{{ n }}[2].xy) >= u_twistedLoxodromic{{ n }}[2].z){
+		             pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[1].xy, u_twistedLoxodromic{{ n }}[1].z);
+		             pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[0].xy, u_twistedLoxodromic{{ n }}[0].z);
 
                      pos = circleInvert(pos, u_twistedLoxodromic{{ n }}[3].xy, u_twistedLoxodromic{{ n }}[3].z);
 
                      pos -= u_twistedLoxodromic{{ n }}[0].xy;
-	             pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
-		     pos.x *= -1.;
-	             pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
+	                 pos = u_invTwistedLoxodromicRotationMat2{{ n }} * pos;
+		             pos.x *= -1.;
+	                 pos = u_twistedLoxodromicRotationMat2{{ n }} * pos;
                      pos += u_twistedLoxodromic{{ n }}[0].xy;
 
                      
-		     cont = true;
+		             cont = true;
                      //		 loopNum++;
-	         }
+	             }
                  
                  {% endfor %}
 
                  {% for n in range(0, numTwistedLoxodromicFromFixedPoints) %}
                  if(distance(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy) < u_twistedLoxodromicFromFixedPoints{{ n }}[0].z){                 
                      pos -= u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
-	             pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
-		     pos.x *= -1.;
-	             pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+	                 pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+		             pos.x *= -1.;
+	                 pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
                      pos += u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
 
                      
@@ -264,35 +264,35 @@
                      pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[0].z);
                      pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[1].z);
                      
-		     cont = true;
+		             cont = true;
                      //		 loopNum++;
-	         }else if(distance(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) >= u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
-		     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[1].z);
-		     pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[0].z);
+	             }else if(distance(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[2].xy) >= u_twistedLoxodromicFromFixedPoints{{ n }}[2].z){
+		             pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[1].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[1].z);
+		             pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[0].z);
 
                      pos = circleInvert(pos, u_twistedLoxodromicFromFixedPoints{{ n }}[3].xy, u_twistedLoxodromicFromFixedPoints{{ n }}[3].z);
 
                      pos -= u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
-	             pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
-		     pos.x *= -1.;
-	             pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+	                 pos = u_invTwistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
+		             pos.x *= -1.;
+	                 pos = u_twistedLoxodromicFromFixedPointsRotationMat2{{ n }} * pos;
                      pos += u_twistedLoxodromicFromFixedPoints{{ n }}[0].xy;
 
                      
-		     cont = true;
+		             cont = true;
                      //		 loopNum++;
-	         }
+	             }
                  
                  {% endfor %}
-	         
-	         if(cont == false) break;
-	     }
-	     return loopNum;
+	             
+	             if(cont == false) break;
+	         }
+	         return loopNum;
          }
          vec3 hsv2rgb(vec3 c){
-	     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-	     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+	         vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	         vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	         return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
          vec3 renderUI(const vec2 position){
@@ -435,35 +435,35 @@
 	             }
 	             {% endfor %}
 	         }
-	     
+	         
 	         {% endif %}
 	         return BLACK;
          }
 
          const float MAX_SAMPLE = 10.;
          void main(){
-	     vec3 sum = vec3(0);
-	     float ratio = u_iResolution.x / u_iResolution.y / 2.0;
-	     for(float i = 0. ; i < MAX_SAMPLE ; i++){
-	         vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_iResolution.yy ) - vec2(ratio, 0.5);
-	         position = position * u_scale;
-	         position += u_translate;
+	         vec3 sum = vec3(0);
+	         float ratio = u_iResolution.x / u_iResolution.y / 2.0;
+	         for(float i = 0. ; i < MAX_SAMPLE ; i++){
+	             vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_iResolution.yy ) - vec2(ratio, 0.5);
+	             position = position * u_scale;
+	             position += u_translate;
 
-	         vec3 col = BLACK;
-		 if(u_displayGenerators)
-		     col = renderUI(position);
-	         float loopNum = IIS(position);
-	         if(loopNum > 0.){
-		     vec3 hsv = vec3(u_initialHue + u_hueStep * (loopNum -1.), 1.0, 1.0);
+	             vec3 col = BLACK;
+		         if(u_displayGenerators)
+		             col = renderUI(position);
+	             float loopNum = IIS(position);
+	             if(loopNum > 0.){
+		             vec3 hsv = vec3(u_initialHue + u_hueStep * (loopNum -1.), 1.0, 1.0);
                      if(!all(equal(col, BLACK))){
                          sum += mix(hsv2rgb(hsv), col, 0.5);
                      }else{
                          sum += hsv2rgb(hsv);
                      }
-	         }else{
+	             }else{
                      sum += col;
                  }
-	     }
+	         }
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
              gl_FragColor = vec4(mix(sum/MAX_SAMPLE, texCol, u_textureWeight),
                                  1.0);
@@ -492,11 +492,11 @@
             </div>
             <ul>
                 <li>Left Click: Select a generator</li>
-	        <li>Right Click: Move on screen</li>
-	        <li>Wheel Click: Add a Circle</li>
-	        <li>Wheel: Zoom</li>
-	        <li>Double Left Click: Remove a generator</li>
-	        <li>+ / - : Increase / Decrease maximum iterations</li>
+	            <li>Right Click: Move on screen</li>
+	            <li>Wheel Click: Add a Circle</li>
+	            <li>Wheel: Zoom</li>
+	            <li>Double Left Click: Remove a generator</li>
+	            <li>+ / - : Increase / Decrease maximum iterations</li>
             </ul>
         </ui-modal>
         <div class="content">
@@ -508,9 +508,9 @@
                     <div class="renderPropertyPanel">
                         <ui-button text="save" raised @click="saveImage">
                         </ui-button>
-		        <div class="switchColumn">
-			    <span>DisplayGen</span>
-			    <ui-switch hide-label :value.sync="renderCanvas.displayGenerators" @change="render"></ui-switch>
+		                <div class="switchColumn">
+			                <span>DisplayGen</span>
+			                <ui-switch hide-label :value.sync="renderCanvas.displayGenerators" @change="render"></ui-switch>
                         </div>
                     </div>
                 </div>
@@ -567,27 +567,27 @@
                                    @selected="pixelDensitySelected" :options="pixelDensities">
                             
                         </ui-select>
-			<div class="row">
-			    Max iterations
+			            <div class="row">
+			                Max iterations
                         </div>
                         <ui-textbox name="iterations" type="number" :value.sync="renderCanvas.iterations"
-			:min="minIterations" @changed="render">
+:min="minIterations" @changed="render">
                             
                         </ui-textbox>
-			<div class="row">
-			    Initial Hue
+			            <div class="row">
+			                Initial Hue
                         </div>
-			<ui-textbox type="number" :value.sync="renderCanvas.initialHue"
-				    :min="hueMin"
-				    :step="initialHueStep"
-				    @changed="render"></ui-textbox>
-			<div class="row">
-			    Hue Step
+			            <ui-textbox type="number" :value.sync="renderCanvas.initialHue"
+				                    :min="hueMin"
+				                    :step="initialHueStep"
+				                    @changed="render"></ui-textbox>
+			            <div class="row">
+			                Hue Step
                         </div>
-			<ui-textbox type="number" :value.sync="renderCanvas.hueStep"
-				    :min="hueMin"
-				    :step="hueStep"
-				    @changed="render"></ui-textbox>
+			            <ui-textbox type="number" :value.sync="renderCanvas.hueStep"
+				                    :min="hueMin"
+				                    :step="hueStep"
+				                    @changed="render"></ui-textbox>
                     </ui-tab>
                 </ui-tabs>
             </div>

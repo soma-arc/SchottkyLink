@@ -44,7 +44,7 @@
          attribute vec2 a_vertex;
 
          void main(void){
-	     gl_Position = vec4(a_vertex, 0., 1.0);
+             gl_Position = vec4(a_vertex, 0., 1.0);
          }
         </script>
         <script id="uniformVariables" type="x-shader/x-fragment">
@@ -119,7 +119,7 @@
          
          const int ID_AXIS_CYLINDER = 100;
          const int ID_KLEIN_ORBIT = 101;
-        
+         
          const float PI = 3.14159265359;
          const float PI_4 = 12.566368;
          const float EPSILON = 0.01;
@@ -150,114 +150,114 @@
          bool g_isHit = false;
          
          vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
-			      vec3 sphereCenter, float radius, 
-			      vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	     g_isHit = false;
-	     vec3 v = rayOrigin - sphereCenter;
-	     float b = dot(rayDir, v);
-	     float c = dot(v, v) - radius * radius;
-	     float d = b * b - c;
-	     if(d >= 0.){
+                              vec3 sphereCenter, float radius, 
+                              vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             g_isHit = false;
+             vec3 v = rayOrigin - sphereCenter;
+             float b = dot(rayDir, v);
+             float c = dot(v, v) - radius * radius;
+             float d = b * b - c;
+             if(d >= 0.){
                  float s = sqrt(d);
                  float t = -b - s;
                  if(t <= EPSILON) t = -b + s;
                  if(EPSILON < t && t < isect.x){
-		     vec3 p = (rayOrigin + t * rayDir);
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-		     return vec4(t, normalize(p - sphereCenter));
+                     vec3 p = (rayOrigin + t * rayDir);
+                     g_objId = objId;
+                     g_objIndex = objIndex;
+                     g_objComponentId = objComponentId;
+                     g_mtl = mtl;
+                     g_isHit = true;
+                     return vec4(t, normalize(p - sphereCenter));
                  }
-	     }
-	     return isect;
+             }
+             return isect;
          }
 
          vec4 intersectXYCylinder(int objId, int objIndex, int objComponentId, int mtl,
-			          float r, vec3 center,
-			          vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	     g_isHit = false;
-	     rayOrigin = rayOrigin - center;
-	     float a = rayDir.x * rayDir.x + rayDir.y * rayDir.y;
-	     float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.y * rayDir.y);
-	     float c = rayOrigin.x * rayOrigin.x + rayOrigin.y * rayOrigin.y - r * r;
-	     float d = b * b - 4. * a * c;
-	     if(d >= 0.){
-	         float s = sqrt(d);
-	         float t = (-b - s) / (2. * a);
+                                  float r, vec3 center,
+                                  vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             g_isHit = false;
+             rayOrigin = rayOrigin - center;
+             float a = rayDir.x * rayDir.x + rayDir.y * rayDir.y;
+             float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.y * rayDir.y);
+             float c = rayOrigin.x * rayOrigin.x + rayOrigin.y * rayOrigin.y - r * r;
+             float d = b * b - 4. * a * c;
+             if(d >= 0.){
+                 float s = sqrt(d);
+                 float t = (-b - s) / (2. * a);
                  if(t <= EPSILON) t = (-b + s) / (2. * a);
                  if(EPSILON < t && t < isect.x){
-		     vec3 p = (rayOrigin + t * rayDir);
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-		     return vec4(t, normalize(vec3(p.xy, 0)));
+                     vec3 p = (rayOrigin + t * rayDir);
+                     g_objId = objId;
+                     g_objIndex = objIndex;
+                     g_objComponentId = objComponentId;
+                     g_mtl = mtl;
+                     g_isHit = true;
+                     return vec4(t, normalize(vec3(p.xy, 0)));
                  }
-	     }
-	     return isect;
+             }
+             return isect;
          }
 
          vec4 intersectYZCylinder(int objId, int objIndex, int objComponentId, int mtl,
-			          float r, vec3 center,
-			          vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	     g_isHit = false;
-	     rayOrigin = rayOrigin - center;
-	     float a = rayDir.z * rayDir.z + rayDir.y * rayDir.y;
-	     float b = 2. * ( rayOrigin.z * rayDir.z + rayOrigin.y * rayDir.y);
-	     float c = rayOrigin.z * rayOrigin.z + rayOrigin.y * rayOrigin.y - r * r;
-	     float d = b * b - 4. * a * c;
-	     if(d >= 0.){
-	         float s = sqrt(d);
-	         float t = (-b - s) / (2. * a);
+                                  float r, vec3 center,
+                                  vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             g_isHit = false;
+             rayOrigin = rayOrigin - center;
+             float a = rayDir.z * rayDir.z + rayDir.y * rayDir.y;
+             float b = 2. * ( rayOrigin.z * rayDir.z + rayOrigin.y * rayDir.y);
+             float c = rayOrigin.z * rayOrigin.z + rayOrigin.y * rayOrigin.y - r * r;
+             float d = b * b - 4. * a * c;
+             if(d >= 0.){
+                 float s = sqrt(d);
+                 float t = (-b - s) / (2. * a);
                  if(t <= EPSILON) t = (-b + s) / (2. * a);
                  if(EPSILON < t && t < isect.x){
-		     vec3 p = (rayOrigin + t * rayDir);
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-		     return vec4(t, normalize(vec3(0, p.yz)));
+                     vec3 p = (rayOrigin + t * rayDir);
+                     g_objId = objId;
+                     g_objIndex = objIndex;
+                     g_objComponentId = objComponentId;
+                     g_mtl = mtl;
+                     g_isHit = true;
+                     return vec4(t, normalize(vec3(0, p.yz)));
                  }
-	     }
-	     return isect;
+             }
+             return isect;
          }
 
          vec4 intersectXZCylinder(int objId, int objIndex, int objComponentId, int mtl,
-			          float r, vec3 center,
-			          vec3 rayOrigin, vec3 rayDir, vec4 isect){
-	     g_isHit = false;
-	     rayOrigin = rayOrigin - center;
-	     float a = rayDir.x * rayDir.x + rayDir.z * rayDir.z;
-	     float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.z * rayDir.z);
-	     float c = rayOrigin.x * rayOrigin.x + rayOrigin.z * rayOrigin.z - r * r;
-	     float d = b * b - 4. * a * c;
-	     if(d >= 0.){
-	         float s = sqrt(d);
-	         float t = (-b - s) / (2. * a);
+                                  float r, vec3 center,
+                                  vec3 rayOrigin, vec3 rayDir, vec4 isect){
+             g_isHit = false;
+             rayOrigin = rayOrigin - center;
+             float a = rayDir.x * rayDir.x + rayDir.z * rayDir.z;
+             float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.z * rayDir.z);
+             float c = rayOrigin.x * rayOrigin.x + rayOrigin.z * rayOrigin.z - r * r;
+             float d = b * b - 4. * a * c;
+             if(d >= 0.){
+                 float s = sqrt(d);
+                 float t = (-b - s) / (2. * a);
                  if(t <= EPSILON) t = (-b + s) / (2. * a);
                  if(EPSILON < t && t < isect.x){
-		     vec3 p = (rayOrigin + t * rayDir);
-		     g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-		     return vec4(t, normalize(vec3(p.x, 0, p.z)));
+                     vec3 p = (rayOrigin + t * rayDir);
+                     g_objId = objId;
+                     g_objIndex = objIndex;
+                     g_objComponentId = objComponentId;
+                     g_mtl = mtl;
+                     g_isHit = true;
+                     return vec4(t, normalize(vec3(p.x, 0, p.z)));
                  }
-	     }
-	     return isect;
+             }
+             return isect;
          }
 
          // Represent a sphere which have infinite radius
          // default plane is aligned the z-axis
          // Rotation center is plane's center
          vec4 intersectInfiniteSphere(int objId, int objIndex, int objComponentId, int mtl,
-			              vec3 center, float size, mat3 rotation, 
-			              vec3 rayOrigin, vec3 rayDir, vec4 isect){
+                                      vec3 center, float size, mat3 rotation, 
+                                      vec3 rayOrigin, vec3 rayDir, vec4 isect){
              g_isHit = false;
              vec3 n = rotation * vec3(0, 0, 1);
              vec3 xAxis = rotation * vec3(1, 0, 0);
@@ -273,26 +273,26 @@
                  if(-hSize <= x && x <= hSize &&
                     -hSize <= y && y <= hSize ){
                      g_objId = objId;
-		     g_objIndex = objIndex;
-		     g_objComponentId = objComponentId;
-		     g_mtl = mtl;
-		     g_isHit = true;
-    	             return vec4(t, n);
+                     g_objIndex = objIndex;
+                     g_objComponentId = objComponentId;
+                     g_mtl = mtl;
+                     g_isHit = true;
+                     return vec4(t, n);
                  }
              }
              return isect;
          }
 
          vec4 intersectParallelPlanes (int objId, int objIndex, int mtl,
-			               vec3 center, float distPlane1, float distPlane2,
+                                       vec3 center, float distPlane1, float distPlane2,
                                        float size, mat3 rotation, float twistDegree,
-			               vec3 rayOrigin, vec3 rayDir, vec4 isect){
+                                       vec3 rayOrigin, vec3 rayDir, vec4 isect){
              float theta = radians(twistDegree);
-	     float cosTheta = cos(theta);
-	     float sinTheta = sin(theta);
-	     mat3 twist = mat3(cosTheta, -sinTheta, 0,
-			       sinTheta, cosTheta, 0,
-			       0, 0, 1);
+             float cosTheta = cos(theta);
+             float sinTheta = sin(theta);
+             mat3 twist = mat3(cosTheta, -sinTheta, 0,
+                               sinTheta, cosTheta, 0,
+                               0, 0, 1);
              isect = intersectInfiniteSphere(objId, objIndex, 0, mtl,
                                              rotation * (center + vec3(0, 0, distPlane1)), size, rotation,
                                              rayOrigin, rayDir, isect);
@@ -310,26 +310,26 @@
          }
          
          vec4 intersectRotationTorus (int objId, int objIndex, int xzComponentId, int yzComponentId, int mtl,
-			              vec3 center, float radius, float pipeRadius, float marchThreshold,
-			              vec3 rayOrigin, vec3 rayDir, vec4 isect){
+                                      vec3 center, float radius, float pipeRadius, float marchThreshold,
+                                      vec3 rayOrigin, vec3 rayDir, vec4 isect){
              vec3 origin = rayOrigin - center;
              vec2 dist;
              vec3 rayPos = origin;
-	     float rayLength = 0.;
-	     for(int i = 0 ; i < 300 ; i++){
+             float rayLength = 0.;
+             for(int i = 0 ; i < 300 ; i++){
                  dist = distRotationTorus(rayPos, radius, pipeRadius, xzComponentId, yzComponentId);
-	         rayLength += dist.x;
-	         rayPos = origin + rayDir * rayLength;
-	         if(dist.x < marchThreshold) break;
-	     }
-	     if(dist.x < EPSILON && rayLength < isect.x){
-	         g_objId = objId;
-	         g_objIndex = objIndex;
-	         g_objComponentId = int(dist.y);
-	         g_mtl = mtl;
-	         g_isHit = true;
+                 rayLength += dist.x;
+                 rayPos = origin + rayDir * rayLength;
+                 if(dist.x < marchThreshold) break;
+             }
+             if(dist.x < EPSILON && rayLength < isect.x){
+                 g_objId = objId;
+                 g_objIndex = objIndex;
+                 g_objComponentId = int(dist.y);
+                 g_mtl = mtl;
+                 g_isHit = true;
                  const vec2 D = vec2(0.01, 0.);
-	         return vec4(rayLength,
+                 return vec4(rayLength,
                              normalize(vec3(distRotationTorus(rayPos + D.xyy, radius, pipeRadius,
                                                               xzComponentId, yzComponentId).x -
                                             distRotationTorus(rayPos - D.xyy, radius, pipeRadius,
@@ -342,9 +342,9 @@
                                                               xzComponentId, yzComponentId).x -
                                             distRotationTorus(rayPos - D.yyx, radius, pipeRadius,
                                                               xzComponentId, yzComponentId).x)));
-	     }else{
-	         return isect;
-	     }
+             }else{
+                 return isect;
+             }
          }
         </script>
         
@@ -355,10 +355,10 @@
 
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, float sampleIndex) {
-	     vec2 seed = co * (sampleIndex + 1.0);
-	     seed+=vec2(-1,1);
-	     // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
-	     return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+             vec2 seed = co * (sampleIndex + 1.0);
+             seed+=vec2(-1,1);
+             // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+             return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
                          fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
          }
 
@@ -370,47 +370,47 @@
          const int MAX_TRACE_DEPTH = 7;
          float transparency = 0.8;
          vec3 calcColor(vec3 eye, vec3 ray){
-	     vec3 l = BLACK;
-	     float coeff = 1.0;
-	     for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
-	         vec4 result = vec4(99999.);
-	         
-	         {% for n  in range(0,  numSchottkySpheres ) %}
-	         result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
-				          u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w, eye, ray, result);
+             vec3 l = BLACK;
+             float coeff = 1.0;
+             for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
+                 vec4 result = vec4(99999.);
+                 
+                 {% for n  in range(0,  numSchottkySpheres ) %}
+                 result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
+                                          u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w, eye, ray, result);
 
-	         if(u_selectedObjectId == ID_SCHOTTKY_SPHERE &&
-		    u_selectedObjectIndex == {{ n }}){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_schottkySphere{{ n }}.xyz,
-					          eye, ray, result);
-		     
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_schottkySphere{{ n }}.xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_schottkySphere{{ n }}.xyz,
-					          eye, ray, result);
-	         }
-	         {% endfor %}
+                 if(u_selectedObjectId == ID_SCHOTTKY_SPHERE &&
+                    u_selectedObjectIndex == {{ n }}){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_schottkySphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_schottkySphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_schottkySphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                 }
+                 {% endfor %}
 
-	         {% for n in range(0,  numBaseSpheres ) %}
-	         result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
-				          u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w, eye, ray, result);
-	         
-	         if(u_selectedObjectId == ID_BASE_SPHERE &&
-		    u_selectedObjectIndex == {{ n }}){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_baseSphere{{ n }}.xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_baseSphere{{ n }}.xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_baseSphere{{ n }}.xyz,
-					          eye, ray, result);
-	         }
-	         {% endfor %}
+                 {% for n in range(0,  numBaseSpheres ) %}
+                 result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
+                                          u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w, eye, ray, result);
+                 
+                 if(u_selectedObjectId == ID_BASE_SPHERE &&
+                    u_selectedObjectIndex == {{ n }}){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_baseSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_baseSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_baseSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                 }
+                 {% endfor %}
 
                  {% for n in range(0,  numInfiniteSpheres ) %}
                  result = intersectInfiniteSphere(ID_INFINITE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
@@ -419,324 +419,324 @@
                                                   u_rotateInfiniteSphereMat3{{ n }},
                                                   eye, ray, result);
                  if(u_selectedObjectId == ID_INFINITE_SPHERE &&
-		    u_selectedObjectIndex == {{ n }}){
+                    u_selectedObjectIndex == {{ n }}){
                      result = intersectRotationTorus(ID_INFINITE_SPHERE, {{ n }}, 4, 5, MTL_DIFFUSE,
                                                      u_infiniteSphere{{ n }}.xyz,
                                                      u_infiniteSphere{{ n }}.w * 0.5, 10., 0.001,
                                                      eye, ray, result);
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_infiniteSphere{{ n }}.xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_infiniteSphere{{ n }}.xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_infiniteSphere{{ n }}.xyz,
-					          eye, ray, result);
-	         }
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_infiniteSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_infiniteSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_infiniteSphere{{ n }}.xyz,
+                                                  eye, ray, result);
+                 }
                  {% endfor %}
 
-	         {% for n in range(0,  numTransformByPlanes ) %}
+                 {% for n in range(0,  numTransformByPlanes ) %}
                  result = intersectParallelPlanes(ID_TRANSFORM_BY_PLANES, {{ n }}, MTL_DIFFUSE,
-				                  vec3(u_transformByPlanes{{ n }}[0],
+                                                  vec3(u_transformByPlanes{{ n }}[0],
                                                        u_transformByPlanes{{ n }}[1],
                                                        u_transformByPlanes{{ n }}[2]),
-				                  u_transformByPlanes{{ n }}[3],
+                                                  u_transformByPlanes{{ n }}[3],
                                                   u_transformByPlanes{{ n }}[4],
                                                   u_transformByPlanes{{ n }}[5],
-				                  u_rotatePlaneMat3{{ n }},
-				                  u_transformByPlanes{{ n }}[8],
-				                  eye, ray, result);
+                                                  u_rotatePlaneMat3{{ n }},
+                                                  u_transformByPlanes{{ n }}[8],
+                                                  eye, ray, result);
                  if(u_selectedObjectId == ID_TRANSFORM_BY_PLANES &&
-		    u_selectedObjectIndex == {{ n }} ){
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., vec3(0),
-					          eye, ray, result);
-	         }
-	         
-	         {% endfor %}
+                    u_selectedObjectIndex == {{ n }} ){
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., vec3(0),
+                                                  eye, ray, result);
+                 }
+                 
+                 {% endfor %}
 
-	         {% for n in range(0, numCompoundParabolic) %}
-	         result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
-				          u_compoundParabolic{{ n }}[0].xyz,
-				          u_compoundParabolic{{ n }}[0].w,
-				          eye, ray, result);
-             if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
-		        u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 0){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[0].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
-				          u_compoundParabolic{{ n }}[1].xyz,
-				          u_compoundParabolic{{ n }}[1].w,
-				          eye, ray, result);
-	         if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 1){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundParabolic{{ n }}[1].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
-				          u_compoundParabolic{{ n }}[2].xyz,
-				          u_compoundParabolic{{ n }}[2].w,
-				          eye, ray, result);
-	         {% endfor %}
+                 {% for n in range(0, numCompoundParabolic) %}
+                 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_compoundParabolic{{ n }}[0].xyz,
+                                          u_compoundParabolic{{ n }}[0].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 0){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_compoundParabolic{{ n }}[1].xyz,
+                                          u_compoundParabolic{{ n }}[1].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_COMPOUND_PARABOLIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundParabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_compoundParabolic{{ n }}[2].xyz,
+                                          u_compoundParabolic{{ n }}[2].w,
+                                          eye, ray, result);
+                 {% endfor %}
 
-	         {% for n in range(0, numTransformBySpheres) %}
-	         result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
-				          u_transformBySpheres{{ n }}[0].xyz,
-				          u_transformBySpheres{{ n }}[0].w,
-				          eye, ray, result);
+                 {% for n in range(0, numTransformBySpheres) %}
+                 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_transformBySpheres{{ n }}[0].xyz,
+                                          u_transformBySpheres{{ n }}[0].w,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 0){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[0].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
-				          u_transformBySpheres{{ n }}[1].xyz,
-				          u_transformBySpheres{{ n }}[1].w,
-				          eye, ray, result);
-	         if(u_selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 1){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_transformBySpheres{{ n }}[1].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
-				          u_transformBySpheres{{ n }}[2].xyz,
-				          u_transformBySpheres{{ n }}[2].w,
-				          eye, ray, result);
-	         {% endfor %}
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 0){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_transformBySpheres{{ n }}[1].xyz,
+                                          u_transformBySpheres{{ n }}[1].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_TRANSFORM_BY_SPHERES &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_transformBySpheres{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_transformBySpheres{{ n }}[2].xyz,
+                                          u_transformBySpheres{{ n }}[2].w,
+                                          eye, ray, result);
+                 {% endfor %}
 
-	         {% for n in range(0, numCompoundLoxodromic) %}
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[0].xyz,
-				          u_compoundLoxodromic{{ n }}[0].w,
-				          eye, ray, result);
+                 {% for n in range(0, numCompoundLoxodromic) %}
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[0].xyz,
+                                          u_compoundLoxodromic{{ n }}[0].w,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 0){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[0].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[0].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[1].xyz,
-				          u_compoundLoxodromic{{ n }}[1].w,
-				          eye, ray, result);
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 0){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[1].xyz,
+                                          u_compoundLoxodromic{{ n }}[1].w,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 1){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[1].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[1].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[2].xyz,
-				          u_compoundLoxodromic{{ n }}[2].w,
-				          eye, ray, result);
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[3].xyz,
-				          u_compoundLoxodromic{{ n }}[3].w,
-				          eye, ray, result);
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[4].xyz,
-				          u_compoundLoxodromic{{ n }}[4].w,
-				          eye, ray, result);
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[5].xyz,
-				          50.,
-				          eye, ray, result);
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[2].xyz,
+                                          u_compoundLoxodromic{{ n }}[2].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[3].xyz,
+                                          u_compoundLoxodromic{{ n }}[3].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[4].xyz,
+                                          u_compoundLoxodromic{{ n }}[4].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[5].xyz,
+                                          50.,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 5){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[5].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[5].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[5].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[6].xyz,
-				          50.,
-				          eye, ray, result);
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 5){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[6].xyz,
+                                          50.,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 6){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[6].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[6].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[6].xyz,
-					          eye, ray, result);
-	         }
-	         result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
-				          u_compoundLoxodromic{{ n }}[7].xyz,
-				          50.,
-				          eye, ray, result);
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 6){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
+                                          u_compoundLoxodromic{{ n }}[7].xyz,
+                                          50.,
+                                          eye, ray, result);
                  if(u_selectedObjectId == ID_COMPOUND_LOXODROMIC &&
-		    u_selectedObjectIndex == {{ n }} &&
-		    u_selectedComponentId == 7){
-		     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[7].xyz,
-					          eye, ray, result);
-		     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[7].xyz,
-					          eye, ray, result);
-		     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
-					          10., u_compoundLoxodromic{{ n }}[7].xyz,
-					          eye, ray, result);
-	         }
-	         {% endfor %}
-	         
-  	         if(result.x != 99999.){
-		     vec3 matColor = LIGHT_GRAY;
-		     if( g_objId == ID_SCHOTTKY_SPHERE){
-		         g_mtl = MTL_TRANSPARENT;
-		         matColor = (g_objIndex == u_selectedObjectIndex &&
-				     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
-		     }else if(g_objId == ID_BASE_SPHERE){
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
-		     }else if(g_objId == ID_INFINITE_SPHERE){
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 7){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_compoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                 }
+                 {% endfor %}
+                 
+                 if(result.x != 99999.){
+                     vec3 matColor = LIGHT_GRAY;
+                     if( g_objId == ID_SCHOTTKY_SPHERE){
+                         g_mtl = MTL_TRANSPARENT;
+                         matColor = (g_objIndex == u_selectedObjectIndex &&
+                                     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
+                     }else if(g_objId == ID_BASE_SPHERE){
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
+                     }else if(g_objId == ID_INFINITE_SPHERE){
                          matColor = (g_objComponentId == 0) ? BLUE : LIGHT_GRAY;
                          matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
+                                     g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
                          matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
+                                     g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedAxis) ? RED : matColor;
                      }else if(g_objId == ID_AXIS_CYLINDER){
-		         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
-		     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-                                     g_objComponentId == u_selectedComponentId)?
-				    RED : BLUE;
-		     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
-		     }else if(g_objId == ID_COMPOUND_PARABOLIC){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
-		     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objComponentId == 3) ? PINK : matColor;
-		         matColor = (g_objComponentId == 4) ? GREEN : matColor;
-		         matColor = (g_objComponentId == 5) ? BLUE : matColor;
-		         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
-		         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
+                         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
+                     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
                          matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
-		     }
-		     
-    		     vec3 intersection = eye + ray * result.x;
-		     vec3 normal = result.yzw;
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId)?
+                                    RED : BLUE;
+                     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }else if(g_objId == ID_COMPOUND_PARABOLIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 3) ? PINK : matColor;
+                         matColor = (g_objComponentId == 4) ? GREEN : matColor;
+                         matColor = (g_objComponentId == 5) ? BLUE : matColor;
+                         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
+                         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }
+                     
+                     vec3 intersection = eye + ray * result.x;
+                     vec3 normal = result.yzw;
                      // diffuse lighting by directionalLight
-  	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
-		     vec3 ambient = matColor * AMBIENT_FACTOR;
-		     if(g_mtl == MTL_TRANSPARENT){
-		         coeff *= transparency;
-		         l += (diffuse + ambient) * coeff;
-		         eye = intersection + ray * 0.01;
-		         continue;
-		     }else{
-		         l += (diffuse + ambient) * coeff;
-		     }
-	         }
-	         break;
-	 }
-  	     return l;
+                     vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
+                     vec3 ambient = matColor * AMBIENT_FACTOR;
+                     if(g_mtl == MTL_TRANSPARENT){
+                         coeff *= transparency;
+                         l += (diffuse + ambient) * coeff;
+                         eye = intersection + ray * 0.01;
+                         continue;
+                     }else{
+                         l += (diffuse + ambient) * coeff;
+                     }
+                 }
+                 break;
+         }
+             return l;
          }
 
          vec3 hsv2rgb(vec3 c){
-	     const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-	     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+             const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+             vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+             return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
          vec3 calcRay (const vec3 eye, const vec3 target,
-		                             const vec3 up, const float fov,
-		                                                  const float width, const float height, const vec2 coord){
-	     float imagePlane = (height * .5) / tan(radians(fov) * .5);
-  	     vec3 v = normalize(target - eye);
- 	     vec3 focalXAxis = normalize(cross(v, up));
-  	     vec3 focalYAxis =  normalize(cross(v, focalXAxis ));
-  	     vec3 center = v * imagePlane;
-  	     vec3 origin = center - (focalXAxis * (width  * .5)) - (focalYAxis * (height * .5));
-  	     return normalize(origin + (focalXAxis * coord.x) + (focalYAxis * (height - coord.y)));
+                                             const vec3 up, const float fov,
+                                                                  const float width, const float height, const vec2 coord){
+             float imagePlane = (height * .5) / tan(radians(fov) * .5);
+             vec3 v = normalize(target - eye);
+             vec3 focalXAxis = normalize(cross(v, up));
+             vec3 focalYAxis =  normalize(cross(v, focalXAxis ));
+             vec3 center = v * imagePlane;
+             vec3 origin = center - (focalXAxis * (width  * .5)) - (focalYAxis * (height * .5));
+             return normalize(origin + (focalXAxis * coord.x) + (focalYAxis * (height - coord.y)));
          }
 
          const float SAMPLE_NUM = 5.;
-         void main(){	 
-	     vec3 sum = vec3(0);
-	     for(float i = 0. ; i < SAMPLE_NUM ; i++){
+         void main(){    
+             vec3 sum = vec3(0);
+             for(float i = 0. ; i < SAMPLE_NUM ; i++){
                  vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
                  
                  vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
-    		               	    u_iResolution.x, u_iResolution.y,
-        		            gl_FragCoord.xy + coordOffset);
+                                    u_iResolution.x, u_iResolution.y,
+                                    gl_FragCoord.xy + coordOffset);
                  
                  sum += calcColor(u_camera[0], ray);
-	     }
-	     vec3 col = (sum/SAMPLE_NUM);
+             }
+             vec3 col = (sum/SAMPLE_NUM);
              
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
              gl_FragColor = vec4(mix(col, texCol,
@@ -764,117 +764,117 @@
          
          const int MAX_KLEIN_ITARATION = 30;
          float distKlein(vec3 pos){
-	     loopNum = 0.;
-	     float dr = 1.;
-	     bool loopEnd = true;
+             loopNum = 0.;
+             float dr = 1.;
+             bool loopEnd = true;
 
-	     for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
-	         if(i >= u_numIterations) break;
-	         loopEnd = true;
-	         {% for n in range(0, numCompoundParabolic) %}
-	         if(distance(pos, u_compoundParabolic{{ n }}[0].xyz) < u_compoundParabolic{{ n }}[0].w){
-		     vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
-		     dr *= comp0r2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
+             for(int i = 0 ; i < MAX_KLEIN_ITARATION ; i++){
+                 if(i >= u_numIterations) break;
+                 loopEnd = true;
+                 {% for n in range(0, numCompoundParabolic) %}
+                 if(distance(pos, u_compoundParabolic{{ n }}[0].xyz) < u_compoundParabolic{{ n }}[0].w){
+                     vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
+                     dr *= comp0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
 
-		     vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
-		     dr *= comp1r2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz, comp1r2{{ n }});
+                     vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
+                     dr *= comp1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz, comp1r2{{ n }});
 
-		     pos = u_compoundRotateMat3{{ n }} *  pos;
-		     
-		     loopEnd = false;
-		     loopNum++;
-	         }else if(distance(pos, u_compoundParabolic{{ n }}[2].xyz) >= u_compoundParabolic{{ n }}[2].w){
-		     vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
-		     dr *= comp1r2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz,
-				        comp1r2{{ n }});
+                     pos = u_compoundRotateMat3{{ n }} *  pos;
+                     
+                     loopEnd = false;
+                     loopNum++;
+                 }else if(distance(pos, u_compoundParabolic{{ n }}[2].xyz) >= u_compoundParabolic{{ n }}[2].w){
+                     vec3 diff1 = (pos - u_compoundParabolic{{ n }}[1].xyz);
+                     dr *= comp1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz,
+                                        comp1r2{{ n }});
 
-		     vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
-		     dr *= comp0r2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
+                     vec3 diff0 = (pos - u_compoundParabolic{{ n }}[0].xyz);
+                     dr *= comp0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
 
-		     pos = u_invCompoundRotateMat3{{ n }} * pos;
-		     
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         
-	         {% endfor %}
+                     pos = u_invCompoundRotateMat3{{ n }} * pos;
+                     
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 
+                 {% endfor %}
 
-	         {% for n in range(0,  numTransformBySpheres ) %}
-	         if(distance(pos, u_transformBySpheres{{ n }}[0].xyz) < u_transformBySpheres{{ n }}[0].w){
-		     vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
-		     dr *= s0r2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
+                 {% for n in range(0,  numTransformBySpheres ) %}
+                 if(distance(pos, u_transformBySpheres{{ n }}[0].xyz) < u_transformBySpheres{{ n }}[0].w){
+                     vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
+                     dr *= s0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
 
-		     vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
-		     dr *= s1r2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz, s1r2{{ n }});
-		     
-		     loopEnd = false;
-		     loopNum++;
-	         }else if(distance(pos, u_transformBySpheres{{ n }}[2].xyz) >= u_transformBySpheres{{ n }}[2].w){
-		     vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
-		     dr *= s1r2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz,
-				        s1r2{{ n }});
+                     vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
+                     dr *= s1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz, s1r2{{ n }});
+                     
+                     loopEnd = false;
+                     loopNum++;
+                 }else if(distance(pos, u_transformBySpheres{{ n }}[2].xyz) >= u_transformBySpheres{{ n }}[2].w){
+                     vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
+                     dr *= s1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz,
+                                        s1r2{{ n }});
 
-		     vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
-		     dr *= s0r2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
+                     vec3 diff0 = (pos - u_transformBySpheres{{ n }}[0].xyz);
+                     dr *= s0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_transformBySpheres{{ n }}[0].xyz, s0r2{{ n }});
 
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         {% endfor %}
-	         
-	         {% if numSchottkySpheres > 2 %}
-	         {% for n  in range(0,  numSchottkySpheres ) %}
-	         {% if n == 0 %}
-	         if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
-		     vec3 diff = (pos - u_schottkySphere0.xyz);
-		     dr *= u_schottkySphere0r2 / dot(diff, diff);
-		     pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         {% else %}
-	         else if(distance(pos, u_schottkySphere{{ n }}.xyz) < u_schottkySphere{{ n }}.w){
-		     vec3 diff = (pos - u_schottkySphere{{ n }}.xyz);
-		     dr *= u_schottkySphere{{ n }}r2 / dot(diff, diff);
-		     pos = sphereInvert(pos, u_schottkySphere{{ n }}.xyz,
-				        u_schottkySphere{{ n }}r2);
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         {% endif %}
-	         {% endfor %}
-	         {% elif numSchottkySpheres == 2 %}
-	         if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
-		     vec3 diff = (pos - u_schottkySphere0.xyz);
-		     dr *= u_schottkySphere0r2 / dot(diff, diff);
-		     pos = sphereInvert(pos, u_schottkySphere0.xyz,
-				        u_schottkySphere0r2);
-		     loopEnd = false;
-		     loopNum++;
-	         }else if(distance(pos, u_schottkySphere1.xyz) < u_schottkySphere1.w){
-		     vec3 diff = (pos - u_schottkySphere1.xyz);
-		     dr *= u_schottkySphere1r2 / dot(diff, diff);
-		     pos = sphereInvert(pos, u_schottkySphere1.xyz, u_schottkySphere1r2);
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         {% elif numSchottkySpheres == 1 %}
-	         if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
-		     vec3 diff = (pos - u_schottkySphere0.xyz);
-		     dr *= u_schottkySphere0r2 / dot(diff, diff);
-		     pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
-		     loopEnd = false;
-		     loopNum++;
-	         }
-	         {% endif %}
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% endfor %}
+                 
+                 {% if numSchottkySpheres > 2 %}
+                 {% for n  in range(0,  numSchottkySpheres ) %}
+                 {% if n == 0 %}
+                 if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
+                     vec3 diff = (pos - u_schottkySphere0.xyz);
+                     dr *= u_schottkySphere0r2 / dot(diff, diff);
+                     pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% else %}
+                 else if(distance(pos, u_schottkySphere{{ n }}.xyz) < u_schottkySphere{{ n }}.w){
+                     vec3 diff = (pos - u_schottkySphere{{ n }}.xyz);
+                     dr *= u_schottkySphere{{ n }}r2 / dot(diff, diff);
+                     pos = sphereInvert(pos, u_schottkySphere{{ n }}.xyz,
+                                        u_schottkySphere{{ n }}r2);
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% endif %}
+                 {% endfor %}
+                 {% elif numSchottkySpheres == 2 %}
+                 if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
+                     vec3 diff = (pos - u_schottkySphere0.xyz);
+                     dr *= u_schottkySphere0r2 / dot(diff, diff);
+                     pos = sphereInvert(pos, u_schottkySphere0.xyz,
+                                        u_schottkySphere0r2);
+                     loopEnd = false;
+                     loopNum++;
+                 }else if(distance(pos, u_schottkySphere1.xyz) < u_schottkySphere1.w){
+                     vec3 diff = (pos - u_schottkySphere1.xyz);
+                     dr *= u_schottkySphere1r2 / dot(diff, diff);
+                     pos = sphereInvert(pos, u_schottkySphere1.xyz, u_schottkySphere1r2);
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% elif numSchottkySpheres == 1 %}
+                 if(distance(pos, u_schottkySphere0.xyz) < u_schottkySphere0.w){
+                     vec3 diff = (pos - u_schottkySphere0.xyz);
+                     dr *= u_schottkySphere0r2 / dot(diff, diff);
+                     pos = sphereInvert(pos, u_schottkySphere0.xyz, u_schottkySphere0r2);
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% endif %}
 
                  {% for n in range(0,  numInfiniteSpheres ) %}
                  pos -= u_infiniteSphere{{ n }}.xyz;
@@ -890,86 +890,86 @@
                  {% endfor %}
                  
                  
-	         {% for n in range(0,  numTransformByPlanes ) %}
+                 {% for n in range(0,  numTransformByPlanes ) %}
                  pos -= vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
-	         pos = u_invRotatePlaneMat3{{ n }} * pos;
-	         if(pos.z < u_transformByPlanes{{ n }}[3] || u_transformByPlanes{{ n }}[4] < pos.z){
-		         pos.z -= u_transformByPlanes{{ n }}[3];
-		         float nn = floor(pos.z / (u_transformByPlanes{{n}}[4] - u_transformByPlanes{{ n }}[3]));
-		         pos.z = mod(pos.z,
-			                 u_transformByPlanes{{ n }}[4] - u_transformByPlanes{{ n }}[3]);
-		         pos.z += u_transformByPlanes{{ n }}[3];
-		         float theta = -radians(u_transformByPlanes{{ n }}[8]) * nn;
-		         float cosTheta = cos(theta);
-		         float sinTheta = sin(theta);
-		         mat3 m = mat3(cosTheta, -sinTheta, 0,
-			                   sinTheta, cosTheta, 0,
-			                   0, 0, 1);
-		         pos = m * pos;
+                 pos = u_invRotatePlaneMat3{{ n }} * pos;
+                 if(pos.z < u_transformByPlanes{{ n }}[3] || u_transformByPlanes{{ n }}[4] < pos.z){
+                     pos.z -= u_transformByPlanes{{ n }}[3];
+                     float nn = floor(pos.z / (u_transformByPlanes{{n}}[4] - u_transformByPlanes{{ n }}[3]));
+                     pos.z = mod(pos.z,
+                                 u_transformByPlanes{{ n }}[4] - u_transformByPlanes{{ n }}[3]);
+                     pos.z += u_transformByPlanes{{ n }}[3];
+                     float theta = -radians(u_transformByPlanes{{ n }}[8]) * nn;
+                     float cosTheta = cos(theta);
+                     float sinTheta = sin(theta);
+                     mat3 m = mat3(cosTheta, -sinTheta, 0,
+                                   sinTheta, cosTheta, 0,
+                                   0, 0, 1);
+                     pos = m * pos;
 
-		         loopEnd = false;
-		         loopNum ++;
-	         }
-	         pos = u_rotatePlaneMat3{{ n }} * pos;
-             pos += vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
-	         {% endfor %}
+                     loopEnd = false;
+                     loopNum ++;
+                 }
+                 pos = u_rotatePlaneMat3{{ n }} * pos;
+                 pos += vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
+                 {% endfor %}
                  {% for n in range(0, numCompoundLoxodromic) %}
                  if(distance(pos, u_compoundLoxodromic{{ n }}[0].xyz) < u_compoundLoxodromic{{ n }}[0].w){
-		     vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
-		     dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
+                     vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
+                     dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
                      
                      vec3 diff3 = (pos - u_compoundLoxodromic{{ n }}[3].xyz);
-		     dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
+                     dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
                      
-		     vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
-		     dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
+                     vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
+                     dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
 
-		     vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
-		     dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz, loxoOuterR2{{ n }});
-		     
-		     loopEnd = false;
-		     loopNum++;
-	         }else if(distance(pos, u_compoundLoxodromic{{ n }}[2].xyz) >= u_compoundLoxodromic{{ n }}[2].w){
-		     vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
-		     dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz,
-				        loxoOuterR2{{ n }});
+                     vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
+                     dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz, loxoOuterR2{{ n }});
+                     
+                     loopEnd = false;
+                     loopNum++;
+                 }else if(distance(pos, u_compoundLoxodromic{{ n }}[2].xyz) >= u_compoundLoxodromic{{ n }}[2].w){
+                     vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
+                     dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz,
+                                        loxoOuterR2{{ n }});
 
-		     vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
-		     dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
+                     vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
+                     dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
 
                      vec3 diff3 = (pos - u_compoundLoxodromic{{ n }}[3].xyz);
-		     dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
+                     dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
 
-		     vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
-		     dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
-		     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
+                     vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
+                     dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
+                     pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
 
-		     loopEnd = false;
-		     loopNum++;
-	         }
+                     loopEnd = false;
+                     loopNum++;
+                 }
                  {% endfor %}
-	         
-	         if(loopEnd == true) break;
-	     }
-	     {% if numBaseSpheres == 1 %}
-	     return (distance(pos, u_baseSphere0.xyz) - u_baseSphere0.w) / abs(dr) * 0.08;
-	     {% elif numBaseSpheres > 1 %}
-	     float minDist = (distance(pos, u_baseSphere0.xyz) - u_baseSphere0.w) / abs(dr) * 0.08;
-	     {% for n  in range(1,  numBaseSpheres ) %}
-	     minDist = min(minDist,
-		           (distance(pos, u_baseSphere{{ n }}.xyz) - u_baseSphere{{ n }}.w) / abs(dr) * 0.08);
-	     {% endfor %}
-	     return minDist;
+                 
+                 if(loopEnd == true) break;
+             }
+             {% if numBaseSpheres == 1 %}
+             return (distance(pos, u_baseSphere0.xyz) - u_baseSphere0.w) / abs(dr) * 0.08;
+             {% elif numBaseSpheres > 1 %}
+             float minDist = (distance(pos, u_baseSphere0.xyz) - u_baseSphere0.w) / abs(dr) * 0.08;
+             {% for n  in range(1,  numBaseSpheres ) %}
+             minDist = min(minDist,
+                           (distance(pos, u_baseSphere{{ n }}.xyz) - u_baseSphere{{ n }}.w) / abs(dr) * 0.08);
+             {% endfor %}
+             return minDist;
              {% else %}
              return NO_HIT;
-	     {% endif %}
+             {% endif %}
          }
         </script>
         <script id="3dOrbitTemplate" type="x-shader/x-fragment">
@@ -981,46 +981,46 @@
          
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, int sampleIndex) {
-	     vec2 seed = co * (float(sampleIndex) + 1.0);
-	     seed+=vec2(-1,1);
-	     // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
-	     return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+             vec2 seed = co * (float(sampleIndex) + 1.0);
+             seed+=vec2(-1,1);
+             // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+             return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
                          fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
          }
 
          {% include intersectFunctions %}
          
          vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
-	     return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
+             return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
 
          float loopNum = 0.;
          {% include distKlein %}
 
          vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
-									       const float width, const float height, const vec2 coord){
-	     float imagePlane = (height * .5) / tan(radians(fov) * .5);
-	     vec3 v = normalize(target - eye);
-	     vec3 xaxis = normalize(cross(v, up));
-	     vec3 yaxis =  normalize(cross(v, xaxis));
-	     vec3 center = v * imagePlane;
-	     vec3 origin = center - (xaxis * (width  *.5)) - (yaxis * (height * .5));
-	     return normalize(origin + (xaxis * coord.x) + (yaxis * (height - coord.y)));
+                                                                               const float width, const float height, const vec2 coord){
+             float imagePlane = (height * .5) / tan(radians(fov) * .5);
+             vec3 v = normalize(target - eye);
+             vec3 xaxis = normalize(cross(v, up));
+             vec3 yaxis =  normalize(cross(v, xaxis));
+             vec3 center = v * imagePlane;
+             vec3 origin = center - (xaxis * (width  *.5)) - (yaxis * (height * .5));
+             return normalize(origin + (xaxis * coord.x) + (yaxis * (height - coord.y)));
          }
 
          const vec4 K = vec4(1.0, .666666, .333333, 3.0);
          vec3 hsv2rgb(const vec3 c){
-	     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+             vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+             return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
          float distFunc(vec3 p){
-	     return distKlein(p);
+             return distKlein(p);
          }
 
          const vec2 d = vec2(0.01, 0.);
          vec3 getNormal(const vec3 p){
-	     return normalize(vec3(distFunc(p + d.xyy) - distFunc(p - d.xyy),
+             return normalize(vec3(distFunc(p + d.xyy) - distFunc(p - d.xyy),
                                    distFunc(p + d.yxy) - distFunc(p - d.yxy),
                                    distFunc(p + d.yyx) - distFunc(p - d.yyx)));
          }
@@ -1028,56 +1028,56 @@
          const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
          const int MAX_MARCHING_LOOP = 800;
          vec4 march(int objId, int objIndex, int objComponentId, int mtl,
-		    const vec3 origin, const  vec3 ray,
-		                              const float threshold, vec4 isect){
-	     vec3 rayPos = origin;
-	     float dist;
-	     float rayLength = 0.;
-	     for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++){
-	         dist = distFunc(rayPos);
-	         rayLength += dist;
-	         rayPos = origin + ray * rayLength ;
-	         if(dist < threshold) break;
-	     }
-	     if(dist < EPSILON && rayLength < isect.x){
-	         g_objId = objId;
-	         g_objIndex = objIndex;
-	         g_objComponentId = objComponentId;
-	         g_mtl = mtl;
-	         g_isHit = true;
-	         return vec4(rayLength);
-	     }else{
-	         return isect;
-	     }
+                    const vec3 origin, const  vec3 ray,
+                                              const float threshold, vec4 isect){
+             vec3 rayPos = origin;
+             float dist;
+             float rayLength = 0.;
+             for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++){
+                 dist = distFunc(rayPos);
+                 rayLength += dist;
+                 rayPos = origin + ray * rayLength ;
+                 if(dist < threshold) break;
+             }
+             if(dist < EPSILON && rayLength < isect.x){
+                 g_objId = objId;
+                 g_objIndex = objIndex;
+                 g_objComponentId = objComponentId;
+                 g_mtl = mtl;
+                 g_isHit = true;
+                 return vec4(rayLength);
+             }else{
+                 return isect;
+             }
          }
 
          const int MAX_TRACE_DEPTH = 5;
 
          float transparency = 0.8;
          vec3 calcColor(vec3 eye, vec3 ray){
-	     vec3 l = BLACK;
-	     float coeff = 1.;
-	     for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
-	         vec4 result = vec4(NO_HIT);
+             vec3 l = BLACK;
+             float coeff = 1.;
+             for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
+                 vec4 result = vec4(NO_HIT);
 
                  {% if numBaseSpheres >= 1 %}
-	         result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
-			        eye, ray, 0.01, result);
+                 result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
+                                eye, ray, 0.01, result);
                  {% endif %}
 
-	         if(u_displayGenerators){
-		     
-		     {% for n  in range(0,  numSchottkySpheres ) %}
-		     result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
-					      u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w,
-					      eye, ray, result);
-		     {% endfor %}
+                 if(u_displayGenerators){
+                     
+                     {% for n  in range(0,  numSchottkySpheres ) %}
+                     result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w,
+                                              eye, ray, result);
+                     {% endfor %}
 
-		     {% for n in range(0,  numBaseSpheres ) %}
-		     result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
-					      u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w,
-					      eye, ray, result);
-		     {% endfor %}
+                     {% for n in range(0,  numBaseSpheres ) %}
+                     result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w,
+                                              eye, ray, result);
+                     {% endfor %}
 
                      {% for n in range(0,  numInfiniteSpheres ) %}
                      result = intersectInfiniteSphere(ID_INFINITE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
@@ -1087,156 +1087,156 @@
                                                       eye, ray, result);
                      {% endfor %}
                      
-		     {% for n in range(0,  numTransformByPlanes ) %}
+                     {% for n in range(0,  numTransformByPlanes ) %}
                      result = intersectParallelPlanes(ID_TRANSFORM_BY_PLANES, {{ n }}, MTL_DIFFUSE,
-				                      vec3(u_transformByPlanes{{ n }}[0],
+                                                      vec3(u_transformByPlanes{{ n }}[0],
                                                            u_transformByPlanes{{ n }}[1],
                                                            u_transformByPlanes{{ n }}[2]),
-				                      u_transformByPlanes{{ n }}[3],
+                                                      u_transformByPlanes{{ n }}[3],
                                                       u_transformByPlanes{{ n }}[4],
                                                       u_transformByPlanes{{ n }}[5],
-				                      u_rotatePlaneMat3{{ n }},
-				                      u_transformByPlanes{{ n }}[8],
-				                      eye, ray, result);
-		     {% endfor %}
+                                                      u_rotatePlaneMat3{{ n }},
+                                                      u_transformByPlanes{{ n }}[8],
+                                                      eye, ray, result);
+                     {% endfor %}
 
-		     {% for n in range(0, numTransformBySpheres) %}
-		     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
-					      u_transformBySpheres{{ n }}[0].xyz,
-					      u_transformBySpheres{{ n }}[0].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
-					      u_transformBySpheres{{ n }}[1].xyz,
-					      u_transformBySpheres{{ n }}[1].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
-					      u_transformBySpheres{{ n }}[2].xyz,
-					      u_transformBySpheres{{ n }}[2].w,
-					      eye, ray, result);
-		     {% endfor %}
+                     {% for n in range(0, numTransformBySpheres) %}
+                     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_transformBySpheres{{ n }}[0].xyz,
+                                              u_transformBySpheres{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_transformBySpheres{{ n }}[1].xyz,
+                                              u_transformBySpheres{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_transformBySpheres{{ n }}[2].xyz,
+                                              u_transformBySpheres{{ n }}[2].w,
+                                              eye, ray, result);
+                     {% endfor %}
 
-		     {% for n in range(0, numCompoundParabolic) %}
-		     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
-					      u_compoundParabolic{{ n }}[0].xyz,
-					      u_compoundParabolic{{ n }}[0].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
-					      u_compoundParabolic{{ n }}[1].xyz,
-					      u_compoundParabolic{{ n }}[1].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
-					      u_compoundParabolic{{ n }}[2].xyz,
-					      u_compoundParabolic{{ n }}[2].w,
-					      eye, ray, result);
-		     {% endfor %}
+                     {% for n in range(0, numCompoundParabolic) %}
+                     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_compoundParabolic{{ n }}[0].xyz,
+                                              u_compoundParabolic{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_compoundParabolic{{ n }}[1].xyz,
+                                              u_compoundParabolic{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_compoundParabolic{{ n }}[2].xyz,
+                                              u_compoundParabolic{{ n }}[2].w,
+                                              eye, ray, result);
+                     {% endfor %}
 
-		     {% for n in range(0, numCompoundLoxodromic) %}
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[0].xyz,
-					      u_compoundLoxodromic{{ n }}[0].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[1].xyz,
-					      u_compoundLoxodromic{{ n }}[1].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[2].xyz,
-					      u_compoundLoxodromic{{ n }}[2].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[3].xyz,
-					      u_compoundLoxodromic{{ n }}[3].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[4].xyz,
-					      u_compoundLoxodromic{{ n }}[4].w,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[5].xyz,
-					      50.,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[6].xyz,
-					      50.,
-					      eye, ray, result);
-		     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
-					      u_compoundLoxodromic{{ n }}[7].xyz,
-					      50.,
-					      eye, ray, result);
-		     {% endfor %}
-		     
-	         }
+                     {% for n in range(0, numCompoundLoxodromic) %}
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[0].xyz,
+                                              u_compoundLoxodromic{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[1].xyz,
+                                              u_compoundLoxodromic{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[2].xyz,
+                                              u_compoundLoxodromic{{ n }}[2].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[3].xyz,
+                                              u_compoundLoxodromic{{ n }}[3].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[4].xyz,
+                                              u_compoundLoxodromic{{ n }}[4].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[5].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[6].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
+                                              u_compoundLoxodromic{{ n }}[7].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     {% endfor %}
+                     
+                 }
 
-	         if(result.x != NO_HIT){
-		     vec3 normal = result.yzw;
-		     vec3 intersection = eye + ray * result.x;
+                 if(result.x != NO_HIT){
+                     vec3 normal = result.yzw;
+                     vec3 intersection = eye + ray * result.x;
 
-		     vec3 matColor = LIGHT_GRAY;
-		     if( g_objId == ID_SCHOTTKY_SPHERE){
-		         g_mtl = MTL_TRANSPARENT;
-		         matColor = (g_objIndex == u_selectedObjectIndex &&
-				     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
-		     }else if(g_objId == ID_BASE_SPHERE){
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
-		     }else if(g_objId == ID_INFINITE_SPHERE){
+                     vec3 matColor = LIGHT_GRAY;
+                     if( g_objId == ID_SCHOTTKY_SPHERE){
+                         g_mtl = MTL_TRANSPARENT;
+                         matColor = (g_objIndex == u_selectedObjectIndex &&
+                                     g_objId == u_selectedObjectId) ? RED : LIGHT_GRAY;
+                     }else if(g_objId == ID_BASE_SPHERE){
                          matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
+                                     g_objIndex == u_selectedObjectIndex) ? RED : GREEN;
+                     }else if(g_objId == ID_INFINITE_SPHERE){
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex) ? RED : BLUE;
                      }else if(g_objId == ID_AXIS_CYLINDER){
-		         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
-		     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex)?
-				    RED : BLUE;
-		     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
-		     }else if(g_objId == ID_COMPOUND_PARABOLIC){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objId == u_selectedObjectId &&
-				     g_objIndex == u_selectedObjectIndex &&
-				     g_objComponentId == u_selectedComponentId) ? RED : matColor;
-		     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
-		         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-		         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
-		         matColor = (g_objComponentId == 3) ? PINK : matColor;
-		         matColor = (g_objComponentId == 4) ? GREEN : matColor;
-		         matColor = (g_objComponentId == 5) ? BLUE : matColor;
-		         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
-		         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
-		     }else if(g_objId == ID_KLEIN_ORBIT){
-		         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
-		         normal = getNormal(intersection);
-		     }
+                         matColor = (g_objComponentId == u_selectedAxis) ? RED : LIGHT_GRAY;
+                     }else if(g_objId == ID_TRANSFORM_BY_PLANES){
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex)?
+                                    RED : BLUE;
+                     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }else if(g_objId == ID_COMPOUND_PARABOLIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 3) ? PINK : matColor;
+                         matColor = (g_objComponentId == 4) ? GREEN : matColor;
+                         matColor = (g_objComponentId == 5) ? BLUE : matColor;
+                         matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
+                         matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
+                     }else if(g_objId == ID_KLEIN_ORBIT){
+                         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+                         normal = getNormal(intersection);
+                     }
 
                      // diffuse lighting by directionalLight
-  	             vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
-		     vec3 ambient = matColor * AMBIENT_FACTOR;
-		     if(g_mtl == MTL_TRANSPARENT){
-		         coeff *= transparency;
-		         l += (diffuse + ambient) * coeff;
-		         eye = intersection + ray * 0.01;
-		         continue;
-		     }else{
-		         l += (diffuse + ambient) * coeff;
-		     }
-	         }
-	         break;
-	     }
-	     return l;
+                     vec3 diffuse =  clamp(dot(normal, LIGHT_DIR), 0., 1.) * matColor;
+                     vec3 ambient = matColor * AMBIENT_FACTOR;
+                     if(g_mtl == MTL_TRANSPARENT){
+                         coeff *= transparency;
+                         l += (diffuse + ambient) * coeff;
+                         eye = intersection + ray * 0.01;
+                         continue;
+                     }else{
+                         l += (diffuse + ambient) * coeff;
+                     }
+                 }
+                 break;
+             }
+             return l;
          }
 
          const float SAMPLE_NUM = 1.;
          void main(){
-             //	 const vec2 coordOffset = vec2(0.5);
+             //  const vec2 coordOffset = vec2(0.5);
              vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
-	     vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
-			        u_iResolution.x, u_iResolution.y,
-			        gl_FragCoord.xy + coordOffset);
+             vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
+                                u_iResolution.x, u_iResolution.y,
+                                gl_FragCoord.xy + coordOffset);
 
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
              gl_FragColor = vec4(mix(calcColor(u_camera[0], ray), texCol,
@@ -1260,11 +1260,11 @@
          // random functions based on Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          int g_numRandCall = 0;
          vec2 rand2n(vec2 co, int numSamples) {
-	     vec2 seed = co * (float(numSamples + g_numRandCall) + 1.0);
+             vec2 seed = co * (float(numSamples + g_numRandCall) + 1.0);
              g_numRandCall++;
-	     seed+=vec2(-1,1);
-	     // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
-	     return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
+             seed+=vec2(-1,1);
+             // implementation based on: lumina.sourceforge.net/Tutorials/Noise.html
+             return vec2(fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453),
                          fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
          }
 
@@ -1295,63 +1295,63 @@
          //------------------------------------------------------------------
          
          vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
-	     return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
+             return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
 
          float loopNum = 0.;
          {% include distKlein %}
 
          vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
-									       const float width, const float height, const vec2 coord){
-	     float imagePlane = (height * .5) / tan(radians(fov) * .5);
-	     vec3 v = normalize(target - eye);
-	     vec3 xaxis = normalize(cross(v, up));
-	     vec3 yaxis =  normalize(cross(v, xaxis));
-	     vec3 center = v * imagePlane;
-	     vec3 origin = center - (xaxis * (width  *.5)) - (yaxis * (height * .5));
-	     return normalize(origin + (xaxis * coord.x) + (yaxis * (height - coord.y)));
+                                                                               const float width, const float height, const vec2 coord){
+             float imagePlane = (height * .5) / tan(radians(fov) * .5);
+             vec3 v = normalize(target - eye);
+             vec3 xaxis = normalize(cross(v, up));
+             vec3 yaxis =  normalize(cross(v, xaxis));
+             vec3 center = v * imagePlane;
+             vec3 origin = center - (xaxis * (width  *.5)) - (yaxis * (height * .5));
+             return normalize(origin + (xaxis * coord.x) + (yaxis * (height - coord.y)));
          }
 
          const vec4 K = vec4(1.0, .666666, .333333, 3.0);
          vec3 hsv2rgb(const vec3 c){
-	     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-	     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+             vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+             return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
          float distFunc(vec3 p){
-	     return distKlein(p);
+             return distKlein(p);
          }
 
          const vec2 d = vec2(0.01, 0.);
          vec3 getNormal(const vec3 p){
-	     return normalize(vec3(distFunc(p + d.xyy) - distFunc(p - d.xyy),
+             return normalize(vec3(distFunc(p + d.xyy) - distFunc(p - d.xyy),
                                    distFunc(p + d.yxy) - distFunc(p - d.yxy),
                                    distFunc(p + d.yyx) - distFunc(p - d.yyx)));
          }
 
          const int MAX_MARCHING_LOOP = 800;
          vec4 march(int objId, int objIndex, int objComponentId, int mtl,
-		    const vec3 origin, const  vec3 ray,
-		                              const float threshold, vec4 isect){
-	     vec3 rayPos = origin;
-	     float dist;
-	     float rayLength = 0.;
-	     for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++){
-	         dist = distFunc(rayPos);
-	         rayLength += dist;
-	         rayPos = origin + ray * rayLength ;
-	         if(dist < threshold) break;
-	     }
-	     if(dist < EPSILON && rayLength < isect.x){
-	         g_objId = objId;
-	         g_objIndex = objIndex;
-	         g_objComponentId = objComponentId;
-	         g_mtl = mtl;
-	         g_isHit = true;
-	         return vec4(rayLength);
-	     }else{
-	         return isect;
-	     }
+                    const vec3 origin, const  vec3 ray,
+                                              const float threshold, vec4 isect){
+             vec3 rayPos = origin;
+             float dist;
+             float rayLength = 0.;
+             for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++){
+                 dist = distFunc(rayPos);
+                 rayLength += dist;
+                 rayPos = origin + ray * rayLength ;
+                 if(dist < threshold) break;
+             }
+             if(dist < EPSILON && rayLength < isect.x){
+                 g_objId = objId;
+                 g_objIndex = objIndex;
+                 g_objComponentId = objComponentId;
+                 g_mtl = mtl;
+                 g_isHit = true;
+                 return vec4(rayLength);
+             }else{
+                 return isect;
+             }
          }
 
          const int MAX_TRACE_DEPTH = 3;
@@ -1361,25 +1361,25 @@
          }
          
          vec3 calcColor(vec3 eye, vec3 ray){
-	     vec3 l = WHITE;
-	     for (int depth = 0 ; depth < 999999 ; depth++){
+             vec3 l = WHITE;
+             for (int depth = 0 ; depth < 999999 ; depth++){
                  if(depth > MAX_TRACE_DEPTH) break;
-	         vec4 result = vec4(NO_HIT);
+                 vec4 result = vec4(NO_HIT);
 
                  {% if numBaseSpheres >= 1 %}
-	         result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
-			        eye, ray, 0.001, result);
+                 result = march(ID_KLEIN_ORBIT, 0, 0, MTL_DIFFUSE,
+                                eye, ray, 0.001, result);
                  {% endif %}
 
-	         if(result.x != NO_HIT){
-		     vec3 normal = result.yzw;
-		     vec3 intersection = eye + ray * result.x;
+                 if(result.x != NO_HIT){
+                     vec3 normal = result.yzw;
+                     vec3 intersection = eye + ray * result.x;
 
-		     vec3 matColor = WHITE;
+                     vec3 matColor = WHITE;
                      if(g_objId == ID_KLEIN_ORBIT){
-		         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
-		         normal = getNormal(intersection);
-		     }
+                         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+                         normal = getNormal(intersection);
+                     }
 
                      //diffuse materials reflectivity
                      const float albedo = 1.0;
@@ -1389,18 +1389,18 @@
                      l *= matColor * albedo;
                      eye = intersection + normal * 0.001 * 2.;
                      ray = r;
-	         }else{
+                 }else{
                      return l * skyColor( ray );
                  }
-	     }
-	     return BLACK;
+             }
+             return BLACK;
          }
 
          void main(){
              vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
-	     vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
-			        u_iResolution.x, u_iResolution.y,
-			        gl_FragCoord.xy + coordOffset);
+             vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
+                                u_iResolution.x, u_iResolution.y,
+                                gl_FragCoord.xy + coordOffset);
 
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
              gl_FragColor = vec4(mix(calcColor(u_camera[0], ray), texCol,
@@ -1433,13 +1433,13 @@
                     <li>Left Click: Select a generator</li>
                     <li>Right Click: Move on screen</li>
                     <li>Wheel Drag: Rotate camera</li>
-		    <li>Wheel: Zoom</li>
-		    <li>Double Left Click: Remove a generator</li>
-		    <li>z + Drag : Move selected object along the x axis</li>
-		    <li>x + Drag : Move selected object along the y axis</li>
-		    <li>c + Drag : Move selected object along the z axis</li>
-		    <li>s + Drag : Tweak radius of selected sphere</li>
-		    <li>+ / - : Increase / Decrease maximum iterations</li>
+                    <li>Wheel: Zoom</li>
+                    <li>Double Left Click: Remove a generator</li>
+                    <li>z + Drag : Move selected object along the x axis</li>
+                    <li>x + Drag : Move selected object along the y axis</li>
+                    <li>c + Drag : Move selected object along the z axis</li>
+                    <li>s + Drag : Tweak radius of selected sphere</li>
+                    <li>+ / - : Increase / Decrease maximum iterations</li>
                 </ul>
             </div>
         </ui-modal>
@@ -1473,7 +1473,7 @@
                             <span>GI</span>
                             <ui-switch hide-label @change="orbitSwitchGI"></ui-switch>
                         </div>
-			<div class="switchColumn">
+                        <div class="switchColumn">
                             <span>LowRes</span>
                             <ui-switch hide-label :value.sync="orbitCanvas.isRenderingLowResolution"></ui-switch>
                         </div>
@@ -1539,8 +1539,8 @@
                         <ui-select name="Pixel Density" :default="pixelDensitiesDefault"
                                    @selected="pixelDensitySelected" :options="pixelDensities">
                         </ui-select>
-			<ui-textbox name="iterations" type="number" :value.sync="orbitCanvas.numIterations"
-			:min="minIterations" @changed="renderOrbit">
+                        <ui-textbox name="iterations" type="number" :value.sync="orbitCanvas.numIterations"
+                                    :min="minIterations" @changed="renderOrbit">
                             
                         </ui-textbox>
                     </ui-tab>

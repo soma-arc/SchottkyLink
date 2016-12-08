@@ -23,11 +23,11 @@ function makeSphereFromPoints(p1, p2, p3, p4){
     var p = [p1, p2, p3, p4];
     var coefficient =[[], [], []];
     for(var i = 0 ; i < 3 ; i++){
-	coefficient[i][0] = 2 * (p[i + 1][0] - p[i][0]);
-	coefficient[i][1] = 2 * (p[i + 1][1] - p[i][1]);
-	coefficient[i][2] = 2 * (p[i + 1][2] - p[i][2]);
-	coefficient[i][3] = -(Math.pow(p[i][0], 2) + Math.pow(p[i][1], 2) + Math.pow(p[i][2], 2))+
-	    Math.pow(p[i + 1][0], 2) + Math.pow(p[i + 1][1], 2) + Math.pow(p[i + 1][2], 2);
+	    coefficient[i][0] = 2 * (p[i + 1][0] - p[i][0]);
+	    coefficient[i][1] = 2 * (p[i + 1][1] - p[i][1]);
+	    coefficient[i][2] = 2 * (p[i + 1][2] - p[i][2]);
+	    coefficient[i][3] = -(Math.pow(p[i][0], 2) + Math.pow(p[i][1], 2) + Math.pow(p[i][2], 2))+
+	        Math.pow(p[i + 1][0], 2) + Math.pow(p[i + 1][1], 2) + Math.pow(p[i + 1][2], 2);
     }
 
     // Gaussian elimination
@@ -67,17 +67,17 @@ function sphereInvert(invertSphere, genSphere){
     var r = invertSphere.r;
     coeffR = r * RT_3 / 3;
     var p1 = sphereInvertOnPoint([x + coeffR,
-				  y + coeffR,
-				  z + coeffR], genSphere);
+				                  y + coeffR,
+				                  z + coeffR], genSphere);
     var p2 = sphereInvertOnPoint([x - coeffR,
-				  y - coeffR,
-				  z - coeffR], genSphere);
+				                  y - coeffR,
+				                  z - coeffR], genSphere);
     var p3 = sphereInvertOnPoint([x + coeffR,
-				  y - coeffR,
-				  z - coeffR], genSphere);
+				                  y - coeffR,
+				                  z - coeffR], genSphere);
     var p4 = sphereInvertOnPoint([x + coeffR,
-				  y + coeffR,
-				  z - coeffR], genSphere);
+				                  y + coeffR,
+				                  z - coeffR], genSphere);
     return makeSphereFromPoints(p1, p2, p3, p4);
 }
 
@@ -87,7 +87,7 @@ function sphereInvertOnPoint(p, s){
     var d = diff(p, sphereC);
     var len = vecLength(d);
     return sum(scale(d, r2 / (len * len)),
-	       sphereC);
+	           sphereC);
 }
 
 function resizeCanvasFullscreen(canvas){
@@ -95,8 +95,8 @@ function resizeCanvasFullscreen(canvas){
     canvas.style.height = window.innerHeight + 'px';
     canvas.width = window.innerWidth * window.devicePixelRatio;
     canvas.height = window.innerHeight * window.devicePixelRatio;
-//    center = [canvas.width / 2, canvas.height / 2];
-//    canvasRatio = canvas.width / canvas.height / 2.;
+    //    center = [canvas.width / 2, canvas.height / 2];
+    //    canvasRatio = canvas.width / canvas.height / 2.;
 }
 
 function attachShader(gl, shaderId, program, shaderType){
@@ -108,8 +108,8 @@ function attachShader(gl, shaderId, program, shaderType){
     if(param){
         gl.attachShader(program, shader);
     }else{
-	alert(gl.getShaderInfoLog(shader));
-	console.log(gl.getShaderInfoLog(shader));
+	    alert(gl.getShaderInfoLog(shader));
+	    console.log(gl.getShaderInfoLog(shader));
     }
 }
 
@@ -120,8 +120,8 @@ function attachShaderFromString(gl, shaderStr, program, shaderType){
     if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
         gl.attachShader(program, shader);
     }else{
-	alert(gl.getShaderInfoLog(shader));
-	console.log(gl.getShaderInfoLog(shader));
+	    alert(gl.getShaderInfoLog(shader));
+	    console.log(gl.getShaderInfoLog(shader));
     }
 }
 

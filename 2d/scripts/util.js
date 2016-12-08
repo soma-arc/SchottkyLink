@@ -94,10 +94,10 @@ function circleInvert(invertCircle, genCircle){
                                  ], genCircle);
     var p2 = circleInvertOnPoint([x - coeffR,
                                   y - coeffR,
-                                  ], genCircle);
+                                 ], genCircle);
     var p3 = circleInvertOnPoint([x + coeffR,
                                   y - coeffR,
-                                  ], genCircle);
+                                 ], genCircle);
     return makeCircleFromPoints(p1, p2, p3);
 }
 
@@ -129,7 +129,7 @@ function attachShaderFromString(gl, shaderStr, program, shaderType){
 function linkProgram(gl, program){
     gl.linkProgram(program);
     if(gl.getProgramParameter(program, gl.LINK_STATUS)){
-       gl.useProgram(program);
+        gl.useProgram(program);
         return program;
     }else{
         return null;
