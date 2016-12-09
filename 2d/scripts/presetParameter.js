@@ -135,6 +135,23 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "ModHyperbolic",
+        "generators": {
+            "ModHyperbolic": [
+                {
+                    "outerCircle": {
+                        "position": [0, 0],
+                        "radius": 200
+                    },
+                    "innerCircle": {
+                        "position": [-25, 0],
+                        "radius": 150
+                    }
+                }
+            ]
+        }
+    },
+    {
         "text": "Loxodromic",
         "generators": {
             "Circles": [

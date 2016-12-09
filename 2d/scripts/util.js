@@ -122,6 +122,30 @@ function calcLineIntersection(x1, y1, x2, y2,
             y1 + lambda*( y2-y1 )];
 }
 
+// http://shogo82148.github.io/homepage/memo/geometry/line-circle.html
+function calcCircleLineIntersection(c, lineDir, linePoint){
+    let a = lineDir[0];
+    let b = lineDir[1];
+
+    let d = a * (c.y - linePoint[1]) - b * (c.x - linePoint[0]);
+    let a2b2 = a * a + b * b;
+    let rt = a2b2 * c.r * c.r - d * d;
+    if(rt > 0){
+        rt = Math.sqrt(rt);
+        let ab = a * (c.x - linePoint[0]) + b * (c.y - linePoint[1])
+        let tPlus = (ab + rt) / a2b2;
+        let tMinus = (ab - rt) / a2b2;
+        return [[a * tPlus + linePoint[0], b * tPlus + linePoint[1]],
+                [a * tMinus + linePoint[0], b * tMinus + linePoint[1]]];
+    }else if(rt == 0){
+        let ab = a * (c.x - linePoint[0]) + b * (c.y - linePoint[1]);
+        let t = ab / a2b2;
+        return [a * t + linePoint[0], b * t + linePoint[1]];
+    }else{
+        return [];
+    }
+}
+
 function attachShader(gl, shaderId, program, shaderType){
     var shader = gl.createShader(shaderType);
     elem = document.getElementById(shaderId).text;

@@ -314,21 +314,48 @@ const MOD_HYPERBOLIC_OUTER_CIRCUMFERENCE = 3;
 var ModHyperbolic = function(innerCircle, outerCircle){
     this.inner = innerCircle;
     this.outer = outerCircle;
-    this.inverted = circleInvert(this.inner, this.outer);
+    this.update();
 }
 
 ModHyperbolic.createFromJson = function(obj){
     return new ModHyperbolic(Circle.createFromJson(obj['innerCircle']),
-                                  Circle.createFromJson(obj['outerCircle']));
+                             Circle.createFromJson(obj['outerCircle']));
 }
 
 ModHyperbolic.prototype = {
     update: function(){
         this.inverted = circleInvert(this.inner, this.outer);
+
+        this.point = [this.outer.x + 250, this.outer.y + 100];
+
+        this.pInnerInv = circleInvertOnPoint(this.point, this.inner);
+        this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
+        this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
+
+        this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
+
+        let [p1, p2] = calcCircleLineIntersection(this.c3, this.lineDir, this.outer.getPosition());
+        if(distance(p1, this.inverted.getPosition()) < this.inverted.r){
+            this.innerFixedPoint = p1;
+            this.outerFixedPoint = p2;
+        }else{
+            this.innerFixedPoint = p2;
+            this.outerFixedPoint = p1;
+        }
+
+        this.circleOnFixedPoint = new Circle(this.outerFixedPoint[0], this.outerFixedPoint[1], 100);
+        this.concentricInner = circleInvert(this.inner, this.circleOnFixedPoint);
+        this.concentricInverted = circleInvert(this.inverted, this.circleOnFixedPoint);
+
+        this.scalingFactor = this.concentricInverted.r / this.concentricInner.r;
     },
     getUniformArray: function(){
 	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
-						                           this.inverted.getUniformArray());
+						                           this.inverted.getUniformArray(),
+                                                   this.circleOnFixedPoint.getUniformArray(),
+                                                   this.concentricInner.getUniformArray(),
+                                                   this.concentricInverted.getUniformArray(),
+                                                   [this.scalingFactor, 0, 0]);
     },
     clone: function(){
         return new ModHyperbolic(this.inner.clone(),
@@ -339,7 +366,7 @@ ModHyperbolic.prototype = {
                 "outerCircle": this.outer.exportJson()};
     },
     setUniformLocation: function(uniLocation, gl, program, index){
-        uniLocation.push(gl.getUniformLocation(program, 'u_transformByCircles'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_modHyperbolic'+ index));
     },
     setUniformValues: function(uniLocation, gl, uniIndex){
         gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());

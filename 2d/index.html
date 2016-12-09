@@ -99,6 +99,13 @@
          uniform vec3 u_transformByCircles{{ n }}[3];
          {% endfor %}
 
+         {% for n in range(0, numModHyperbolic) %}
+         //[innerCircle, outerCircle, invertedCircle, circleOnFixedPoint,
+         // concentricInner, concentricInverted,
+         // [scalingFactor, 0, 0]]
+         uniform vec3 u_modHyperbolic{{ n }}[7];
+         {% endfor %}
+
          {% for n in range(0, numTwistedLoxodromic) %}
          // [innerCircle, outerCircle, invertedCircle, c3, p]
          uniform vec3 u_twistedLoxodromic{{ n }}[5];
@@ -241,6 +248,19 @@
 
 	             {% endfor %}
 
+                 {% for n in range(0, numModHyperbolic) %}
+                 pos = circleInvert(pos, u_modHyperbolic{{ n }}[3].xy, u_modHyperbolic{{ n }}[3].z);
+                 pos -= u_modHyperbolic{{ n }}[4].xy;
+                 float r{{ n }} = length(pos);
+                 if(r{{ n }} < u_modHyperbolic{{ n }}[4].z || u_modHyperbolic{{ n }}[5].z < r{{ n }}){
+                     pos = normalize(pos) * u_modHyperbolic{{ n }}[4].z * pow(u_modHyperbolic{{ n }}[6].x,
+                                                                              fract(log(r{{ n }} / u_modHyperbolic{{ n }}[4].z) / log(u_modHyperbolic{{ n }}[6].x)));
+                     cont = true;
+                 }
+                 pos += u_modHyperbolic{{ n }}[4].xy;
+                 pos = circleInvert(pos, u_modHyperbolic{{ n }}[3].xy, u_modHyperbolic{{ n }}[3].z);
+                 {% endfor %}
+
                  {% for n in range(0, numTwistedLoxodromic) %}
                  if(distance(pos, u_twistedLoxodromic{{ n }}[0].xy) < u_twistedLoxodromic{{ n }}[0].z){
                      pos -= u_twistedLoxodromic{{ n }}[0].xy;
@@ -346,6 +366,16 @@
 	         }else if(distance(position, u_transformByCircles{{ n }}[1].xy) < u_transformByCircles{{ n }}[1].z){
 	             return vec3(0, .5, 0);
 	         }else if(distance(position, u_transformByCircles{{ n }}[2].xy) < u_transformByCircles{{ n }}[2].z){
+	             return vec3(0, 0, .5);
+	         }
+	         {% endfor %}
+
+             {% for n in range(0, numModHyperbolic) %}
+	         if(distance(position, u_modHyperbolic{{ n }}[0].xy) < u_modHyperbolic{{ n }}[0].z){
+	             return vec3(.5, 0, 0);
+	         }else if(distance(position, u_modHyperbolic{{ n }}[1].xy) < u_modHyperbolic{{ n }}[1].z){
+	             return vec3(0, .5, 0);
+	         }else if(distance(position, u_modHyperbolic{{ n }}[2].xy) < u_modHyperbolic{{ n }}[2].z){
 	             return vec3(0, 0, .5);
 	         }
 	         {% endfor %}
