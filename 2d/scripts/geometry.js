@@ -5,6 +5,7 @@ const ID_TWISTED_LOXODROMIC = 3;
 const ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS = 4;
 const ID_PARABOLIC = 5;
 const ID_MOD_HYPERBOLIC = 6;
+const ID_MOD_LOXODROMIC = 7;
 
 const CIRCLE_BODY = 0;
 const CIRCLE_CIRCUMFERENCE = 1;
@@ -580,6 +581,179 @@ Parabolic.prototype = {
     }
 }
 
+const MOD_LOXODROMIC_INNER_BODY = 0;
+const MOD_LOXODROMIC_INNER_CIRCUMFERENCE = 1;
+const MOD_LOXODROMIC_OUTER_BODY = 2;
+const MOD_LOXODROMIC_OUTER_CIRCUMFERENCE = 3;
+const MOD_LOXODROMIC_POINT = 4;
+
+var ModLoxodromic = function(innerCircle, outerCircle, p){
+    this.inner = innerCircle;
+    this.outer = outerCircle;
+    this.point = p;
+
+    this.controlPointRadius = 10;
+    this.lineThickness = 10;
+
+    this.update();
+}
+
+ModLoxodromic.createFromJson = function(obj){
+    return new ModLoxodromic(Circle.createFromJson(obj['innerCircle']),
+                             Circle.createFromJson(obj['outerCircle']),
+                             obj['point'].slice(0));
+}
+
+ModLoxodromic.prototype = {
+    update: function(){
+        this.inverted = circleInvert(this.inner, this.outer);
+        this.pInnerInv = circleInvertOnPoint(this.point, this.inner);
+        this.pOuterInv = circleInvertOnPoint(this.point, this.outer);
+        this.c3 = makeCircleFromPoints(this.point, this.pInnerInv, this.pOuterInv);
+
+        this.lineDir = vec2Diff(this.outer.getPosition(), this.inner.getPosition());
+        let lineTheta = Math.atan2(-this.lineDir[1], this.lineDir[0]) + Math.PI / 2.;
+        let lineRotationMat2 = getRotationMat2(lineTheta);
+        let invLineRotationMat2 = getRotationMat2(-lineTheta);
+
+
+        let [p1, p2] = calcCircleLineIntersection(this.c3, this.lineDir, this.outer.getPosition());
+        if(distance(p1, this.inverted.getPosition()) < this.inverted.r){
+            this.innerFixedPoint = p1;
+            this.outerFixedPoint = p2;
+        }else{
+            this.innerFixedPoint = p2;
+            this.outerFixedPoint = p1;
+        }
+
+        this.circleOnFixedPoint = new Circle(this.outerFixedPoint[0], this.outerFixedPoint[1], 100);
+        this.concentricInner = circleInvert(this.inner, this.circleOnFixedPoint);
+        this.concentricInverted = circleInvert(this.inverted, this.circleOnFixedPoint);
+
+        this.scalingFactor = this.concentricInverted.r / this.concentricInner.r;
+
+        this.invertedC3Line = vec2Diff(circleInvertOnPoint([this.c3.x,
+                                                            this.c3.y + this.c3.r],
+                                                           this.circleOnFixedPoint),
+                                       circleInvertOnPoint([this.c3.x + this.c3.r,
+                                                            this.c3.y],
+                                                           this.circleOnFixedPoint));
+        this.lineDir = vec2Normalize(this.lineDir);
+        this.invertedC3Line = vec2Normalize(this.invertedC3Line);
+        this.theta = -2. *( Math.acos(vec2Dot(this.lineDir, this.invertedC3Line)));
+        let c3LineTheta = Math.atan2(-this.invertedC3Line[1], this.invertedC3Line[0]) + Math.PI / 2.;
+        let c3LineRotationMat2 = getRotationMat2(c3LineTheta);
+        let c3InvLineRotationMat2 = getRotationMat2(-c3LineTheta);
+    },
+    getUniformArray: function(){
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray(),
+                                                   this.circleOnFixedPoint.getUniformArray(),
+                                                   this.concentricInner.getUniformArray(),
+                                                   this.concentricInverted.getUniformArray(),
+                                                   [this.scalingFactor, this.theta, 0],
+                                                   this.c3.getUniformArray(),
+                                                   this.point, [0],
+                                                   this.invertedC3Line, [0]);
+    },
+    getUIParamArray: function(){
+        return [this.controlPointRadius, this.lineThickness];
+    },
+    clone: function(){
+        return new ModLoxodromic(this.inner.clone(),
+                                     this.outer.clone(),
+                                     this.point.slice(0));
+    },
+    exportJson: function(){
+        return {"innerCircle": this.inner.exportJson(),
+                "outerCircle": this.outer.exportJson(),
+                "point": this.point};
+    },
+    setUniformLocation: function(uniLocation, gl, program, index){
+        uniLocation.push(gl.getUniformLocation(program, 'u_modLoxodromic'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_modLoxodromicUIParam'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform3fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniform2fv(uniLocation[uniIndex++], this.getUIParamArray());
+        return uniIndex;
+    },
+    move: function(scene, componentId, mouse, diff){
+        var prevOuterX = this.outer.x;
+        var prevOuterY = this.outer.y;
+        switch (componentId) {
+        case MOD_LOXODROMIC_OUTER_BODY:
+            this.outer.x = mouse[0] - diff[0];
+	        this.outer.y = mouse[1] - diff[1];
+            this.inner.x += this.outer.x - prevOuterX;
+            this.inner.y += this.outer.y - prevOuterY;
+            this.point[0] += this.outer.x - prevOuterX;
+            this.point[1] += this.outer.y - prevOuterY;
+            break;
+        case MOD_LOXODROMIC_OUTER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.outer.x;
+	        var dy = mouse[1] - this.outer.y;
+	        var dist = Math.sqrt((dx * dx) + (dy * dy));
+	        this.outer.r = dist;
+            break;
+        case MOD_LOXODROMIC_INNER_BODY:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            if(d <= this.outer.r - this.inner.r){
+                this.inner.x = np[0];
+                this.inner.y = np[1];
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case MOD_LOXODROMIC_INNER_CIRCUMFERENCE:
+            var dx = mouse[0] - this.inner.x;
+	        var dy = mouse[1] - this.inner.y;
+	        var nr = Math.sqrt((dx * dx) + (dy * dy));
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), this.inner.getPosition()));
+            if(d <= this.outer.r - nr){
+                this.inner.r = nr;
+            }else{
+                diff[0] = mouse[0] - this.inner.x;
+                diff[1] = mouse[1] - this.inner.y;
+            }
+            break;
+        case MOD_LOXODROMIC_POINT:
+            var np = vec2Diff(mouse, diff);
+            var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
+            this.point[0] = np[0];
+            this.point[1] = np[1];
+            break;
+        }
+        this.update();
+    },
+    removable: function(mouse, diff){
+        return this.outer.removable(mouse, diff);
+    },
+    // return [componentId,
+    //         difference between object position and mouse position]
+    selectable: function(mouse, scene){
+        var diff = vec2Diff(this.point, mouse);
+        if(vec2Len(diff) < this.controlPointRadius){
+            return [MOD_LOXODROMIC_POINT, diff];
+        }
+        var [componentId, diff] = this.inner.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [MOD_LOXODROMIC_INNER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [MOD_LOXODROMIC_INNER_CIRCUMFERENCE, diff];
+        }
+        [componentId, diff] = this.outer.selectable(mouse, scene);
+        if(componentId == CIRCLE_BODY){
+            return [MOD_LOXODROMIC_OUTER_BODY, diff];
+        }else if(componentId == CIRCLE_CIRCUMFERENCE){
+            return [MOD_LOXODROMIC_OUTER_CIRCUMFERENCE, diff];
+        }
+	    return [-1, [0, 0]];
+    },
+}
+
 const TWISTED_LOXODROMIC_INNER_BODY = 0;
 const TWISTED_LOXODROMIC_INNER_CIRCUMFERENCE = 1;
 const TWISTED_LOXODROMIC_OUTER_BODY = 2;
@@ -889,7 +1063,8 @@ const GENERATORS_NAME_ID_MAP = {
     "TwistedLoxodromic": ID_TWISTED_LOXODROMIC,
     "TwistedLoxodromicFromFixedPoints": ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS,
     "Parabolic": ID_PARABOLIC,
-    "ModHyperbolic": ID_MOD_HYPERBOLIC
+    "ModHyperbolic": ID_MOD_HYPERBOLIC,
+    "ModLoxodromic": ID_MOD_LOXODROMIC
 }
 
 const GENERATORS_ID_NAME_MAP = {};
@@ -900,6 +1075,7 @@ GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC] = "TwistedLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_TWISTED_LOXODROMIC_FROM_FIXED_POINTS] = "TwistedLoxodromicFromFixedPoints";
 GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
 GENERATORS_ID_NAME_MAP[ID_MOD_HYPERBOLIC] = "ModHyperbolic";
+GENERATORS_ID_NAME_MAP[ID_MOD_LOXODROMIC] = "ModLoxodromic";
 
 const GENERATORS_NAME_CLASS_MAP = {
     "Circles": Circle,
@@ -908,7 +1084,8 @@ const GENERATORS_NAME_CLASS_MAP = {
     "TwistedLoxodromic": TwistedLoxodromic,
     "TwistedLoxodromicFromFixedPoints": TwistedLoxodromicFromFixedPoints,
     "Parabolic": Parabolic,
-    "ModHyperbolic": ModHyperbolic
+    "ModHyperbolic": ModHyperbolic,
+    "ModLoxodromic": ModLoxodromic
 };
 
 var Scene = function(){

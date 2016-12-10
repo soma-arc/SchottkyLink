@@ -53,6 +53,10 @@ function vec2Normalize(v){
     return [v[0] / l, v[1] / l];
 }
 
+function vec2Dot(v1, v2){
+    return v1[0] * v2[0] + v1[1] * v2[1];
+}
+
 function distance(p1, p2){
     return vec2Len(vec2Diff(p1, p2));
 }
@@ -86,6 +90,37 @@ function makeCircleFromPoints(a, b, c){
                   (coefA * a[1] + coefB * b[1] + coefC * c[1]) / denom,
                  ];
     return new Circle(center[0], center[1], vec2Len(vec2Diff(center, a)));
+}
+
+// http://atelier-peppe.jp/programTips/GEOMETRIC/KIKA_10.html
+// return [degree, intersept]
+function calcPerpLine(p1, p2){
+    let d = vec2Diff(p2, p1);
+    let a1 = d[1] / d[0];
+    let c = [p1[0] + (p2[0] - p1[0])/2,
+             p1[1] + (p2[1] - p1[1])/2];
+    if(a1 == 0){
+        return[1, 0];
+    }else{
+        let a  = -1 / a1;
+        return[a, c[1] - a * c[0]];
+    }
+}
+
+function makeCircleFromPoints2(a, b, c){
+    let [x, y] = calcPerpLine(a, b);
+    let [z, w] = calcPerpLine(b, c);
+    let cx = (w - y) / (x - z);
+    let center = [cx, x * cx + y ];
+    return new Circle(center[0], center[1], vec2Len(vec2Diff(center, a)));
+}
+
+// This function will return incorrect value  when the center of circle is on the line.
+function circleInvertOnLine(lineDir, linePoint, c){
+    let p1 = circleInvertOnPoint(vec2Sum(linePoint, vec2Scale(lineDir, -20.7)), c);
+    let p2 = circleInvertOnPoint(vec2Sum(linePoint, vec2Scale(lineDir, 25.3)), c);
+    let p3 = circleInvertOnPoint(vec2Sum(linePoint, vec2Scale(lineDir, 40.9)), c);
+    return makeCircleFromPoints(p1, p2, p3);
 }
 
 function makeLineFromPoints(a, b){

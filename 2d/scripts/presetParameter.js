@@ -196,6 +196,31 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "ModLoxodromic",
+        "generators": {
+            "Circles": [
+                {
+                    "position": [115, 190],
+                    "radius": 100
+                }
+            ],
+            "ModLoxodromic": [
+                {
+                    "innerCircle": {
+                        "position": [-12, -23],
+                        "radius": 150
+                    },
+                    "outerCircle": {
+                        "position": [0, 0],
+                        "radius": 200
+                    },
+                    "point": [100, 10]
+                },
+
+            ]
+        }
+    },
+    {
         "text": "TwistedLoxodromic",
         "generators": {
             "Circles": [

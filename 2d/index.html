@@ -106,6 +106,14 @@
          uniform vec3 u_modHyperbolic{{ n }}[7];
          {% endfor %}
 
+         {% for n in range(0, numModLoxodromic) %}
+         // [innerCircle, outerCircle, invertedCircle, circleOnFixedPoint,
+         // concentricInner, concentricInvertec,
+         // [scalingFactor, theta, 0], c3, [controlPoint, 0], [invertedC3Line, 0]
+         uniform vec3 u_modLoxodromic{{ n }}[10];
+         uniform vec2 u_modLoxodromicUIParam{{ n }};
+         {% endfor %}
+
          {% for n in range(0, numTwistedLoxodromic) %}
          // [innerCircle, outerCircle, invertedCircle, c3, p]
          uniform vec3 u_twistedLoxodromic{{ n }}[5];
@@ -253,12 +261,34 @@
                  pos -= u_modHyperbolic{{ n }}[4].xy;
                  float r{{ n }} = length(pos);
                  if(r{{ n }} < u_modHyperbolic{{ n }}[4].z || u_modHyperbolic{{ n }}[5].z < r{{ n }}){
-                     pos = normalize(pos) * u_modHyperbolic{{ n }}[4].z * pow(u_modHyperbolic{{ n }}[6].x,
-                                                                              fract(log(r{{ n }} / u_modHyperbolic{{ n }}[4].z) / log(u_modHyperbolic{{ n }}[6].x)));
+                     pos = normalize(pos);
+                     pos *= u_modHyperbolic{{ n }}[4].z * pow(u_modHyperbolic{{ n }}[6].x,
+                                                              fract(log( r{{ n }} / u_modHyperbolic{{ n }}[4].z ) / log(u_modHyperbolic{{ n }}[6].x)));
                      cont = true;
                  }
                  pos += u_modHyperbolic{{ n }}[4].xy;
                  pos = circleInvert(pos, u_modHyperbolic{{ n }}[3].xy, u_modHyperbolic{{ n }}[3].z);
+                 {% endfor %}
+
+                 {% for n in range(0, numModLoxodromic) %}
+                 pos = circleInvert(pos, u_modLoxodromic{{ n }}[3].xy, u_modLoxodromic{{ n }}[3].z);
+                 pos -= u_modLoxodromic{{ n }}[4].xy;
+                 float r{{ n }} = length(pos);
+                 if(r{{ n }} < u_modLoxodromic{{ n }}[4].z || u_modLoxodromic{{ n }}[5].z < r{{ n }}){
+                     pos = normalize(pos);
+                     float level{{ n }} = log( r{{ n }} / u_modLoxodromic{{ n }}[4].z ) / log(u_modLoxodromic{{ n }}[6].x);
+                     float quot{{ n }} = floor(level{{ n }});
+                     float modulo{{ n }} = fract(level{{ n }});
+                         pos *= u_modLoxodromic{{ n }}[4].z * pow(u_modLoxodromic{{ n }}[6].x, fract(level{{ n }}));
+                         float rotation =  -u_modLoxodromic{{ n }}[6].y * floor(level{{ n }});
+                     float cosTheta = cos(rotation); float sinTheta = sin(rotation);
+                     mat2 m = mat2(cosTheta, -sinTheta,
+                                   sinTheta, cosTheta);
+                     pos = m * pos;
+                     cont = true;
+                 }
+                 pos += u_modLoxodromic{{ n }}[4].xy;
+                 pos = circleInvert(pos, u_modLoxodromic{{ n }}[3].xy, u_modLoxodromic{{ n }}[3].z);
                  {% endfor %}
 
                  {% for n in range(0, numTwistedLoxodromic) %}
@@ -421,6 +451,55 @@
              {% endfor %}
 
              vec3 col = vec3(0.);
+
+             {% for n in range(0, numModLoxodromic) %}
+
+             {% endfor %}
+
+             {% for n in range(0, numModLoxodromic) %}
+
+             // line
+             vec2 v2{{ n }} = position - u_modLoxodromic{{ n }}[0].xy;
+             vec2 v1{{ n }} = normalize(u_modLoxodromic{{ n }}[1].xy - u_modLoxodromic{{ n }}[0].xy);
+             vec2 projection{{ n }} = v1{{ n }} * dot(v1{{ n }}, v2{{ n }});
+             vec2 n{{ n }} = v2{{ n }} - projection{{ n }};
+             float d{{ n }} = length(n{{ n }});
+             if(d{{ n }} < u_modLoxodromicUIParam{{ n }}.y){
+                 return vec3(1);
+             }
+
+             // invertedC3Line
+             vec2 v2c3{{ n }} = position - u_modLoxodromic{{ n }}[3].xy;
+             vec2 v1c3{{ n }} = u_modLoxodromic{{ n }}[9].xy;
+             vec2 projectionc3{{ n }} = v1c3{{ n }} * dot(v1c3{{ n }}, v2c3{{ n }});
+             float dc3{{ n }} = length( v2c3{{ n }} - projectionc3{{ n }});
+             if(dc3{{ n }} < u_modLoxodromicUIParam{{ n }}.y){
+                 return vec3(1);
+             }
+
+             // c3
+             if(distance(position, u_modLoxodromic{{ n }}[7].xy) < u_modLoxodromic{{ n }}[7].z){
+	             col = vec3(0.5, .5, 0);
+	         }
+
+             // control point
+             if(distance(position, u_modLoxodromic{{ n }}[8].xy) < u_modLoxodromicUIParam{{ n }}.x){
+	             return LIGHT_BLUE;
+             }
+
+	         if(distance(position, u_modLoxodromic{{ n }}[0].xy) < u_modLoxodromic{{ n }}[0].z){
+                 // inner circle
+	             return mix(RED, col, 0.5);
+	         }else if(distance(position, u_modLoxodromic{{ n }}[1].xy) < u_modLoxodromic{{ n }}[1].z){
+                 // outer circle
+	             return mix(GREEN, col, 0.5);
+	         }else if(distance(position, u_modLoxodromic{{ n }}[2].xy) < u_modLoxodromic{{ n }}[2].z){
+                 // inverted circle
+	             return mix(BLUE, col, 0.5);
+	         }else if(col != vec3(0.)){
+                 return col;
+             }
+	         {% endfor %}
 
              {% for n in range(0, numTwistedLoxodromic) %}
 
