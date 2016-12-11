@@ -2,6 +2,10 @@ radians = function(degrees) {
     return degrees * Math.PI / 180;
 };
 
+function degrees(radians){
+    return radians * 180 / Math.PI;
+}
+
 function pivoting(mat, n, k){
     var col = k;
     var maxValue = Math.abs(mat[k][k]);

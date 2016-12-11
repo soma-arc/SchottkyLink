@@ -60,7 +60,7 @@
          uniform vec3 u_camera[4];
          uniform int u_numIterations;
          uniform bool u_displayGenerators;
-         
+
          {% for n  in range(0,  numSchottkySpheres ) %}
          uniform vec4 u_schottkySphere{{ n }};
          {% endfor %}
@@ -79,7 +79,7 @@
          uniform mat3 u_rotateInfiniteSphereMat3{{ n }};
          uniform mat3 u_invRotateInfiniteSphereMat3{{ n }};
          {% endfor %}
-         
+
          {% for n in range(0,  numTransformByPlanes ) %}
          // [centerX, centerY, centerZ, distToP1, distToP2, size, thetaRad, phiRad, twist]
          uniform float u_transformByPlanes{{ n }}[9];
@@ -106,7 +106,14 @@
          uniform vec4 u_compoundLoxodromic{{ n }}[8];
          {% endfor %}
 
-         
+         {% for n in range(0, numParabolic) %}
+         //[innerSphere, outerSphere, invertedSphere, sphereOnContactPoiont,
+         // [contactPoint, 0]
+         // [translatePoint, translateDist]]
+         uniform vec4 u_parabolic{{ n }}[7];
+         uniform mat3 u_parabolicRotationMat{{ n }}[2];
+         {% endfor %}
+
         </script>
         <script id="constants" type="x-shader/x-fragment">
          const int ID_SCHOTTKY_SPHERE = 0;
@@ -116,10 +123,11 @@
          const int ID_COMPOUND_PARABOLIC = 4;
          const int ID_COMPOUND_LOXODROMIC = 5;
          const int ID_INFINITE_SPHERE = 6;
-         
+         const int ID_PARABOLIC = 7;
+
          const int ID_AXIS_CYLINDER = 100;
          const int ID_KLEIN_ORBIT = 101;
-         
+
          const float PI = 3.14159265359;
          const float PI_4 = 12.566368;
          const float EPSILON = 0.01;
@@ -148,9 +156,9 @@
          int g_objIndex = -1;
          int g_objComponentId = -1;
          bool g_isHit = false;
-         
+
          vec4 intersectSphere(int objId, int objIndex, int objComponentId, int mtl,
-                              vec3 sphereCenter, float radius, 
+                              vec3 sphereCenter, float radius,
                               vec3 rayOrigin, vec3 rayDir, vec4 isect){
              g_isHit = false;
              vec3 v = rayOrigin - sphereCenter;
@@ -256,7 +264,7 @@
          // default plane is aligned the z-axis
          // Rotation center is plane's center
          vec4 intersectInfiniteSphere(int objId, int objIndex, int objComponentId, int mtl,
-                                      vec3 center, float size, mat3 rotation, 
+                                      vec3 center, float size, mat3 rotation,
                                       vec3 rayOrigin, vec3 rayDir, vec4 isect){
              g_isHit = false;
              vec3 n = rotation * vec3(0, 0, 1);
@@ -308,7 +316,7 @@
              vec2 q2 = vec2(length(vec2(length(rayPos.xz) - radius, rayPos.y)) - pipeRadius, xzComponentId);
              return (q1.x < q2.x) ? q1 : q2;
          }
-         
+
          vec4 intersectRotationTorus (int objId, int objIndex, int xzComponentId, int yzComponentId, int mtl,
                                       vec3 center, float radius, float pipeRadius, float marchThreshold,
                                       vec3 rayOrigin, vec3 rayDir, vec4 isect){
@@ -347,7 +355,7 @@
              }
          }
         </script>
-        
+
         <script id="3dSchottkyTemplate" type="x-shader/x-fragment">
          precision mediump float;
 
@@ -365,7 +373,7 @@
          {% include constants %}
 
          {% include intersectFunctions %}
-         
+
          const vec3 LIGHT_DIR = normalize(vec3(0.0, 1., 0.5));
          const int MAX_TRACE_DEPTH = 7;
          float transparency = 0.8;
@@ -374,7 +382,7 @@
              float coeff = 1.0;
              for (int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++){
                  vec4 result = vec4(99999.);
-                 
+
                  {% for n  in range(0,  numSchottkySpheres ) %}
                  result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
                                           u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w, eye, ray, result);
@@ -384,7 +392,7 @@
                      result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
                                                   10., u_schottkySphere{{ n }}.xyz,
                                                   eye, ray, result);
-                     
+
                      result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
                                                   10., u_schottkySphere{{ n }}.xyz,
                                                   eye, ray, result);
@@ -397,7 +405,7 @@
                  {% for n in range(0,  numBaseSpheres ) %}
                  result = intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, MTL_DIFFUSE,
                                           u_baseSphere{{ n }}.xyz, u_baseSphere{{ n }}.w, eye, ray, result);
-                 
+
                  if(u_selectedObjectId == ID_BASE_SPHERE &&
                     u_selectedObjectIndex == {{ n }}){
                      result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
@@ -453,7 +461,7 @@
                                                   10., vec3(0),
                                                   eye, ray, result);
                  }
-                 
+
                  {% endfor %}
 
                  {% for n in range(0, numCompoundParabolic) %}
@@ -495,6 +503,44 @@
                                           u_compoundParabolic{{ n }}[2].xyz,
                                           u_compoundParabolic{{ n }}[2].w,
                                           eye, ray, result);
+                 {% endfor %}
+
+                 {% for n in range(0, numParabolic) %}
+                 result = intersectSphere(ID_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_parabolic{{ n }}[0].xyz,
+                                          u_parabolic{{ n }}[0].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_parabolic{{ n }}[1].xyz,
+                                          u_parabolic{{ n }}[1].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_PARABOLIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_parabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_parabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_parabolic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_parabolic{{ n }}[2].xyz,
+                                          u_parabolic{{ n }}[2].w,
+                                          eye, ray, result);
+                 result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
+                                                  u_parabolic{{ n }}[5].xyz,
+                                                  1200.,
+                                                  u_parabolicRotationMat{{ n }}[0],
+                                                  eye, ray, result);
+                 result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
+                                                  u_parabolic{{ n }}[6].xyz,
+                                                  1200.,
+                                                  u_parabolicRotationMat{{ n }}[0],
+                                                  eye, ray, result);
                  {% endfor %}
 
                  {% for n in range(0, numTransformBySpheres) %}
@@ -637,7 +683,7 @@
                                                   eye, ray, result);
                  }
                  {% endfor %}
-                 
+
                  if(result.x != 99999.){
                      vec3 matColor = LIGHT_GRAY;
                      if( g_objId == ID_SCHOTTKY_SPHERE){
@@ -685,8 +731,15 @@
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
+                     }else if(g_objId == ID_PARABOLIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 3) ? RED : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
                      }
-                     
+
                      vec3 intersection = eye + ray * result.x;
                      vec3 normal = result.yzw;
                      // diffuse lighting by directionalLight
@@ -725,19 +778,19 @@
          }
 
          const float SAMPLE_NUM = 5.;
-         void main(){    
+         void main(){
              vec3 sum = vec3(0);
              for(float i = 0. ; i < SAMPLE_NUM ; i++){
                  vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
-                 
+
                  vec3 ray = calcRay(u_camera[0], u_camera[1], u_camera[2], u_camera[3].x,
                                     u_iResolution.x, u_iResolution.y,
                                     gl_FragCoord.xy + coordOffset);
-                 
+
                  sum += calcColor(u_camera[0], ray);
              }
              vec3 col = (sum/SAMPLE_NUM);
-             
+
              vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_iResolution).rgb;
              gl_FragColor = vec4(mix(col, texCol,
                                      u_textureWeight), 1.0);
@@ -748,6 +801,11 @@
          {% for n in range(0,  numTransformBySpheres ) %}
          float s0r2{{ n }} = u_transformBySpheres{{ n }}[0].w * u_transformBySpheres{{ n }}[0].w;
          float s1r2{{ n }} = u_transformBySpheres{{ n }}[1].w * u_transformBySpheres{{ n }}[1].w;
+         {% endfor %}
+
+         {% for n in range(0,  numParabolic ) %}
+         float p0r2{{ n }} = u_parabolic{{ n }}[0].w * u_parabolic{{ n }}[0].w;
+         float p1r2{{ n }} = u_parabolic{{ n }}[1].w * u_parabolic{{ n }}[1].w;
          {% endfor %}
 
          {% for n in range(0, numCompoundParabolic) %}
@@ -761,7 +819,7 @@
          float loxoS3R2{{ n }} = u_compoundLoxodromic{{ n }}[3].w * u_compoundLoxodromic{{ n }}[3].w;
          float loxoS4R2{{ n }} = u_compoundLoxodromic{{ n }}[4].w * u_compoundLoxodromic{{ n }}[4].w;
          {% endfor %}
-         
+
          const int MAX_KLEIN_ITARATION = 30;
          float distKlein(vec3 pos){
              loopNum = 0.;
@@ -782,7 +840,7 @@
                      pos = sphereInvert(pos, u_compoundParabolic{{ n }}[1].xyz, comp1r2{{ n }});
 
                      pos = u_compoundRotateMat3{{ n }} *  pos;
-                     
+
                      loopEnd = false;
                      loopNum++;
                  }else if(distance(pos, u_compoundParabolic{{ n }}[2].xyz) >= u_compoundParabolic{{ n }}[2].w){
@@ -796,11 +854,11 @@
                      pos = sphereInvert(pos, u_compoundParabolic{{ n }}[0].xyz, comp0r2{{ n }});
 
                      pos = u_invCompoundRotateMat3{{ n }} * pos;
-                     
+
                      loopEnd = false;
                      loopNum++;
                  }
-                 
+
                  {% endfor %}
 
                  {% for n in range(0,  numTransformBySpheres ) %}
@@ -812,7 +870,7 @@
                      vec3 diff1 = (pos - u_transformBySpheres{{ n }}[1].xyz);
                      dr *= s1r2{{ n }} / dot(diff1, diff1);
                      pos = sphereInvert(pos, u_transformBySpheres{{ n }}[1].xyz, s1r2{{ n }});
-                     
+
                      loopEnd = false;
                      loopNum++;
                  }else if(distance(pos, u_transformBySpheres{{ n }}[2].xyz) >= u_transformBySpheres{{ n }}[2].w){
@@ -829,7 +887,7 @@
                      loopNum++;
                  }
                  {% endfor %}
-                 
+
                  {% if numSchottkySpheres > 2 %}
                  {% for n  in range(0,  numSchottkySpheres ) %}
                  {% if n == 0 %}
@@ -883,13 +941,13 @@
                      pos.z *= -1.;
                      loopEnd = false;
                      loopNum++;
-                 }             
+                 }
                  pos = u_rotateInfiniteSphereMat3{{ n }} * pos;
                  pos += u_infiniteSphere{{ n }}.xyz;
 
                  {% endfor %}
-                 
-                 
+
+
                  {% for n in range(0,  numTransformByPlanes ) %}
                  pos -= vec3(u_transformByPlanes{{ n }}[0], u_transformByPlanes{{ n }}[1], u_transformByPlanes{{ n }}[2]);
                  pos = u_invRotatePlaneMat3{{ n }} * pos;
@@ -918,11 +976,11 @@
                      vec3 diff4 = (pos - u_compoundLoxodromic{{ n }}[4].xyz);
                      dr *= loxoS4R2{{ n }} / dot(diff4, diff4);
                      pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[4].xyz, loxoS4R2{{ n }});
-                     
+
                      vec3 diff3 = (pos - u_compoundLoxodromic{{ n }}[3].xyz);
                      dr *= loxoS3R2{{ n }} / dot(diff3, diff3);
                      pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[3].xyz, loxoS3R2{{ n }});
-                     
+
                      vec3 diff0 = (pos - u_compoundLoxodromic{{ n }}[0].xyz);
                      dr *= loxoInnerR2{{ n }} / dot(diff0, diff0);
                      pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[0].xyz, loxoInnerR2{{ n }});
@@ -930,7 +988,7 @@
                      vec3 diff1 = (pos - u_compoundLoxodromic{{ n }}[1].xyz);
                      dr *= loxoOuterR2{{ n }} / dot(diff1, diff1);
                      pos = sphereInvert(pos, u_compoundLoxodromic{{ n }}[1].xyz, loxoOuterR2{{ n }});
-                     
+
                      loopEnd = false;
                      loopNum++;
                  }else if(distance(pos, u_compoundLoxodromic{{ n }}[2].xyz) >= u_compoundLoxodromic{{ n }}[2].w){
@@ -955,7 +1013,45 @@
                      loopNum++;
                  }
                  {% endfor %}
-                 
+
+                 {% for n in range(0, numParabolic) %}
+                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
+                 pos -= u_parabolic{{ n }}[5].xyz;
+                 pos = u_parabolicRotationMat{{ n }}[1] * pos;
+                 if(pos.z < 0. || u_parabolic{{ n }}[5].w < pos.z){
+                     pos.z = mod(pos.z, u_parabolic{{ n }}[5].w);
+                     loopEnd = false;
+                 }
+                 pos = u_parabolicRotationMat{{ n }}[0] * pos;
+                 pos += u_parabolic{{ n }}[5].xyz;
+                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
+
+                 if(distance(pos, u_parabolic{{ n }}[0].xyz) < u_parabolic{{ n }}[0].w){
+                     vec3 diff0 = (pos - u_parabolic{{ n }}[0].xyz);
+                     dr *= p0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_parabolic{{ n }}[0].xyz, p0r2{{ n }});
+
+                     vec3 diff1 = (pos - u_parabolic{{ n }}[1].xyz);
+                     dr *= p1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_parabolic{{ n }}[1].xyz, p1r2{{ n }});
+
+                     loopEnd = false;
+                     loopNum++;
+                 }else if(distance(pos, u_parabolic{{ n }}[2].xyz) >= u_parabolic{{ n }}[2].w){
+                     vec3 diff1 = (pos - u_parabolic{{ n }}[1].xyz);
+                     dr *= p1r2{{ n }} / dot(diff1, diff1);
+                     pos = sphereInvert(pos, u_parabolic{{ n }}[1].xyz,
+                                        p1r2{{ n }});
+
+                     vec3 diff0 = (pos - u_parabolic{{ n }}[0].xyz);
+                     dr *= p0r2{{ n }} / dot(diff0, diff0);
+                     pos = sphereInvert(pos, u_parabolic{{ n }}[0].xyz, p0r2{{ n }});
+
+                     loopEnd = false;
+                     loopNum++;
+                 }
+                 {% endfor %}
+
                  if(loopEnd == true) break;
              }
              {% if numBaseSpheres == 1 %}
@@ -978,7 +1074,7 @@
          {% include uniformVariables %}
 
          {% include constants %}
-         
+
          // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
          vec2 rand2n(vec2 co, int sampleIndex) {
              vec2 seed = co * (float(sampleIndex) + 1.0);
@@ -989,7 +1085,7 @@
          }
 
          {% include intersectFunctions %}
-         
+
          vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
              return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
@@ -1066,7 +1162,7 @@
                  {% endif %}
 
                  if(u_displayGenerators){
-                     
+
                      {% for n  in range(0,  numSchottkySpheres ) %}
                      result = intersectSphere(ID_SCHOTTKY_SPHERE, {{ n }}, 0, MTL_TRANSPARENT,
                                               u_schottkySphere{{ n }}.xyz, u_schottkySphere{{ n }}.w,
@@ -1086,7 +1182,7 @@
                                                       u_rotateInfiniteSphereMat3{{ n }},
                                                       eye, ray, result);
                      {% endfor %}
-                     
+
                      {% for n in range(0,  numTransformByPlanes ) %}
                      result = intersectParallelPlanes(ID_TRANSFORM_BY_PLANES, {{ n }}, MTL_DIFFUSE,
                                                       vec3(u_transformByPlanes{{ n }}[0],
@@ -1098,6 +1194,21 @@
                                                       u_rotatePlaneMat3{{ n }},
                                                       u_transformByPlanes{{ n }}[8],
                                                       eye, ray, result);
+                     {% endfor %}
+
+                     {% for n in range(0, numParabolic) %}
+                     result = intersectSphere(ID_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_parabolic{{ n }}[0].xyz,
+                                              u_parabolic{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_PARABOLIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_parabolic{{ n }}[1].xyz,
+                                              u_parabolic{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_PARABOLIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_parabolic{{ n }}[2].xyz,
+                                              u_parabolic{{ n }}[2].w,
+                                              eye, ray, result);
                      {% endfor %}
 
                      {% for n in range(0, numTransformBySpheres) %}
@@ -1164,7 +1275,7 @@
                                               50.,
                                               eye, ray, result);
                      {% endfor %}
-                     
+
                  }
 
                  if(result.x != NO_HIT){
@@ -1211,6 +1322,12 @@
                      }else if(g_objId == ID_KLEIN_ORBIT){
                          matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
                          normal = getNormal(intersection);
+                     }else if(g_objId == ID_PARABOLIC){
+                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objId == u_selectedObjectId &&
+                                     g_objIndex == u_selectedObjectIndex &&
+                                     g_objComponentId == u_selectedComponentId) ? RED : matColor;
                      }
 
                      // diffuse lighting by directionalLight
@@ -1249,7 +1366,7 @@
          {% include uniformVariables %}
 
          {% include constants %}
-         
+
          int g_mtl = -1;
          int g_objId = -1;
          int g_objIndex = -1;
@@ -1293,7 +1410,7 @@
          }
 
          //------------------------------------------------------------------
-         
+
          vec3 sphereInvert(const vec3 pos, const vec3 spherePos, const float sphereR2){
              return ((pos - spherePos) * sphereR2)/(distance(pos, spherePos) * distance(pos, spherePos) ) + spherePos;
          }
@@ -1355,11 +1472,11 @@
          }
 
          const int MAX_TRACE_DEPTH = 3;
-         
+
          vec3 skyColor(vec3 dir){
              return WHITE;
          }
-         
+
          vec3 calcColor(vec3 eye, vec3 ray){
              vec3 l = WHITE;
              for (int depth = 0 ; depth < 999999 ; depth++){
@@ -1541,7 +1658,7 @@
                         </ui-select>
                         <ui-textbox name="iterations" type="number" :value.sync="orbitCanvas.numIterations"
                                     :min="minIterations" @changed="renderOrbit">
-                            
+
                         </ui-textbox>
                     </ui-tab>
                 </ui-tabs>

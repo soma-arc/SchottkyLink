@@ -500,6 +500,36 @@ const PRESET_PARAMETERS = [
 	    }
     },
     {
+        "text": "ModParabolic",
+        "generators": {
+                        "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 125
+                }
+            ],
+            "Parabolic": [
+                {
+                    "outerSphere": {
+                        "position": [
+                            0,
+                            665.0462361544822,
+                            472.1829455752595
+                        ],
+                        "radius": 661.0819138535611
+                    },
+                    "innerRadius": 500,
+                    "thetaDegree": 90,
+                    "phiDegree": 90
+                }
+            ]
+        }
+    },
+    {
         "text": "CompoundParabolic",
         "generators": {
             "SchottkySpheres": [

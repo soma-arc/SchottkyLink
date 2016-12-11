@@ -5,6 +5,7 @@ const ID_TRANSFORM_BY_SPHERES = 3;
 const ID_COMPOUND_PARABOLIC  = 4;
 const ID_COMPOUND_LOXODROMIC = 5;
 const ID_INFINITE_SPHERE = 6;
+const ID_PARABOLIC = 7;
 
 const AXIS_X = 0;
 const AXIS_Y = 1;
@@ -51,7 +52,7 @@ Sphere.prototype = {
 	    return [this.x, this.y, this.z, this.r];
     },
     setUniformLocation: function(uniLocation, gl, program, id, index){
-	    // TODO: Remove id, because this argument is used only Sphere 
+	    // TODO: Remove id, because this argument is used only Sphere
 	    if(id == ID_SCHOTTKY_SPHERE)
 	        uniLocation.push(gl.getUniformLocation(program, 'u_schottkySphere'+ index));
 	    else if(id == ID_BASE_SPHERE)
@@ -114,6 +115,15 @@ Sphere.prototype = {
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
         return calcAxisOnScreen(this.getPosition(), camera, width, height);
+    },
+    getSurfacePoint: function(theta, phi){
+        let cosPhi = Math.cos(radians(phi));
+        let sinPhi = Math.sin(radians(phi));
+        let cosTheta = Math.cos(radians(theta));
+        let sinTheta = Math.sin(radians(theta));
+        return [this.x + this.r * sinPhi * cosTheta,
+                this.y + this.r * cosPhi,
+                this.z + this.r * sinPhi * sinTheta];
     }
 }
 
@@ -129,7 +139,7 @@ var InfiniteSphere = function(center, theta, phi){
     this.center = center;
     this.theta = theta;
     this.phi = phi;
-    
+
     this.rotationMat3;
     this.invRotationMat3;
 
@@ -280,7 +290,7 @@ TransformByPlanes.prototype = {
 	    uniLocation.push(gl.getUniformLocation(program,
 					                           'u_twistPlaneMat3'+ index));
 	    uniLocation.push(gl.getUniformLocation(program,
-					                           'u_invTwistPlaneMat3'+ index));		
+					                           'u_invTwistPlaneMat3'+ index));
     },
     setUniformValues: function(uniLocation, gl, uniIndex){
 	    gl.uniform1fv(uniLocation[uniIndex++],
@@ -315,7 +325,7 @@ TransformByPlanes.prototype = {
                                         this.center, this.distToP1, this.distToP2,
                                         this.size, this.invRotationMat3, this.invTwistMat3,
                                         eye, ray, isect);
-        
+
         return isect;
     },
     calcAxisOnScreen: function(componentId, camera, width, height){
@@ -599,6 +609,201 @@ TransformBySpheres.prototype = {
     }
 }
 
+const PARABOLIC_INNER_SPHERE = 0;
+const PARABOLIC_OUTER_SPHERE = 1;
+const PARABOLIC_INVERTED_SPHERE = 2;
+
+var Parabolic = function(outer, contactThetaDegree, contactPhiDegree, innerRadius){
+    this.outer = outer;
+    this.thetaRad = radians(contactThetaDegree);
+    this.phiRad = radians(contactPhiDegree);
+    this.innerRadius = innerRadius;
+
+    this.update();
+}
+
+Parabolic.createFromJson = function(obj){
+    return new Parabolic(Sphere.createFromJson(obj['outerSphere']),
+                         obj['thetaDegree'],
+                         obj['phiDegree'],
+                         obj['innerRadius']);
+}
+
+Parabolic.prototype = {
+    update: function(){
+        let cosPhi = Math.cos(this.phiRad);
+        let sinPhi = Math.sin(this.phiRad);
+        let cosTheta = Math.cos(this.thetaRad);
+        let sinTheta = Math.sin(this.thetaRad);
+        //theta [0, 2PI) phi[0, PI]
+        this.contactPoint = [this.outer.x + this.outer.r * sinPhi * cosTheta,
+                             this.outer.y + this.outer.r * cosPhi,
+                             this.outer.z + this.outer.r * sinPhi * sinTheta];
+        this.inner = new Sphere(this.contactPoint[0] - this.innerRadius * sinPhi * cosTheta,
+                                this.contactPoint[1] - this.innerRadius * cosPhi,
+                                this.contactPoint[2] - this.innerRadius * sinPhi * sinTheta,
+                                this.innerRadius);
+        this.inverted = sphereInvert(this.inner, this.outer);
+        console.log(this.inner);
+        console.log(this.outer);
+        console.log(this.inverted);
+        this.sphereOnContactPoint = new Sphere(this.contactPoint[0],
+                                               this.contactPoint[1],
+                                               this.contactPoint[2],
+                                               this.innerRadius);
+        let innerP1 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 2.3, Math.PI / 4.5),
+                                          this.sphereOnContactPoint);
+        let innerP2 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 6.3, Math.PI / 3.5),
+                                          this.sphereOnContactPoint);
+        let innerP3 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 9.3, Math.PI / 7.8),
+                                          this.sphereOnContactPoint);
+        let innerPlaneV1 = diff(innerP2, innerP1);
+        let innerPlaneV2 = diff(innerP3, innerP1);
+        let innerPlaneN = normalize3(cross(innerPlaneV1, innerPlaneV2));
+        console.log('p');
+        console.log(innerP1);
+        console.log(innerP2);
+        console.log(innerP3);
+        console.log('plane N ----');
+        console.log(innerPlaneN);
+
+        let invertedP1 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 2.4, Math.PI / 5.7),
+                                             this.sphereOnContactPoint);
+        let invertedP2 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 4.4, Math.PI / 3.7),
+                                             this.sphereOnContactPoint);
+        let invertedP3 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 7.4, Math.PI / 2.7),
+                                             this.sphereOnContactPoint);
+        let invertedPlaneV1 = diff(invertedP2, invertedP1);
+        let invertedPlaneV2 = diff(invertedP3, invertedP1);
+        let invertedPlaneN = normalize3(cross(invertedPlaneV1, invertedPlaneV2));
+        let invertedPlaneH = dot(invertedPlaneN, invertedP1);
+        console.log(invertedPlaneN);
+        console.log('plane N ----');
+        // http://physmath.main.jp/src/line-plane-intersection-point.html
+        let t = (invertedPlaneH - dot(invertedPlaneN, innerP1)) / dot(invertedPlaneN, innerPlaneN);
+        let isect = sum(innerP1, scale(innerPlaneN, t));
+        this.translateDist = vecLength(diff(isect, innerP1));
+        this.translatePoint = innerP1;
+        this.invertedPoint = isect;
+        console.log('points');
+        console.log(this.translatePoint);
+        console.log(this.invertedPoint);
+        console.log('dist');
+        console.log(this.translateDist);
+        let planeVec = normalize3(sum(innerPlaneV1, innerPlaneV2));
+        console.log(planeVec);
+        console.log(sum(innerPlaneV1, innerPlaneV2));
+        let vv = [0, 1, 0]
+        console.log(degrees(Math.atan2(vv[2], vv[1])));//x
+        console.log(degrees(Math.atan2(vv[2], vv[0])));//y
+        let radX = Math.atan2(-innerPlaneN[2], innerPlaneN[1]) - Math.PI / 2.;
+        let radY = Math.atan2(-innerPlaneN[2], innerPlaneN[0]) - Math.PI / 2.;
+        this.rotationMat3 = prodMat3(getRotationXAxis(radX),
+                                     getRotationYAxis(radY));
+        this.invRotationMat3 = prodMat3(getRotationYAxis(-radY),
+                                        getRotationXAxis(-radX));
+
+        console.log('degree');
+        console.log(degrees(radX));
+        console.log(degrees(radY));
+    },
+    clone: function(){
+        return new Parabolic(this.outer.clone(),
+                             degrees(this.thetaRad),
+                             degrees(this.phiRad),
+                             this.innerRadius);
+    },
+    exportJson: function(){
+        return {"outerSphere": this.inneouter.exportJson(),
+                "thetaDegree": degrees(this.thetaRad),
+                "phiDegree": degrees(this.phiRad),
+                "innerRadius": this.innerRadius};
+    },
+    getUniformArray: function(){
+        return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+                                                   this.inverted.getUniformArray(),
+                                                   this.sphereOnContactPoint.getUniformArray(),
+                                                   this.contactPoint, [0],
+                                                   this.translatePoint, [this.translateDist],
+                                                   this.invertedPoint, [0]);
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	    uniLocation.push(gl.getUniformLocation(program, 'u_parabolic'+ index));
+        uniLocation.push(gl.getUniformLocation(program, 'u_parabolicRotationMat'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+        gl.uniformMatrix3fv(uniLocation[uniIndex++], false,
+                            this.rotationMat3.concat(this.invRotationMat3));
+	    return uniIndex;
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case TRANSFORM_BY_SPHERES_INNER_SPHERE:
+	        if(selectedAxis == AXIS_RADIUS){
+		        //set radius
+		        var spherePosOnScreen = calcPointOnScreen(prevObject.inner.getPosition(),
+							                              camera, canvasWidth, canvasHeight);
+		        var diffSphereAndPrevMouse = [spherePosOnScreen[0] - prevMouse[0],
+				                              spherePosOnScreen[1] - prevMouse[1]];
+		        var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+				                  diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+		        var diffSphereAndMouse = [spherePosOnScreen[0] - mouse[0],
+					                      spherePosOnScreen[1] - mouse[1]];
+		        var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+				                            diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+		        var d = distToMouse - r;
+
+		        var scaleFactor = 3;
+		        //TODO: calculate tangent sphere
+		        var nr = prevObject.inner.r + d * scaleFactor;
+
+		        var dist = vecLength(diff(this.outer.getPosition(),
+					                      this.inner.getPosition()));
+		        if(dist <= this.outer.r - nr){
+		            this.inner.r = nr;
+		        }
+	        }
+            break;
+        case PARABOLIC_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis,
+			                mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            // Keep spheres kissing along the z-axis
+            if(selectedAxis == AXIS_RADIUS){
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+            }
+            break;
+        }
+        this.update();
+    },
+    getComponentFromId: function(id){
+	    if(id == PARABOLIC_INNER_SPHERE){
+	        return this.inner;
+	    }else if(id == PARABOLIC_OUTER_SPHERE){
+	        return this.outer;
+	    }else if(id == PARABOLIC_INVERTED_SPHERE){
+	        return this.inverted;
+	    }
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectOverlappingSphere(objectId, index,
+                                           PARABOLIC_INNER_SPHERE,
+                                           PARABOLIC_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				                           eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                camera, width, height);
+    }
+}
+
 var CompoundLoxodromic = function(inner, outer, p, q1, q2){
     this.inner = inner;
     this.outer = outer;
@@ -678,7 +883,7 @@ CompoundLoxodromic.prototype = {
             return this.q1;
         }else if(componentId == COMPOUND_LOXODROMIC_Q2){
             return this.q2;
-        }      
+        }
     },
     move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
                    axisVecOnScreen, camera, canvasWidth, canvasHeight){
@@ -738,11 +943,11 @@ CompoundLoxodromic.prototype = {
 
                 var dq1 = prevObject.q1[selectedAxis] - prevValue;
                 this.q1[selectedAxis] = this.outer.get(selectedAxis) + dq1;
-                
+
                 var dq2 = prevObject.q2[selectedAxis] - prevValue;
                 this.q2[selectedAxis]  = this.outer.get(selectedAxis) + dq2;
-                
-                
+
+
             }
             break;
         case COMPOUND_LOXODROMIC_POINT:
@@ -791,7 +996,7 @@ CompoundLoxodromic.prototype = {
             return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
                                     camera, width, height);
         }
-        
+
     }
 }
 
@@ -809,7 +1014,7 @@ var Camera = function(target, fovDegree, eyeDist, up){
 
 // Camera is on the sphere which its center is target and radius is eyeDist.
 // Position is defined by two angle, theta and phi.
-Camera.prototype = {    
+Camera.prototype = {
     update: function(){
 	    this.position = [this.eyeDist * Math.cos(this.phi) * Math.cos(this.theta),
 			             this.eyeDist * Math.sin(this.phi),
@@ -836,7 +1041,8 @@ const GENERATORS_NAME_ID_MAP = {
     "TransformBySpheres": ID_TRANSFORM_BY_SPHERES,
     "CompoundParabolic": ID_COMPOUND_PARABOLIC,
     "CompoundLoxodromic": ID_COMPOUND_LOXODROMIC,
-    "InfiniteSpheres": ID_INFINITE_SPHERE
+    "InfiniteSpheres": ID_INFINITE_SPHERE,
+    "Parabolic": ID_PARABOLIC
 }
 
 const GENERATORS_NAME_CLASS_MAP = {
@@ -846,7 +1052,8 @@ const GENERATORS_NAME_CLASS_MAP = {
     "TransformBySpheres": TransformBySpheres,
     "CompoundParabolic": CompoundParabolic,
     "CompoundLoxodromic": CompoundLoxodromic,
-    "InfiniteSpheres": InfiniteSphere
+    "InfiniteSpheres": InfiniteSphere,
+    "Parabolic": Parabolic
 }
 
 
@@ -858,6 +1065,7 @@ GENERATORS_ID_NAME_MAP[ID_TRANSFORM_BY_SPHERES] = "TransformBySpheres";
 GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "CompoundParabolic";
 GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "CompoundLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "InfiniteSpheres";
+GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
 
 var Scene = function(){
     this.objects = {};
@@ -997,7 +1205,7 @@ Scene.prototype = {
            objArray.length != 0 ){
             objArray.splice(objectIndex, 1);
         }
-        
+
     },
     setUniformLocation: function(uniLocation, gl, program){
 	    for(objectId in Object.keys(this.objects)){
