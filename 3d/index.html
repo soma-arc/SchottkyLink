@@ -806,6 +806,7 @@
          {% for n in range(0,  numParabolic ) %}
          float p0r2{{ n }} = u_parabolic{{ n }}[0].w * u_parabolic{{ n }}[0].w;
          float p1r2{{ n }} = u_parabolic{{ n }}[1].w * u_parabolic{{ n }}[1].w;
+         float pFixedR2{{ n }} = u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w;
          {% endfor %}
 
          {% for n in range(0, numCompoundParabolic) %}
@@ -1015,6 +1016,8 @@
                  {% endfor %}
 
                  {% for n in range(0, numParabolic) %}
+                 vec3 diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
+                 dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
                  pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
                  pos -= u_parabolic{{ n }}[5].xyz;
                  pos = u_parabolicRotationMat{{ n }}[1] * pos;
@@ -1024,6 +1027,8 @@
                  }
                  pos = u_parabolicRotationMat{{ n }}[0] * pos;
                  pos += u_parabolic{{ n }}[5].xyz;
+                 diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
+                 dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
                  pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
 
                  if(distance(pos, u_parabolic{{ n }}[0].xyz) < u_parabolic{{ n }}[0].w){
