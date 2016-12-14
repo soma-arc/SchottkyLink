@@ -6,6 +6,7 @@ const ID_COMPOUND_PARABOLIC  = 4;
 const ID_COMPOUND_LOXODROMIC = 5;
 const ID_INFINITE_SPHERE = 6;
 const ID_PARABOLIC = 7;
+const ID_LOXODROMIC = 8;
 
 const AXIS_X = 0;
 const AXIS_Y = 1;
@@ -785,6 +786,180 @@ Parabolic.prototype = {
     }
 }
 
+const LOXODROMIC_INNER_SPHERE = 0;
+const LOXODROMIC_OUTER_SPHERE = 1;
+const LOXODROMIC_INVERTED_SPHERE = 2;
+
+// Transformation defined by two spheres
+var Loxodromic = function(innerSphere, outerSphere){
+    this.inner = innerSphere;
+    this.outer = outerSphere;
+    this.inverted;
+    this.update();
+}
+
+Loxodromic.createFromJson = function(obj){
+    return new Loxodromic(Sphere.createFromJson(obj['innerSphere']),
+				          Sphere.createFromJson(obj['outerSphere'])
+				         );
+}
+
+Loxodromic.prototype = {
+    getUniformArray: function(){
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray(),
+                                                   this.s3.getUniformArray(),
+						                           this.s4.getUniformArray(),
+						                           this.p, [0],
+						                           this.q1, [0],
+						                           this.q2, [0],
+                                                   this.sphereOnFixedPoint.getUniformArray(),
+                                                   [this.scalingFactor, 0, 0, 0],
+                                                   this.concentricInner.getUniformArray(),
+                                                   this.concentricInverted.getUniformArray(),
+                                                   this.innerFixedPoint, [0],
+                                                   this.outerFixedPoint, [0]);
+    },
+    clone: function(){
+	    return new Loxodromic(this.inner.clone(), this.outer.clone());
+    },
+    exportJson: function(){
+        return {"innerSphere": this.inner.exportJson(),
+                "outerSphere": this.outer.exportJson(),};
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	    uniLocation.push(gl.getUniformLocation(program,
+					                           'u_loxodromic'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+        gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+	    return uniIndex;
+    },
+    update: function(){
+        this.inverted = sphereInvert(this.inner, this.outer);
+        this.p = sum(this.inverted.getPosition(), [0, this.inverted.r + 200, -100]);
+        this.q1 = sum(this.inverted.getPosition(), [-500, -this.inverted.r - 200, -100]);
+        this.q2 = sum(this.inverted.getPosition(), [this.inverted.r + 200, 0, -110]);
+
+	    this.pInnerInv = sphereInvertOnPoint(this.p, this.inner);
+	    this.pOuterInv = sphereInvertOnPoint(this.p, this.outer);
+	    this.s3 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q1);
+	    this.s4 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q2);
+
+        let lineDir = normalize3(diff(this.outer.getPosition(),
+                                      this.inner.getPosition()));
+        let lineP = this.inner.getPosition();
+        let [p1, p2] = calcLineSphereIntersection(lineP, lineDir, this.s3);
+        let [p3, p4] = calcLineSphereIntersection(lineP, lineDir, this.s4);
+
+        if(vecLength(diff(p1, this.inverted.getPosition())) < this.inverted.r){
+            this.innerFixedPoint = p1;
+            this.outerFixedPoint = p2;
+        }else{
+            this.innerFixedPoint = p2;
+            this.outerFixedPoint = p1;
+        }
+        this.sphereOnFixedPoint = new Sphere(this.outerFixedPoint[0],
+                                             this.outerFixedPoint[1],
+                                             this.outerFixedPoint[2],
+                                             this.inner.r);
+        this.concentricInner = sphereInvert(this.inner, this.sphereOnFixedPoint);
+        this.concentricInverted = sphereInvert(this.inverted, this.sphereOnFixedPoint);
+        this.scalingFactor = this.concentricInverted.r / this.concentricInner.r;
+        console.log('sphere');
+        console.log(this.s3);
+        console.log(this.s4);
+        console.log('sphereOnFixedPoint');
+        console.log(this.sphereOnFixedPoint);
+        console.log('p');
+        console.log(p1);
+        console.log(p2);
+        console.log(p3);
+        console.log(p4);
+        console.log('concentric');
+        console.log(this.concentricInner);
+        console.log(this.concentricInverted);
+        console.log(this.scalingFactor);
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case LOXODROMIC_INNER_SPHERE:
+	        if(selectedAxis == AXIS_RADIUS){
+		        //set radius
+		        var spherePosOnScreen = calcPointOnScreen(prevObject.inner.getPosition(),
+							                              camera, canvasWidth, canvasHeight);
+		        var diffSphereAndPrevMouse = [spherePosOnScreen[0] - prevMouse[0],
+				                              spherePosOnScreen[1] - prevMouse[1]];
+		        var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+				                  diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+		        var diffSphereAndMouse = [spherePosOnScreen[0] - mouse[0],
+					                      spherePosOnScreen[1] - mouse[1]];
+		        var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+				                            diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+		        var d = distToMouse - r;
+
+		        var scaleFactor = 3;
+		        //TODO: calculate tangent sphere
+		        var nr = prevObject.inner.r + d * scaleFactor;
+
+		        var dist = vecLength(diff(this.outer.getPosition(),
+					                      this.inner.getPosition()));
+		        if(dist <= this.outer.r - nr){
+		            this.inner.r = nr;
+		        }
+	        }else{
+		        var dx = mouse[0] - prevMouse[0];
+		        var dy = mouse[1] - prevMouse[1];
+		        var v = axisVecOnScreen[selectedAxis];
+		        var lengthOnAxis = v[0] * dx + v[1] * dy;
+		        var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+					                     selectedAxis, v, prevObject.inner.getPosition(),
+					                     lengthOnAxis);
+		        var d = vecLength(diff(this.outer.getPosition(), np));
+		        if(d <= this.outer.r - this.inner.r){
+		            this.inner.set(selectedAxis, np[selectedAxis]);
+		        }
+	        }
+            break;
+        case LOXODROMIC_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis,
+			                mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            // Keep spheres kissing along the z-axis
+            if(selectedAxis == AXIS_RADIUS){
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var d = prevObject.inner.get(selectedAxis) - prevObject.outer.get(selectedAxis);
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+            }
+            break;
+        }
+        this.update();
+    },
+    getComponentFromId: function(id){
+	    if(id == LOXODROMIC_INNER_SPHERE){
+	        return this.inner;
+	    }else if(id == LOXODROMIC_OUTER_SPHERE){
+	        return this.outer;
+	    }else if(id == LOXODROMIC_INVERTED_SPHERE){
+	        return this.inverted;
+	    }
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectOverlappingSphere(objectId, index,
+                                           LOXODROMIC_INNER_SPHERE,
+                                           LOXODROMIC_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				                           eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                camera, width, height);
+    }
+}
+
 var CompoundLoxodromic = function(inner, outer, p, q1, q2){
     this.inner = inner;
     this.outer = outer;
@@ -1023,7 +1198,8 @@ const GENERATORS_NAME_ID_MAP = {
     "CompoundParabolic": ID_COMPOUND_PARABOLIC,
     "CompoundLoxodromic": ID_COMPOUND_LOXODROMIC,
     "InfiniteSpheres": ID_INFINITE_SPHERE,
-    "Parabolic": ID_PARABOLIC
+    "Parabolic": ID_PARABOLIC,
+    "Loxodromic": ID_LOXODROMIC
 }
 
 const GENERATORS_NAME_CLASS_MAP = {
@@ -1034,7 +1210,8 @@ const GENERATORS_NAME_CLASS_MAP = {
     "CompoundParabolic": CompoundParabolic,
     "CompoundLoxodromic": CompoundLoxodromic,
     "InfiniteSpheres": InfiniteSphere,
-    "Parabolic": Parabolic
+    "Parabolic": Parabolic,
+    "Loxodromic": Loxodromic
 }
 
 
@@ -1047,6 +1224,7 @@ GENERATORS_ID_NAME_MAP[ID_COMPOUND_PARABOLIC] = "CompoundParabolic";
 GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "CompoundLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "InfiniteSpheres";
 GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
+GENERATORS_ID_NAME_MAP[ID_LOXODROMIC] = "Loxodromic";
 
 var Scene = function(){
     this.objects = {};

@@ -114,6 +114,9 @@
          uniform mat3 u_parabolicRotationMat{{ n }}[2];
          {% endfor %}
 
+         {% for n in range(0, numLoxodromic) %}
+         uniform vec4 u_loxodromic{{ n }}[14];
+         {% endfor %}
         </script>
         <script id="constants" type="x-shader/x-fragment">
          const int ID_SCHOTTKY_SPHERE = 0;
@@ -124,6 +127,7 @@
          const int ID_COMPOUND_LOXODROMIC = 5;
          const int ID_INFINITE_SPHERE = 6;
          const int ID_PARABOLIC = 7;
+         const int ID_LOXODROMIC = 8;
 
          const int ID_AXIS_CYLINDER = 100;
          const int ID_KLEIN_ORBIT = 101;
@@ -505,6 +509,75 @@
                                           eye, ray, result);
                  {% endfor %}
 
+                 {% for n in range(0, numLoxodromic) %}
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[0].xyz,
+                                          u_loxodromic{{ n }}[0].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 0){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[1].xyz,
+                                          u_loxodromic{{ n }}[1].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_loxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[2].xyz,
+                                          u_loxodromic{{ n }}[2].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[3].xyz,
+                                          u_loxodromic{{ n }}[3].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[4].xyz,
+                                          u_loxodromic{{ n }}[4].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[5].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[6].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[7].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 8, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[12].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_LOXODROMIC, {{ n }}, 9, MTL_TRANSPARENT,
+                                          u_loxodromic{{ n }}[13].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 {% endfor %}
+
                  {% for n in range(0, numParabolic) %}
                  result = intersectSphere(ID_PARABOLIC, {{ n }}, 0, MTL_TRANSPARENT,
                                           u_parabolic{{ n }}[0].xyz,
@@ -720,7 +793,8 @@
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
-                     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
+                     }else if(g_objId == ID_COMPOUND_LOXODROMIC ||
+                              g_objId == ID_LOXODROMIC){
                          matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
                          matColor = (g_objComponentId == 1) ? YELLOW : matColor;
                          matColor = (g_objComponentId == 3) ? PINK : matColor;
@@ -819,6 +893,12 @@
          float loxoOuterR2{{ n }} = u_compoundLoxodromic{{ n }}[1].w * u_compoundLoxodromic{{ n }}[1].w;
          float loxoS3R2{{ n }} = u_compoundLoxodromic{{ n }}[3].w * u_compoundLoxodromic{{ n }}[3].w;
          float loxoS4R2{{ n }} = u_compoundLoxodromic{{ n }}[4].w * u_compoundLoxodromic{{ n }}[4].w;
+         {% endfor %}
+
+         {% for n in range(0, numLoxodromic) %}
+         float lInnerR2{{ n }} = u_loxodromic{{ n }}[0].w * u_loxodromic{{ n }}[0].w;
+         float lOuterR2{{ n }} = u_loxodromic{{ n }}[1].w * u_loxodromic{{ n }}[1].w;
+         float lFixedR2{{ n }} = u_loxodromic{{ n }}[8].w * u_loxodromic{{ n }}[8].w;
          {% endfor %}
 
          const int MAX_KLEIN_ITARATION = 30;
@@ -1033,9 +1113,25 @@
 
                  {% endfor %}
 
+                 {% for n in range(0, numLoxodromic) %}
+                 vec3 diffFixedLoxo{{ n }} = pos - u_loxodromic{{ n }}[8].xyz;
+                 dr *= lFixedR2{{ n }} / dot(diffFixedLoxo{{ n }}, diffFixedLoxo{{ n }});
+                 pos = sphereInvert(pos, u_loxodromic{{ n }}[8].xyz, lFixedR2{{ n }});
+                 pos -= u_loxodromic{{ n }}[10].xyz;
+                 float loxoR{{ n }} = length(pos);
+                 if(loxoR{{ n }} < u_loxodromic{{ n }}[10].w || u_loxodromic{{ n }}[11].w < loxoR{{ n }}){
+                     pos /= loxoR{{ n }}; //normalize
+                     float loxoScaling{{ n }} = u_loxodromic{{ n }}[10].w * pow(u_loxodromic{{ n }}[9].x,
+                                                                                fract(log( loxoR{{ n }} / u_loxodromic{{ n }}[10].w )
+                                                                                    / log(u_loxodromic{{ n }}[9].x)));
+                     pos *= loxoScaling{{ n }};
+                     dr *= loxoScaling{{ n }} / loxoR{{ n }};
                      loopEnd = false;
-                     loopNum++;
                  }
+                 pos += u_loxodromic{{ n }}[10].xyz;
+                 diffFixedLoxo{{ n }} = pos - u_loxodromic{{ n }}[8].xyz;
+                 dr *= lFixedR2{{ n }} / dot(diffFixedLoxo{{ n }}, diffFixedLoxo{{ n }});
+                 pos = sphereInvert(pos, u_loxodromic{{ n }}[8].xyz, lFixedR2{{ n }});
                  {% endfor %}
 
                  if(loopEnd == true) break;
@@ -1196,6 +1292,20 @@
                                               u_parabolic{{ n }}[2].w,
                                               eye, ray, result);
                      {% endfor %}
+                     {% for n in range(0, numLoxodromic) %}
+                     result = intersectSphere(ID_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_loxodromic{{ n }}[0].xyz,
+                                              u_loxodromic{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_loxodromic{{ n }}[1].xyz,
+                                              u_loxodromic{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_loxodromic{{ n }}[2].xyz,
+                                              u_loxodromic{{ n }}[2].w,
+                                              eye, ray, result);
+                     {% endfor %}
 
                      {% for n in range(0, numTransformBySpheres) %}
                      result = intersectSphere(ID_TRANSFORM_BY_SPHERES, {{ n }}, 0, MTL_TRANSPARENT,
@@ -1285,7 +1395,8 @@
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex)?
                                     RED : BLUE;
-                     }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
+                     }else if(g_objId == ID_TRANSFORM_BY_SPHERES ||
+                              g_objId == ID_LOXODROMIC){
                          matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
                          matColor = (g_objComponentId == 1) ? YELLOW : matColor;
                          matColor = (g_objId == u_selectedObjectId &&

@@ -309,6 +309,21 @@ function intersectSphere(objectId, objectIndex, componentId, center, radius,
     return isect;
 }
 
+function calcLineSphereIntersection(lineP, lineDir, sphere){
+    let v = diff(lineP, sphere.getPosition());
+    let b = dot(lineDir, v);
+    let c = dot(v, v) - sphere.r * sphere.r;
+    let d = b * b - c;
+    if(d >= 0){
+        let s = Math.sqrt(d);
+        let tMinus = -b - s;
+        let tPlus = -b + s;
+        return [sum(lineP, scale(lineDir, tPlus)),
+                sum(lineP, scale(lineDir, tMinus))];
+    }
+    return [];
+}
+
 function intersectOverlappingSphere(objectId, objectIndex,
                                     innerComponentId, outerComponentId,
                                     innerSphere, outerSphere,
