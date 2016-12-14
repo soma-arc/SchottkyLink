@@ -1016,8 +1016,8 @@
                  {% endfor %}
 
                  {% for n in range(0, numParabolic) %}
-                 vec3 diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
-                 dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
+                 vec3 diffFixedPara{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
+                 dr *= pFixedR2{{ n }} / dot(diffFixedPara{{ n }}, diffFixedPara{{ n }});
                  pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, pFixedR2{{ n }});
                  pos -= u_parabolic{{ n }}[5].xyz;
                  pos = u_parabolicRotationMat{{ n }}[1] * pos;
@@ -1027,30 +1027,11 @@
                  }
                  pos = u_parabolicRotationMat{{ n }}[0] * pos;
                  pos += u_parabolic{{ n }}[5].xyz;
-                 diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
-                 dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
+                 diffFixedPara{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
+                 dr *= pFixedR2{{ n }} / dot(diffFixedPara{{ n }}, diffFixedPara{{ n }});
                  pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, pFixedR2{{ n }});
 
-                 if(distance(pos, u_parabolic{{ n }}[0].xyz) < u_parabolic{{ n }}[0].w){
-                     vec3 diff0 = (pos - u_parabolic{{ n }}[0].xyz);
-                     dr *= p0r2{{ n }} / dot(diff0, diff0);
-                     pos = sphereInvert(pos, u_parabolic{{ n }}[0].xyz, p0r2{{ n }});
-
-                     vec3 diff1 = (pos - u_parabolic{{ n }}[1].xyz);
-                     dr *= p1r2{{ n }} / dot(diff1, diff1);
-                     pos = sphereInvert(pos, u_parabolic{{ n }}[1].xyz, p1r2{{ n }});
-
-                     loopEnd = false;
-                     loopNum++;
-                 }else if(distance(pos, u_parabolic{{ n }}[2].xyz) >= u_parabolic{{ n }}[2].w){
-                     vec3 diff1 = (pos - u_parabolic{{ n }}[1].xyz);
-                     dr *= p1r2{{ n }} / dot(diff1, diff1);
-                     pos = sphereInvert(pos, u_parabolic{{ n }}[1].xyz,
-                                        p1r2{{ n }});
-
-                     vec3 diff0 = (pos - u_parabolic{{ n }}[0].xyz);
-                     dr *= p0r2{{ n }} / dot(diff0, diff0);
-                     pos = sphereInvert(pos, u_parabolic{{ n }}[0].xyz, p0r2{{ n }});
+                 {% endfor %}
 
                      loopEnd = false;
                      loopNum++;
