@@ -1018,7 +1018,7 @@
                  {% for n in range(0, numParabolic) %}
                  vec3 diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
                  dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
-                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
+                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, pFixedR2{{ n }});
                  pos -= u_parabolic{{ n }}[5].xyz;
                  pos = u_parabolicRotationMat{{ n }}[1] * pos;
                  if(pos.z < 0. || u_parabolic{{ n }}[5].w < pos.z){
@@ -1029,7 +1029,7 @@
                  pos += u_parabolic{{ n }}[5].xyz;
                  diffFiexed{{ n }} = pos - u_parabolic{{ n }}[3].xyz;
                  dr *= pFixedR2{{ n }} / dot(diffFiexed{{ n }}, diffFiexed{{ n }});
-                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, u_parabolic{{ n }}[3].w * u_parabolic{{ n }}[3].w);
+                 pos = sphereInvert(pos, u_parabolic{{ n }}[3].xyz, pFixedR2{{ n }});
 
                  if(distance(pos, u_parabolic{{ n }}[0].xyz) < u_parabolic{{ n }}[0].w){
                      vec3 diff0 = (pos - u_parabolic{{ n }}[0].xyz);

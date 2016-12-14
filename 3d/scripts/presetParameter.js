@@ -517,10 +517,10 @@ const PRESET_PARAMETERS = [
                     "outerSphere": {
                         "position": [
                             0,
-                            665.0462361544822,
-                            472.1829455752595
+                            665,
+                            472
                         ],
-                        "radius": 661.0819138535611
+                        "radius": 660
                     },
                     "innerRadius": 500,
                     "thetaDegree": 90,

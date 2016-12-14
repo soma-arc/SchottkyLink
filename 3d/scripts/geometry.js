@@ -644,68 +644,49 @@ Parabolic.prototype = {
                                 this.contactPoint[2] - this.innerRadius * sinPhi * sinTheta,
                                 this.innerRadius);
         this.inverted = sphereInvert(this.inner, this.outer);
-        console.log(this.inner);
-        console.log(this.outer);
-        console.log(this.inverted);
         this.sphereOnContactPoint = new Sphere(this.contactPoint[0],
                                                this.contactPoint[1],
                                                this.contactPoint[2],
                                                this.innerRadius);
-        let innerP1 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 2.3, Math.PI / 4.5),
+        let innerP1 = sphereInvertOnPoint(this.inner.getSurfacePoint(this.thetaRad - (Math.PI) + Math.PI / 8.,
+                                                                     this.phiRad - (Math.PI/2) + Math.PI /12.),
                                           this.sphereOnContactPoint);
-        let innerP2 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 6.3, Math.PI / 3.5),
+        let innerP2 = sphereInvertOnPoint(this.inner.getSurfacePoint(this.thetaRad- (Math.PI) - Math.PI / 8,
+                                                                     this.phiRad - (Math.PI/2) + Math.PI / 9.),
                                           this.sphereOnContactPoint);
-        let innerP3 = sphereInvertOnPoint(this.inner.getSurfacePoint(2. * Math.PI / 9.3, Math.PI / 7.8),
+        let innerP3 = sphereInvertOnPoint(this.inner.getSurfacePoint(this.thetaRad- (Math.PI) + Math.PI / 12.,
+                                                                     this.phiRad - (Math.PI/2.) - Math.PI / 12),
                                           this.sphereOnContactPoint);
         let innerPlaneV1 = diff(innerP2, innerP1);
         let innerPlaneV2 = diff(innerP3, innerP1);
         let innerPlaneN = normalize3(cross(innerPlaneV1, innerPlaneV2));
-        console.log('p');
-        console.log(innerP1);
-        console.log(innerP2);
-        console.log(innerP3);
-        console.log('plane N ----');
-        console.log(innerPlaneN);
 
-        let invertedP1 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 2.4, Math.PI / 5.7),
+        let invertedP1 = sphereInvertOnPoint(this.inverted.getSurfacePoint(this.thetaRad- (Math.PI) + Math.PI / 8,
+                                                                           this.phiRad- (Math.PI/2) + Math.PI / 12.),
                                              this.sphereOnContactPoint);
-        let invertedP2 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 4.4, Math.PI / 3.7),
+        let invertedP2 = sphereInvertOnPoint(this.inverted.getSurfacePoint(this.thetaRad- (Math.PI) - Math.PI / 8,
+                                                                           this.phiRad- (Math.PI/2) + Math.PI / 9.),
                                              this.sphereOnContactPoint);
-        let invertedP3 = sphereInvertOnPoint(this.inverted.getSurfacePoint(2. * Math.PI / 7.4, Math.PI / 2.7),
+        let invertedP3 = sphereInvertOnPoint(this.inverted.getSurfacePoint(this.thetaRad- (Math.PI) + Math.PI / 12.,
+                                                                           this.phiRad - (Math.PI/2) - Math.PI / 12),
                                              this.sphereOnContactPoint);
         let invertedPlaneV1 = diff(invertedP2, invertedP1);
         let invertedPlaneV2 = diff(invertedP3, invertedP1);
         let invertedPlaneN = normalize3(cross(invertedPlaneV1, invertedPlaneV2));
         let invertedPlaneH = dot(invertedPlaneN, invertedP1);
-        console.log(invertedPlaneN);
-        console.log('plane N ----');
         // http://physmath.main.jp/src/line-plane-intersection-point.html
         let t = (invertedPlaneH - dot(invertedPlaneN, innerP1)) / dot(invertedPlaneN, innerPlaneN);
         let isect = sum(innerP1, scale(innerPlaneN, t));
         this.translateDist = vecLength(diff(isect, innerP1));
         this.translatePoint = innerP1;
         this.invertedPoint = isect;
-        console.log('points');
-        console.log(this.translatePoint);
-        console.log(this.invertedPoint);
-        console.log('dist');
-        console.log(this.translateDist);
-        let planeVec = normalize3(sum(innerPlaneV1, innerPlaneV2));
-        console.log(planeVec);
-        console.log(sum(innerPlaneV1, innerPlaneV2));
-        let vv = [0, 1, 0]
-        console.log(degrees(Math.atan2(vv[2], vv[1])));//x
-        console.log(degrees(Math.atan2(vv[2], vv[0])));//y
-        let radX = Math.atan2(-innerPlaneN[2], innerPlaneN[1]) - Math.PI / 2.;
-        let radY = Math.atan2(-innerPlaneN[2], innerPlaneN[0]) - Math.PI / 2.;
+        let radX = this.phiRad + Math.PI / 2;
+        let radY = this.thetaRad + Math.PI / 2;
         this.rotationMat3 = prodMat3(getRotationXAxis(radX),
                                      getRotationYAxis(radY));
         this.invRotationMat3 = prodMat3(getRotationYAxis(-radY),
                                         getRotationXAxis(-radX));
 
-        console.log('degree');
-        console.log(degrees(radX));
-        console.log(degrees(radY));
     },
     clone: function(){
         return new Parabolic(this.outer.clone(),
