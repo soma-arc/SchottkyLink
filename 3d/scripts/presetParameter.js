@@ -502,7 +502,7 @@ const PRESET_PARAMETERS = [
     {
         "text": "ModParabolic",
         "generators": {
-                        "BaseSpheres": [
+            "BaseSpheres": [
                 {
                     "position": [
                         0,
@@ -510,6 +510,56 @@ const PRESET_PARAMETERS = [
                         0
                     ],
                     "radius": 125
+                }
+            ],
+            "SchottkySpheres": [
+                {
+                    "position": [
+                        300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        424.26
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        -424.26
+                    ],
+                    "radius": 300
                 }
             ],
             "Parabolic": [
@@ -525,6 +575,91 @@ const PRESET_PARAMETERS = [
                     "innerRadius": 500,
                     "thetaDegree": 90,
                     "phiDegree": 90
+                }
+            ]
+        }
+    },
+    {
+        "text": "ModLoxodromic",
+        "generators": {
+            "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 125
+                }
+            ],
+            "SchottkySpheres": [
+                {
+                    "position": [
+                        300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        424.26
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        -424.26
+                    ],
+                    "radius": 300
+                }
+            ],
+            "Loxodromic": [
+                {
+                    "innerSphere": {
+                        "position": [
+                            0,
+                            665,
+                            433
+                        ],
+                        "radius": 500
+                    },
+                    "outerSphere": {
+                        "position": [
+                            0,
+                            665,
+                            472
+                        ],
+                        "radius": 660
+                    }
                 }
             ]
         }
