@@ -665,6 +665,106 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "ModCompoundLoxodromic",
+	    "generators": {
+            "SchottkySpheres": [
+		        {
+                    "position": [
+			            300,
+			            300,
+			            0
+                    ],
+                    "radius": 300
+		        },
+		        {
+                    "position": [
+			            300,
+			            -300,
+			            0
+                    ],
+                    "radius": 300
+		        },
+		        {
+                    "position": [
+			            -300,
+			            300,
+			            0
+                    ],
+                    "radius": 300
+		        },
+		        {
+                    "position": [
+			            -300,
+			            -300,
+			            0
+                    ],
+                    "radius": 300
+		        },
+		        {
+                    "position": [
+			            0,
+			            0,
+			            424.26
+                    ],
+                    "radius": 300
+		        },
+		        {
+                    "position": [
+			            0,
+			            0,
+			            -424.26
+                    ],
+                    "radius": 300
+		        }
+            ],
+            "BaseSpheres": [
+		        {
+                    "position": [
+			            0,
+			            0,
+			            0
+                    ],
+                    "radius": 125
+		        }
+            ],
+            "ModCompoundLoxodromic": [
+		        {
+                    "innerSphere": {
+			            "position": [
+                            10,
+                            50,
+                            664.3523402015614
+			            ],
+			            "radius": 476.843462824442
+                    },
+                    "outerSphere": {
+			            "position": [
+                            100,
+                            100,
+                            684.7052344274166
+			            ],
+			            "radius": 700
+                    },
+                    "point": [
+			            0,
+			            1000,
+			            -115.2947655725834
+                    ],
+                    "q1": [
+			            100,
+			            -1000,
+			            -115.2947655725834
+                    ],
+                    "q2": [
+			            1000,
+			            0,
+			            -125.2947655725834
+                    ]
+		        }
+            ]
+	    }
+    },
+    {
         "text": "CompoundParabolic",
         "generators": {
             "SchottkySpheres": [

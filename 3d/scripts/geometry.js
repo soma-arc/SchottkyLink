@@ -7,6 +7,7 @@ const ID_COMPOUND_LOXODROMIC = 5;
 const ID_INFINITE_SPHERE = 6;
 const ID_PARABOLIC = 7;
 const ID_LOXODROMIC = 8;
+const ID_MOD_COMPOUND_LOXODROMIC = 9;
 
 const AXIS_X = 0;
 const AXIS_Y = 1;
@@ -126,6 +127,10 @@ Sphere.prototype = {
         return [this.x + this.r * sinPhi * cosTheta,
                 this.y + this.r * cosPhi,
                 this.z + this.r * sinPhi * sinTheta];
+    },
+    getAngles: function(surfacePoint){
+        return [Math.atan2(-surfacePoint[2], -surfacePoint[0]) + Math.PI,
+                Math.acos(surfacePoint[1] / this.r)];
     }
 }
 
@@ -1157,6 +1162,264 @@ CompoundLoxodromic.prototype = {
     }
 }
 
+
+var ModCompoundLoxodromic = function(inner, outer, p, q1, q2){
+    this.inner = inner;
+    this.outer = outer;
+    this.p = p;
+    this.q1 = q1;
+    this.q2 = q2;
+    this.update();
+}
+
+const MOD_COMPOUND_LOXODROMIC_INNER_SPHERE = 0;
+const MOD_COMPOUND_LOXODROMIC_OUTER_SPHERE = 1;
+const MOD_COMPOUND_LOXODROMIC_INVERTED_SPHERE = 2;
+const MOD_COMPOUND_LOXODROMIC_S3 = 3;
+const MOD_COMPOUND_LOXODROMIC_S4 = 4;
+const MOD_COMPOUND_LOXODROMIC_POINT = 5;
+const MOD_COMPOUND_LOXODROMIC_Q1 = 6;
+const MOD_COMPOUND_LOXODROMIC_Q2 = 7;
+
+ModCompoundLoxodromic.createFromJson = function(obj){
+    return new ModCompoundLoxodromic(Sphere.createFromJson(obj['innerSphere']),
+				                  Sphere.createFromJson(obj['outerSphere']),
+				                  obj['point'].slice(0),
+				                  obj['q1'].slice(0),
+				                  obj['q2'].slice(0));
+}
+
+ModCompoundLoxodromic.prototype = {
+    update: function(){
+	    this.inverted = sphereInvert(this.inner, this.outer);
+	    this.pInnerInv = sphereInvertOnPoint(this.p, this.inner);
+	    this.pOuterInv = sphereInvertOnPoint(this.p, this.outer);
+	    this.s3 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q1);
+	    this.s4 = makeSphereFromPoints(this.p, this.pInnerInv, this.pOuterInv, this.q2);
+
+        let lineDir = normalize3(diff(this.outer.getPosition(),
+                                      this.inner.getPosition()));
+        let lineP = this.inner.getPosition();
+        let [p1, p2] = calcLineSphereIntersection(lineP, lineDir, this.s3);
+        let [p3, p4] = calcLineSphereIntersection(lineP, lineDir, this.s4);
+
+        if(vecLength(diff(p1, this.inverted.getPosition())) < this.inverted.r){
+            this.innerFixedPoint = p1;
+            this.outerFixedPoint = p2;
+        }else{
+            this.innerFixedPoint = p2;
+            this.outerFixedPoint = p1;
+        }
+        this.sphereOnFixedPoint = new Sphere(this.outerFixedPoint[0],
+                                             this.outerFixedPoint[1],
+                                             this.outerFixedPoint[2],
+                                             this.inner.r);
+        this.concentricInner = sphereInvert(this.inner, this.sphereOnFixedPoint);
+        this.concentricInverted = sphereInvert(this.inverted, this.sphereOnFixedPoint);
+        this.scalingFactor = this.concentricInverted.r / this.concentricInner.r;
+
+        let PI_4 = Math.PI / 4;
+        let [s3Theta, s3Phi] = this.s3.getAngles(this.outerFixedPoint);
+        this.invertedS3P1 = sphereInvertOnPoint(this.s3.getSurfacePoint(s3Theta + PI_4,
+                                                                        s3Phi),
+                                                this.s3);
+        this.invertedS3P2 = sphereInvertOnPoint(this.s3.getSurfacePoint(s3Theta - PI_4,
+                                                                        s3Phi),
+                                                this.s3);
+        this.invertedS3P3 = sphereInvertOnPoint(this.s3.getSurfacePoint(s3Theta + PI_4,
+                                                                        s3Phi - PI_4),
+                                                this.s3);
+        this.planeS3V1 = diff(this.invertedS3P1, this.invertedS3P2);
+        this.planeS3V2 = diff(this.invertedS3P3, this.invertedS3P2);
+        this.planeS3N = normalize3(cross(this.planeS3V1, this.planeS3V2));
+
+        let [s4Theta, s4Phi] = this.s4.getAngles(this.outerFixedPoint);
+        this.invertedS4P1 = sphereInvertOnPoint(this.s4.getSurfacePoint(s4Theta + PI_4,
+                                                                        s4Phi),
+                                                this.s4);
+        this.invertedS4P2 = sphereInvertOnPoint(this.s4.getSurfacePoint(s4Theta - PI_4,
+                                                                        s4Phi),
+                                                this.s4);
+        this.invertedS4P3 = sphereInvertOnPoint(this.s4.getSurfacePoint(s4Theta,
+                                                                        s4Phi + PI_4),
+                                                this.s4);
+        this.planeS4V1 = diff(this.invertedS4P1, this.invertedS4P2);
+        this.planeS4V2 = diff(this.invertedS4P3, this.invertedS4P2);
+        this.planeS4N = normalize3(cross(this.planeS4V1, this.planeS4V2));
+
+        this.angleVec = diff(this.planeS3N, this.planeS4N);
+        this.thetaRad = Math.PI - Math.atan2(-this.angleVec[2], -this.angleVec[0]) + Math.PI,
+        this.phiRad = Math.PI - Math.acos(this.angleVec[1] / this.s4.r);
+        console.log(degrees(this.thetaRad));
+        console.log(degrees(this.phiRad));
+
+        this.controlPointRadius = 50;
+    },
+    clone: function(){
+	    return new ModCompoundLoxodromic(this.inner.clone(), this.outer.clone(),
+				                         this.p.slice(0),
+				                         this.q1.slice(0),
+				                         this.q2.slice(0));
+    },
+    exportJson: function(){
+        return {"innerSphere": this.inner.exportJson(),
+                "outerSphere": this.outer.exportJson(),
+                "point": this.p,
+                "q1": this.q1,
+                "q2": this.q2};
+    },
+    getUniformArray: function(){
+	    return this.inner.getUniformArray().concat(this.outer.getUniformArray(),
+						                           this.inverted.getUniformArray(),
+						                           this.s3.getUniformArray(),
+						                           this.s4.getUniformArray(),
+						                           this.p, [0],
+						                           this.q1, [0],
+						                           this.q2, [0],
+                                                   this.sphereOnFixedPoint.getUniformArray(),
+                                                   this.concentricInner.getUniformArray(),
+                                                   this.concentricInverted.getUniformArray(),
+                                                   [this.scalingFactor, this.thetaRad, this.phiRad, 0]);
+    },
+    setUniformLocation: function(uniLocation, gl, program, id, index){
+	    uniLocation.push(gl.getUniformLocation(program,
+					                           'u_modCompoundLoxodromic'+ index));
+    },
+    setUniformValues: function(uniLocation, gl, uniIndex){
+	    gl.uniform4fv(uniLocation[uniIndex++], this.getUniformArray());
+	    return uniIndex;
+    },
+    getComponentFromId: function(componentId){
+        if(componentId == MOD_COMPOUND_LOXODROMIC_INNER_SPHERE){
+	        return this.inner;
+	    }else if(componentId == MOD_COMPOUND_LOXODROMIC_OUTER_SPHERE){
+	        return this.outer;
+	    }else if(componentId == MOD_COMPOUND_LOXODROMIC_INVERTED_SPHERE){
+	        return this.inverted;
+	    }else if(componentId == MOD_COMPOUND_LOXODROMIC_POINT){
+            return this.p;
+        }else if(componentId == MOD_COMPOUND_LOXODROMIC_Q1){
+            return this.q1;
+        }else if(componentId == MOD_COMPOUND_LOXODROMIC_Q2){
+            return this.q2;
+        }
+    },
+    move: function(scene, componentId, selectedAxis, mouse, prevMouse, prevObject,
+                   axisVecOnScreen, camera, canvasWidth, canvasHeight){
+        switch(componentId){
+        case MOD_COMPOUND_LOXODROMIC_INNER_SPHERE:
+	        if(selectedAxis == AXIS_RADIUS){
+		        //set radius
+		        var spherePosOnScreen = calcPointOnScreen(prevObject.inner.getPosition(),
+							                              camera, canvasWidth, canvasHeight);
+		        var diffSphereAndPrevMouse = [spherePosOnScreen[0] - prevMouse[0],
+				                              spherePosOnScreen[1] - prevMouse[1]];
+		        var r = Math.sqrt(diffSphereAndPrevMouse[0] * diffSphereAndPrevMouse[0] +
+				                  diffSphereAndPrevMouse[1] * diffSphereAndPrevMouse[1]);
+		        var diffSphereAndMouse = [spherePosOnScreen[0] - mouse[0],
+					                      spherePosOnScreen[1] - mouse[1]];
+		        var distToMouse = Math.sqrt(diffSphereAndMouse[0] * diffSphereAndMouse[0] +
+				                            diffSphereAndMouse[1] * diffSphereAndMouse[1]);
+		        var d = distToMouse - r;
+
+		        var scaleFactor = 3;
+		        //TODO: calculate tangent sphere
+		        var nr = prevObject.inner.r + d * scaleFactor;
+
+		        var dist = vecLength(diff(this.outer.getPosition(),
+					                      this.inner.getPosition()));
+		        if(dist <= this.outer.r - nr){
+		            this.inner.r = nr;
+		        }
+	        }else{
+		        var dx = mouse[0] - prevMouse[0];
+		        var dy = mouse[1] - prevMouse[1];
+		        var v = axisVecOnScreen[selectedAxis];
+		        var lengthOnAxis = v[0] * dx + v[1] * dy;
+		        var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+					                     selectedAxis, v, prevObject.inner.getPosition(),
+					                     lengthOnAxis);
+		        var d = vecLength(diff(this.outer.getPosition(), np));
+		        if(d <= this.outer.r - this.inner.r){
+		            this.inner.set(selectedAxis, np[selectedAxis]);
+		        }
+	        }
+            break;
+        case MOD_COMPOUND_LOXODROMIC_OUTER_SPHERE:
+            this.outer.move(scene, componentId, selectedAxis,
+			                mouse, prevMouse, prevObject.outer,
+                            axisVecOnScreen, camera, canvasWidth, canvasHeight);
+            // Keep spheres kissing along the z-axis
+            if(selectedAxis == AXIS_RADIUS){
+                this.inner.set(AXIS_Z, prevObject.inner.get(AXIS_Z) + this.outer.r - prevObject.outer.r);
+            }else{
+                var prevValue = prevObject.outer.get(selectedAxis);
+                var d = prevObject.inner.get(selectedAxis) - prevValue;
+                this.inner.set(selectedAxis, this.outer.get(selectedAxis) + d);
+
+                var dp = prevObject.p[selectedAxis] - prevValue;
+                this.p[selectedAxis] = this.outer.get(selectedAxis) + dp;
+
+                var dq1 = prevObject.q1[selectedAxis] - prevValue;
+                this.q1[selectedAxis] = this.outer.get(selectedAxis) + dq1;
+
+                var dq2 = prevObject.q2[selectedAxis] - prevValue;
+                this.q2[selectedAxis]  = this.outer.get(selectedAxis) + dq2;
+
+
+            }
+            break;
+        case MOD_COMPOUND_LOXODROMIC_POINT:
+        case MOD_COMPOUND_LOXODROMIC_Q1:
+        case MOD_COMPOUND_LOXODROMIC_Q2:
+            var prevPoint = prevObject.getComponentFromId(componentId);
+
+            var dx = mouse[0] - prevMouse[0];
+	        var dy = mouse[1] - prevMouse[1];
+	        var v = axisVecOnScreen[selectedAxis];
+	        var lengthOnAxis = v[0] * dx + v[1] * dy;
+	        var np = calcCoordOnAxis(camera, canvasWidth, canvasHeight,
+				                     selectedAxis, v, prevPoint,
+				                     lengthOnAxis);
+            this.getComponentFromId(componentId)[selectedAxis] = np[selectedAxis];
+            break;
+        }
+        this.update();
+    },
+    castRay: function(objectId, index, eye, ray, isect){
+        isect = intersectSphere(objectId, index, MOD_COMPOUND_LOXODROMIC_POINT,
+                                this.p, this.controlPointRadius,
+                                eye, ray, isect);
+        isect = intersectSphere(objectId, index, MOD_COMPOUND_LOXODROMIC_Q1,
+                                this.q1, this.controlPointRadius,
+                                eye, ray, isect);
+        isect = intersectSphere(objectId, index, MOD_COMPOUND_LOXODROMIC_Q2,
+                                this.q2, this.controlPointRadius,
+                                eye, ray, isect);
+        isect = intersectOverlappingSphere(objectId, index,
+                                           MOD_COMPOUND_LOXODROMIC_INNER_SPHERE,
+                                           MOD_COMPOUND_LOXODROMIC_OUTER_SPHERE,
+                                           this.inner, this.outer,
+				                           eye, ray, isect);
+        return isect;
+    },
+    calcAxisOnScreen: function(componentId, camera, width, height){
+        switch(componentId){
+        case MOD_COMPOUND_LOXODROMIC_POINT:
+        case MOD_COMPOUND_LOXODROMIC_Q1:
+        case MOD_COMPOUND_LOXODROMIC_Q2:
+            return calcAxisOnScreen(this.getComponentFromId(componentId),
+                                    camera, width, height);
+            break;
+        default:
+            return calcAxisOnScreen(this.getComponentFromId(componentId).getPosition(),
+                                    camera, width, height);
+        }
+
+    }
+}
+
+
 var Camera = function(target, fovDegree, eyeDist, up){
     this.target = target;
     this.prevTarget = target;
@@ -1200,7 +1463,8 @@ const GENERATORS_NAME_ID_MAP = {
     "CompoundLoxodromic": ID_COMPOUND_LOXODROMIC,
     "InfiniteSpheres": ID_INFINITE_SPHERE,
     "Parabolic": ID_PARABOLIC,
-    "Loxodromic": ID_LOXODROMIC
+    "Loxodromic": ID_LOXODROMIC,
+    "ModCompoundLoxodromic": ID_MOD_COMPOUND_LOXODROMIC
 }
 
 const GENERATORS_NAME_CLASS_MAP = {
@@ -1212,7 +1476,8 @@ const GENERATORS_NAME_CLASS_MAP = {
     "CompoundLoxodromic": CompoundLoxodromic,
     "InfiniteSpheres": InfiniteSphere,
     "Parabolic": Parabolic,
-    "Loxodromic": Loxodromic
+    "Loxodromic": Loxodromic,
+    "ModCompoundLoxodromic": ModCompoundLoxodromic
 }
 
 
@@ -1226,6 +1491,7 @@ GENERATORS_ID_NAME_MAP[ID_COMPOUND_LOXODROMIC] = "CompoundLoxodromic";
 GENERATORS_ID_NAME_MAP[ID_INFINITE_SPHERE] = "InfiniteSpheres";
 GENERATORS_ID_NAME_MAP[ID_PARABOLIC] = "Parabolic";
 GENERATORS_ID_NAME_MAP[ID_LOXODROMIC] = "Loxodromic";
+GENERATORS_ID_NAME_MAP[ID_MOD_COMPOUND_LOXODROMIC] = "ModCompoundLoxodromic";
 
 var Scene = function(){
     this.objects = {};

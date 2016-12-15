@@ -117,6 +117,12 @@
          {% for n in range(0, numLoxodromic) %}
          uniform vec4 u_loxodromic{{ n }}[14];
          {% endfor %}
+
+         {% for n in range(0, numModCompoundLoxodromic) %}
+         //[innerSphere, outerSphere, invertedSphere, s3, s4, p, q1, q2,
+         // [thetaRad, phiRad, 0, 0]]
+         uniform vec4 u_modCompoundLoxodromic{{ n }}[12];
+         {% endfor %}
         </script>
         <script id="constants" type="x-shader/x-fragment">
          const int ID_SCHOTTKY_SPHERE = 0;
@@ -128,6 +134,7 @@
          const int ID_INFINITE_SPHERE = 6;
          const int ID_PARABOLIC = 7;
          const int ID_LOXODROMIC = 8;
+         const int ID_MOD_COMPOUND_LOXODROMIC = 9;
 
          const int ID_AXIS_CYLINDER = 100;
          const int ID_KLEIN_ORBIT = 101;
@@ -757,6 +764,107 @@
                  }
                  {% endfor %}
 
+                 {% for n in range(0, numModCompoundLoxodromic) %}
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[0].xyz,
+                                          u_modCompoundLoxodromic{{ n }}[0].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_MOD_COMPOUND_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 0){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[0].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[1].xyz,
+                                          u_modCompoundLoxodromic{{ n }}[1].w,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_MOD_COMPOUND_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 1){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[1].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[2].xyz,
+                                          u_modCompoundLoxodromic{{ n }}[2].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[3].xyz,
+                                          u_modCompoundLoxodromic{{ n }}[3].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[4].xyz,
+                                          u_modCompoundLoxodromic{{ n }}[4].w,
+                                          eye, ray, result);
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[5].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_MOD_COMPOUND_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 5){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[5].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[6].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_MOD_COMPOUND_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 6){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[6].xyz,
+                                                  eye, ray, result);
+                 }
+                 result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
+                                          u_modCompoundLoxodromic{{ n }}[7].xyz,
+                                          50.,
+                                          eye, ray, result);
+                 if(u_selectedObjectId == ID_MOD_COMPOUND_LOXODROMIC &&
+                    u_selectedObjectIndex == {{ n }} &&
+                    u_selectedComponentId == 7){
+                     result = intersectYZCylinder(ID_AXIS_CYLINDER, {{ n }}, 0, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                     result = intersectXZCylinder(ID_AXIS_CYLINDER, {{ n }}, 1, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                     result = intersectXYCylinder(ID_AXIS_CYLINDER, {{ n }}, 2, MTL_DIFFUSE,
+                                                  10., u_modCompoundLoxodromic{{ n }}[7].xyz,
+                                                  eye, ray, result);
+                 }
+                 {% endfor %}
+
+
                  if(result.x != 99999.){
                      vec3 matColor = LIGHT_GRAY;
                      if( g_objId == ID_SCHOTTKY_SPHERE){
@@ -794,7 +902,8 @@
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
                      }else if(g_objId == ID_COMPOUND_LOXODROMIC ||
-                              g_objId == ID_LOXODROMIC){
+                              g_objId == ID_LOXODROMIC ||
+                              g_objId == ID_MOD_COMPOUND_LOXODROMIC){
                          matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
                          matColor = (g_objComponentId == 1) ? YELLOW : matColor;
                          matColor = (g_objComponentId == 3) ? PINK : matColor;
@@ -899,6 +1008,10 @@
          float lInnerR2{{ n }} = u_loxodromic{{ n }}[0].w * u_loxodromic{{ n }}[0].w;
          float lOuterR2{{ n }} = u_loxodromic{{ n }}[1].w * u_loxodromic{{ n }}[1].w;
          float lFixedR2{{ n }} = u_loxodromic{{ n }}[8].w * u_loxodromic{{ n }}[8].w;
+         {% endfor %}
+
+         {% for n in range(0, numModCompoundLoxodromic) %}
+         float compLoxoFixedR2{{ n }} = u_modCompoundLoxodromic{{ n }}[8].w * u_modCompoundLoxodromic{{ n }}[8].w;
          {% endfor %}
 
          const int MAX_KLEIN_ITARATION = 30;
@@ -1126,12 +1239,67 @@
                                                                                     / log(u_loxodromic{{ n }}[9].x)));
                      pos *= loxoScaling{{ n }};
                      dr *= loxoScaling{{ n }} / loxoR{{ n }};
+
+                     float quot{{ n }} = floor(log( loxoR{{ n }} / u_loxodromic{{ n }}[10].w )
+                         / log(u_loxodromic{{ n }}[9].x));
+                     float thetaX = 0. * quot{{ n }};
+                     float thetaY = PI / 12. * quot{{ n }};
+                     float thetaZ = 0. * quot{{ n }};
+                     mat3 rotationX = mat3(1, 0, 0,
+                                           0, cos(thetaX), -sin(thetaX),
+                                           0, sin(thetaX), cos(thetaX));
+                     mat3 rotationY = mat3(cos(thetaY), 0, sin(thetaY),
+                                           0, 1, 0,
+                                          -sin(thetaY), 0, cos(thetaY));
+                     mat3 rotationZ = mat3(cos(thetaZ), -sin(thetaZ), 0,
+                                           sin(thetaZ), cos(thetaZ), 0,
+                                           0, 0, 1);
+                     mat3 m = rotationX * rotationY * rotationZ;
+                     pos = m * pos;
                      loopEnd = false;
                  }
                  pos += u_loxodromic{{ n }}[10].xyz;
                  diffFixedLoxo{{ n }} = pos - u_loxodromic{{ n }}[8].xyz;
                  dr *= lFixedR2{{ n }} / dot(diffFixedLoxo{{ n }}, diffFixedLoxo{{ n }});
                  pos = sphereInvert(pos, u_loxodromic{{ n }}[8].xyz, lFixedR2{{ n }});
+                 {% endfor %}
+
+                 {% for n in range(0, numModCompoundLoxodromic) %}
+                 vec3 diffFixedModLoxo{{ n }} = pos - u_modCompoundLoxodromic{{ n }}[8].xyz;
+                 dr *= compLoxoFixedR2{{ n }} / dot(diffFixedModLoxo{{ n }}, diffFixedModLoxo{{ n }});
+                 pos = sphereInvert(pos, u_modCompoundLoxodromic{{ n }}[8].xyz, compLoxoFixedR2{{ n }});
+                 pos -= u_modCompoundLoxodromic{{ n }}[9].xyz;
+                 float loxoR{{ n }} = length(pos);
+                 if(loxoR{{ n }} < u_modCompoundLoxodromic{{ n }}[9].w || u_modCompoundLoxodromic{{ n }}[10].w < loxoR{{ n }}){
+                     pos /= loxoR{{ n }}; //normalize
+                     float level{{ n }} = log( loxoR{{ n }} / u_modCompoundLoxodromic{{ n }}[9].w )
+                                            / log(u_modCompoundLoxodromic{{ n }}[11].x);
+                     float loxoScaling{{ n }} = u_modCompoundLoxodromic{{ n }}[9].w * pow(u_modCompoundLoxodromic{{ n }}[11].x,
+                                                                                fract(level{{ n }}));
+                     pos *= loxoScaling{{ n }};
+                     dr *= loxoScaling{{ n }} / loxoR{{ n }};
+
+                     float quot{{ n }} = floor(level{{ n }});
+                     float thetaX = u_modCompoundLoxodromic{{ n }}[9].z * quot{{ n }};
+                     float thetaY = u_modCompoundLoxodromic{{ n }}[9].y * quot{{ n }};
+                     float thetaZ = 0. * quot{{ n }};
+                     mat3 rotationX = mat3(1, 0, 0,
+                                           0, cos(thetaX), -sin(thetaX),
+                                           0, sin(thetaX), cos(thetaX));
+                     mat3 rotationY = mat3(cos(thetaY), 0, sin(thetaY),
+                                           0, 1, 0,
+                                          -sin(thetaY), 0, cos(thetaY));
+                     mat3 rotationZ = mat3(cos(thetaZ), -sin(thetaZ), 0,
+                                           sin(thetaZ), cos(thetaZ), 0,
+                                           0, 0, 1);
+                     mat3 m = rotationX * rotationY * rotationZ;
+                     pos = m * pos;
+                     loopEnd = false;
+                 }
+                 pos += u_modCompoundLoxodromic{{ n }}[9].xyz;
+                 diffFixedModLoxo{{ n }} = pos - u_modCompoundLoxodromic{{ n }}[8].xyz;
+                 dr *= compLoxoFixedR2{{ n }} / dot(diffFixedModLoxo{{ n }}, diffFixedModLoxo{{ n }});
+                 pos = sphereInvert(pos, u_modCompoundLoxodromic{{ n }}[8].xyz, compLoxoFixedR2{{ n }});
                  {% endfor %}
 
                  if(loopEnd == true) break;
@@ -1372,6 +1540,40 @@
                                               eye, ray, result);
                      {% endfor %}
 
+                     {% for n in range(0, numModCompoundLoxodromic) %}
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 0, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[0].xyz,
+                                              u_modCompoundLoxodromic{{ n }}[0].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 1, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[1].xyz,
+                                              u_modCompoundLoxodromic{{ n }}[1].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 2, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[2].xyz,
+                                              u_modCompoundLoxodromic{{ n }}[2].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 3, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[3].xyz,
+                                              u_modCompoundLoxodromic{{ n }}[3].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 4, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[4].xyz,
+                                              u_modCompoundLoxodromic{{ n }}[4].w,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 5, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[5].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 6, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[6].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     result = intersectSphere(ID_MOD_COMPOUND_LOXODROMIC, {{ n }}, 7, MTL_TRANSPARENT,
+                                              u_modCompoundLoxodromic{{ n }}[7].xyz,
+                                              50.,
+                                              eye, ray, result);
+                     {% endfor %}
                  }
 
                  if(result.x != NO_HIT){
@@ -1408,7 +1610,8 @@
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
-                     }else if(g_objId == ID_COMPOUND_LOXODROMIC){
+                     }else if(g_objId == ID_COMPOUND_LOXODROMIC ||
+                              g_objId == ID_MOD_COMPOUND_LOXODROMIC){
                          matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
                          matColor = (g_objComponentId == 1) ? YELLOW : matColor;
                          matColor = (g_objComponentId == 3) ? PINK : matColor;
