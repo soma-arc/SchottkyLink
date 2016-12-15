@@ -117,11 +117,12 @@ Sphere.prototype = {
     calcAxisOnScreen: function(componentId, camera, width, height){
         return calcAxisOnScreen(this.getPosition(), camera, width, height);
     },
-    getSurfacePoint: function(theta, phi){
-        let cosPhi = Math.cos(radians(phi));
-        let sinPhi = Math.sin(radians(phi));
-        let cosTheta = Math.cos(radians(theta));
-        let sinTheta = Math.sin(radians(theta));
+    getSurfacePoint: function(thetaRad, phiRad){
+        //thetaRad [0, 2PI) phiRad[0, PI]
+        let cosPhi = Math.cos(phiRad);
+        let sinPhi = Math.sin(phiRad);
+        let cosTheta = Math.cos(thetaRad);
+        let sinTheta = Math.sin(thetaRad);
         return [this.x + this.r * sinPhi * cosTheta,
                 this.y + this.r * cosPhi,
                 this.z + this.r * sinPhi * sinTheta];
