@@ -59,6 +59,9 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.render = function(){};
     this.renderLowRes = function(){};
     this.renderTimerID = undefined;
+
+    this.productRenderContext = new ProductRenderContext();
+    this.isProductRendering = false;
 }
 
 RenderCanvas2D.prototype = {
@@ -175,6 +178,14 @@ RenderCanvas2D.prototype = {
                                                   this.canvas.width * this.lowResRatio,
                                                   this.canvas.height * this.lowResRatio)
     },
+}
+
+var ProductRenderContext = function(width, height){
+    this.width = 256;
+    this.height = 256;
+    this.maxSamples = 10;
+    this.displayGenerators = false;
+
 }
 
 function updateShaders(scene, canvas){
@@ -454,6 +465,7 @@ window.addEventListener('load', function(event){
     var app = new Vue({
         el: '#bodyElem',
         data: {renderCanvas: renderCanvas,
+               productRenderContext: renderCanvas.productRenderContext,
                scene: scene,
                presetList: PRESET_PARAMETERS,
                pixelDensities:[{text: "1.0", value: 1.0},
