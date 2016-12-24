@@ -13,6 +13,7 @@ BfsManager.prototype = {
             for(var i = 0 ; i < this.orbits[level - 1].length ; i++){
                 var orbitCircle = this.orbits[level-1][i];
                 for(var j = 0 ; j < this.schottkyCircles.length ; j++){
+                    if(this.schottkyCircles[j].contains(orbitCircle)) continue;
                     var nc = this.schottkyCircles[j].applyTransformation(orbitCircle);
                     this.orbits[level].push(nc);
                 }

@@ -86,6 +86,11 @@ Circle.prototype = {
     applyTransformation: function(circle){
         return circleInvert(circle, this);
     }
+    contains: function(circle){
+        let d = distance(this.getPosition(),
+                         circle.getPosition());
+        return d <= Math.abs(this.r - circle.r);
+    }
 }
 
 Circle.createFromJson = function(obj){

@@ -131,6 +131,11 @@ Sphere.prototype = {
     getAngles: function(surfacePoint){
         return [Math.atan2(-surfacePoint[2], -surfacePoint[0]) + Math.PI,
                 Math.acos(surfacePoint[1] / this.r)];
+    },
+    contains: function(sphere){
+        let d = vecLength(diff(this.getPosition(),
+                               sphere.getPosition()));
+        return d <= Math.abs(this.r - sphere.r);
     }
 }
 
