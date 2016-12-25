@@ -68,6 +68,9 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.renderTimerID = undefined;
 
     this.isDisplayingInstruction = false;
+
+    this.productRenderContext = new ProductRenderContext();
+    this.isProductRendering = false;
 }
 
 RenderCanvas.prototype = {
@@ -194,6 +197,13 @@ RenderCanvas.prototype = {
         return uniI;
     }
 };
+
+var ProductRenderContext = function(width, height){
+    this.width = 256;
+    this.height = 256;
+    this.maxSamples = 10;
+    this.displayGenerators = false;
+}
 
 function addMouseListenersToSchottkyCanvas(renderCanvas){
     var canvas = renderCanvas.canvas;
@@ -630,6 +640,7 @@ window.addEventListener('load', function(event){
             scene: scene,
             schottkyCanvas: schottkyCanvas,
             orbitCanvas: orbitCanvas,
+            productRenderContext: schottkyCanvas.productRenderContext,
             presetList: PRESET_PARAMETERS,
             pixelDensities:[{text: "1.0", value: 1.0},
                             {text: "1.5", value: 1.5},

@@ -1958,9 +1958,33 @@
                         </ui-select>
                         <ui-textbox name="iterations" type="number" :value.sync="orbitCanvas.numIterations"
                                     :min="minIterations" @changed="renderOrbit">
-
                         </ui-textbox>
                     </ui-tab>
+                    <ui-tab header="Render" id="tab-3">
+						<div class="row">
+							Width
+						</div>
+						<ui-textbox name="iterations" type="number" :value.sync="productRenderContext.width"
+                                    :min="minIterations"></ui-textbox>
+						<div class="row">
+							Height
+						</div>
+						<ui-textbox name="iterations" type="number" :value.sync="productRenderContext.height"
+                                    :min="minIterations"></ui-textbox>
+						<div class="row">
+							Samples
+						</div>
+						<ui-textbox name="iterations" type="number" :value.sync="productRenderContext.maxSamples"
+                                    :min="minIterations"></ui-textbox>
+						<div class="row">DisplayGen</div>
+						<div class="row">
+							<ui-switch hide-label :value.sync="productRenderContext.displayGenerators"></ui-switch>
+						</div>
+						<div class="row">
+							<ui-button text="render" raised ></ui-button>
+							<ui-button text="cancel" raised ></ui-button>
+						</div>
+					</ui-tab>
                 </ui-tabs>
             </div>
         </div>
