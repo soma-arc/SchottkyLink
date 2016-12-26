@@ -8,7 +8,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     this.template = nunjucks.compile(document.getElementById(templateId).text);
 
-    
+
     var vertex = [
         -1, -1,
         -1, 1,
@@ -24,7 +24,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.renderProgram = linkProgram(this.gl, this.renderProgram);
     this.renderVertexAttribute = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
 
-    
+
     this.isRendering = false;
     this.isMousePressing = false;
     this.prevMousePos = [0, 0];
@@ -33,7 +33,7 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.selectedObjectId = -1;
     this.selectedObjectIndex = -1;
     this.selectedComponentId = -1;
-    
+
     this.iterations = 10;
     this.initialHue = 0.01;
     this.hueStep = 0.03
@@ -61,14 +61,18 @@ var RenderCanvas2D = function(canvasId, templateId){
     this.renderTimerID = undefined;
 
     this.productRenderContext = new ProductRenderContext();
-    this.isProductRendering = false;
+    this.renderProduct = function(){};
+    this.productTextures = [];
+    this.isRenderingProduct = false;
+    this.productRenderFramebuffer = this.gl.createFramebuffer();
+    this.productRenderResultTexture;
 }
 
 RenderCanvas2D.prototype = {
     resizeCanvas: function(){
 	    this.canvas.width = this.parentPanel.clientWidth * this.pixelRatio;
 	    this.canvas.height = this.parentPanel.clientHeight * this.pixelRatio;
-        
+
 	    this.center = [this.canvas.width / 2, this.canvas.height / 2];
 	    this.canvasRatio = this.canvas.width / this.canvas.height / 2.;
     },
@@ -98,7 +102,7 @@ RenderCanvas2D.prototype = {
 		         (ua.indexOf('edge') == -1)){
 	        // chrome
 	        this.canvas.webkitRequestFullscreen();
-	        
+
 	    }else if((ua.indexOf('safari') > -1) && (ua.indexOf('chrome') == -1)){
 	        // safari
 	        this.canvas.webkitRequestFullscreen();
@@ -156,18 +160,22 @@ RenderCanvas2D.prototype = {
 	    gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;
     },
+    createTexture: function(gl, width, height){
+        let type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+        let texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
+                      0, gl.RGB, type, null);
+        return texture;
+    },
     createTextures: function(gl, width, height){
         var textures = [];
-        var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
         for(var i = 0; i < 2; i++) {
-            textures.push(gl.createTexture());
-            gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
-                          0, gl.RGB, type, null);
+            textures.push(this.createTexture(gl, width, height));
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
         return textures;
@@ -176,7 +184,24 @@ RenderCanvas2D.prototype = {
         this.textures = this.createTextures(this.gl, this.canvas.width, this.canvas.height);
         this.lowResTextures = this.createTextures(this.gl,
                                                   this.canvas.width * this.lowResRatio,
-                                                  this.canvas.height * this.lowResRatio)
+                                                  this.canvas.height * this.lowResRatio);
+        this.productTextures = this.createTextures(this.gl,
+                                                   this.productRenderContext.width,
+                                                   this.productRenderContext.height);
+        // this.productRenderResultTexture = this.createTexture(this.gl,
+        //                                                      this.productRenderContext.width,
+        //                                                      this.productRenderContext.height);
+        let gl = this.gl;
+        this.productRenderResultTexture = this.gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.productRenderResultTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
+                      this.productRenderContext.width,
+                      this.productRenderContext.height,
+                      0, gl.RGB, gl.UNSIGNED_BYTE, null);
     },
 }
 
@@ -200,7 +225,7 @@ function addMouseListeners(scene, renderCanvas){
 	    // disable right-click context-menu
         event.preventDefault();
     });
-    
+
     renderCanvas.canvas.addEventListener('mouseup', function(event){
 	    renderCanvas.isMousePressing = false;
 	    renderCanvas.isRendering = false;
@@ -300,7 +325,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         textures.reverse();
     }
-    
+
 
     var renderToCanvas = function(textures, width, height){
         gl.viewport(0, 0, width, height);
@@ -329,7 +354,7 @@ function setupSchottkyProgram(scene, renderCanvas){
     var renderLowRes = function(){
         window.clearTimeout(renderCanvas.renderTimerID);
         renderCanvas.isRendering = false;
-        
+
         renderToTexture(renderCanvas.lowResTextures,
                         renderCanvas.canvas.width * renderCanvas.lowResRatio,
                         renderCanvas.canvas.height * renderCanvas.lowResRatio);
@@ -337,17 +362,59 @@ function setupSchottkyProgram(scene, renderCanvas){
                        renderCanvas.canvas.width, renderCanvas.canvas.height);
         renderCanvas.renderTimerID = window.setTimeout(render, 500);
     }
-    
+
+    var renderProduct = function(){
+        let w = renderCanvas.productRenderContext.width;
+        let h = renderCanvas.productRenderContext.height;
+
+        renderToTexture(renderCanvas.productTextures,
+                        w, h);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, renderCanvas.productRenderFramebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
+                                renderCanvas.productRenderResultTexture, 0);
+        gl.viewport(0, 0, w, h);
+        gl.useProgram(renderCanvas.renderProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.productTextures[0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.vertexAttribPointer(renderCanvas.renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.flush();
+
+        // let data = gl.getExtension('OES_texture_float') ? new Float32Array(w * h * 4) : new Uint8Array(w * h * 4);
+        // let type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+        let data = new Uint8Array(w * h * 4);
+        let type = gl.UNSIGNED_BYTE;
+        gl.readPixels(0, 0, w, h, gl.RGBA, type, data);
+
+        let canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        let context = canvas.getContext('2d');
+
+        let imageData = context.createImageData(w, h);
+        imageData.data.set(data);
+        context.putImageData(imageData, 0, 0);
+        let a = document.createElement('a');
+        a.href = canvas.toDataURL();
+        a.download = "schottky.png"
+        a.click();
+
+//        renderCanvas.numSamples++;
+    }
+
 
     renderCanvas.render = render;
     renderCanvas.renderLowRes = renderLowRes;
+    renderCanvas.renderProduct = renderProduct;
 }
 
 window.addEventListener('load', function(event){
     var userAgent = window.navigator.userAgent.toLowerCase();
     if(userAgent.indexOf('chrome') == -1)
         window.alert('Sorry...\nCurrently, this application supports Google Chrome only.');
-    
+
     var scene = new Scene();
     scene.loadParameterFromJson(PRESET_PARAMETERS[0]);
     var renderCanvas = new RenderCanvas2D('canvas',
@@ -401,7 +468,7 @@ window.addEventListener('load', function(event){
 	        renderCanvas.render();
 	    }
     });
-    
+
     window.addEventListener('keydown', function(event){
 	    switch(event.key){
 	    case '+':
@@ -532,6 +599,14 @@ window.addEventListener('load', function(event){
 	        },
             switchInstructionModal: function(){
                 renderCanvas.isDisplayingInstruction = true;
+            },
+            productRenderStart: function(){
+                renderCanvas.isRenderingProduct = false;
+                updateShaders(scene, renderCanvas);
+                renderCanvas.renderProduct();
+            },
+            productRenderCancel: function(){
+                renderCanvas.isRenderingProduct = true;
             }
         }
     });
@@ -541,8 +616,8 @@ window.addEventListener('load', function(event){
     var startTime = new Date().getTime();
     (function(){
         var elapsedTime = new Date().getTime() - startTime;
-	    if(renderCanvas.isRendering)
-	        renderCanvas.render(elapsedTime);
+        if(renderCanvas.isRendering)
+	        renderCanvas.render();
 	    requestAnimationFrame(arguments.callee);
     })();
 }, false);

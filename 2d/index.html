@@ -780,8 +780,8 @@
 			                <ui-switch hide-label :value.sync="productRenderContext.displayGenerators"></ui-switch>
                         </div>
                         <div class="row">
-                            <ui-button text="render" raised ></ui-button>
-                            <ui-button text="cancel" raised ></ui-button>
+                            <ui-button text="render" raised @click="productRenderStart"></ui-button>
+                            <ui-button text="cancel" raised @click="productRenderCancel" ></ui-button>
                         </div>
                     </ui-tab>
                 </ui-tabs>
