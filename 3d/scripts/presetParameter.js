@@ -241,6 +241,47 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "Rotation",
+        "generators": {
+            "SchottkySpheres": [
+                {
+                    "position": [300,300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [300,-300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [-300,300,0],
+                    "radius": 300
+                },
+                {
+                    "position": [0,0,424.26],
+                    "radius": 300
+                }
+            ],
+            "BaseSpheres": [
+                {
+                    "position": [0,0,0],
+                    "radius": 125
+                }
+            ],
+            "InfiniteSpheres": [
+                {
+                    "center": [0,600,-300],
+                    "thetaDegree": 90,
+                    "phiDegree": 0
+                },
+                {
+                    "center": [0,600,-300],
+                    "thetaDegree": 180,
+                    "phiDegree": 0
+                }
+            ]
+        }
+    },
+    {
         "text": "TransformByPlanes",
         "generators": {
             "SchottkySpheres": [

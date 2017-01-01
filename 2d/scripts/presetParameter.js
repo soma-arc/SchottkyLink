@@ -47,6 +47,39 @@ const PRESET_PARAMETERS = [
             ]
         }
     },
+       {
+        "text": "Rotation",
+        "generators": {
+            "Circles": [
+                {
+                    "position": [100, -100],
+                    "radius": 100
+                },
+                {
+                    "position": [100, 100],
+                    "radius": 100
+                },
+                {
+                    "position": [-100, -100],
+                    "radius": 100
+                },
+                {
+                    "position": [-100, 100],
+                    "radius": 100
+                }
+            ],
+            "InfiniteCircles": [
+                {
+                    "position": [200, 0],
+                    "rotation": 45
+                },
+                {
+                    "position": [-200, 0],
+                    "rotation": 180
+                }
+            ]
+        }
+    },
     {
         "text": "Translation",
         "generators": {
