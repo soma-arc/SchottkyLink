@@ -141,10 +141,10 @@ RenderCanvas2D.prototype = {
 	    uniLocation.push(gl.getUniformLocation(program, 'u_selectedObjectComponentId'));
 	    uniLocation.push(gl.getUniformLocation(program, 'u_displayGenerators'));
     },
-    setUniformValues: function(uniLocation, gl, uniI, width, height){
+    setUniformValues: function(uniLocation, gl, uniI, width, height, textures){
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
-        gl.uniform1i(uniLocation[uniI++], this.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+        gl.uniform1i(uniLocation[uniI++], textures[0]);
         gl.uniform1i(uniLocation[uniI++], this.numSamples);
         gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
@@ -314,7 +314,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.viewport(0, 0, width, height);
         gl.useProgram(program);
         var uniI = 0;
-        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height);
+        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height, textures);
         uniI = scene.setUniformValues(uniLocation, gl, uniI);
         gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
@@ -395,6 +395,7 @@ function setupSchottkyProgram(scene, renderCanvas){
 
         let imageData = context.createImageData(w, h);
         imageData.data.set(data);
+//        context.scale(1, -1);
         context.putImageData(imageData, 0, 0);
         let a = document.createElement('a');
         a.href = canvas.toDataURL();

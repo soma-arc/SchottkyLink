@@ -1980,9 +1980,15 @@
 						<div class="row">
 							<ui-switch hide-label :value.sync="productRenderContext.displayGenerators"></ui-switch>
 						</div>
+                        <div class="row">Render generator</div>
 						<div class="row">
-							<ui-button text="render" raised ></ui-button>
-							<ui-button text="cancel" raised ></ui-button>
+							<ui-button text="render" raised @click="renderGen"></ui-button>
+							<ui-button text="cancel" raised @click="cancelGen"></ui-button>
+						</div>
+                        <div class="row">Render orbit</div>
+                        <div class="row">
+							<ui-button text="render" raised @click="startRenderOrbit"></ui-button>
+							<ui-button text="cancel" raised @click="cancelOrbit"></ui-button>
 						</div>
 					</ui-tab>
                 </ui-tabs>

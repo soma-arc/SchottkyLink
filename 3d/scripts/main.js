@@ -11,7 +11,7 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.kleinTemplate = nunjucks.compile(document.getElementById('distKleinTemplate').text);
     this.intersectFunctions = nunjucks.compile(document.getElementById('intersectFunctions').text);
     this.constants = nunjucks.compile(document.getElementById('constants').text);
-    
+
     this.orbitPathTracerTemplate = nunjucks.compile(document.getElementById('3dOrbitPathTraceTemplate').text);
 
     this.renderProgram = this.gl.createProgram();
@@ -29,13 +29,13 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     ];
     this.vertexBuffer = createVbo(this.gl, vertex);
     this.framebuffer = this.gl.createFramebuffer();
-    
+
     this.camera = new Camera([0, 0, 0], 60, 1500, [0, 1, 0]);
 
     this.selectedObjectId = -1;
     this.selectedObjectIndex = -1;
     this.selectedComponentId = -1;
-    
+
     this.isRendering = false;
     this.isMousePressing = false;
     this.prevMousePos = [0, 0];
@@ -52,7 +52,7 @@ var RenderCanvas = function(parentId, canvasId, templateId){
 
     this.renderer = RAY_TRACER;
     this.isSampling = false;
-    
+
     this.numSamples = 0;
     this.textures = [];
 
@@ -60,7 +60,7 @@ var RenderCanvas = function(parentId, canvasId, templateId){
     this.isRenderingLowResolution = false;
     this.lowResTextures = [];
     this.lowResRatio = 0.25;
-    
+
     this.displayGenerators = false;
 
     this.render = function(){};
@@ -69,8 +69,13 @@ var RenderCanvas = function(parentId, canvasId, templateId){
 
     this.isDisplayingInstruction = false;
 
-    this.productRenderContext = new ProductRenderContext();
     this.isProductRendering = false;
+    this.renderProduct = function(){};
+    this.productTextures = [];
+    this.isRenderingProduct = false;
+    this.productRenderFramebuffer = this.gl.createFramebuffer();
+    this.productRenderResultTexture;
+
 }
 
 RenderCanvas.prototype = {
@@ -132,18 +137,22 @@ RenderCanvas.prototype = {
     setRayTracer: function(){
         this.renderer = RAY_TRACER;
     },
+    createTexture: function(gl, width, height){
+        let type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+        let texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
+                      0, gl.RGB, type, null);
+        return texture;
+    },
     createTextures: function(gl, width, height){
         var textures = [];
-        var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
         for(var i = 0; i < 2; i++) {
-            textures.push(gl.createTexture());
-            gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height,
-                          0, gl.RGB, type, null);
+            textures.push(this.createTexture(gl, width, height));
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
         return textures;
@@ -180,10 +189,10 @@ RenderCanvas.prototype = {
                                                'u_displayGenerators'));
 
     },
-    setUniformValues: function(uniLocation, gl, uniI, width, height){
+    setUniformValues: function(uniLocation, gl, uniI, width, height, textures){
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
-        gl.uniform1i(uniLocation[uniI++], this.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+        gl.uniform1i(uniLocation[uniI++], textures[0]);
         gl.uniform1i(uniLocation[uniI++], this.numSamples);
         gl.uniform1f(uniLocation[uniI++], this.numSamples / (this.numSamples + 1));
         gl.uniform2fv(uniLocation[uniI++], [width, height]);
@@ -195,14 +204,40 @@ RenderCanvas.prototype = {
         gl.uniform1i(uniLocation[uniI++], this.numIterations);
         gl.uniform1i(uniLocation[uniI++], this.displayGenerators);
         return uniI;
+    },
+    initializeProductTextures: function(w, h){
+        this.productTextures = this.createTextures(this.gl,
+                                                   w, h);
+        let gl = this.gl;
+        this.productRenderResultTexture = this.gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.productRenderResultTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,
+                      w, h,
+                      0, gl.RGB, gl.UNSIGNED_BYTE, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 };
 
-var ProductRenderContext = function(width, height){
+var ProductRenderContext = function(){
     this.width = 256;
     this.height = 256;
     this.maxSamples = 10;
     this.displayGenerators = false;
+}
+
+ProductRenderContext.prototype = {
+    clone: function(){
+        let ctx = new ProductRenderContext();
+        ctx.width = this.width;
+        ctx.height = this.height;
+        ctx.maxSamples = this.maxSamples;
+        ctx.displayGenerators = this.displayGenerators;
+        return ctx;
+    }
 }
 
 function addMouseListenersToSchottkyCanvas(renderCanvas){
@@ -309,7 +344,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.viewport(0, 0, width, height);
         gl.useProgram(program);
         var uniI = 0;
-        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height);
+        uniI = renderCanvas.setUniformValues(uniLocation, gl, uniI, width, height, textures);
         uniI = scene.setUniformValues(uniLocation, gl, uniI);
         gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
@@ -319,6 +354,7 @@ function setupSchottkyProgram(scene, renderCanvas){
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         textures.reverse();
+
     }
 
     var renderToCanvas = function(textures, width, height){
@@ -348,7 +384,7 @@ function setupSchottkyProgram(scene, renderCanvas){
     var renderLowRes = function(){
         window.clearTimeout(renderCanvas.renderTimerID);
         renderCanvas.isRendering = false;
-        
+
         renderToTexture(renderCanvas.lowResTextures,
                         renderCanvas.canvas.width * renderCanvas.lowResRatio,
                         renderCanvas.canvas.height * renderCanvas.lowResRatio);
@@ -356,9 +392,58 @@ function setupSchottkyProgram(scene, renderCanvas){
                        renderCanvas.canvas.width, renderCanvas.canvas.height);
         renderCanvas.renderTimerID = window.setTimeout(render, 500);
     }
-    
+
+    var renderProduct = function(){
+        let w = renderCanvas.productRenderContext.width;
+        let h = renderCanvas.productRenderContext.height;
+        renderToTexture(renderCanvas.productTextures,
+                        w, h);
+
+        renderToCanvas(renderCanvas.productTextures,
+                       w, h);
+        if(renderCanvas.isRenderingProduct){
+            renderCanvas.numSamples++;
+        }
+    }
+
+    var saveProductRenderResult = function(filename){
+        let w = renderCanvas.productRenderContext.width;
+        let h = renderCanvas.productRenderContext.height;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, renderCanvas.productRenderFramebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D,
+                                renderCanvas.productRenderResultTexture, 0);
+        gl.viewport(0, 0, w, h);
+        gl.useProgram(renderCanvas.renderProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, renderCanvas.productTextures[0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderCanvas.vertexBuffer);
+        gl.vertexAttribPointer(renderCanvas.renderVertexAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.flush();
+
+        let data = new Uint8Array(w * h * 4);
+        let type = gl.UNSIGNED_BYTE;
+        gl.readPixels(0, 0, w, h, gl.RGBA, type, data);
+
+        let canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        let context = canvas.getContext('2d');
+
+        let imageData = context.createImageData(w, h);
+        imageData.data.set(data);
+        //        context.scale(1, -1);
+        context.putImageData(imageData, 0, 0);
+        let a = document.createElement('a');
+        a.href = canvas.toDataURL();
+        a.download = filename;
+        a.click();
+    }
+
     renderCanvas.render = render;
     renderCanvas.renderLowRes = renderLowRes;
+    renderCanvas.renderProduct = renderProduct;
+    renderCanvas.saveProductRenderResult = saveProductRenderResult;
 }
 
 function updateShaders(scene, schottkyCanvas, orbitCanvas){
@@ -384,7 +469,7 @@ window.addEventListener('load', function(event){
 
     schottkyCanvas.resize();
     orbitCanvas.resize();
-    
+
     addMouseListenersToSchottkyCanvas(schottkyCanvas);
     addMouseListenersToSchottkyCanvas(orbitCanvas);
 
@@ -400,7 +485,7 @@ window.addEventListener('load', function(event){
         window.clearTimeout(resizeTimerId);
         resizeTimerId = window.setTimeout(resized, 500);
     });
-    
+
     window.addEventListener('keyup', function(event){
         schottkyCanvas.pressingKey = '';
         if(schottkyCanvas.selectedAxis != -1){
@@ -432,7 +517,8 @@ window.addEventListener('load', function(event){
         orbitCanvas.isRendering = false;
         schottkyCanvas.updateAxisVecOnScreen(scene);
     });
-    
+
+    let productRenderContext = new ProductRenderContext();
     // Move Spheres on Schottky Canvas
     schottkyCanvas.canvas.addEventListener('mousemove', function(event){
         if(!schottkyCanvas.isMousePressing) return;
@@ -449,7 +535,7 @@ window.addEventListener('load', function(event){
                            schottkyCanvas.camera,
                            schottkyCanvas.canvas.width,
                            schottkyCanvas.canvas.height);
-                
+
                 schottkyCanvas.isRendering = true;
                 orbitCanvas.isRendering = true;
                 orbitCanvas.numSamples = 0;
@@ -640,7 +726,7 @@ window.addEventListener('load', function(event){
             scene: scene,
             schottkyCanvas: schottkyCanvas,
             orbitCanvas: orbitCanvas,
-            productRenderContext: schottkyCanvas.productRenderContext,
+            productRenderContext: productRenderContext,
             presetList: PRESET_PARAMETERS,
             pixelDensities:[{text: "1.0", value: 1.0},
                             {text: "1.5", value: 1.5},
@@ -729,25 +815,58 @@ window.addEventListener('load', function(event){
             },
             switchInstructionModal: function(){
                 orbitCanvas.isDisplayingInstruction = true;
+            },
+            renderGen: function(){
+                schottkyCanvas.productRenderContext = productRenderContext.clone();
+                schottkyCanvas.initializeProductTextures(productRenderContext.width,
+                                                         productRenderContext.height);
+                setupSchottkyProgram(scene, schottkyCanvas);
+                schottkyCanvas.isRenderingProduct = true;
+                schottkyCanvas.renderProduct();
+                schottkyCanvas.isRenderingProduct = false;
+
+                schottkyCanvas.saveProductRenderResult("schottky.png");
+            },
+            cancelGen: function(){
+
+            },
+            startRenderOrbit: function(){
+                orbitCanvas.productRenderContext = productRenderContext.clone();
+                orbitCanvas.initializeProductTextures(productRenderContext.width,
+                                                      productRenderContext.height);
+                setupSchottkyProgram(scene, orbitCanvas);
+
+                orbitCanvas.isRenderingProduct = true;
+            },
+            cancelOrbit: function(){
+                orbitCanvas.isRenderingProduct = false;
             }
         },
     });
 
 
     (function(){
-
         if(schottkyCanvas.isRendering){
             schottkyCanvas.render();
         }
-        if(orbitCanvas.isRendering){
-	    if(orbitCanvas.isRenderingLowResolution)
-		orbitCanvas.renderLowRes();
-	    else
-		orbitCanvas.render();
+
+        if(orbitCanvas.isRenderingProduct){
+            if(orbitCanvas.productRenderContext.maxSamples <= orbitCanvas.numSamples){
+                orbitCanvas.saveProductRenderResult('orbit.png');
+                orbitCanvas.isRenderingProduct = false;
+            }else{
+                orbitCanvas.renderProduct();
+            }
+        }else if(orbitCanvas.isRendering){
+	        if(orbitCanvas.isRenderingLowResolution)
+		        orbitCanvas.renderLowRes();
+	        else
+		        orbitCanvas.render();
         }else if(orbitCanvas.isSampling &&
                  orbitCanvas.renderTimerID == undefined){
             orbitCanvas.render();
         }
+
         requestAnimationFrame(arguments.callee);
     })();
 }, false);
