@@ -90,7 +90,7 @@
          //  circleOnContactPoint,
          //  [translatePoint, translateDist],
          //  [contactPoint, 0], innerLineVec, innerLinePoint, invertedLineVec, invertedLinePoint]
-         uniform vec3 u_parabolic{{ n }}[11];
+         uniform vec3 u_parabolic{{ n }}[12];
          uniform mat2 u_parabolicRotationMat{{ n }}[2];
          {% endfor %}
 
@@ -110,7 +110,7 @@
          // [innerCircle, outerCircle, invertedCircle, circleOnFixedPoint,
          // concentricInner, concentricInvertec,
          // [scalingFactor, theta, 0], c3, [controlPoint, 0], [invertedC3Line, 0]
-         uniform vec3 u_modLoxodromic{{ n }}[10];
+         uniform vec3 u_modLoxodromic{{ n }}[12];
          uniform vec2 u_modLoxodromicUIParam{{ n }};
          {% endfor %}
 
@@ -377,7 +377,7 @@
 	         return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
          }
 
-         vec3 renderUI(const vec2 position){
+         vec3 renderUI(vec2 position){
              {% for n in range(0, numCircles) %}
              if(u_selectedObjectId == ID_CIRCLE){
                  if(u_selectedObjectIndex == {{n}}){
@@ -411,34 +411,24 @@
 	         {% endfor %}
 
              {% for n in range(0, numParabolic)%}
+             //inverted circles
+             /* position -= u_parabolic{{ n }}[4].xy;
+              * position = u_parabolicRotationMat{{ n }}[1] * position;
+              * if(position.x < 0.){
+              *     return vec3(.5, 0, 0);
+              * }else if(position.x < u_parabolic{{ n }}[11].x){
+              *     return vec3(0, 0.5, 0.);
+              * }else if(position.x < u_parabolic{{ n }}[4].z){
+              *     return vec3(0., 0., .5);
+              * }
+              * position = u_parabolicRotationMat{{ n }}[0] * position;
+              * position += u_parabolic{{ n }}[4].xy;*/
+
+
              if(distance(position, u_parabolic{{ n }}[5].xy) < 10.){
                  //contact point
                  return PINK;
-             }/* else if(distance(position, u_parabolic{{ n }}[4].xy) < 10.){
-               *    //translate point
-               *    return PINK;
-                 }else if(distance(position, u_parabolic{{ n }}[10].xy) < 10.){
-               *    // outer line isect
-               *    return PINK;
-                 }*/
-
-             // inner line
-             /* vec2 innerV2{{ n }} = position - u_parabolic{{ n }}[7].xy;
-              * vec2 innerV1{{ n }} = normalize(u_parabolic{{ n }}[6].xy);
-              * vec2 innerProj{{ n }} = innerV1{{ n }} * dot(innerV1{{ n }}, innerV2{{ n }});
-              * float innerDp{{ n }} = length(innerV2{{ n }} - innerProj{{ n }});
-              * if(innerDp{{ n }} < 5.){
-              *     return vec3(.5, 0, 0);
-              * }*/
-
-             // outer line
-             /* vec2 outerV2{{ n }} = position - u_parabolic{{ n }}[9].xy;
-              * vec2 outerV1{{ n }} = normalize(u_parabolic{{ n }}[8].xy);
-              * vec2 outerProj{{ n }} = outerV1{{ n }} * dot(outerV1{{ n }}, outerV2{{ n }});
-              * float outerDp{{ n }} = length(outerV2{{ n }} - outerProj{{ n }});
-              * if(outerDp{{ n }} < 5.){
-              *     return vec3(0, 0, 0.5);
-              * }*/
+             }
 
              // circles
              if(distance(position, u_parabolic{{ n }}[0].xy) < u_parabolic{{ n }}[0].z){
@@ -458,6 +448,15 @@
 
              {% for n in range(0, numModLoxodromic) %}
 
+             // invertedC3Line
+             vec2 v2c3{{ n }} = position - u_modLoxodromic{{ n }}[11].xy;
+             vec2 v1c3{{ n }} = u_modLoxodromic{{ n }}[9].xy;
+             vec2 projectionc3{{ n }} = v1c3{{ n }} * dot(v1c3{{ n }}, v2c3{{ n }});
+             float dc3{{ n }} = length( v2c3{{ n }} - projectionc3{{ n }});
+             if(dc3{{ n }} < u_modLoxodromicUIParam{{ n }}.y){
+                 return vec3(.5, .5, 0);
+             }
+
              // line
              vec2 v2{{ n }} = position - u_modLoxodromic{{ n }}[0].xy;
              vec2 v1{{ n }} = normalize(u_modLoxodromic{{ n }}[1].xy - u_modLoxodromic{{ n }}[0].xy);
@@ -468,14 +467,15 @@
                  return vec3(1);
              }
 
-             // invertedC3Line
-             vec2 v2c3{{ n }} = position - u_modLoxodromic{{ n }}[3].xy;
-             vec2 v1c3{{ n }} = u_modLoxodromic{{ n }}[9].xy;
-             vec2 projectionc3{{ n }} = v1c3{{ n }} * dot(v1c3{{ n }}, v2c3{{ n }});
-             float dc3{{ n }} = length( v2c3{{ n }} - projectionc3{{ n }});
-             if(dc3{{ n }} < u_modLoxodromicUIParam{{ n }}.y){
-                 return vec3(1);
+             // concentric circles
+             if(distance(position, u_modLoxodromic{{ n }}[4].xy) < u_modLoxodromic{{ n }}[4].z){
+                 return vec3(.5, 0, 0);
+             }else if(distance(position, u_modLoxodromic{{ n }}[10].xy) < u_modLoxodromic{{ n }}[10].z){
+                 return vec3(0, .5, 0);
+             }else if(distance(position, u_modLoxodromic{{ n }}[5].xy) < u_modLoxodromic{{ n }}[5].z){
+                 return vec3(0, 0, .5);
              }
+
 
              // c3
              if(distance(position, u_modLoxodromic{{ n }}[7].xy) < u_modLoxodromic{{ n }}[7].z){

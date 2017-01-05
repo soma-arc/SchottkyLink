@@ -485,12 +485,19 @@ Parabolic.prototype = {
                           this.inverted.y + this.inverted.r * Math.sin(Math.PI / 4.5)];
         let invertedP2 = [this.inverted.x + this.inverted.r * Math.cos(Math.PI * 3. / 7.5),
                           this.inverted.y + this.inverted.r * Math.sin(Math.PI * 3. / 7.5)];
+        let outerP = [this.outer.x + this.outer.r * Math.cos(Math.PI / 4.5),
+                      this.outer.y + this.outer.r * Math.sin(Math.PI / 4.5)];
+        let outerP2 = [this.outer.x + this.outer.r * Math.cos(Math.PI * 3. / 7.5),
+                       this.outer.y + this.outer.r * Math.sin(Math.PI * 3. / 7.5)];
+        this.invertedOuterPoint = circleInvertOnPoint(outerP, this.circleOnContactPoint);
+        this.invertedOuterPoint2 = circleInvertOnPoint(outerP2, this.circleOnContactPoint);
+
         this.innerLinePoint = circleInvertOnPoint(innerP1, this.circleOnContactPoint);
         this.innerLineVec = vec2Normalize(vec2Diff(this.innerLinePoint,
                                                    circleInvertOnPoint(innerP2,
                                                                        this.circleOnContactPoint)));
         this.invertedLinePoint1 = circleInvertOnPoint(invertedP1,
-                                                   this.circleOnContactPoint);
+                                                      this.circleOnContactPoint);
         let invertedLinePoint2 = circleInvertOnPoint(invertedP2,
                                                   this.circleOnContactPoint);
         this.invertedLineVec = vec2Normalize(vec2Diff(this.invertedLinePoint1, invertedLinePoint2));
@@ -498,13 +505,22 @@ Parabolic.prototype = {
             this.translateDist = Math.abs(this.innerLinePoint[0] - this.invertedLinePoint1[0]);
             this.translatePoint = this.innerLinePoint;
             this.invertedLineIsect = vec2Sum(this.innerLinePoint, [this.translateDist, 0]);
+
+            this.outerLineDist = Math.abs(this.innerLinePoint[0] - this.invertedOuterPoint[0]);
         }else{
             let nVec = applyMat2(ROTATION_PI_2, this.innerLineVec);
             this.invertedLineIsect = calcLineIntersection(this.innerLinePoint[0], this.innerLinePoint[1],
+                                                          this.innerLinePoint[0] + nVec[0],
+                                                          this.innerLinePoint[1] + nVec[1],
+                                                          this.invertedLinePoint1[0], this.invertedLinePoint1[1],
+                                                          invertedLinePoint2[0], invertedLinePoint2[1]);
+            this.outerLineIsect = calcLineIntersection(this.innerLinePoint[0], this.innerLinePoint[1],
                                                        this.innerLinePoint[0] + nVec[0],
                                                        this.innerLinePoint[1] + nVec[1],
-                                                       this.invertedLinePoint1[0], this.invertedLinePoint1[1],
-                                                       invertedLinePoint2[0], invertedLinePoint2[1]);
+                                                       this.invertedOuterPoint[0], this.invertedOuterPoint[1],
+                                                       this.invertedOuterPoint2[0], this.invertedOuterPoint2[1])
+            this.outerLineDist = vec2Len(vec2Diff(this.innerLinePoint, this.outerLineIsect));
+
             let d = vec2Diff(this.innerLinePoint, this.invertedLineIsect);
             this.translateDist = vec2Len(d);
             this.translatePoint = this.innerLinePoint;
@@ -533,7 +549,8 @@ Parabolic.prototype = {
                                                    this.innerLinePoint, [0],
                                                    this.invertedLineVec, [0],
                                                    this.invertedLinePoint1, [0],
-                                                   this.invertedLineIsect, [0]);
+                                                   this.invertedLineIsect, [0],
+                                                   this.outerLineDist, [0, 0]);
     },
     setUniformLocation: function(uniLocation, gl, program, index){
         uniLocation.push(gl.getUniformLocation(program, 'u_parabolic'+ index));
@@ -598,7 +615,7 @@ var ModLoxodromic = function(innerCircle, outerCircle, p){
     this.point = p;
 
     this.controlPointRadius = 10;
-    this.lineThickness = 10;
+    this.lineThickness = 1;
 
     this.update();
 }
@@ -631,15 +648,17 @@ ModLoxodromic.prototype = {
             this.outerFixedPoint = p1;
         }
 
-        this.circleOnFixedPoint = new Circle(this.outerFixedPoint[0], this.outerFixedPoint[1], 100);
+        this.circleOnFixedPoint = new Circle(this.outerFixedPoint[0], this.outerFixedPoint[1], 300);
         this.concentricInner = circleInvert(this.inner, this.circleOnFixedPoint);
+        this.concentricOuter = circleInvert(this.outer, this.circleOnFixedPoint);
         this.concentricInverted = circleInvert(this.inverted, this.circleOnFixedPoint);
 
         this.scalingFactor = this.concentricInverted.r / this.concentricInner.r;
 
-        this.invertedC3Line = vec2Diff(circleInvertOnPoint([this.c3.x,
-                                                            this.c3.y + this.c3.r],
-                                                           this.circleOnFixedPoint),
+        this.invertedC3Point = circleInvertOnPoint([this.c3.x,
+                                                    this.c3.y + this.c3.r],
+                                                   this.circleOnFixedPoint)
+        this.invertedC3Line = vec2Diff(this.invertedC3Point,
                                        circleInvertOnPoint([this.c3.x + this.c3.r,
                                                             this.c3.y],
                                                            this.circleOnFixedPoint));
@@ -659,7 +678,9 @@ ModLoxodromic.prototype = {
                                                    [this.scalingFactor, this.theta, 0],
                                                    this.c3.getUniformArray(),
                                                    this.point, [0],
-                                                   this.invertedC3Line, [0]);
+                                                   this.invertedC3Line, [0],
+                                                   this.concentricOuter.getUniformArray(),
+                                                   this.invertedC3Point, [0]);
     },
     getUIParamArray: function(){
         return [this.controlPointRadius, this.lineThickness];
