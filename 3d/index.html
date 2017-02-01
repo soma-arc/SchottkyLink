@@ -890,8 +890,8 @@
                                      g_objComponentId == u_selectedComponentId)?
                                     RED : BLUE;
                      }else if(g_objId == ID_TRANSFORM_BY_SPHERES){
-                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 0) ? RED : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? GREEN : matColor;
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
@@ -904,11 +904,11 @@
                      }else if(g_objId == ID_COMPOUND_LOXODROMIC ||
                               g_objId == ID_LOXODROMIC ||
                               g_objId == ID_MOD_COMPOUND_LOXODROMIC){
-                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 0) ? RED : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? GREEN : matColor;
                          matColor = (g_objComponentId == 3) ? PINK : matColor;
-                         matColor = (g_objComponentId == 4) ? GREEN : matColor;
-                         matColor = (g_objComponentId == 5) ? BLUE : matColor;
+                         matColor = (g_objComponentId == 4) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 5) ? LIGHT_GRAY : matColor;
                          matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
                          matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
                          matColor = (g_objId == u_selectedObjectId &&
@@ -1215,6 +1215,7 @@
                  pos -= u_parabolic{{ n }}[5].xyz;
                  pos = u_parabolicRotationMat{{ n }}[1] * pos;
                  if(pos.z < 0. || u_parabolic{{ n }}[5].w < pos.z){
+                     loopNum += abs(floor(pos.z/ u_parabolic{{ n }}[5].w));
                      pos.z = mod(pos.z, u_parabolic{{ n }}[5].w);
                      loopEnd = false;
                  }
@@ -1620,7 +1621,10 @@
                          matColor = (g_objComponentId == 6) ? LIGHT_GRAY : matColor;
                          matColor = (g_objComponentId == 7) ? LIGHT_GRAY : matColor;
                      }else if(g_objId == ID_KLEIN_ORBIT){
-                         matColor = hsv2rgb(vec3(0.1 + loopNum * 0.1 , 1., 1.));
+                         if(loopNum == 0.)
+                             matColor = hsv2rgb(vec3(0.33, 1., .77));
+                         else
+                             matColor = hsv2rgb(vec3(0.0 + loopNum * 0.12 , 1., 1.));
                          normal = getNormal(intersection);
                      }else if(g_objId == ID_PARABOLIC){
                          matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
