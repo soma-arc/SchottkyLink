@@ -114,6 +114,33 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "Scaling",
+        "generators": {
+            "Circles": [
+                {
+                    "position": [205, 0],
+                    "radius": 55
+                },
+                {
+                    "position": [0, 205],
+                    "radius": 55
+                },
+            ],
+            "TransformByCircles": [
+                {
+                    "innerCircle": {
+                        "position": [0,0],
+                        "radius": 150
+                    },
+                    "outerCircle": {
+                        "position": [0,0],
+                        "radius": 200
+                    }
+                }
+            ]
+        }
+    },
+    {
         "text": "Parabolic",
         "generators": {
             "Circles": [
@@ -161,7 +188,7 @@ const PRESET_PARAMETERS = [
                         "position": [0, 0],
                         "radius": 200
                     },
-                    "ContactDegree": 0,
+                    "ContactDegree": 180,
                     "InnerRadius": 150
                 }
             ]
@@ -240,7 +267,7 @@ const PRESET_PARAMETERS = [
             "ModLoxodromic": [
                 {
                     "innerCircle": {
-                        "position": [-12, -23],
+                        "position": [-10, -20],
                         "radius": 150
                     },
                     "outerCircle": {
