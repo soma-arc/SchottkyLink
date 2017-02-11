@@ -113,6 +113,47 @@ const PRESET_PARAMETERS = [
             ]
         }
     },
+      {
+        "text": "Filing",
+        "generators": {
+            "Circles": [
+                {
+                    "position": [100, -100],
+                    "radius": 100
+                },
+                {
+                    "position": [100, 100],
+                    "radius": 100
+                },
+                {
+                    "position": [-100, -100],
+                    "radius": 100
+                },
+                {
+                    "position": [-100, 100],
+                    "radius": 100
+                }
+            ],
+            "InfiniteCircles": [
+                {
+                    "position": [200, 0],
+                    "rotation": 0
+                },
+                {
+                    "position": [-200, 0],
+                    "rotation": 180
+                },
+                {
+                    "position": [0, 200],
+                    "rotation": 270
+                },
+                {
+                    "position": [0, -200],
+                    "rotation": 90
+                }
+            ]
+        }
+      },
     {
         "text": "Scaling",
         "generators": {
@@ -135,6 +176,67 @@ const PRESET_PARAMETERS = [
                     "outerCircle": {
                         "position": [0,0],
                         "radius": 200
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "text": "Hyperbolic",
+        "generators": {
+            "Circles": [
+                {
+                    "position": [-161, 132],
+                    "radius": 61
+                },
+                {
+                    "position": [200, 65],
+                    "radius": 66
+                },
+                {
+                    "position": [30, -203],
+                    "radius": 48
+                },
+                {
+                    "position": [169, -119],
+                    "radius": 55
+                },
+                {
+                    "position": [-185, -90],
+                    "radius": 50
+                },
+                {
+                    "position": [18, 210],
+                    "radius": 68
+                }
+            ],
+            "TransformByCircles": [
+                {
+                    "innerCircle": {
+                        "position": [-4, -7],
+                        "radius": 150
+                    },
+                    "outerCircle": {
+                        "position": [0, 0],
+                        "radius": 200
+                    }
+
+                }
+            ]
+        }
+    },
+    {
+        "text": "ModHyperbolic",
+        "generators": {
+            "ModHyperbolic": [
+                {
+                    "outerCircle": {
+                        "position": [0, 0],
+                        "radius": 200
+                    },
+                    "innerCircle": {
+                        "position": [-25, 0],
+                        "radius": 150
                     }
                 }
             ]
@@ -195,67 +297,6 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "text": "ModHyperbolic",
-        "generators": {
-            "ModHyperbolic": [
-                {
-                    "outerCircle": {
-                        "position": [0, 0],
-                        "radius": 200
-                    },
-                    "innerCircle": {
-                        "position": [-25, 0],
-                        "radius": 150
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "text": "Loxodromic",
-        "generators": {
-            "Circles": [
-                {
-                    "position": [-161, 132],
-                    "radius": 61
-                },
-                {
-                    "position": [200, 65],
-                    "radius": 66
-                },
-                {
-                    "position": [30, -203],
-                    "radius": 48
-                },
-                {
-                    "position": [169, -119],
-                    "radius": 55
-                },
-                {
-                    "position": [-185, -90],
-                    "radius": 50
-                },
-                {
-                    "position": [18, 210],
-                    "radius": 68
-                }
-            ],
-            "TransformByCircles": [
-                {
-                    "innerCircle": {
-                        "position": [-4, -7],
-                        "radius": 150
-                    },
-                    "outerCircle": {
-                        "position": [0, 0],
-                        "radius": 200
-                    }
-
-                }
-            ]
-        }
-    },
-    {
         "text": "ModLoxodromic",
         "generators": {
             "Circles": [
@@ -281,7 +322,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "text": "TwistedLoxodromic",
+        "text": "Loxodromic",
         "generators": {
             "Circles": [
                 {
@@ -306,7 +347,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-	    "text": "TwistedLoxodromic2",
+	    "text": "Loxodromic2",
 	    "generators": {
             "Circles": [
 		        {
@@ -399,7 +440,7 @@ const PRESET_PARAMETERS = [
     }
     ,
     {
-        "text": "TwistedLoxodromicFromFixedPoints",
+        "text": "LoxodromicFromFixedPoints",
         "generators": {
             "Circles": [
                 {

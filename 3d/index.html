@@ -611,16 +611,16 @@
                                           u_parabolic{{ n }}[2].xyz,
                                           u_parabolic{{ n }}[2].w,
                                           eye, ray, result);
-                 result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
-                                                  u_parabolic{{ n }}[5].xyz,
-                                                  1200.,
-                                                  u_parabolicRotationMat{{ n }}[0],
-                                                  eye, ray, result);
-                 result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
-                                                  u_parabolic{{ n }}[6].xyz,
-                                                  1200.,
-                                                  u_parabolicRotationMat{{ n }}[0],
-                                                  eye, ray, result);
+                 /* result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
+                  *                                  u_parabolic{{ n }}[5].xyz,
+                  *                                  1200.,
+                  *                                  u_parabolicRotationMat{{ n }}[0],
+                  *                                  eye, ray, result);
+                  * result = intersectInfiniteSphere(ID_PARABOLIC, {{ n }}, 3, MTL_DIFFUSE,
+                  *                                  u_parabolic{{ n }}[6].xyz,
+                  *                                  1200.,
+                  *                                  u_parabolicRotationMat{{ n }}[0],
+                  *                                  eye, ray, result);*/
                  {% endfor %}
 
                  {% for n in range(0, numTransformBySpheres) %}
@@ -915,8 +915,8 @@
                                      g_objIndex == u_selectedObjectIndex &&
                                      g_objComponentId == u_selectedComponentId) ? RED : matColor;
                      }else if(g_objId == ID_PARABOLIC){
-                         matColor = (g_objComponentId == 0) ? LIGHT_BLUE : vec3(0.2, 0.2, 0.9);
-                         matColor = (g_objComponentId == 1) ? YELLOW : matColor;
+                         matColor = (g_objComponentId == 0) ? RED : vec3(0.2, 0.2, 0.9);
+                         matColor = (g_objComponentId == 1) ? GREEN : matColor;
                          matColor = (g_objComponentId == 3) ? RED : matColor;
                          matColor = (g_objId == u_selectedObjectId &&
                                      g_objIndex == u_selectedObjectIndex &&

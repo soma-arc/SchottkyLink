@@ -282,7 +282,7 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "text": "TransformByPlanes",
+        "text": "ParallelTranslation",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -356,7 +356,37 @@ const PRESET_PARAMETERS = [
         }
     },
     {
-        "text": "TransformBySpheresParabolic",
+        "text": "ParabolicOneSphere",
+        "generators": {
+            "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 125
+                }
+            ],
+            "Parabolic": [
+                {
+                    "outerSphere": {
+                        "position": [
+                            0,
+                            665,
+                            472
+                        ],
+                        "radius": 660
+                    },
+                    "innerRadius": 500,
+                    "thetaDegree": 90,
+                    "phiDegree": 90
+                }
+            ]
+        }
+    },
+    {
+        "text": "Parabolic",
         "generators": {
             "SchottkySpheres": [
                 {
@@ -436,6 +466,136 @@ const PRESET_PARAMETERS = [
                         ],
                         "radius": 661.0819138535611
                     }
+                }
+            ]
+        }
+    },
+    {
+        "text": "ModParabolic",
+        "generators": {
+            "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 125
+                }
+            ],
+            "SchottkySpheres": [
+                {
+                    "position": [
+                        300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        -300,
+                        -300,
+                        0
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        424.26
+                    ],
+                    "radius": 300
+                },
+                {
+                    "position": [
+                        0,
+                        0,
+                        -424.26
+                    ],
+                    "radius": 300
+                }
+            ],
+            "Parabolic": [
+                {
+                    "outerSphere": {
+                        "position": [
+                            0,
+                            665,
+                            472
+                        ],
+                        "radius": 660
+                    },
+                    "innerRadius": 500,
+                    "thetaDegree": 90,
+                    "phiDegree": 90
+                }
+            ]
+        }
+    },
+    {
+    "text": "CompoundLoxodromicOneSphere",
+        "generators": {
+            "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 62.5
+                }
+            ],
+            "CompoundLoxodromic": [
+                {
+                    "innerSphere": {
+                        "position": [
+                            10,
+                            161.06500713368246,
+                            645.8279011704013
+                        ],
+                        "radius": 566.9624916386372
+                    },
+                    "outerSphere": {
+                        "position": [
+                            100,
+                            211.06500713368246,
+                            666.1807953962565
+                        ],
+                        "radius": 700
+                    },
+                    "point": [
+                        0,
+                        1111.0650071336825,
+                        -133.81920460374351
+                    ],
+                    "q1": [
+                        100,
+                        -888.9349928663175,
+                        -133.81920460374351
+                    ],
+                    "q2": [
+                        1000,
+                        111.06500713368246,
+                        -143.81920460374351
+                    ]
                 }
             ]
         }
@@ -536,86 +696,6 @@ const PRESET_PARAMETERS = [
                         111.06500713368246,
                         -143.81920460374351
                     ]
-                }
-            ]
-        }
-    },
-    {
-        "text": "ModParabolic",
-        "generators": {
-            "BaseSpheres": [
-                {
-                    "position": [
-                        0,
-                        0,
-                        0
-                    ],
-                    "radius": 125
-                }
-            ],
-            "SchottkySpheres": [
-                {
-                    "position": [
-                        300,
-                        300,
-                        0
-                    ],
-                    "radius": 300
-                },
-                {
-                    "position": [
-                        300,
-                        -300,
-                        0
-                    ],
-                    "radius": 300
-                },
-                {
-                    "position": [
-                        -300,
-                        300,
-                        0
-                    ],
-                    "radius": 300
-                },
-                {
-                    "position": [
-                        -300,
-                        -300,
-                        0
-                    ],
-                    "radius": 300
-                },
-                {
-                    "position": [
-                        0,
-                        0,
-                        424.26
-                    ],
-                    "radius": 300
-                },
-                {
-                    "position": [
-                        0,
-                        0,
-                        -424.26
-                    ],
-                    "radius": 300
-                }
-            ],
-            "Parabolic": [
-                {
-                    "outerSphere": {
-                        "position": [
-                            0,
-                            665,
-                            472
-                        ],
-                        "radius": 660
-                    },
-                    "innerRadius": 500,
-                    "thetaDegree": 90,
-                    "phiDegree": 90
                 }
             ]
         }
@@ -805,100 +885,6 @@ const PRESET_PARAMETERS = [
             ]
 	    }
     },
-    {
-        "text": "CompoundParabolic",
-        "generators": {
-            "SchottkySpheres": [
-                {
-                    "position": [300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, 300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [-300, -300, 0],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, 424.26],
-                    "radius": 300
-                },
-                {
-                    "position": [0, 0, -424.26],
-                    "radius": 300
-                }
-            ],
-            "BaseSpheres": [
-                {
-                    "position": [0, 0, 0],
-                    "radius": 125
-                }
-            ],
-            "CompoundParabolic": [
-                {
-                    "innerSphere": {
-                        "position": [0, 0, 1000],
-                        "radius": 500
-                    },
-                    "outerSphere": {
-                        "position": [0, 0, 900],
-                        "radius": 600
-                    },
-                    "thetaDegree": 0
-                }
-            ]
-        }
-    },
-    {
-        "text": "PlaneAndSphere",
-        "generators": {
-            "BaseSpheres": [
-                {
-                    "position": [
-                        0,
-                        0,
-                        0
-                    ],
-                    "radius": 125
-                }
-            ],
-            "TransformByPlanes": [
-                {
-                    "distToP1": -300,
-                    "distToP2": 300,
-                    "thetaDegree": 0,
-                    "phiDegree": 0,
-                    "twistDegree": 0
-                }
-            ],
-            "TransformBySpheres": [
-                {
-                    "innerSphere": {
-                        "position": [
-                            0,
-                            0,
-                            1000
-                        ],
-                        "radius": 500
-                    },
-                    "outerSphere": {
-                        "position": [
-                            0,
-                            0,
-                            900
-                        ],
-                        "radius": 600
-                    }
-                }
-            ]
-        }
-    }
 ];
 
 const PRESET_PARAM_OBJECTS = [
