@@ -356,6 +356,41 @@ const PRESET_PARAMETERS = [
         }
     },
     {
+        "text": "loxoOneSphere",
+        "generators": {
+            "BaseSpheres": [
+                {
+                    "position": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "radius": 300
+                }
+            ],
+            "TransformBySpheres": [
+                {
+                    "innerSphere": {
+                        "position": [
+                            0,
+                            665.0462361544822,
+                            614.1975331632655
+                        ],
+                        "radius": 478.12557350076787
+                    },
+                    "outerSphere": {
+                        "position": [
+                            0,
+                            665.0462361544822,
+                            472.1829455752595
+                        ],
+                        "radius": 661.0819138535611
+                    }
+                }
+            ]
+        }
+    },
+    {
         "text": "ParabolicOneSphere",
         "generators": {
             "BaseSpheres": [
