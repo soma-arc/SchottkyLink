@@ -16,6 +16,10 @@ module.exports = () => ({
     module: {
         loaders: [
             {
+                test: /\.(glsl|vert|frag)$/,
+                loader: 'shader-loader'q,
+            },
+            {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader',

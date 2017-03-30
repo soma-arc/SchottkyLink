@@ -3388,6 +3388,10 @@ sha.js@^2.3.6:
   dependencies:
     inherits "^2.0.1"
 
+shader-loader@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/shader-loader/-/shader-loader-1.3.0.tgz#7609aefb653f5ee785c601808cbc7499f40fca43"
+
 shebang-command@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/shebang-command/-/shebang-command-1.2.0.tgz#44aac65b695b03398968c39f363fee5deafdf1ea"
