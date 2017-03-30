@@ -1,10 +1,10 @@
 const path = require('path');
 
-const src = path.resolve(__dirname, 'test');
+const src  = path.resolve(__dirname, 'test');
 const dist = path.resolve(__dirname, 'tmp');
 
 module.exports = {
-    entry: src + '/test_index.js',
+    entry: `${src}/index.js`,
     module: {
         loaders: [
             {

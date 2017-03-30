@@ -18,9 +18,14 @@
                     ["&&", "||"],
                     ["in", "instanceof"]
                 ],
-                "allowSamePrecedence": true
+                "allowSamePrecedence": true,
             }
         ],
+        "no-multi-spaces": [2, {"exceptions": {"Property": true,
+                                               "ImportDeclaration": true,
+                                               "VariableDeclarator": true,
+                                               "AssignmentExpression": true}}],
+
     },
     "settings": {
         "import/resolver": {
