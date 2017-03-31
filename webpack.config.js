@@ -17,7 +17,7 @@ module.exports = () => ({
         loaders: [
             {
                 test: /\.(glsl|vert|frag)$/,
-                loader: 'shader-loader'q,
+                loader: 'shader-loader',
             },
             {
                 test: /\.js$/,
