@@ -41,7 +41,8 @@ export function attachShader(gl, shaderStr, program, shaderType) {
     gl.attachShader(program, shader);
 }
 
-export function createTexture2D(gl, width, height, type) {
+export function createTexture2D(gl, width, height,
+                                internalFormat, format, type) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -54,10 +55,11 @@ export function createTexture2D(gl, width, height, type) {
     return texture;
 }
 
-export function createTextures(gl, width, height, type, num) {
+export function createRGBTextures(gl, width, height, num) {
     const textures = [];
     for (let i = 0; i < num; i++) {
-        textures.push(createTexture2D(gl, width, height, type, num));
+        textures.push(createTexture2D(gl, width, height,
+                                      gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, num));
     }
     return textures;
 }
