@@ -70,7 +70,7 @@ void main() {
     float ratio = u_resolution.x / u_resolution.y / 2.0;
     for(float i = 0.; i < MAX_SAMPLES; i++){
         vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_resolution.yy ) - vec2(ratio, 0.5);
-        position = position * 500.;//u_geometry.z;
+        position = position * u_geometry.z;
         position += u_geometry.xy;
 
         vec3 col = vec3(0);

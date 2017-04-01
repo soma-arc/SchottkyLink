@@ -7,11 +7,14 @@ const RENDER_FRAGMENT = require('./render.frag');
 const CIRCLES_SHADER = require('./circles.frag');
 
 export default class Canvas2D {
+
     constructor(canvasId) {
         this.canvasId = canvasId;
         this.canvas = document.getElementById(canvasId);
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
+        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
+        this.pixelRatio = window.devicePixelRatio;
 
         // render to canvas
         this.renderCanvasProgram = this.gl.createProgram();
@@ -30,9 +33,92 @@ export default class Canvas2D {
         this.texturesFrameBuffer = this.gl.createFramebuffer();
 
         // geometry
-        this.scale = 100;
+        this.scale = 500;
+        this.scaleFactor = 1.5;
         this.translate = [0, 0];
 
+        // mouse
+        this.mouseState = {
+            isPressing: false,
+            prevPosition: [0, 0],
+        };
+        this.boundMouseDownListener = this.mouseDownListener.bind(this);
+        this.boundMouseUpListener = this.mouseUpListener.bind(this);
+        this.boundMouseWheelListener = this.mouseWheelListener.bind(this);
+        this.boundMouseMoveListener = this.mouseMoveListener.bind(this);
+        this.boundDblClickLisntener = this.mouseDblClickListener.bind(this);
+        this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
+        this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
+        this.canvas.addEventListener('mousewheel', this.boundMouseWheelListener);
+        this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
+        this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
+        this.canvas.addEventListener('contextmenu', event => event.preventDefault());
+    }
+
+    // Calculate screen coordinates from mouse position
+    calcCoord(mx, my) {
+        assert.equal(typeof mx, 'number');
+        assert.equal(typeof my, 'number');
+
+        const rect = this.canvas.getBoundingClientRect();
+        return [this.scale * (((mx - rect.left) * this.pixelRatio) / this.canvas.height
+                              - this.canvasRatio)
+                + this.translate[0],
+                this.scale * -(((my - rect.top) * this.pixelRatio) / this.canvas.height
+                               - 0.5)
+                + this.translate[1]];
+    }
+
+    mouseWheelListener(event) {
+        assert.ok(event instanceof MouseEvent);
+        event.preventDefault();
+        if (event.wheelDelta > 0) {
+            this.scale /= this.scaleFactor;
+        } else {
+            this.scale *= this.scaleFactor;
+        }
+        this.render();
+    }
+
+    mouseDownListener(event) {
+        assert.ok(event instanceof MouseEvent);
+        event.preventDefault();
+        const mouse = this.calcCoord(event.clientX, event.clientY);
+        if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
+            // TODO: call selectObject
+        } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
+            // TODO: add circle
+        }
+
+        this.mouseState.prevPosition = mouse;
+        this.mouseState.isPressing = true;
+    }
+
+    mouseDblClickListener(event) {
+        assert.ok(event instanceof MouseEvent);
+        if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
+            // TODO: remove object
+        }
+    }
+
+    mouseUpListener(event) {
+        assert.ok(event instanceof MouseEvent);
+        this.mouseState.isPressing = false;
+    }
+
+    mouseMoveListener(event) {
+        assert.ok(event instanceof MouseEvent);
+        // envent.button return 0 when the mouse is not pressed.
+        // Thus we check if the mouse is pressed.
+        if (!this.mouseState.isPressing) return;
+        const [mx, my] = this.calcCoord(event.clientX, event.clientY);
+        if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
+            // move
+        } else if (event.button === Canvas2D.MOUSE_BUTTON_RIGHT) {
+            this.translate[0] -= mx - this.mouseState.prevPosition[0];
+            this.translate[1] -= my - this.mouseState.prevPosition[1];
+            this.render();
+        }
     }
 
     compileRenderShader() {
@@ -96,5 +182,17 @@ export default class Canvas2D {
     render() {
         this.renderToTexture(this.renderTextures, this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
+    }
+
+    static get MOUSE_BUTTON_LEFT() {
+        return 0;
+    }
+
+    static get MOUSE_BUTTON_WHEEL() {
+        return 1;
+    }
+
+    static get MOUSE_BUTTON_RIGHT() {
+        return 2;
     }
 }
