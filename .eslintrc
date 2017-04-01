@@ -7,7 +7,7 @@
         "mocha": true,
     },
     "rules": {
-        "indent": ["error", 4],
+        "indent": ["error", 4, { "ArrayExpression": "first" }],
         "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
         "no-mixed-operators": [
             "error",
@@ -22,11 +22,12 @@
                 "allowSamePrecedence": true,
             }
         ],
-        "no-multi-spaces": [2, {"exceptions": {"Property": true,
-                                               "ImportDeclaration": true,
-                                               "VariableDeclarator": true,
-                                               "AssignmentExpression": true}}],
-        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "no-multi-spaces": ["error", {"exceptions": {"Property": true,
+                                                     "ImportDeclaration": true,
+                                                     "VariableDeclarator": true,
+                                                     "AssignmentExpression": true}}],
+        "no-plusplus": ["off", { "allowForLoopAfterthoughts": true }],
+        "class-methods-use-this": ["warn"],
     },
     "settings": {
         "import/resolver": {
