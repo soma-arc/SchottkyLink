@@ -7,7 +7,8 @@
         "mocha": true,
     },
     "rules": {
-        "indent": ["error", 4, { "ArrayExpression": "first" }],
+        "indent": ["error", 4, { "ArrayExpression": "first",
+                                 "ObjectExpression": "first"}],
         "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
         "no-mixed-operators": [
             "error",
