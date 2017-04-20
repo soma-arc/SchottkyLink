@@ -1,7 +1,7 @@
 import assert from 'power-assert';
 import Vec2 from './Vector';
 
-export default class Circle {
+export class Circle {
     constructor(center, r) {
         assert.ok(center instanceof Vec2);
         this.center = center;
@@ -51,11 +51,23 @@ export default class Circle {
     }
 
     cloneDeeply() {
-        return new Circle(this.center.cloneDeeply, this.r);
+        return new Circle(this.center.cloneDeeply(), this.r);
     }
 
     getUniformArray() {
-        this.center.uniformArray.concat([this.r]);
+        this.center.uniformArray().concat([this.r]);
+    }
+
+    setUniformValues(gl, uniLocation, uniIndex) {
+        assert.ok(typeof uniIndex === 'number');
+        let uniI = uniIndex;
+        gl.uniform3f(uniLocation[uniI++], this.getUniformArray());
+        return uniI;
+    }
+
+    setUniformLocation(gl, uniLocation, index, program) {
+        assert.ok(typeof index === 'number');
+        uniLocation.push(gl.getUniformLocation(program, `u_schottkyCircle${index}`));
     }
 
     exportJson() {
@@ -71,5 +83,56 @@ export default class Circle {
 
     static get CIRCUMFERENCE() {
         return 1;
+    }
+}
+
+export class Scene {
+    constructor() {
+        this.objects = {};
+        this.objects.Circle = [];
+    }
+
+    select(mouse) {
+        assert.ok(mouse instanceof Vec2);
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName in objKeyNames) {
+            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
+                for (const obj of this.objects[objName]) {
+                    const state = obj.select(mouse);
+                    if (state.id !== -1) return state;
+                }
+            }
+        }
+        return { id: -1 };
+    }
+
+    setUniformLocation(gl, uniLocation, program) {
+        assert.ok(typeof uniIndex === 'number');
+
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName in objKeyNames) {
+            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
+                const objArray = this.objects[objName];
+                for (let i = 0; i < objArray.length; i++) {
+                    objArray[i].setUniformLocation(gl, uniLocation, program, i);
+                }
+            }
+        }
+    }
+
+    setUniformValues(gl, uniLocation, uniIndex) {
+        assert.ok(typeof uniIndex === 'number');
+
+        let uniI = uniIndex;
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName in objKeyNames) {
+            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
+                const objArray = this.objects[objName];
+                for (let i = 0; i < objArray.length; i++) {
+                    uniI = objArray[i].setUniformValues(gl, uniLocation, uniI);
+                }
+            }
+        }
+        return uniI;
     }
 }
