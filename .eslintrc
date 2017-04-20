@@ -29,6 +29,7 @@
                                                      "AssignmentExpression": true}}],
         "no-plusplus": ["off", { "allowForLoopAfterthoughts": true }],
         "class-methods-use-this": ["warn"],
+        "no-restricted-syntax": ["off"],
     },
     "settings": {
         "import/resolver": {
