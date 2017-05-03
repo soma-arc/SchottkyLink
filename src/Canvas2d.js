@@ -1,10 +1,13 @@
 import assert from 'power-assert';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
+import nunjucks from 'nunjucks';
 
 const RENDER_VERTEX = require('./render.vert');
 const RENDER_FRAGMENT = require('./render.frag');
 const CIRCLES_SHADER = require('./circles.frag');
+
+const CIRCLES_SHADER_TMPL = require('./2dShader.njk.frag');
 
 export default class Canvas2D {
 
@@ -53,6 +56,8 @@ export default class Canvas2D {
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
+
+//        console.log(CIRCLES_SHADER_TMPL.render({ numCircle: 4 }));
     }
 
     // Calculate screen coordinates from mouse position

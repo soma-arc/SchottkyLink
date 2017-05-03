@@ -67,7 +67,7 @@ export class Circle {
 
     setUniformLocation(gl, uniLocation, index, program) {
         assert.ok(typeof index === 'number');
-        uniLocation.push(gl.getUniformLocation(program, `u_schottkyCircle${index}`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}`));
     }
 
     exportJson() {
@@ -134,5 +134,14 @@ export class Scene {
             }
         }
         return uniI;
+    }
+
+    getContext() {
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName in objKeyNames) {
+            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
+                context[`num+ ${objName}`] = this.objects[objName].length;
+            }
+        }
     }
 }
