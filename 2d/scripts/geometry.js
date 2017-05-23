@@ -267,13 +267,13 @@ TransformByCircles.prototype = {
         case TRANSFORM_BY_CIRCLES_INNER_BODY:
             var np = vec2Diff(mouse, diff);
             var d = vec2Len(vec2Diff(this.outer.getPosition(), np));
-            if(d <= this.outer.r - this.inner.r){
+            // if(d <= this.outer.r - this.inner.r){
                 this.inner.x = np[0];
                 this.inner.y = np[1];
-            }else{
-                diff[0] = mouse[0] - this.inner.x;
-                diff[1] = mouse[1] - this.inner.y;
-            }
+            //} else{
+            //     diff[0] = mouse[0] - this.inner.x;
+            //     diff[1] = mouse[1] - this.inner.y;
+            // }
             break;
         case TRANSFORM_BY_CIRCLES_INNER_CIRCUMFERENCE:
             var dx = mouse[0] - this.inner.x;
