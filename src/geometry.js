@@ -77,6 +77,11 @@ export class Circle {
         };
     }
 
+    static loadJson(obj) {
+        return new Circle(new Vec2(obj.position[0], obj.position[1]),
+                          obj.radius);
+    }
+
     static get BODY() {
         return 0;
     }
@@ -86,10 +91,12 @@ export class Circle {
     }
 }
 
+// TODO: generate this object automatically
+const STR_CLASS_MAP = { 'Circle': Circle };
+
 export class Scene {
     constructor() {
         this.objects = {};
-        this.objects.Circle = [];
     }
 
     select(mouse) {
@@ -140,7 +147,22 @@ export class Scene {
         const objKeyNames = Object.keys(this.objects);
         for (const objName in objKeyNames) {
             if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
-                context[`num+ ${objName}`] = this.objects[objName].length;
+                context[`num_${objName}`] = this.objects[objName].length;
+            }
+        }
+    }
+
+    load(sceneObjects) {
+        this.objects = {};
+        const generators = sceneObjects.generators;
+        const objKeyNames = Object.keys(generators);
+
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) {
+                this.objects[objName] = [];
+            }
+            for (const objParam of generators[objName]) {
+                this.objects[objName].push(STR_CLASS_MAP[objName].loadJson(objParam));
             }
         }
     }
