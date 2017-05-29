@@ -42,14 +42,14 @@ float IIS(vec2 pos) {
         {% if n == 0 %}
         if(distance(pos, u_circle{{ n }}.xy) < u_circle{{ n }}.z){
             pos = circleInvert(pos, u_circle{{ n }});
-            cont = true;
-            loopNum++;
+            inFund = false;
+            invNum++;
         }
         {% else %}
         else if(distance(pos, u_circle{{ n }}.xy) < u_circle{{ n }}.z){
             pos = circleInvert(pos, u_circle{{ n }});
-            cont = true;
-            loopNum++;
+            inFund = false;
+            invNum++;
         }
         {% endif %}
         {% endfor %}

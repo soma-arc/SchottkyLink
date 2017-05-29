@@ -1,7 +1,7 @@
 import assert from 'power-assert';
+import nunjucks from 'nunjucks';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
-import nunjucks from 'nunjucks';
 
 const RENDER_VERTEX = require('./render.vert');
 const RENDER_FRAGMENT = require('./render.frag');
@@ -10,9 +10,9 @@ const CIRCLES_SHADER = require('./circles.frag');
 const CIRCLES_SHADER_TMPL = require('./2dShader.njk.frag');
 
 export default class Canvas2D {
-
-    constructor(canvasId) {
+    constructor(canvasId, scene) {
         this.canvasId = canvasId;
+        this.scene = scene;
         this.canvas = document.getElementById(canvasId);
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
@@ -56,8 +56,6 @@ export default class Canvas2D {
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
-
-//        console.log(CIRCLES_SHADER_TMPL.render({ numCircle: 4 }));
     }
 
     // Calculate screen coordinates from mouse position
@@ -66,12 +64,12 @@ export default class Canvas2D {
         assert.equal(typeof my, 'number');
 
         const rect = this.canvas.getBoundingClientRect();
-        return [this.scale * (((mx - rect.left) * this.pixelRatio) / this.canvas.height
-                              - this.canvasRatio)
-                + this.translate[0],
-                this.scale * -(((my - rect.top) * this.pixelRatio) / this.canvas.height
-                               - 0.5)
-                + this.translate[1]];
+        return [this.scale * (((mx - rect.left) * this.pixelRatio) /
+                              this.canvas.height - this.canvasRatio) +
+                this.translate[0],
+                this.scale * -(((my - rect.top) * this.pixelRatio) /
+                               this.canvas.height - 0.5) +
+                this.translate[1]];
     }
 
     mouseWheelListener(event) {
@@ -129,7 +127,8 @@ export default class Canvas2D {
     compileRenderShader() {
         this.renderProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
-        attachShader(this.gl, CIRCLES_SHADER, this.renderProgram, this.gl.FRAGMENT_SHADER);
+        attachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
+                     this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
         this.getRenderUniformLocations();
@@ -143,6 +142,7 @@ export default class Canvas2D {
                                                           'u_resolution'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_geometry'));
+        this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
     setRenderUniformValues(width, height, texture) {
@@ -153,6 +153,7 @@ export default class Canvas2D {
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate[0], this.translate[1], this.scale);
+        i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
     }
 
     renderToTexture(textures, width, height) {

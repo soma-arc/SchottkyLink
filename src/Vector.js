@@ -66,7 +66,7 @@ export default class Vec2 {
         return 0.00001;
     }
 
-    get uniformArray() {
+    getUniformArray() {
         return [this.x, this.y];
     }
 }

@@ -1,0 +1,23 @@
+{
+    "text": "FourCircles",
+    "generators": {
+        "Circle": [
+            {
+                "position": [100, -100],
+                "radius": 100
+            },
+            {
+                "position": [100, 100],
+                "radius": 100
+            },
+            {
+                "position": [-100, -100],
+                "radius": 100
+            },
+            {
+                "position": [-100, 100],
+                "radius": 100
+            }
+        ]
+    }
+}

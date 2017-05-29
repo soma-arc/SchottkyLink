@@ -6,12 +6,12 @@ export class Circle {
         assert.ok(center instanceof Vec2);
         this.center = center;
         this.r = r;
-
+        this.rSq = r * r;
         this.circumferenceThickness = 10;
     }
 
     update() {
-        // nothing to do
+        this.rSq = this.r * this.r;
     }
 
     removable(mouse) {
@@ -48,6 +48,8 @@ export class Circle {
             assert.ok(selectState.diff instanceof Vec2);
             this.center = mouse.sub(selectState.diff);
         }
+
+        this.update();
     }
 
     cloneDeeply() {
@@ -55,17 +57,18 @@ export class Circle {
     }
 
     getUniformArray() {
-        this.center.uniformArray().concat([this.r]);
+        return this.center.getUniformArray().concat([this.r, this.rSq]);
     }
 
     setUniformValues(gl, uniLocation, uniIndex) {
         assert.ok(typeof uniIndex === 'number');
         let uniI = uniIndex;
-        gl.uniform3f(uniLocation[uniI++], this.getUniformArray());
+        gl.uniform4f(uniLocation[uniI++],
+                     this.center.x, this.center.y, this.r, this.rSq);
         return uniI;
     }
 
-    setUniformLocation(gl, uniLocation, index, program) {
+    setUniformLocation(gl, uniLocation, program, index) {
         assert.ok(typeof index === 'number');
         uniLocation.push(gl.getUniformLocation(program, `u_circle${index}`));
     }
@@ -102,7 +105,7 @@ export class Scene {
     select(mouse) {
         assert.ok(mouse instanceof Vec2);
         const objKeyNames = Object.keys(this.objects);
-        for (const objName in objKeyNames) {
+        for (const objName of objKeyNames) {
             if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
                 for (const obj of this.objects[objName]) {
                     const state = obj.select(mouse);
@@ -113,16 +116,12 @@ export class Scene {
         return { id: -1 };
     }
 
-    setUniformLocation(gl, uniLocation, program) {
-        assert.ok(typeof uniIndex === 'number');
-
+    setUniformLocation(gl, uniLocations, program) {
         const objKeyNames = Object.keys(this.objects);
-        for (const objName in objKeyNames) {
-            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
-                const objArray = this.objects[objName];
-                for (let i = 0; i < objArray.length; i++) {
-                    objArray[i].setUniformLocation(gl, uniLocation, program, i);
-                }
+        for (const objName of objKeyNames) {
+            const objArray = this.objects[objName];
+            for (let i = 0; i < objArray.length; i++) {
+                objArray[i].setUniformLocation(gl, uniLocations, program, i);
             }
         }
     }
@@ -132,24 +131,22 @@ export class Scene {
 
         let uniI = uniIndex;
         const objKeyNames = Object.keys(this.objects);
-        for (const objName in objKeyNames) {
-            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
-                const objArray = this.objects[objName];
-                for (let i = 0; i < objArray.length; i++) {
-                    uniI = objArray[i].setUniformValues(gl, uniLocation, uniI);
-                }
+        for (const objName of objKeyNames) {
+            const objArray = this.objects[objName];
+            for (let i = 0; i < objArray.length; i++) {
+                uniI = objArray[i].setUniformValues(gl, uniLocation, uniI);
             }
         }
         return uniI;
     }
 
     getContext() {
+        const context = {};
         const objKeyNames = Object.keys(this.objects);
-        for (const objName in objKeyNames) {
-            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
-                context[`num_${objName}`] = this.objects[objName].length;
-            }
+        for (const objName of objKeyNames) {
+            context[`num${objName}`] = this.objects[objName].length;
         }
+        return context;
     }
 
     load(sceneObjects) {
