@@ -3,6 +3,8 @@ dist/*
 !dist/img/
 !dist/css/
 
+.tern-port
+
 # Logs
 logs
 *.log
