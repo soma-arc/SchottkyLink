@@ -35,7 +35,7 @@ float IIS(vec2 pos) {
     float invNum = 0.;
     bool inFund = true;
     for (int i = 0; i < MAX_ITERATIONS; i++) {
-        if(u_maxIISIterations > i) break;
+        if(i > u_maxIISIterations) break;
         inFund = true;
 
         {% for n  in range(0,  numCircle ) %}

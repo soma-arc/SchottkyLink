@@ -1,6 +1,43 @@
 import assert from 'power-assert';
 import Vec2 from './Vector';
 
+export class SelectionState {
+    constructor () {
+        this.selectedObj = undefined;
+        this.componentId = -1;
+        // difference between mouse and the object
+        // (e.g. center of the circle)
+        this.diffObj = -1;
+        // distance between mouse and the selected component
+        // (e.g. boundary of the circle)
+        this.distToComponent = -1;
+    }
+
+    setObj (obj) {
+        this.selectedObj = obj;
+        return this;
+    }
+
+    setComponentId (componentId) {
+        this.componentId = componentId;
+        return this;
+    }
+
+    setDiffObj (diffObj) {
+        this.diffObj = diffObj;
+        return this;
+    }
+
+    setDistToComponent (distToComponent) {
+        this.distToComponent = distToComponent;
+        return this;
+    }
+
+    isSelectingObj () {
+        return this.selectedObj !== undefined;
+    }
+}
+
 export class Circle {
     constructor(center, r) {
         assert.ok(center instanceof Vec2);
@@ -20,33 +57,37 @@ export class Circle {
         return d < this.r;
     }
 
-    // return {id, difference between mouse and selected component }
     select(mouse) {
         assert.ok(mouse instanceof Vec2);
 
         const dp = mouse.sub(this.center);
         const d = dp.length();
-        if (d > this.r) return { id: -1 };
+        if (d > this.r) return new SelectionState();
 
         const distFromCircumference = this.r - d;
         if (distFromCircumference < this.circumferenceThickness) {
-            return { id: Circle.CIRCUMFERENCE,
-                     diff: distFromCircumference };
+            return new SelectionState().setObj(this)
+                .setComponentId(Circle.CIRCUMFERENCE)
+                .setDistToComponent(distFromCircumference);
         }
 
-        return { id: Circle.CIRCUMFERENCE,
-                 diff: dp };
+        return new SelectionState().setObj(this)
+            .setComponentId(Circle.BODY)
+            .setDiffObj(dp);
     }
 
-    move(selectState, mouse) {
+    /**
+     * Move circle
+     * @param { SelectionState } mouseState
+     * @param { Vec2 } mouse
+     */
+    move(mouseState, mouse) {
         assert.ok(mouse instanceof Vec2);
 
-        if (selectState.id === Circle.CIRCUMFERENCE) {
-            assert.ok(typeof selectState.diff === 'number');
-            this.r = Vec2.distance(this.center, mouse) + selectState.diff;
+        if (mouseState.componentId === Circle.CIRCUMFERENCE) {
+            this.r = Vec2.distance(this.center, mouse) + mouseState.distToComponent;
         } else {
-            assert.ok(selectState.diff instanceof Vec2);
-            this.center = mouse.sub(selectState.diff);
+            this.center = mouse.sub(mouseState.diffObj);
         }
 
         this.update();
@@ -100,20 +141,31 @@ const STR_CLASS_MAP = { 'Circle': Circle };
 export class Scene {
     constructor() {
         this.objects = {};
+        this.selectedState = new SelectionState();
     }
 
-    select(mouse) {
+    select (mouse) {
         assert.ok(mouse instanceof Vec2);
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
-            if (Object.prototype.hasOwnProperty.call(objKeyNames, objName)) {
-                for (const obj of this.objects[objName]) {
-                    const state = obj.select(mouse);
-                    if (state.id !== -1) return state;
+            for (const obj of this.objects[objName]) {
+                const state = obj.select(mouse);
+                if (state.isSelectingObj()) {
+                    this.selectedState = state;
+                    return true;
                 }
             }
         }
-        return { id: -1 };
+        this.selectedState = new SelectionState();
+        return false;
+    }
+
+    move (mouse) {
+        if (this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.move(this.selectedState, mouse);
+            return true;
+        }
+        return false;
     }
 
     setUniformLocation(gl, uniLocations, program) {

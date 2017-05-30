@@ -2,6 +2,7 @@ import assert from 'power-assert';
 import nunjucks from 'nunjucks';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
+import Vec2 from './Vector.js';
 
 const RENDER_VERTEX = require('./render.vert');
 const RENDER_FRAGMENT = require('./render.frag');
@@ -9,15 +10,21 @@ const CIRCLES_SHADER = require('./circles.frag');
 
 const CIRCLES_SHADER_TMPL = require('./2dShader.njk.frag');
 
+/**
+ * canvas class
+ * @param {} canvasId
+ * @param {} scene
+ */
 export default class Canvas2D {
     constructor(canvasId, scene) {
         this.canvasId = canvasId;
         this.scene = scene;
         this.canvas = document.getElementById(canvasId);
+        this.pixelRatio = 1;
+
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
         this.canvasRatio = this.canvas.width / this.canvas.height / 2;
-        this.pixelRatio = window.devicePixelRatio;
 
         // render to canvas
         this.renderCanvasProgram = this.gl.createProgram();
@@ -38,12 +45,15 @@ export default class Canvas2D {
         // geometry
         this.scale = 500;
         this.scaleFactor = 1.5;
-        this.translate = [0, 0];
+        this.translate = new Vec2(0, 0);
+
+        this.maxIterations = 20;
 
         // mouse
         this.mouseState = {
             isPressing: false,
-            prevPosition: [0, 0],
+            prevPosition: new Vec2(0, 0),
+            prevTranslate: new Vec2(0, 0)
         };
         this.boundMouseDownListener = this.mouseDownListener.bind(this);
         this.boundMouseUpListener = this.mouseUpListener.bind(this);
@@ -58,18 +68,29 @@ export default class Canvas2D {
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
     }
 
-    // Calculate screen coordinates from mouse position
-    calcCoord(mx, my) {
-        assert.equal(typeof mx, 'number');
-        assert.equal(typeof my, 'number');
-
+    /**
+     * Calculate screen coordinates from mouse position
+     * scale * [-width/2, width/2]x[-height/2, height/2]
+     * @param {number} mx
+     * @param {number} my
+     * @returns {Vec2}
+     */
+    calcCanvasCoord(mx, my) {
         const rect = this.canvas.getBoundingClientRect();
-        return [this.scale * (((mx - rect.left) * this.pixelRatio) /
-                              this.canvas.height - this.canvasRatio) +
-                this.translate[0],
-                this.scale * -(((my - rect.top) * this.pixelRatio) /
-                               this.canvas.height - 0.5) +
-                this.translate[1]];
+        return new Vec2(this.scale * (((mx - rect.left) * this.pixelRatio) /
+                                      this.canvas.height - this.canvasRatio),
+                        this.scale * -(((my - rect.top) * this.pixelRatio) /
+                                       this.canvas.height - 0.5));
+    }
+
+    /**
+     * Calculate coordinates on scene (consider translation) from mouse position
+     * @param {number} mx
+     * @param {number} my
+     * @returns {Vec2}
+     */
+    calcSceneCoord(mx, my) {
+        return this.calcPixelCoord(mx, my).add(this.translate);
     }
 
     mouseWheelListener(event) {
@@ -86,14 +107,15 @@ export default class Canvas2D {
     mouseDownListener(event) {
         assert.ok(event instanceof MouseEvent);
         event.preventDefault();
-        const mouse = this.calcCoord(event.clientX, event.clientY);
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        const scenePos = mouse.add(this.translate);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
-            // TODO: call selectObject
+            const selected = this.scene.select(scenePos);
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
             // TODO: add circle
         }
-
         this.mouseState.prevPosition = mouse;
+        this.mouseState.prevTranslate = this.translate;
         this.mouseState.isPressing = true;
     }
 
@@ -114,12 +136,12 @@ export default class Canvas2D {
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
-        const [mx, my] = this.calcCoord(event.clientX, event.clientY);
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
-            // move
+            const moved = this.scene.move(mouse);
+            if (moved) this.render();
         } else if (event.button === Canvas2D.MOUSE_BUTTON_RIGHT) {
-            this.translate[0] -= mx - this.mouseState.prevPosition[0];
-            this.translate[1] -= my - this.mouseState.prevPosition[1];
+            this.translate = this.mouseState.prevTranslate.sub(mouse.sub(this.mouseState.prevPosition));
             this.render();
         }
     }
@@ -142,6 +164,8 @@ export default class Canvas2D {
                                                           'u_resolution'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_geometry'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_maxIISIterations'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -152,7 +176,8 @@ export default class Canvas2D {
         this.gl.uniform1i(this.uniLocations[i++], texture);
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform3f(this.uniLocations[i++],
-                          this.translate[0], this.translate[1], this.scale);
+                          this.translate.x, this.translate.y, this.scale);
+        this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
     }
 
