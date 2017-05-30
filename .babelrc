@@ -8,6 +8,11 @@
             "plugins": [
                 "babel-plugin-unassert"
             ]
+        },
+        "development": {
+            "plugins": [
+                "jsdoc-to-assert"
+            ]
         }
     }
 }
