@@ -86,7 +86,7 @@ export default class Circle {
     }
 
     static loadJson(obj) {
-        return new Circle(new Vec2(obj.position[0], obj.position[1]),
+        return new Circle(new Vec2(obj.center[0], obj.center[1]),
                           obj.radius);
     }
 
