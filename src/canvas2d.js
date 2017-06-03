@@ -1,14 +1,12 @@
 import assert from 'power-assert';
-import nunjucks from 'nunjucks';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
-import Vec2 from './Vector.js';
+import Vec2 from './vector.js';
 
-const RENDER_VERTEX = require('./render.vert');
-const RENDER_FRAGMENT = require('./render.frag');
-const CIRCLES_SHADER = require('./circles.frag');
+const RENDER_VERTEX = require('./shaders/render.vert');
+const RENDER_FRAGMENT = require('./shaders/render.frag');
 
-const CIRCLES_SHADER_TMPL = require('./2dShader.njk.frag');
+const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
 
 /**
  * canvas class

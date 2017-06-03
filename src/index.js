@@ -1,6 +1,5 @@
-import assert from 'power-assert';
-import Canvas2D from './Canvas2d';
-import { Scene } from './geometry.js';
+import Canvas2D from './canvas2d';
+import Scene from './geometry/scene.js';
 
 const PRESET = require('./preset.json');
 
