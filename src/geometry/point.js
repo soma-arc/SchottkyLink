@@ -19,7 +19,7 @@ export default class Point extends Vec2 {
      * @param {Vec2} mouse
      */
     select(mouse) {
-        const dp = mouse.sub(this.center);
+        const dp = mouse.sub(this);
         const d = dp.length();
         if (d > this.uiRadius) return new SelectionState();
 
@@ -48,8 +48,8 @@ export default class Point extends Vec2 {
 
     /**
      *
-     * @param {WebGLRenderingContext} gl
-     * @param {number[]} uniLocation
+     * @param {WebGL2RenderingContext} gl
+     * @param {} uniLocation
      * @param {number} uniIndex
      * @returns {number}
      */

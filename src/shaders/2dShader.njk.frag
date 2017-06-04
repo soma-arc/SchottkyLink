@@ -8,12 +8,23 @@ uniform vec2 u_resolution;
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 
-//[x, y, z, r, r * r]
+//[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
 uniform vec4 u_circle{{ n }};
 {% endfor %}
 
+//[x, y, r]
+{% for n in range(0, numPoint) %}
+uniform vec3 u_point{{ n }};
+{% endfor %}
+
 out vec4 outColor;
+
+const vec3 BLACK = vec3(0);
+const vec3 WHITE = vec3(1);
+const vec3 RED = vec3(0.8, 0, 0);
+const vec3 GREEN = vec3(0, 0.8, 0);
+const vec3 BLUE = vec3(0, 0, 0.8);
 
 // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
 vec2 rand2n(const vec2 co, const float sampleIndex) {
@@ -66,6 +77,16 @@ vec3 hsv2rgb(vec3 c){
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+bool renderGenerator(vec2 pos, out vec3 color) {
+    {% for n  in range(0,  numPoint ) %}
+    if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
+        color = BLUE;
+        return true;
+    }
+    {% endfor %}
+    return false;
+}
+
 const float MAX_SAMPLES = 10.;
 void main() {
     vec3 sum = vec3(0);
@@ -76,6 +97,11 @@ void main() {
         position += u_geometry.xy;
 
         vec3 col = vec3(0);
+        bool isRendered = renderGenerator(position, col);
+        if(isRendered) {
+            sum += col;
+            continue;
+        }
         float loopNum = IIS(position);
         if(loopNum > 0.){
             vec3 hsv = vec3(0. + 0.01 * (loopNum -1.), 1.0, 1.0);

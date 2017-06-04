@@ -2,9 +2,11 @@ import assert from 'power-assert';
 import Vec2 from '../vector.js';
 import SelectionState from './selectionState.js';
 import Circle from './circle.js';
+import Point from './point.js';
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = { 'Circle': Circle };
+const STR_CLASS_MAP = { 'Circle': Circle,
+                        'Point': Point };
 
 export default class Scene {
     constructor() {
