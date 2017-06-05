@@ -13,6 +13,11 @@ uniform int u_maxIISIterations;
 uniform vec4 u_circle{{ n }};
 {% endfor %}
 
+//[x, y, r, r * r]
+{% for n  in range(0,  numCircleFromPoints ) %}
+uniform vec4 u_circleFromPoints{{ n }};
+{% endfor %}
+
 //[x, y, r]
 {% for n in range(0, numPoint) %}
 uniform vec3 u_point{{ n }};
@@ -59,6 +64,22 @@ float IIS(vec2 pos) {
         {% else %}
         else if(distance(pos, u_circle{{ n }}.xy) < u_circle{{ n }}.z){
             pos = circleInvert(pos, u_circle{{ n }});
+            inFund = false;
+            invNum++;
+        }
+        {% endif %}
+        {% endfor %}
+
+        {% for n  in range(0,  numCircleFromPoints ) %}
+        {% if n == 0 %}
+        if(distance(pos, u_circleFromPoints{{ n }}.xy) < u_circleFromPoints{{ n }}.z){
+            pos = circleInvert(pos, u_circleFromPoints{{ n }});
+            inFund = false;
+            invNum++;
+        }
+        {% else %}
+        else if(distance(pos, u_circleFromPoints{{ n }}.xy) < u_circleFromPoints{{ n }}.z){
+            pos = circleInvert(pos, u_circleFromPoints{{ n }});
             inFund = false;
             invNum++;
         }

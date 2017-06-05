@@ -1,7 +1,7 @@
 import assert from 'power-assert';
 import Vec2 from '../vector.js';
 import SelectionState from './selectionState.js';
-import Shape from'./shape.js';
+import Shape from './shape.js';
 
 export default class Circle extends Shape {
     constructor(center, r) {
@@ -87,7 +87,7 @@ export default class Circle extends Shape {
         };
     }
 
-    static loadJson(obj) {
+    static loadJson(obj, scene) {
         const nc = new Circle(new Vec2(obj.center[0], obj.center[1]),
                               obj.radius);
         nc.setId(obj.id);

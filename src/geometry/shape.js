@@ -104,7 +104,7 @@ export default class Shape {
      * @param {Object.} obj
      * @returns {Shape}
      */
-    static loadJson(obj) {
+    static loadJson(obj, scene) {
         return new Shape();
     }
 }

@@ -27,6 +27,22 @@
             {
                 "id": 4,
                 "position": [0, 0]
+            },
+            {
+                "id": 5,
+                "position": [50, 0]
+            },
+            {
+                "id": 6,
+                "position": [0, 50]
+            }
+        ],
+        "CircleFromPoints": [
+            {
+                "id": 7,
+                "p1Id": 4,
+                "p2Id": 5,
+                "p3Id": 6
             }
         ]
     }

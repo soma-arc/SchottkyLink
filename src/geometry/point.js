@@ -8,6 +8,18 @@ export default class Point extends Shape {
         this.pos = new Vec2(x, y);
         // radius of the point
         this.uiRadius = 10;
+
+        this.parents = [];
+    }
+
+    addParent(parent) {
+        this.parents.push(parent);
+    }
+
+    update() {
+        for (const parent of this.parents) {
+            parent.update();
+        }
     }
 
     removable(mouse) {
@@ -35,6 +47,7 @@ export default class Point extends Shape {
      */
     move(selectionState, mouse) {
         this.pos = mouse.sub(selectionState.diffObj);
+        this.update();
     }
 
     cloneDeeply() {

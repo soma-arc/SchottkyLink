@@ -3,10 +3,12 @@ import Vec2 from '../vector.js';
 import SelectionState from './selectionState.js';
 import Circle from './circle.js';
 import Point from './point.js';
+import CircleFromPoints from './circleFromPoints.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
-                        'Point': Point };
+                        'Point': Point,
+                        'CircleFromPoints': CircleFromPoints};
 
 export default class Scene {
     constructor() {
@@ -81,8 +83,23 @@ export default class Scene {
                 this.objects[objName] = [];
             }
             for (const objParam of generators[objName]) {
-                this.objects[objName].push(STR_CLASS_MAP[objName].loadJson(objParam));
+                this.objects[objName].push(STR_CLASS_MAP[objName].loadJson(objParam, this));
             }
         }
+    }
+
+    getObjFromId(id) {
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName of objKeyNames) {
+            const obj = this.objects[objName].find((elem, idxm, array) => {
+                if (elem.id === id) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            if (obj !== undefined) return obj;
+        }
+        return undefined;
     }
 }
