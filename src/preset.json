@@ -3,20 +3,30 @@
     "generators": {
         "Circle": [
             {
+                "id": 0,
                 "center": [100, -100],
                 "radius": 100
             },
             {
+                "id": 1,
                 "center": [100, 100],
                 "radius": 100
             },
             {
+                "id": 2,
                 "center": [-100, -100],
                 "radius": 100
             },
             {
+                "id": 3,
                 "center": [-100, 100],
                 "radius": 100
+            }
+        ],
+        "Point": [
+            {
+                "id": 4,
+                "position": [0, 0]
             }
         ]
     }

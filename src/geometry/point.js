@@ -1,10 +1,11 @@
 import SelectionState from './selectionState.js';
 import Vec2 from '../vector.js';
+import Shape from './shape.js'
 
-export default class Point extends Vec2 {
+export default class Point extends Shape {
     constructor(x, y) {
-        super(x, y);
-
+        super();
+        this.pos = new Vec2(x, y);
         // radius of the point
         this.uiRadius = 10;
     }
@@ -19,7 +20,7 @@ export default class Point extends Vec2 {
      * @param {Vec2} mouse
      */
     select(mouse) {
-        const dp = mouse.sub(this);
+        const dp = mouse.sub(this.pos);
         const d = dp.length();
         if (d > this.uiRadius) return new SelectionState();
 
@@ -33,17 +34,15 @@ export default class Point extends Vec2 {
      * @param { Vec2 } mouse
      */
     move(selectionState, mouse) {
-        const diff = mouse.sub(selectionState.diffObj);
-        this.x = diff.x;
-        this.y = diff.y;
+        this.pos = mouse.sub(selectionState.diffObj);
     }
 
     cloneDeeply() {
-        return new Point(this.x, this.y);
+        return new Point(this.pos.x, this.pos.y);
     }
 
     getUniformArray() {
-        return [this.x, this.y, this.uiRadius];
+        return [this.pos.x, this.pos.y, this.uiRadius];
     }
 
     /**
@@ -56,7 +55,7 @@ export default class Point extends Vec2 {
     setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
         gl.uniform3f(uniLocation[uniI++],
-                     this.x, this.y, this.uiRadius);
+                     this.pos.x, this.pos.y, this.uiRadius);
         return uniI;
     }
 
@@ -66,11 +65,14 @@ export default class Point extends Vec2 {
 
     exportJson() {
         return {
-            position: [this.x, this.y],
+            id: this.id,
+            position: [this.pos.x, this.pos.y],
         };
     }
 
     static loadJson(obj) {
-        return new Point(obj.position[0], obj.position[1]);
+        const np = new Point(obj.position[0], obj.position[1]);
+        np.setId(obj.id);
+        return np;
     }
 }

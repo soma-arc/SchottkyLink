@@ -1,10 +1,11 @@
 import assert from 'power-assert';
 import Vec2 from '../vector.js';
 import SelectionState from './selectionState.js';
+import Shape from'./shape.js';
 
-export default class Circle {
+export default class Circle extends Shape {
     constructor(center, r) {
-        assert.ok(center instanceof Vec2);
+        super();
         this.center = center;
         this.r = r;
         this.rSq = r * r;
@@ -80,14 +81,17 @@ export default class Circle {
 
     exportJson() {
         return {
+            id: this.id,
             center: [this.center.x, this.center.y],
             radius: this.r,
         };
     }
 
     static loadJson(obj) {
-        return new Circle(new Vec2(obj.center[0], obj.center[1]),
-                          obj.radius);
+        const nc = new Circle(new Vec2(obj.center[0], obj.center[1]),
+                              obj.radius);
+        nc.setId(obj.id);
+        return nc;
     }
 
     static get BODY() {
