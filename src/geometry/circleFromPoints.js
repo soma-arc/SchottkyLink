@@ -36,7 +36,12 @@ export default class CircleFromPoints extends Circle {
     }
 
     select(mouse) {
-        return new SelectionState();
+        const dp = mouse.sub(this.center);
+        const d = dp.length();
+        if (d > this.r) return new SelectionState();
+
+        return new SelectionState().setObj(this)
+            .setComponentId(Circle.BODY).setDiffObj(dp);
     }
 
     /**
@@ -45,6 +50,11 @@ export default class CircleFromPoints extends Circle {
      * @param { Vec2 } mouse
      */
     move(mouseState, mouse) {
+        const d = mouse.sub(this.center);
+        const translation = d.sub(mouseState.diffObj);
+        this.p1.translate(translation);
+        this.p2.translate(translation);
+        this.p3.translate(translation);
     }
 
     cloneDeeply() {
@@ -78,10 +88,12 @@ export default class CircleFromPoints extends Circle {
     }
 
     static loadJson(obj, scene) {
+        // We assume the points are already defined
         const nc = new CircleFromPoints(scene.getObjFromId(obj.p1Id),
                                         scene.getObjFromId(obj.p2Id),
                                         scene.getObjFromId(obj.p3Id));
         nc.setId(obj.id);
         return nc;
     }
+
 }

@@ -22,6 +22,15 @@ export default class Point extends Shape {
         }
     }
 
+    /**
+     *
+     * @param {Vec2} translation
+     */
+    translate(translation) {
+        this.pos = this.pos.add(translation);
+        this.update();
+    }
+
     removable(mouse) {
         const d = Vec2.distance(mouse, this);
         return d < this.r;

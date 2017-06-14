@@ -106,7 +106,6 @@ export default class Canvas2D {
         assert.ok(event instanceof MouseEvent);
         event.preventDefault();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
-//        const scenePos = mouse.add(this.translate);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
             const selected = this.scene.select(mouse);
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
