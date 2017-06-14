@@ -88,7 +88,7 @@ export default class Canvas2D {
      * @returns {Vec2}
      */
     calcSceneCoord(mx, my) {
-        return this.calcPixelCoord(mx, my).add(this.translate);
+        return this.calcCanvasCoord(mx, my).add(this.translate);
     }
 
     mouseWheelListener(event) {
@@ -105,10 +105,10 @@ export default class Canvas2D {
     mouseDownListener(event) {
         assert.ok(event instanceof MouseEvent);
         event.preventDefault();
-        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
-        const scenePos = mouse.add(this.translate);
+        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+//        const scenePos = mouse.add(this.translate);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
-            const selected = this.scene.select(scenePos);
+            const selected = this.scene.select(mouse);
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
             // TODO: add circle
         }
@@ -134,12 +134,12 @@ export default class Canvas2D {
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
-        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
             const moved = this.scene.move(mouse);
             if (moved) this.render();
         } else if (event.button === Canvas2D.MOUSE_BUTTON_RIGHT) {
-            this.translate = this.mouseState.prevTranslate.sub(mouse.sub(this.mouseState.prevPosition));
+            this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
             this.render();
         }
     }
