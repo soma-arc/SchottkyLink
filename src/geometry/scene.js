@@ -4,11 +4,13 @@ import SelectionState from './selectionState.js';
 import Circle from './circle.js';
 import Point from './point.js';
 import CircleFromPoints from './circleFromPoints.js';
+import HalfPlane from './halfPlane.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
                         'Point': Point,
-                        'CircleFromPoints': CircleFromPoints };
+                        'CircleFromPoints': CircleFromPoints,
+                        'HalfPlane': HalfPlane };
 
 export default class Scene {
     constructor() {

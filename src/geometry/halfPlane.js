@@ -18,6 +18,8 @@ export default class HalfPlane extends Shape {
         super();
         this.p = p;
         this.normal = normal.normalize();
+        this.normalUIPointLen = 20;
+        this.UIPointRadius = 5;
         this.update();
     }
 
@@ -28,18 +30,72 @@ export default class HalfPlane extends Shape {
 
     select(mouse) {
         const dp = mouse.sub(this.p);
-        if (this.normal.dot(this.p) > 0) return new SelectionState();
+        const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIPointLen)));
+        if (dpNormal.length() < this.UIPointRadius) {
+            return new SelectionState().setObj(this)
+                .setComponentId(HalfPlane.NORMAL_POINT)
+                .setDiffObj(dpNormal);
+        }
+
+        if (Vec2.dot(this.normal, dp) > 0) return new SelectionState();
 
         return new SelectionState().setObj(this)
             .setComponentId(HalfPlane.BODY)
             .setDiffObj(dp);
     }
 
+    move(mouseState, mouse) {
+        if (mouseState.componentId === HalfPlane.BODY) {
+            this.p = mouse.sub(mouseState.diffObj);
+        } else if (mouseState.componentId === HalfPlane.NORMAL_POINT) {
+            this.normal = mouse.sub(this.p).normalize();
+            this.update();
+        }
+
+        this.update();
+    }
+
+    setUniformValues(gl, uniLocation, uniIndex) {
+        let uniI = uniIndex;
+        gl.uniform2f(uniLocation[uniI++],
+                     this.p.x, this.p.y);
+        gl.uniform4f(uniLocation[uniI++],
+                     this.normal.x, this.normal.y,
+                     this.normalUIPointLen, this.UIPointRadius);
+        gl.uniform1i(uniLocation[uniI++],
+                     this.selected);
+        return uniI;
+    }
+
+    setUniformLocation(gl, uniLocation, program, index) {
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_halfPlane${index}.p`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_halfPlane${index}.normal`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_halfPlane${index}.selected`));
+    }
+
+    exportJson() {
+        return {
+            id: this.id,
+            p: [this.p.x, this.p.y],
+            normal: [this.normal.x, this.normal.y],
+        };
+    }
+
+    static loadJson(obj, scene) {
+        const nh = new HalfPlane(new Vec2(obj.p[0], obj.p[1]),
+                                 new Vec2(obj.normal[0], obj.normal[1]));
+        nh.setId(obj.id);
+        return nh;
+    }
+
     static get BODY() {
         return 0;
     }
 
-    static get CIRCUMFERENCE() {
+    static get NORMAL_POINT() {
         return 1;
     }
 }
