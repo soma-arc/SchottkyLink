@@ -45,7 +45,7 @@ export default class Canvas2D {
         this.texturesFrameBuffer = this.gl.createFramebuffer();
 
         // geometry
-        this.scale = 500;
+        this.scale = 1;
         this.scaleFactor = 1.5;
         this.translate = new Vec2(0, 0);
 
@@ -111,7 +111,7 @@ export default class Canvas2D {
         event.preventDefault();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
-            this.scene.select(mouse);
+            this.scene.select(mouse, this.scale);
             this.render();
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
             // TODO: add circle
@@ -180,7 +180,7 @@ export default class Canvas2D {
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
-        i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
+        i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
     renderToTexture(textures, width, height) {

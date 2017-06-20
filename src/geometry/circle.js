@@ -9,7 +9,7 @@ export default class Circle extends Shape {
         this.center = center;
         this.r = r;
         this.rSq = r * r;
-        this.circumferenceThickness = 10;
+        this.circumferenceThickness = 0.01;
     }
 
     update() {
@@ -17,20 +17,17 @@ export default class Circle extends Shape {
     }
 
     removable(mouse) {
-        assert.ok(mouse instanceof Vec2);
         const d = Vec2.distance(mouse, this.center);
         return d < this.r;
     }
 
-    select(mouse) {
-        assert.ok(mouse instanceof Vec2);
-
+    select(mouse, sceneScale) {
         const dp = mouse.sub(this.center);
         const d = dp.length();
         if (d > this.r) return new SelectionState();
 
         const distFromCircumference = this.r - d;
-        if (distFromCircumference < this.circumferenceThickness) {
+        if (distFromCircumference < this.circumferenceThickness * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Circle.CIRCUMFERENCE)
                 .setDistToComponent(distFromCircumference);
@@ -47,8 +44,6 @@ export default class Circle extends Shape {
      * @param { Vec2 } mouse
      */
     move(mouseState, mouse) {
-        assert.ok(mouse instanceof Vec2);
-
         if (mouseState.componentId === Circle.CIRCUMFERENCE) {
             this.r = Vec2.distance(this.center, mouse) + mouseState.distToComponent;
         } else {
@@ -62,16 +57,12 @@ export default class Circle extends Shape {
         return new Circle(this.center.cloneDeeply(), this.r);
     }
 
-    getUniformArray() {
-        return this.center.getUniformArray().concat([this.r, this.rSq]);
-    }
-
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
         gl.uniform2f(uniLocation[uniI++],
                      this.center.x, this.center.y);
         gl.uniform3f(uniLocation[uniI++],
-                     this.r, this.rSq, this.circumferenceThickness);
+                     this.r, this.rSq, this.circumferenceThickness * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;

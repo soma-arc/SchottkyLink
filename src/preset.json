@@ -4,23 +4,23 @@
         "Circle": [
             {
                 "id": 0,
-                "center": [100, -100],
-                "radius": 100
+                "center": [1, -1],
+                "radius": 1
             },
             {
                 "id": 1,
-                "center": [100, 100],
-                "radius": 100
+                "center": [1, 1],
+                "radius": 1
             },
             {
                 "id": 2,
-                "center": [-100, -100],
-                "radius": 100
+                "center": [-1, -1],
+                "radius": 1
             },
             {
                 "id": 3,
-                "center": [-100, 100],
-                "radius": 100
+                "center": [-1, 1],
+                "radius": 1
             }
         ],
         "Point": [
@@ -30,11 +30,11 @@
             },
             {
                 "id": 5,
-                "position": [50, 0]
+                "position": [0.5, 0]
             },
             {
                 "id": 6,
-                "position": [0, 50]
+                "position": [0, 0.5]
             }
         ],
         "CircleFromPoints": [
@@ -48,7 +48,7 @@
         "HalfPlane": [
             {
                 "id": 8,
-                "p": [-100, 0],
+                "p": [-1, 0],
                 "normal": [1, 0]
             }
         ]

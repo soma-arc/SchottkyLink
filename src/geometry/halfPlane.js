@@ -18,8 +18,8 @@ export default class HalfPlane extends Shape {
         super();
         this.p = p;
         this.normal = normal.normalize();
-        this.normalUIPointLen = 20;
-        this.UIPointRadius = 5;
+        this.normalUIPointLen = 0.1;
+        this.UIPointRadius = 0.01;
         this.update();
     }
 
@@ -28,10 +28,10 @@ export default class HalfPlane extends Shape {
                                     this.normal.x);
     }
 
-    select(mouse) {
+    select(mouse, sceneScale) {
         const dp = mouse.sub(this.p);
-        const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIPointLen)));
-        if (dpNormal.length() < this.UIPointRadius) {
+        const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIPointLen * sceneScale)));
+        if (dpNormal.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(HalfPlane.NORMAL_POINT)
                 .setDiffObj(dpNormal);
@@ -55,13 +55,14 @@ export default class HalfPlane extends Shape {
         this.update();
     }
 
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
         gl.uniform2f(uniLocation[uniI++],
                      this.p.x, this.p.y);
         gl.uniform4f(uniLocation[uniI++],
                      this.normal.x, this.normal.y,
-                     this.normalUIPointLen, this.UIPointRadius);
+                     this.normalUIPointLen * sceneScale,
+                     this.UIPointRadius * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;

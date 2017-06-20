@@ -43,9 +43,10 @@ export default class Shape {
     /**
      *
      * @param {Vec2} mouse
+     * @param  {number} sceneScale
      * @returns {SelectionState}
      */
-    select(mouse) {
+    select(mouse, sceneScale) {
         return new SelectionState();
     }
 
@@ -66,20 +67,13 @@ export default class Shape {
 
     /**
      *
-     * @returns {Array.}
-     */
-    getUniformArray() {
-        return [];
-    }
-
-    /**
-     *
      * @param {WebGL2RenderingContext} gl
      * @param {Array.} uniLocation
      * @param {number} uniIndex
+     * @param {number} sceneScale
      * @returns {number}
      */
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         return uniIndex;
     }
 

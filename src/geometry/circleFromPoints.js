@@ -35,7 +35,7 @@ export default class CircleFromPoints extends Circle {
         return false;
     }
 
-    select(mouse) {
+    select(mouse, sceneScale) {
         const dp = mouse.sub(this.center);
         const d = dp.length();
         if (d > this.r) return new SelectionState();
@@ -63,12 +63,12 @@ export default class CircleFromPoints extends Circle {
                                     this.p3.cloneDeeply());
     }
 
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
         gl.uniform2f(uniLocation[uniI++],
                      this.center.x, this.center.y);
         gl.uniform3f(uniLocation[uniI++],
-                     this.r, this.rSq, this.circumferenceThickness);
+                     this.r, this.rSq, this.circumferenceThickness * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;

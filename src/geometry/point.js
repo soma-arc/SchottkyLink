@@ -7,7 +7,7 @@ export default class Point extends Shape {
         super();
         this.pos = new Vec2(x, y);
         // radius of the point
-        this.uiRadius = 10;
+        this.uiRadius = 0.01;
 
         this.parents = [];
     }
@@ -40,10 +40,10 @@ export default class Point extends Shape {
      *
      * @param {Vec2} mouse
      */
-    select(mouse) {
+    select(mouse, sceneScale) {
         const dp = mouse.sub(this.pos);
         const d = dp.length();
-        if (d > this.uiRadius) return new SelectionState();
+        if (d > this.uiRadius * sceneScale) return new SelectionState();
 
         return new SelectionState().setObj(this)
             .setDiffObj(dp);
@@ -63,21 +63,18 @@ export default class Point extends Shape {
         return new Point(this.pos.x, this.pos.y);
     }
 
-    getUniformArray() {
-        return [this.pos.x, this.pos.y, this.uiRadius];
-    }
-
     /**
      *
      * @param {WebGL2RenderingContext} gl
      * @param {} uniLocation
      * @param {number} uniIndex
+     * @param {number} sceneScale
      * @returns {number}
      */
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
         gl.uniform3f(uniLocation[uniI++],
-                     this.pos.x, this.pos.y, this.uiRadius);
+                     this.pos.x, this.pos.y, this.uiRadius * sceneScale);
         return uniI;
     }
 

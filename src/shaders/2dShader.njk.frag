@@ -118,6 +118,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
 
     float dist;
     {% for n in range(0,  numCircle ) %}
+    // boundary of circle
     if(u_circle{{ n }}.selected){
         dist = u_circle{{ n }}.radius.x - distance(pos, u_circle{{ n }}.center);
         if(0. < dist && dist < u_circle{{ n }}.radius.z){
@@ -129,15 +130,18 @@ bool renderGenerator(vec2 pos, out vec3 color) {
 
     {% for n in range(0, numHalfPlane) %}
     if(u_halfPlane{{ n }}.selected) {
+        // normal point
         if(distance(pos, u_halfPlane{{ n }}.p + u_halfPlane{{ n }}.normal.xy * u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w) {
             color = LIGHT_BLUE;
             return true;
         }
+        // point p
         if(distance(pos, u_halfPlane{{ n }}.p) < u_halfPlane{{ n }}.normal.w) {
             color = WHITE;
             return true;
         }
-        if(abs(distance(pos, u_halfPlane{{ n }}.p) - u_halfPlane{{ n }}.normal.z) < 1.) {
+        // ring
+        if(abs(distance(pos, u_halfPlane{{ n }}.p) - u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w *.5) {
             color = WHITE;
             return true;
         }

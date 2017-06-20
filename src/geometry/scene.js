@@ -18,14 +18,14 @@ export default class Scene {
         this.selectedState = new SelectionState();
     }
 
-    select (mouse) {
+    select (mouse, sceneScale) {
         if (this.selectedState.isSelectingObj()) {
             this.selectedState.selectedObj.selected = false;
         }
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             for (const obj of this.objects[objName]) {
-                const state = obj.select(mouse);
+                const state = obj.select(mouse, sceneScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
                     this.selectedState.selectedObj.selected = true;
@@ -55,7 +55,7 @@ export default class Scene {
         }
     }
 
-    setUniformValues(gl, uniLocation, uniIndex) {
+    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         assert.ok(typeof uniIndex === 'number');
 
         let uniI = uniIndex;
@@ -63,7 +63,7 @@ export default class Scene {
         for (const objName of objKeyNames) {
             const objArray = this.objects[objName];
             for (let i = 0; i < objArray.length; i++) {
-                uniI = objArray[i].setUniformValues(gl, uniLocation, uniI);
+                uniI = objArray[i].setUniformValues(gl, uniLocation, uniI, sceneScale);
             }
         }
         return uniI;
