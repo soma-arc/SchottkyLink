@@ -18,7 +18,11 @@ export default class Canvas2D {
         this.canvasId = canvasId;
         this.scene = scene;
         this.canvas = document.getElementById(canvasId);
-        this.pixelRatio = 1;
+        this.pixelRatio = window.devicePixelRatio;
+        this.canvas.style.width = `${this.canvas.width}px`;
+        this.canvas.style.height = `${this.canvas.height}px`;
+        this.canvas.width = this.canvas.width * this.pixelRatio;
+        this.canvas.height = this.canvas.height * this.pixelRatio;
 
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
