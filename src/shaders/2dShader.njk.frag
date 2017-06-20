@@ -8,14 +8,21 @@ uniform vec2 u_resolution;
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 
+struct Circle {
+    vec2 center; // [x, y]
+    vec3 radius; // [r, r * r, circumferenceThickness]
+    bool selected;
+};
+
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
-uniform vec4 u_circle{{ n }};
+uniform Circle u_circle{{ n }};
 {% endfor %}
 
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircleFromPoints ) %}
-uniform vec4 u_circleFromPoints{{ n }};
+uniform Circle u_circleFromPoints{{ n }};
+{% endfor %}
 {% endfor %}
 
 //[x, y, r]
@@ -40,10 +47,10 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
                 fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
 }
 
-vec2 circleInvert(const vec2 pos, const vec4 circle){
-    vec2 p = pos - circle.xy;
+vec2 circleInvert(const vec2 pos, const Circle circle){
+    vec2 p = pos - circle.center;
     float d = length(p);
-    return (p * circle.w)/(d * d) + circle.xy;
+    return (p * circle.radius.y)/(d * d) + circle.center;
 }
 
 const int MAX_ITERATIONS = 200;
@@ -54,36 +61,20 @@ float IIS(vec2 pos) {
         if(i > u_maxIISIterations) break;
         inFund = true;
 
-        {% for n  in range(0,  numCircle ) %}
-        {% if n == 0 %}
-        if(distance(pos, u_circle{{ n }}.xy) < u_circle{{ n }}.z){
+        {% for n in range(0,  numCircle ) %}
+        if(distance(pos, u_circle{{ n }}.center) < u_circle{{ n }}.radius.x){
             pos = circleInvert(pos, u_circle{{ n }});
             inFund = false;
             invNum++;
         }
-        {% else %}
-        else if(distance(pos, u_circle{{ n }}.xy) < u_circle{{ n }}.z){
-            pos = circleInvert(pos, u_circle{{ n }});
-            inFund = false;
-            invNum++;
-        }
-        {% endif %}
         {% endfor %}
 
         {% for n  in range(0,  numCircleFromPoints ) %}
-        {% if n == 0 %}
-        if(distance(pos, u_circleFromPoints{{ n }}.xy) < u_circleFromPoints{{ n }}.z){
+        if(distance(pos, u_circleFromPoints{{ n }}.center) < u_circleFromPoints{{ n }}.radius.x){
             pos = circleInvert(pos, u_circleFromPoints{{ n }});
             inFund = false;
             invNum++;
         }
-        {% else %}
-        else if(distance(pos, u_circleFromPoints{{ n }}.xy) < u_circleFromPoints{{ n }}.z){
-            pos = circleInvert(pos, u_circleFromPoints{{ n }});
-            inFund = false;
-            invNum++;
-        }
-        {% endif %}
         {% endfor %}
         
         if (inFund) break;
@@ -103,6 +94,17 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
         color = BLUE;
         return true;
+    }
+    {% endfor %}
+
+    float dist;
+    {% for n in range(0,  numCircle ) %}
+    if(u_circle{{ n }}.selected == true){
+        dist = u_circle{{ n }}.radius.x - distance(pos, u_circle{{ n }}.center);
+        if(0. < dist && dist < u_circle{{ n }}.radius.z){
+            color = WHITE;
+            return true;
+        }
     }
     {% endfor %}
     return false;

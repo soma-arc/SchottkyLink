@@ -107,7 +107,8 @@ export default class Canvas2D {
         event.preventDefault();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
-            const selected = this.scene.select(mouse);
+            this.scene.select(mouse);
+            this.render();
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
             // TODO: add circle
         }

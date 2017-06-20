@@ -8,7 +8,7 @@ import CircleFromPoints from './circleFromPoints.js';
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
                         'Point': Point,
-                        'CircleFromPoints': CircleFromPoints};
+                        'CircleFromPoints': CircleFromPoints };
 
 export default class Scene {
     constructor() {
@@ -17,13 +17,16 @@ export default class Scene {
     }
 
     select (mouse) {
-        assert.ok(mouse instanceof Vec2);
+        if (this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.selected = false;
+        }
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             for (const obj of this.objects[objName]) {
                 const state = obj.select(mouse);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
+                    this.selectedState.selectedObj.selected = true;
                     return true;
                 }
             }

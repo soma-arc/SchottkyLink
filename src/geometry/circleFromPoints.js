@@ -63,19 +63,24 @@ export default class CircleFromPoints extends Circle {
                                     this.p3.cloneDeeply());
     }
 
-    getUniformArray() {
-        return this.center.getUniformArray().concat([this.r, this.rSq]);
-    }
-
     setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
-        gl.uniform4f(uniLocation[uniI++],
-                     this.center.x, this.center.y, this.r, this.rSq);
+        gl.uniform2f(uniLocation[uniI++],
+                     this.center.x, this.center.y);
+        gl.uniform3f(uniLocation[uniI++],
+                     this.r, this.rSq, this.circumferenceThickness);
+        gl.uniform1i(uniLocation[uniI++],
+                     this.selected);
         return uniI;
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
-        uniLocation.push(gl.getUniformLocation(program, `u_circleFromPoints${index}`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_circleFromPoints${index}.center`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_circleFromPoints${index}.radius`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_circleFromPoints${index}.selected`));
     }
 
     exportJson() {
@@ -95,5 +100,4 @@ export default class CircleFromPoints extends Circle {
         nc.setId(obj.id);
         return nc;
     }
-
 }

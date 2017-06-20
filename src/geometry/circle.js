@@ -67,16 +67,20 @@ export default class Circle extends Shape {
     }
 
     setUniformValues(gl, uniLocation, uniIndex) {
-        assert.ok(typeof uniIndex === 'number');
         let uniI = uniIndex;
-        gl.uniform4f(uniLocation[uniI++],
-                     this.center.x, this.center.y, this.r, this.rSq);
+        gl.uniform2f(uniLocation[uniI++],
+                     this.center.x, this.center.y);
+        gl.uniform3f(uniLocation[uniI++],
+                     this.r, this.rSq, this.circumferenceThickness);
+        gl.uniform1i(uniLocation[uniI++],
+                     this.selected);
         return uniI;
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
-        assert.ok(typeof index === 'number');
-        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.center`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.radius`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.selected`));
     }
 
     exportJson() {

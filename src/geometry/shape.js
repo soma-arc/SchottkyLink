@@ -5,6 +5,7 @@ let gIdList = [];
 export default class Shape {
     constructor() {
         this.setId(gId);
+        this.selected = false;
     }
 
     /**
