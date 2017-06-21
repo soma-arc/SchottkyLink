@@ -16,7 +16,14 @@ struct Circle {
 
 struct HalfPlane {
     vec2 p;
-    vec4 normal; //[x, t, normal point length, point radius]
+    vec4 normal; //[x, y, normal ring radius, point radius]
+    bool selected;
+};
+
+struct ParallelTranslation {
+    vec2 p;
+    vec3 normal; //[x, y, translation length]
+    vec2 ui; //[normal ring radius, point radius]
     bool selected;
 };
 
@@ -39,6 +46,10 @@ uniform HalfPlane u_halfPlane{{ n }};
 uniform vec3 u_point{{ n }};
 {% endfor %}
 
+{% for n in range(0, numParallelTranslation) %}
+uniform ParallelTranslation u_translate{{ n }};
+{% endfor %}
+
 out vec4 outColor;
 
 const vec3 BLACK = vec3(0);
@@ -46,6 +57,8 @@ const vec3 WHITE = vec3(1);
 const vec3 RED = vec3(0.8, 0, 0);
 const vec3 GREEN = vec3(0, 0.8, 0);
 const vec3 BLUE = vec3(0, 0, 0.8);
+const vec3 YELLOW = vec3(1, 1, 0);
+const vec3 PINK = vec3(.78, 0, .78);
 const vec3 LIGHT_BLUE = vec3(0, 1, 1);
 
 // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
@@ -94,6 +107,17 @@ float IIS(vec2 pos) {
         inFund = (dHalfPlane{{ n }} < 0. ) ? false : inFund;
         pos -= 2.0 * min(0., dHalfPlane{{ n }}) * u_halfPlane{{ n }}.normal.xy;
         pos += u_halfPlane{{ n }}.p;
+        {% endfor %}
+
+        {% for n in range(0, numParallelTranslation) %}
+        pos -= u_translate{{ n }}.p;
+        float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
+        if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
+            invNum += abs(floor(hpd{{ n }} / u_translate{{ n }}.normal.z));
+            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.z));
+            inFund = false;
+        }
+        pos += u_translate{{ n }}.p;
         {% endfor %}
         
         if (inFund) break;
@@ -147,6 +171,40 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         }
     }
     {% endfor %}
+
+    {% for n in range(0, numParallelTranslation) %}
+    if(u_translate{{ n }}.selected){
+        // normal point
+        if(distance(pos, u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.ui.x) < u_translate{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_translate{{ n }}.p) - u_translate{{ n }}.ui.x) < u_translate{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        // point p
+        if(distance(pos, u_translate{{ n }}.p) < u_translate{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+        // point on hp2
+        if(distance(pos, u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z) < u_translate{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        pos -= u_translate{{ n }}.p;
+        float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
+        if(hpd{{ n }} > 0. && u_translate{{ n }}.normal.z > hpd{{ n }} &&
+           abs(dot(pos, vec2(-u_translate{{ n }}.normal.y, u_translate{{ n }}.normal.x))) < u_translate{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_translate{{ n }}.p;
+    }
+    {% endfor %}
+    
     return false;
 }
 

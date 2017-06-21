@@ -5,12 +5,14 @@ import Circle from './circle.js';
 import Point from './point.js';
 import CircleFromPoints from './circleFromPoints.js';
 import HalfPlane from './halfPlane.js';
+import ParallelTranslation from './parallelTranslation.js'
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
                         'Point': Point,
                         'CircleFromPoints': CircleFromPoints,
-                        'HalfPlane': HalfPlane };
+                        'HalfPlane': HalfPlane,
+                        'ParallelTranslation': ParallelTranslation };
 
 export default class Scene {
     constructor() {

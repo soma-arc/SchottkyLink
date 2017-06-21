@@ -51,6 +51,14 @@
                 "p": [-1, 0],
                 "normal": [1, 0]
             }
+        ],
+        "ParallelTranslation": [
+            {
+                "id": 9,
+                "p": [0, 1],
+                "normal": [0, -1],
+                "translation": 5
+            }
         ]
     }
 }
