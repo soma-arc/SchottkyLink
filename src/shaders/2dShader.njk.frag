@@ -27,6 +27,13 @@ struct ParallelTranslation {
     bool selected;
 };
 
+struct Rotation {
+    vec2 p;
+    vec4 normal;
+    vec2 ui; //[normal ring radius, point radius]
+    bool selected;
+};
+
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
 uniform Circle u_circle{{ n }};
@@ -48,6 +55,10 @@ uniform vec3 u_point{{ n }};
 
 {% for n in range(0, numParallelTranslation) %}
 uniform ParallelTranslation u_translate{{ n }};
+{% endfor %}
+
+{% for n in range(0, numRotation) %}
+uniform Rotation u_rotation{{ n }};
 {% endfor %}
 
 out vec4 outColor;
@@ -118,6 +129,22 @@ float IIS(vec2 pos) {
             inFund = false;
         }
         pos += u_translate{{ n }}.p;
+        {% endfor %}
+
+        {% for n in range(0, numRotation) %}
+        pos -= u_rotation{{ n }}.p;
+        float dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
+        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.xy;
+        pos += u_rotation{{ n }}.p;
+
+        pos -= u_rotation{{ n }}.p;
+        dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
+        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.zw;
+        pos += u_rotation{{ n }}.p;
         {% endfor %}
         
         if (inFund) break;
@@ -194,6 +221,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
             color = PINK;
             return true;
         }
+        // line
         pos -= u_translate{{ n }}.p;
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
         if(hpd{{ n }} > 0. && u_translate{{ n }}.normal.z > hpd{{ n }} &&
