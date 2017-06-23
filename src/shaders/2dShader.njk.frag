@@ -30,6 +30,7 @@ struct ParallelTranslation {
 struct Rotation {
     vec2 p;
     vec4 normal;
+    vec4 boundaryPoint;
     vec2 ui; //[normal ring radius, point radius]
     bool selected;
 };
@@ -146,7 +147,7 @@ float IIS(vec2 pos) {
         pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.zw;
         pos += u_rotation{{ n }}.p;
         {% endfor %}
-        
+
         if (inFund) break;
     }
 
@@ -232,7 +233,41 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         pos += u_translate{{ n }}.p;
     }
     {% endfor %}
-    
+
+    {% for n in range(0, numRotation) %}
+    if(u_rotation{{ n }}.selected) {
+        // point p
+        if(distance(pos, u_rotation{{ n }}.p) < u_rotation{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        if(distance(pos, u_rotation{{ n }}.boundaryPoint.zw) < u_rotation{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // line
+        pos -= u_rotation{{ n }}.p;
+        float rotDot{{ n }} = dot(u_rotation{{ n }}.normal.xy, pos);
+        if(abs(rotDot{{ n }}) < u_rotation{{ n }}.ui.y * .5) {
+            color = WHITE;
+            return true;
+        }
+        // ring
+        if(dot(pos, u_rotation{{ n }}.normal.xy) > 0. &&
+           dot(pos, u_rotation{{ n }}.normal.zw) > 0. &&
+           abs(distance(pos, u_rotation{{ n }}.p - u_rotation{{ n }}.p) - u_rotation{{ n }}.ui.x) < u_rotation{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_rotation{{ n }}.p;
+    }
+    {% endfor %}
+
+
     return false;
 }
 
