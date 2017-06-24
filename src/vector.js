@@ -35,6 +35,10 @@ export default class Vec2 {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    lengthSq() {
+        return (this.x * this.x + this.y * this.y);
+    }
+
     normalize() {
         return this.scale(1.0 / this.length());
     }

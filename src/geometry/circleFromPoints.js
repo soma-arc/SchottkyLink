@@ -65,20 +65,18 @@ export default class CircleFromPoints extends Circle {
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
-        gl.uniform2f(uniLocation[uniI++],
-                     this.center.x, this.center.y);
-        gl.uniform3f(uniLocation[uniI++],
-                     this.r, this.rSq, this.circumferenceThickness * sceneScale);
+        gl.uniform4f(uniLocation[uniI++],
+                     this.center.x, this.center.y, this.r, this.rSq);
+        gl.uniform1f(uniLocation[uniI++],
+                     this.circumferenceThickness * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
-        uniLocation.push(gl.getUniformLocation(program,
-                                               `u_circleFromPoints${index}.center`));
-        uniLocation.push(gl.getUniformLocation(program,
-                                               `u_circleFromPoints${index}.radius`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.centerAndRadius`));
+        uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_circleFromPoints${index}.selected`));
     }

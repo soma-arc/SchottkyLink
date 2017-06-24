@@ -9,8 +9,8 @@ uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 
 struct Circle {
-    vec2 center; // [x, y]
-    vec3 radius; // [r, r * r, circumferenceThickness]
+    vec4 centerAndRadius; // [x, y, r, r * r]
+    float ui; // [boundaryThickness]
     bool selected;
 };
 
@@ -32,6 +32,13 @@ struct Rotation {
     vec4 normal;
     vec4 boundaryPoint;
     vec2 ui; //[normal ring radius, point radius]
+    bool selected;
+};
+
+struct Hyperbolic {
+    vec4 c1;
+    vec4 c2;
+    vec4 c1d;
     bool selected;
 };
 
@@ -62,6 +69,10 @@ uniform ParallelTranslation u_translate{{ n }};
 uniform Rotation u_rotation{{ n }};
 {% endfor %}
 
+{% for n in range(0, numHyperbolic) %}
+uniform Hyperbolic u_hyperbolic{{ n }};
+{% endfor %}
+
 out vec4 outColor;
 
 const vec3 BLACK = vec3(0);
@@ -82,10 +93,11 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
                 fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
 }
 
-vec2 circleInvert(const vec2 pos, const Circle circle){
-    vec2 p = pos - circle.center;
+// circle [x, y, radius, radius * radius]
+vec2 circleInvert(const vec2 pos, const vec4 circle){
+    vec2 p = pos - circle.xy;
     float d = length(p);
-    return (p * circle.radius.y)/(d * d) + circle.center;
+    return (p * circle.w)/(d * d) + circle.xy;
 }
 
 const int MAX_ITERATIONS = 200;
@@ -97,18 +109,32 @@ float IIS(vec2 pos) {
         inFund = true;
 
         {% for n in range(0,  numCircle ) %}
-        if(distance(pos, u_circle{{ n }}.center) < u_circle{{ n }}.radius.x){
-            pos = circleInvert(pos, u_circle{{ n }});
+        if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
+            pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius);
             inFund = false;
             invNum++;
         }
         {% endfor %}
 
         {% for n in range(0,  numCircleFromPoints) %}
-        if(distance(pos, u_circleFromPoints{{ n }}.center) < u_circleFromPoints{{ n }}.radius.x){
-            pos = circleInvert(pos, u_circleFromPoints{{ n }});
+        if(distance(pos, u_circleFromPoints{{ n }}.centerAndRadius.xy) < u_circleFromPoints{{ n }}.centerAndRadius.z){
+            pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius);
             inFund = false;
             invNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numHyperbolic) %}
+        if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+
+            inFund = false;
+       }else if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) >= u_hyperbolic{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+
+            inFund = false;
         }
         {% endfor %}
 
@@ -160,7 +186,7 @@ vec3 hsv2rgb(vec3 c){
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-bool renderGenerator(vec2 pos, out vec3 color) {
+bool renderUI(vec2 pos, out vec3 color) {
     {% for n  in range(0,  numPoint ) %}
     if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
         color = BLUE;
@@ -172,8 +198,8 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     {% for n in range(0,  numCircle ) %}
     // boundary of circle
     if(u_circle{{ n }}.selected){
-        dist = u_circle{{ n }}.radius.x - distance(pos, u_circle{{ n }}.center);
-        if(0. < dist && dist < u_circle{{ n }}.radius.z){
+        dist = u_circle{{ n }}.centerAndRadius.z - distance(pos, u_circle{{ n }}.centerAndRadius.xy);
+        if(0. < dist && dist < u_circle{{ n }}.ui){
             color = WHITE;
             return true;
         }
@@ -267,7 +293,25 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
+    return false;
+}
 
+bool renderGenerator(vec2 pos, out vec3 color) {
+    color = vec3(0);
+    {% for n in range(0, numHyperbolic) %}
+    if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z) {
+        color = RED;
+        return true;
+    }
+    if(distance(pos, u_hyperbolic{{ n }}.c2.xy) < u_hyperbolic{{ n }}.c2.z) {
+        color = GREEN;
+        return true;
+    }
+    if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) < u_hyperbolic{{ n }}.c1d.z) {
+        color = BLUE;
+        return true;
+    }
+    {% endfor %}
     return false;
 }
 
@@ -281,15 +325,22 @@ void main() {
         position += u_geometry.xy;
 
         vec3 col = vec3(0);
-        bool isRendered = renderGenerator(position, col);
+        bool isRendered = renderUI(position, col);
         if(isRendered) {
             sum += col;
             continue;
         }
         float loopNum = IIS(position);
         if(loopNum > 0.){
-            vec3 hsv = vec3(0. + 0.01 * (loopNum -1.), 1.0, 1.0);
+            vec3 hsv = vec3(0. + 0.05 * (loopNum -1.), 1.0, 1.0);
             sum += hsv2rgb(hsv);
+            continue;
+        }
+
+        isRendered = renderGenerator(position, col);
+        if(isRendered) {
+            sum += col;
+            continue;
         }
     }
     vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;

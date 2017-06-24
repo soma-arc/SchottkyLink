@@ -7,6 +7,7 @@ import CircleFromPoints from './circleFromPoints.js';
 import HalfPlane from './halfPlane.js';
 import ParallelTranslation from './parallelTranslation.js'
 import Rotation from './rotation.js';
+import Hyperbolic from './hyperbolic.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
@@ -14,7 +15,8 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'CircleFromPoints': CircleFromPoints,
                         'HalfPlane': HalfPlane,
                         'ParallelTranslation': ParallelTranslation,
-                        'Rotation': Rotation };
+                        'Rotation': Rotation,
+                        'Hyperbolic': Hyperbolic };
 
 export default class Scene {
     constructor() {
@@ -47,6 +49,14 @@ export default class Scene {
             return true;
         }
         return false;
+    }
+
+    /**
+     *
+     * @param {Vec2} mouse
+     */
+    remove(mouse) {
+        // TODO: implement this
     }
 
     setUniformLocation(gl, uniLocations, program) {
