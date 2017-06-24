@@ -49,7 +49,7 @@ export default class Canvas2D {
         this.scaleFactor = 1.5;
         this.translate = new Vec2(0, 0);
 
-        this.maxIterations = 20;
+        this.maxIterations = 40;
 
         // mouse
         this.mouseState = {
@@ -64,7 +64,7 @@ export default class Canvas2D {
         this.boundDblClickLisntener = this.mouseDblClickListener.bind(this);
         this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
-        this.canvas.addEventListener('mousewheel', this.boundMouseWheelListener);
+        this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
@@ -96,9 +96,8 @@ export default class Canvas2D {
     }
 
     mouseWheelListener(event) {
-        assert.ok(event instanceof MouseEvent);
         event.preventDefault();
-        if (event.wheelDelta > 0) {
+        if (event.deltaY < 0) {
             this.scale /= this.scaleFactor;
         } else {
             this.scale *= this.scaleFactor;
@@ -107,7 +106,6 @@ export default class Canvas2D {
     }
 
     mouseDownListener(event) {
-        assert.ok(event instanceof MouseEvent);
         event.preventDefault();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
@@ -122,19 +120,16 @@ export default class Canvas2D {
     }
 
     mouseDblClickListener(event) {
-        assert.ok(event instanceof MouseEvent);
         if (event.button === Canvas2D.MOUSE_BUTTON_LEFT) {
             // TODO: remove object
         }
     }
 
     mouseUpListener(event) {
-        assert.ok(event instanceof MouseEvent);
         this.mouseState.isPressing = false;
     }
 
     mouseMoveListener(event) {
-        assert.ok(event instanceof MouseEvent);
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
