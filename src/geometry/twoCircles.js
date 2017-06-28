@@ -3,7 +3,7 @@ import Circle from './circle.js';
 import SelectionState from './selectionState.js';
 import Vec2 from '../vector.js';
 
-export default class Hyperbolic extends Shape {
+export default class TwoCircles extends Shape {
     /**
      *
      * @param {Circle} c1
@@ -21,11 +21,30 @@ export default class Hyperbolic extends Shape {
     }
 
     select(mouse, sceneScale) {
-        const c1State = this.c1.select(mouse);
+        const c1State = this.c1.select(mouse, sceneScale);
         if (c1State.isSelectingObj()) {
-            return new SelectionState().setObj(this)
-                .setComponentId(Hyperbolic.C1_BODY)
-                .setDiffObj(c1State.diffObj);
+            if (c1State.componentId === Circle.BODY) {
+                return new SelectionState().setObj(this)
+                    .setComponentId(TwoCircles.C1_BODY)
+                    .setDiffObj(c1State.diffObj);
+            } else if (c1State.componentId === Circle.CIRCUMFERENCE) {
+                return new SelectionState().setObj(this)
+                    .setComponentId(TwoCircles.C1_CIRCUMFERENCE)
+                    .setDistToComponent(c1State.distToComponent);
+            }
+        }
+
+        const c2State = this.c2.select(mouse, sceneScale);
+        if (c2State.isSelectingObj()) {
+            if (c2State.componentId === Circle.BODY) {
+                return new SelectionState().setObj(this)
+                    .setComponentId(TwoCircles.C2_BODY)
+                    .setDiffObj(c2State.diffObj);
+            } else if (c2State.componentId === Circle.CIRCUMFERENCE) {
+                return new SelectionState().setObj(this)
+                    .setComponentId(TwoCircles.C2_CIRCUMFERENCE)
+                    .setDistToComponent(c2State.distToComponent);
+            }
         }
         return new SelectionState();
     }
@@ -35,19 +54,35 @@ export default class Hyperbolic extends Shape {
      * @param { Vec2 } mouse
      */
     move(selectionState, mouse) {
-        if (selectionState.componentId === Hyperbolic.C1_BODY) {
-            const d = this.c2.center.sub(this.c1.center);
+        switch (selectionState.componentId) {
+        case TwoCircles.C1_BODY: {
             this.c1.center = mouse.sub(selectionState.diffObj);
             this.c1.update();
+            break;
+        }
+        case TwoCircles.C1_CIRCUMFERENCE: {
+            this.c1.r = Vec2.distance(this.c1.center, mouse) + selectionState.distToComponent;
+            this.c1.update();
+            break;
+        }
+        case TwoCircles.C2_BODY: {
+            const d = this.c2.center;
+            this.c2.center = mouse.sub(selectionState.diffObj);
+            this.c1.center = this.c1.center.add(this.c2.center.sub(d));
+            this.c2.update();
+            break;
+        }
+        case TwoCircles.C2_CIRCUMFERENCE: {
+            this.c2.r = Vec2.distance(this.c2.center, mouse) + selectionState.distToComponent;
+            this.c2.update();
+            break;
+        }
         }
 
         this.update();
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
-        console.log(this.c1.update());
-        console.log(this.c2.update());
-        console.log(this.c1d.update());
         let uniI = uniIndex;
         gl.uniform4f(uniLocation[uniI++],
                      this.c1.center.x, this.c1.center.y, this.c1.r, this.c1.rSq);
@@ -76,7 +111,7 @@ export default class Hyperbolic extends Shape {
     }
 
     static loadJson(obj, scene) {
-        const nc = new Hyperbolic(Circle.loadJson(obj.c1, scene),
+        const nc = new TwoCircles(Circle.loadJson(obj.c1, scene),
                                   Circle.loadJson(obj.c2, scene));
         nc.setId(obj.id);
         return nc;
@@ -86,7 +121,15 @@ export default class Hyperbolic extends Shape {
         return 0;
     }
 
-    static get C2_BODY() {
+    static get C1_CIRCUMFERENCE() {
         return 1;
+    }
+
+    static get C2_BODY() {
+        return 2;
+    }
+
+    static get C2_CIRCUMFERENCE() {
+        return 3;
     }
 }

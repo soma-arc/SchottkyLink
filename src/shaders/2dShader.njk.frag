@@ -35,7 +35,7 @@ struct Rotation {
     bool selected;
 };
 
-struct Hyperbolic {
+struct TwoCircles {
     vec4 c1;
     vec4 c2;
     vec4 c1d;
@@ -69,8 +69,8 @@ uniform ParallelTranslation u_translate{{ n }};
 uniform Rotation u_rotation{{ n }};
 {% endfor %}
 
-{% for n in range(0, numHyperbolic) %}
-uniform Hyperbolic u_hyperbolic{{ n }};
+{% for n in range(0, numTwoCircles) %}
+uniform TwoCircles u_hyperbolic{{ n }};
 {% endfor %}
 
 out vec4 outColor;
@@ -124,7 +124,7 @@ float IIS(vec2 pos) {
         }
         {% endfor %}
 
-        {% for n in range(0, numHyperbolic) %}
+        {% for n in range(0, numTwoCircles) %}
         if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
             pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
             pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
@@ -298,7 +298,7 @@ bool renderUI(vec2 pos, out vec3 color) {
 
 bool renderGenerator(vec2 pos, out vec3 color) {
     color = vec3(0);
-    {% for n in range(0, numHyperbolic) %}
+    {% for n in range(0, numTwoCircles) %}
     if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z) {
         color = RED;
         return true;
@@ -332,7 +332,7 @@ void main() {
         }
         float loopNum = IIS(position);
         if(loopNum > 0.){
-            vec3 hsv = vec3(0. + 0.05 * (loopNum -1.), 1.0, 1.0);
+            vec3 hsv = vec3(0.01 + 0.03 * (loopNum -1.), 1.0, 1.0);
             sum += hsv2rgb(hsv);
             continue;
         }

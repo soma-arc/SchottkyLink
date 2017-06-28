@@ -40,14 +40,14 @@ export default class Circle extends Shape {
 
     /**
      * Move circle
-     * @param { SelectionState } mouseState
+     * @param { SelectionState } selectionState
      * @param { Vec2 } mouse
      */
-    move(mouseState, mouse) {
-        if (mouseState.componentId === Circle.CIRCUMFERENCE) {
-            this.r = Vec2.distance(this.center, mouse) + mouseState.distToComponent;
+    move(selectionState, mouse) {
+        if (selectionState.componentId === Circle.CIRCUMFERENCE) {
+            this.r = Vec2.distance(this.center, mouse) + selectionState.distToComponent;
         } else {
-            this.center = mouse.sub(mouseState.diffObj);
+            this.center = mouse.sub(selectionState.diffObj);
         }
 
         this.update();

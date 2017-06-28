@@ -7,7 +7,7 @@ import CircleFromPoints from './circleFromPoints.js';
 import HalfPlane from './halfPlane.js';
 import ParallelTranslation from './parallelTranslation.js'
 import Rotation from './rotation.js';
-import Hyperbolic from './hyperbolic.js';
+import TwoCircles from './twoCircles.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
@@ -16,7 +16,7 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'HalfPlane': HalfPlane,
                         'ParallelTranslation': ParallelTranslation,
                         'Rotation': Rotation,
-                        'Hyperbolic': Hyperbolic };
+                        'TwoCircles': TwoCircles };
 
 export default class Scene {
     constructor() {
