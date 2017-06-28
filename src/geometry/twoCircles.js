@@ -13,7 +13,7 @@ export default class TwoCircles extends Shape {
         super();
         this.c1 = c1;
         this.c2 = c2;
-        this.c1d = this.c2.invertOnCircle(this.c1);
+        this.update();
     }
 
     update() {

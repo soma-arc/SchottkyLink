@@ -42,6 +42,17 @@ struct TwoCircles {
     bool selected;
 };
 
+struct Loxodromic {
+    vec4 c1;
+    vec4 c2;
+    vec4 c1d;
+    vec4 c3;
+    vec2 p;
+    vec4 line; // [dirX, dirY, normalX, normalY]
+    vec2 ui; //[normal ring radius, point radius]
+    bool selected;
+};
+
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
 uniform Circle u_circle{{ n }};
@@ -71,6 +82,10 @@ uniform Rotation u_rotation{{ n }};
 
 {% for n in range(0, numTwoCircles) %}
 uniform TwoCircles u_hyperbolic{{ n }};
+{% endfor %}
+
+{% for n in range(0, numLoxodromic) %}
+uniform Loxodromic u_loxodromic{{ n }};
 {% endfor %}
 
 out vec4 outColor;
@@ -124,20 +139,6 @@ float IIS(vec2 pos) {
         }
         {% endfor %}
 
-        {% for n in range(0, numTwoCircles) %}
-        if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
-
-            inFund = false;
-       }else if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) >= u_hyperbolic{{ n }}.c1d.z){
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
-
-            inFund = false;
-        }
-        {% endfor %}
-
         {% for n in range(0, numHalfPlane ) %}
         pos -= u_halfPlane{{ n }}.p;
         float dHalfPlane{{ n }} = dot(pos, u_halfPlane{{ n }}.normal.xy);
@@ -174,6 +175,45 @@ float IIS(vec2 pos) {
         pos += u_rotation{{ n }}.p;
         {% endfor %}
 
+        {% for n in range(0, numTwoCircles) %}
+        if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+
+            inFund = false;
+       }else if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) >= u_hyperbolic{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+
+            inFund = false;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numLoxodromic) %}
+        if(distance(pos, u_loxodromic{{ n }}.c1.xy) < u_loxodromic{{ n }}.c1.z){
+            pos -= u_loxodromic{{ n }}.c1.xy;
+            pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
+            pos += u_loxodromic{{ n }}.c1.xy;
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);            
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
+
+            inFund = false;
+       }else if(distance(pos, u_loxodromic{{ n }}.c1d.xy) >= u_loxodromic{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
+            pos -= u_loxodromic{{ n }}.c1.xy;
+            pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
+            pos += u_loxodromic{{ n }}.c1.xy;
+            
+            inFund = false;
+        }
+        {% endfor %}
+
         if (inFund) break;
     }
 
@@ -184,6 +224,11 @@ vec3 hsv2rgb(vec3 c){
     const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec4 blendCol(vec4 srcC, vec4 outC){
+	srcC.rgb *= srcC.a;
+	return outC + srcC * (1.0 - outC.a);
 }
 
 bool renderUI(vec2 pos, out vec3 color) {
@@ -293,6 +338,14 @@ bool renderUI(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
+    {% for n in range(0, numLoxodromic) %}
+    // point p
+    if(distance(pos, u_loxodromic{{ n }}.p) < u_loxodromic{{ n }}.ui.x) {
+        color = LIGHT_BLUE;
+        return true;
+    }
+    {% endfor %}
+
     return false;
 }
 
@@ -309,6 +362,35 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     }
     if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) < u_hyperbolic{{ n }}.c1d.z) {
         color = BLUE;
+        return true;
+    }
+    {% endfor %}
+
+    {% for n in range(0, numLoxodromic) %}
+    // line
+    if(abs(dot(pos - u_loxodromic{{ n }}.c1.xy,
+               u_loxodromic{{ n }}.line.zw)) < u_loxodromic{{ n }}.ui.y) {
+        color = WHITE;
+        return true;
+    }
+    vec4 loxoCol{{ n }} = vec4(0);
+    bool loxoRender{{ n }} = false;
+    if (distance(pos, u_loxodromic{{ n }}.c3.xy) < u_loxodromic{{ n }}.c3.z) {
+        loxoCol{{ n }} = blendCol(vec4(YELLOW, 0.5), loxoCol{{ n }});
+        loxoRender{{ n }} = true;
+    }
+    if(distance(pos, u_loxodromic{{ n }}.c1.xy) < u_loxodromic{{ n }}.c1.z) {
+        loxoCol{{ n }} = blendCol(vec4(RED, 1.), loxoCol{{ n }});
+        loxoRender{{ n }} = true;
+    }else if(distance(pos, u_loxodromic{{ n }}.c2.xy) < u_loxodromic{{ n }}.c2.z) {
+        loxoCol{{ n }} = blendCol(vec4(GREEN, 1.), loxoCol{{ n }});
+        loxoRender{{ n }} = true;
+    }else if(distance(pos, u_loxodromic{{ n }}.c1d.xy) < u_loxodromic{{ n }}.c1d.z) {
+        loxoCol{{ n }} = blendCol(vec4(BLUE, 1.), loxoCol{{ n }});
+        loxoRender{{ n }} = true;
+    }
+    if(loxoRender{{ n }}) {
+        color = loxoCol{{ n }}.rgb;
         return true;
     }
     {% endfor %}

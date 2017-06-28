@@ -8,6 +8,7 @@ import HalfPlane from './halfPlane.js';
 import ParallelTranslation from './parallelTranslation.js'
 import Rotation from './rotation.js';
 import TwoCircles from './twoCircles.js';
+import Loxodromic from './loxodromic.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
@@ -16,7 +17,8 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'HalfPlane': HalfPlane,
                         'ParallelTranslation': ParallelTranslation,
                         'Rotation': Rotation,
-                        'TwoCircles': TwoCircles };
+                        'TwoCircles': TwoCircles,
+                        'Loxodromic': Loxodromic };
 
 export default class Scene {
     constructor() {
