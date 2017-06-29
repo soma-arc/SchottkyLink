@@ -78,6 +78,8 @@ export default class Loxodromic extends Shape {
             const np = mouse.sub(selectionState.diffObj);
             const npc2Len = this.c2.center.sub(np).length();
             if (npc2Len > this.c2.r - this.c1.r) {
+                const mv = np.sub(this.c2.center).normalize();
+                this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
                 selectionState.setDiffObj(mouse.sub(this.c1.center));
                 break;
             }
@@ -86,7 +88,14 @@ export default class Loxodromic extends Shape {
             break;
         }
         case Loxodromic.C1_CIRCUMFERENCE: {
-            this.c1.r = Vec2.distance(this.c1.center, mouse) + selectionState.distToComponent;
+            const nr = Vec2.distance(this.c1.center, mouse) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            if (this.c2.r - nr < max) {
+                this.c1.r = -max + this.c2.r;
+                this.c1.update();
+                break;
+            }
+            this.c1.r = nr;
             this.c1.update();
             break;
         }
@@ -100,7 +109,16 @@ export default class Loxodromic extends Shape {
             break;
         }
         case Loxodromic.C2_CIRCUMFERENCE: {
-            this.c2.r = Vec2.distance(this.c2.center, mouse) + selectionState.distToComponent;
+            const nr = Vec2.distance(this.c2.center, mouse) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            console.log(max);
+            if (nr - this.c1.r < max) {
+                this.c2.r = max + this.c1.r;
+                this.c2.update();
+                break;
+            }
+            this.c2.r = nr;
+
             this.c2.update();
             break;
         }
