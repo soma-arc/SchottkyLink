@@ -16,6 +16,9 @@ module.exports = () => ({
     module: {
         loaders: [
             {
+                test: /\.vue$/, loader: 'vue-loader'
+            },
+            {
                 test: /\.(glsl|vert|frag)$/,
                 exclude: /\.(njk|nunjucks)\.(glsl|vert|frag)$/,
                 loader: 'shader-loader',
@@ -36,7 +39,6 @@ module.exports = () => ({
     },
 
     devtool: (process.env.NODE_ENV === 'production') ? false : 'inline-source-map',
-
 
     resolve: {
         extensions: ['.js'],
