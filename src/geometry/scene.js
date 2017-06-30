@@ -23,6 +23,7 @@ const STR_CLASS_MAP = { 'Circle': Circle,
 export default class Scene {
     constructor() {
         this.objects = {};
+        this.selectedObj = { id: 0, name: '' };
         this.selectedState = new SelectionState();
     }
 
@@ -36,12 +37,14 @@ export default class Scene {
                 const state = obj.select(mouse, sceneScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
+                    this.selectedObj = this.selectedState.selectedObj;
                     this.selectedState.selectedObj.selected = true;
                     return true;
                 }
             }
         }
         this.selectedState = new SelectionState();
+        this.selectedObj = { id: -1, name: '' };
         return false;
     }
 
