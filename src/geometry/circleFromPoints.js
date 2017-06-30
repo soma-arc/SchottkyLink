@@ -98,4 +98,8 @@ export default class CircleFromPoints extends Circle {
         nc.setId(obj.id);
         return nc;
     }
+
+    get name() {
+        return 'CircleFromPoints'
+    }
 }

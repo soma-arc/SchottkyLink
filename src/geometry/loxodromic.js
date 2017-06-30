@@ -198,4 +198,8 @@ export default class Loxodromic extends Shape {
     static get POINT() {
         return 4;
     }
+
+    get name() {
+        return 'Loxodromic';
+    }
 }

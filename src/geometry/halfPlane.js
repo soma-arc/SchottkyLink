@@ -99,4 +99,8 @@ export default class HalfPlane extends Shape {
     static get NORMAL_POINT() {
         return 1;
     }
+
+    get name() {
+        return 'HalfPlane';
+    }
 }

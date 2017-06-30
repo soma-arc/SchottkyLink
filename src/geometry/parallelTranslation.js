@@ -141,4 +141,8 @@ export default class ParallelTranslation extends Shape {
     static get POINT_HP2() {
         return 2;
     }
+
+    get name() {
+        return 'ParallelTranslation';
+    }
 }

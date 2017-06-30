@@ -102,4 +102,12 @@ export default class Shape {
     static loadJson(obj, scene) {
         return new Shape();
     }
+
+    /**
+     *
+     * @returns {String}
+     */
+    get name() {
+        return 'Shape';
+    }
 }

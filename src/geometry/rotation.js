@@ -152,4 +152,8 @@ export default class Rotation extends Shape {
     static get ROTATION_POINT() {
         return 2;
     }
+
+    get name() {
+        return 'Rotation';
+    }
 }

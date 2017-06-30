@@ -94,4 +94,8 @@ export default class Point extends Shape {
         np.setId(obj.id);
         return np;
     }
+
+    get name() {
+        return 'Point';
+    }
 }

@@ -132,4 +132,8 @@ export default class TwoCircles extends Shape {
     static get C2_CIRCUMFERENCE() {
         return 3;
     }
+
+    get name() {
+        return 'TwoCircles';
+    }
 }

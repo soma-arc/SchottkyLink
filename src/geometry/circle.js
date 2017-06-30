@@ -141,4 +141,8 @@ export default class Circle extends Shape {
     static get CIRCUMFERENCE() {
         return 1;
     }
+
+    get name() {
+        return 'Circle';
+    }
 }
