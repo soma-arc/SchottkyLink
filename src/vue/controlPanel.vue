@@ -7,7 +7,7 @@
         </option>
       </template>
     </select>
-    <div v-if="scene.selectedObj.name === 'Circle'">
+    <div v-if="selectedObjName === 'Circle'">
       {{ scene.selectedObj.center.x }}, {{ scene.selectedObj.center.y }}, {{ scene.selectedObj.r }}
     </div>
   </div>
@@ -15,6 +15,12 @@
 
 <script>
   export default {
-      props: ['scene']
+      props: ['scene'],
+      computed: {
+          selectedObjName: function() {
+              if (typeof this.scene.selectedObj === 'undefined') return '';
+              return this.scene.selectedObj.name;
+          }
+      }
   }
 </script>

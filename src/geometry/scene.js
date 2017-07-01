@@ -25,7 +25,9 @@ const STR_CLASS_MAP = { 'Circle': Circle,
 export default class Scene {
     constructor() {
         this.objects = {};
-        this.selectedObj = { id: 0, name: '' };
+        this.none = { id: -1,
+                      name: '' };
+        this.selectedObj = this.none;
         this.selectedState = new SelectionState();
     }
 
@@ -46,7 +48,7 @@ export default class Scene {
             }
         }
         this.selectedState = new SelectionState();
-        this.selectedObj = { id: -1, name: '' };
+        this.selectedObj = this.none;
         return false;
     }
 
