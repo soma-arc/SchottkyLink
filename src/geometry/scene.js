@@ -9,6 +9,7 @@ import ParallelTranslation from './parallelTranslation.js'
 import Rotation from './rotation.js';
 import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
+import OrbitSeed from './orbitSeed.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
@@ -18,7 +19,8 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'ParallelTranslation': ParallelTranslation,
                         'Rotation': Rotation,
                         'TwoCircles': TwoCircles,
-                        'Loxodromic': Loxodromic };
+                        'Loxodromic': Loxodromic,
+                        'OrbitSeed': OrbitSeed };
 
 export default class Scene {
     constructor() {

@@ -53,6 +53,13 @@ struct Loxodromic {
     bool selected;
 };
 
+struct OrbitSeed {
+    vec2 corner;
+    vec2 size;
+    vec4 ui; // [bodyCorner, bodySize]
+    bool selected;
+};
+
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
 uniform Circle u_circle{{ n }};
@@ -86,6 +93,10 @@ uniform TwoCircles u_hyperbolic{{ n }};
 
 {% for n in range(0, numLoxodromic) %}
 uniform Loxodromic u_loxodromic{{ n }};
+{% endfor %}
+
+{% for n in range(0, numOrbitSeed) %}
+uniform OrbitSeed u_orbitSeed{{ n }};
 {% endfor %}
 
 out vec4 outColor;
@@ -122,6 +133,14 @@ float IIS(vec2 pos) {
     for (int i = 0; i < MAX_ITERATIONS; i++) {
         if(i > u_maxIISIterations) break;
         inFund = true;
+
+        {% for no in range(0, numOrbitSeed) %}
+        vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
+        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
+           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
+            return 100.;
+        }
+        {% endfor %}
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
@@ -195,7 +214,7 @@ float IIS(vec2 pos) {
             pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
             pos += u_loxodromic{{ n }}.c1.xy;
 
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);            
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
 
             pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
             pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
@@ -209,7 +228,7 @@ float IIS(vec2 pos) {
             pos -= u_loxodromic{{ n }}.c1.xy;
             pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
             pos += u_loxodromic{{ n }}.c1.xy;
-            
+
             inFund = false;
         }
         {% endfor %}
@@ -343,6 +362,19 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(distance(pos, u_loxodromic{{ n }}.p) < u_loxodromic{{ n }}.ui.x) {
         color = LIGHT_BLUE;
         return true;
+    }
+    {% endfor %}
+
+    {% for no in range(0, numOrbitSeed) %}
+    if(u_orbitSeed{{ no }}.selected) {
+        vec2 uv{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
+        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
+           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1. &&
+           (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
     }
     {% endfor %}
 
