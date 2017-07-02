@@ -168,9 +168,10 @@ export default class Canvas2D {
 
     setRenderUniformValues(width, height, texture) {
         let i = 0;
-        this.gl.activeTexture(this.gl.TEXTURE0);
+        const textureIndex = 0;
+        this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        this.gl.uniform1i(this.uniLocations[i++], texture);
+        this.gl.uniform1i(this.uniLocations[i++], textureIndex);
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);

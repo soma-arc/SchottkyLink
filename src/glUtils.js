@@ -41,8 +41,8 @@ export function attachShader(gl, shaderStr, program, shaderType) {
     gl.attachShader(program, shader);
 }
 
-export function createTexture2D(gl, width, height,
-                                internalFormat, format, type) {
+export function createRGBTexture2D(gl, width, height,
+                                   internalFormat, format, type) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -58,8 +58,31 @@ export function createTexture2D(gl, width, height,
 export function createRGBTextures(gl, width, height, num) {
     const textures = [];
     for (let i = 0; i < num; i++) {
-        textures.push(createTexture2D(gl, width, height,
-                                      gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, num));
+        textures.push(createRGBTexture2D(gl, width, height,
+                                         gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, num));
+    }
+    return textures;
+}
+
+export function createRGBATexture2D(gl, width, height,
+                                    internalFormat, format, type) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height,
+                  0, gl.RGBA, type, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return texture;
+}
+
+export function createRGBATextures(gl, width, height, num) {
+    const textures = [];
+    for (let i = 0; i < num; i++) {
+        textures.push(createRGBTexture2D(gl, width, height,
+                                         gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, num));
     }
     return textures;
 }

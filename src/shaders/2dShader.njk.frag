@@ -54,6 +54,7 @@ struct Loxodromic {
 };
 
 struct OrbitSeed {
+    sampler2D image;
     vec2 corner;
     vec2 size;
     vec4 ui; // [bodyCorner, bodySize]
@@ -126,20 +127,41 @@ vec2 circleInvert(const vec2 pos, const vec4 circle){
     return (p * circle.w)/(d * d) + circle.xy;
 }
 
+vec4 blendCol(vec4 srcC, vec4 outC){
+	srcC.rgb *= srcC.a;
+	return outC + srcC * (1.0 - outC.a);
+}
+
+vec3 hsv2rgb(float h, float s, float v){
+    vec3 c = vec3(h, s, v);
+    const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 computeColor(float loopNum) {
+    return hsv2rgb(0.01 + 0.03 * (loopNum -1.), 1., 1.);
+}
+
 const int MAX_ITERATIONS = 200;
-float IIS(vec2 pos) {
+bool IIS(vec2 pos, out vec3 col) {
     float invNum = 0.;
     bool inFund = true;
+    vec4 c = vec4(0);
     for (int i = 0; i < MAX_ITERATIONS; i++) {
         if(i > u_maxIISIterations) break;
         inFund = true;
 
         {% for no in range(0, numOrbitSeed) %}
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
-        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
-           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            return 100.;
+        //if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
+        //           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
+        c = texture(u_orbitSeed{{ no }}.image, vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y));
+        if(c.w == 1.) {
+            col = c.rgb;
+            return true;
         }
+        //                    }
         {% endfor %}
 
         {% for n in range(0,  numCircle ) %}
@@ -236,18 +258,8 @@ float IIS(vec2 pos) {
         if (inFund) break;
     }
 
-    return invNum;
-}
-
-vec3 hsv2rgb(vec3 c){
-    const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-
-vec4 blendCol(vec4 srcC, vec4 outC){
-	srcC.rgb *= srcC.a;
-	return outC + srcC * (1.0 - outC.a);
+    col = computeColor(invNum);
+    return (invNum == 0.) ? false : true;
 }
 
 bool renderUI(vec2 pos, out vec3 color) {
@@ -444,10 +456,11 @@ void main() {
             sum += col;
             continue;
         }
-        float loopNum = IIS(position);
-        if(loopNum > 0.){
-            vec3 hsv = vec3(0.01 + 0.03 * (loopNum -1.), 1.0, 1.0);
-            sum += hsv2rgb(hsv);
+
+        col = vec3(0);
+        isRendered = IIS(position, col);
+        if(isRendered){
+            sum += col;
             continue;
         }
 
