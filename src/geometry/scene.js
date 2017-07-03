@@ -22,6 +22,9 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'Loxodromic': Loxodromic,
                         'OrbitSeed': OrbitSeed };
 
+const PRESETS = [require('../presets/fourCircle.json'),
+                 require('../presets/halfPlane.json')];
+
 export default class Scene {
     constructor() {
         this.objects = {};
@@ -129,5 +132,11 @@ export default class Scene {
             if (obj !== undefined) return obj;
         }
         return undefined;
+    }
+
+    loadPreset(index) {
+        if (0 <= index && index < PRESETS.length) {
+            this.load(PRESETS[index]);
+        }
     }
 }

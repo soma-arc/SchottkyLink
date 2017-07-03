@@ -4,15 +4,12 @@ import Scene from './geometry/scene.js';
 import ControlPanel from './vue/controlPanel.vue';
 import TextureHandler from './textureHandler.js';
 
-const PRESET = require('./preset.json');
-
 window.addEventListener('load', () => {
     // load default textures
     const texLoad = TextureHandler.init();
 
     Promise.all(texLoad).then(function() {
         const scene = new Scene();
-        scene.load(PRESET);
         const canvas2d = new Canvas2D('canvas', scene);
         canvas2d.render();
 
@@ -26,5 +23,20 @@ window.addEventListener('load', () => {
             },
             components: { 'control-panel': ControlPanel }
         })
+
+        window.addEventListener('keydown', function(event) {
+            switch(event.key){
+            case '0':
+                scene.loadPreset(0);
+                canvas2d.compileRenderShader();
+                canvas2d.render();
+                break;
+            case '1':
+                scene.loadPreset(1);
+                canvas2d.compileRenderShader();
+                canvas2d.render();
+                break;
+            }
+        });
     });
 });
