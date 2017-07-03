@@ -1,5 +1,6 @@
 import assert from 'power-assert';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
+import Shape from './shape.js';
 import SelectionState from './selectionState.js';
 import Circle from './circle.js';
 import Point from './point.js';
@@ -82,8 +83,6 @@ export default class Scene {
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
-        assert.ok(typeof uniIndex === 'number');
-
         let uniI = uniIndex;
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {

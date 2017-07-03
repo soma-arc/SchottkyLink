@@ -12,6 +12,7 @@
         "semi": ["off"],
         "comma-dangle": ["off"],
         "space-before-function-paren": ["off"],
+        "yoda": ["off"]
     },
     "settings": {
         "import/resolver": {

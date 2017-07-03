@@ -25,7 +25,7 @@ window.addEventListener('load', () => {
         })
 
         window.addEventListener('keydown', function(event) {
-            switch(event.key){
+            switch(event.key) {
             case '0':
                 scene.loadPreset(0);
                 canvas2d.compileRenderShader();

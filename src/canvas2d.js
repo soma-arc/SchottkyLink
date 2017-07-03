@@ -1,7 +1,7 @@
 import assert from 'power-assert';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
-import Vec2 from './vector.js';
+import Vec2 from './vector2d.js';
 import TextureHandler from './textureHandler.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');

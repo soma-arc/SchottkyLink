@@ -1,5 +1,5 @@
 import Shape from './shape';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
 

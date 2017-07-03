@@ -1,5 +1,5 @@
 import assert from 'power-assert';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
 import Shape from './shape.js';
 

@@ -1,5 +1,5 @@
 import Shape from './shape.js';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
 
 export default class SelectionState {
     /**

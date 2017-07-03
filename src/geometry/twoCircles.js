@@ -1,7 +1,7 @@
 import Shape from './shape.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
 
 export default class TwoCircles extends Shape {
     /**

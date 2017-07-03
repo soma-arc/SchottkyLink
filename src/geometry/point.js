@@ -1,5 +1,5 @@
 import SelectionState from './selectionState.js';
-import Vec2 from '../vector.js';
+import Vec2 from '../vector2d.js';
 import Shape from './shape.js'
 
 export default class Point extends Shape {

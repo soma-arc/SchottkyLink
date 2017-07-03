@@ -1,6 +1,6 @@
 import Circle from './circle.js'
 import SelectionState from './selectionState.js'
-import Vec2 from '../vector.js'
+import Vec2 from '../vector2d.js'
 
 export default class CircleFromPoints extends Circle {
     constructor(p1, p2, p3) {
