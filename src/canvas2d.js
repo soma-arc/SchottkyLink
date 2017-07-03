@@ -2,6 +2,7 @@ import assert from 'power-assert';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
 import Vec2 from './vector.js';
+import TextureHandler from './textureHandler.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
@@ -155,6 +156,9 @@ export default class Canvas2D {
 
     getRenderUniformLocations() {
         this.uniLocations = [];
+        const textureIndex = 0;
+        this.imageTextures = TextureHandler.createTextures(this.gl, textureIndex);
+        TextureHandler.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_accTexture'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
@@ -168,7 +172,13 @@ export default class Canvas2D {
 
     setRenderUniformValues(width, height, texture) {
         let i = 0;
-        const textureIndex = 0;
+        let textureIndex = 0;
+        for (const tex of this.imageTextures) {
+            this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, tex);
+            this.gl.uniform1i(this.uniLocations[i++], textureIndex);
+            textureIndex++;
+        }
         this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
         this.gl.uniform1i(this.uniLocations[i++], textureIndex);

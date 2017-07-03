@@ -7,6 +7,7 @@ uniform vec2 u_resolution;
 // [translateX, translateY, scale]
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
+uniform sampler2D u_imageTextures[20];
 
 struct Circle {
     vec4 centerAndRadius; // [x, y, r, r * r]
@@ -54,7 +55,7 @@ struct Loxodromic {
 };
 
 struct OrbitSeed {
-    sampler2D image;
+    int imageTexIndex;
     vec2 corner;
     vec2 size;
     vec4 ui; // [bodyCorner, bodySize]
@@ -140,7 +141,7 @@ vec3 hsv2rgb(float h, float s, float v){
 }
 
 vec3 computeColor(float loopNum) {
-    return hsv2rgb(0.01 + 0.03 * (loopNum -1.), 1., 1.);
+    return hsv2rgb(0.01 + 0.05 * (loopNum -1.), 1., 1.);
 }
 
 const int MAX_ITERATIONS = 200;
@@ -154,14 +155,14 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for no in range(0, numOrbitSeed) %}
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
-        //if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
-        //           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-        c = texture(u_orbitSeed{{ no }}.image, vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y));
-        if(c.w == 1.) {
-            col = c.rgb;
-            return true;
+        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
+           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
+            c = texture(u_imageTextures[u_orbitSeed{{ no }}.imageTexIndex], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y));
+            if(c.w == 1.) {
+                col = c.rgb;
+                return true;
+            }
         }
-        //                    }
         {% endfor %}
 
         {% for n in range(0,  numCircle ) %}

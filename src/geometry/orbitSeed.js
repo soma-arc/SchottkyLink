@@ -24,15 +24,14 @@ export default class OrbitSeed extends Shape {
         this.size = new Vec2(width, height);
 
         this.cornerSelectionWidth = 0.01;
-        this.imageData = TextureHandler.textureCatFishRun;
-        this.texture = undefined;
+        this.iamgeTexIndex = -1;
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
-        gl.activeTexture(gl.TEXTURE0 + 1);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.uniform1i(uniLocation[uniI++], 1);
+//        gl.activeTexture(gl.TEXTURE0 + 1);
+//        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.uniform1i(uniLocation[uniI++], TextureHandler.getTextureIndex('cat_fish_run'));
         gl.uniform2f(uniLocation[uniI++],
                      this.corner.x, this.corner.y);
         gl.uniform2f(uniLocation[uniI++],
@@ -50,26 +49,28 @@ export default class OrbitSeed extends Shape {
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
-        if (this.imageData.complete) {
-            this.texture = createRGBATextures(gl, this.imageData.width, this.imageData.height, 1)[0];
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-                          this.imageData.width, this.imageData.height, 0, gl.RGBA,
-                          gl.UNSIGNED_BYTE, this.imageData);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-        } else {
-            this.texture = createRGBATextures(gl, 256, 256, 1)[0];
-            console.log(this.imageData);
-            this.iamgeData.addEventListener('load', (e) => {
-                console.log(this);
-                this.texture = createRGBATextures(gl, this.imageData.width, this.imageData.height, 1)[0];
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-                              this.imageData.width, this.imageData.height, 0, gl.RGBA,
-                              gl.UNSIGNED_BYTE, this.imageData);
-            });
-        }
+        // if (this.imageData.complete) {
+        //     this.texture = createRGBATextures(gl, this.imageData.width, this.imageData.height, 1)[0];
+        //     gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        //     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+        //                   this.imageData.width, this.imageData.height, 0, gl.RGBA,
+        //                   gl.UNSIGNED_BYTE, this.imageData);
+        //     gl.bindTexture(gl.TEXTURE_2D, null);
+        // } else {
+        //     this.texture = createRGBATextures(gl, 256, 256, 1)[0];
+        //     console.log(this.imageData);
+        //     this.iamgeData.addEventListener('load', (e) => {
+        //         console.log(this);
+        //         this.texture = createRGBATextures(gl, this.imageData.width, this.imageData.height, 1)[0];
+        //         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+        //                       this.imageData.width, this.imageData.height, 0, gl.RGBA,
+        //                       gl.UNSIGNED_BYTE, this.imageData);
+        //     });
+        // }
+        // uniLocation.push(gl.getUniformLocation(program,
+        //                                        `u_orbitSeed${index}.image`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.image`));
+                                               `u_orbitSeed${index}.imageTexIndex`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_orbitSeed${index}.corner`));
         uniLocation.push(gl.getUniformLocation(program,

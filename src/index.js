@@ -8,11 +8,9 @@ const PRESET = require('./preset.json');
 
 window.addEventListener('load', () => {
     // load default textures
-    const texLoad = new Promise(function(resolve, reject) {
-        TextureHandler.init(resolve, reject);
-    });
+    const texLoad = TextureHandler.init();
 
-    texLoad.then(() => {
+    Promise.all(texLoad).then(function() {
         const scene = new Scene();
         scene.load(PRESET);
         const canvas2d = new Canvas2D('canvas', scene);
