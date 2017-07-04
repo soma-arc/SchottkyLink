@@ -4,6 +4,7 @@ import Scene from './geometry/scene.js';
 import ControlPanel from './vue/controlPanel.vue';
 import TextureHandler from './textureHandler.js';
 import Root from './vue/root.vue';
+import 'keen-ui/src/bootstrap';
 
 window.addEventListener('load', () => {
     // load default textures

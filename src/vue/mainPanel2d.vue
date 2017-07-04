@@ -6,14 +6,16 @@
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
-    <div class="controlPanel"></div>
+    <control-panel v-bind:scene="scene"></control-panel>
   </div>
 </template>
 
 <script>
-    export default {
-        props: ['scene'],
-    }
+import ControlPanel from './controlPanel.vue';
+export default {
+    props: ['scene'],
+    components: { 'control-panel': ControlPanel }
+}
 </script>
 
 <style>
@@ -54,11 +56,4 @@
     overflow: hidden;
 }
 
-.controlPanel {
-      border-style: ridge;
-      border-color: gray;
-      background-color: Gainsboro;
-      flex-basis: 300px;
-      display: flex;
-}  
 </style>
