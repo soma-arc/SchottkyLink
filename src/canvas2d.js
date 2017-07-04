@@ -20,14 +20,10 @@ export default class Canvas2D {
         this.scene = scene;
         this.canvas = document.getElementById(canvasId);
         this.pixelRatio = window.devicePixelRatio;
-        this.canvas.style.width = `${this.canvas.width}px`;
-        this.canvas.style.height = `${this.canvas.height}px`;
-        this.canvas.width = this.canvas.width * this.pixelRatio;
-        this.canvas.height = this.canvas.height * this.pixelRatio;
+        this.resizeCanvas();
 
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
-        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
 
         // render to canvas
         this.renderCanvasProgram = this.gl.createProgram();
@@ -69,6 +65,13 @@ export default class Canvas2D {
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
+    }
+
+    resizeCanvas() {
+        const parent = this.canvas.parentElement;
+        this.canvas.width = parent.clientWidth * this.pixelRatio;
+        this.canvas.height = parent.clientHeight * this.pixelRatio;
+        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
     }
 
     /**
@@ -114,6 +117,9 @@ export default class Canvas2D {
             this.render();
         } else if (event.button === Canvas2D.MOUSE_BUTTON_WHEEL) {
             // TODO: add circle
+            this.scene.addCircle(mouse, this.scale);
+            this.compileRenderShader();
+            this.render();
         }
         this.mouseState.prevPosition = mouse;
         this.mouseState.prevTranslate = this.translate;
@@ -151,6 +157,8 @@ export default class Canvas2D {
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
+        this.renderTextures = createRGBTextures(this.gl, this.canvas.width,
+                                                this.canvas.height, 2);
         this.getRenderUniformLocations();
     }
 

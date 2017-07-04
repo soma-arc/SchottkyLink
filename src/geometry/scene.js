@@ -11,6 +11,7 @@ import Rotation from './rotation.js';
 import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
 import OrbitSeed from './orbitSeed.js';
+import Vue from 'vue';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
@@ -54,6 +55,13 @@ export default class Scene {
         this.selectedState = new SelectionState();
         this.selectedObj = this.none;
         return false;
+    }
+
+    addCircle(position, sceneScale) {
+        if (this.objects['Circle'] === undefined) {
+            Vue.set(this.objects, 'Circle', []);
+        }
+        this.objects['Circle'].push(new Circle(position, 0.1 * sceneScale));
     }
 
     move (mouse) {
@@ -110,7 +118,7 @@ export default class Scene {
 
         for (const objName of objKeyNames) {
             if (this.objects[objName] === undefined) {
-                this.objects[objName] = [];
+                Vue.set(this.objects, objName, []);
             }
             for (const objParam of generators[objName]) {
                 this.objects[objName].push(STR_CLASS_MAP[objName].loadJson(objParam, this));
