@@ -10,6 +10,7 @@ import ParallelTranslation from './parallelTranslation.js'
 import Rotation from './rotation.js';
 import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
+import Scaling from './scaling.js';
 import OrbitSeed from './orbitSeed.js';
 import Vue from 'vue';
 
@@ -22,6 +23,7 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'Rotation': Rotation,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
+                        'Scaling': Scaling,
                         'OrbitSeed': OrbitSeed };
 
 const PRESETS = [require('../presets/fourCircle.json'),
