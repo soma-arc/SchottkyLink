@@ -2,6 +2,7 @@
   <div class="controlPanel">
     <ui-tabs fullwidth id="tabs">
       <ui-tab title="Generator" id="tab-1">
+        <generator-panel2d v-bind:scene="scene" v-bind:canvas2d="canvas2d"/>
       </ui-tab>
       <ui-tab title="Scene" id="tab-2">
         <scene-obj-panel v-bind:scene="scene" v-bind:canvas2d="canvas2d" />
@@ -15,12 +16,14 @@
 import UiTabs from 'keen-ui/lib/UiTabs';
 import UiTab from 'keen-ui/lib/UiTab';
 import SceneObjPanel from './sceneObjPanel.vue';
+import GeneratorPanel2d from './generatorPanel2d.vue';
 export default {
     props: ['scene', 'canvas2d'],
     components: {
         UiTabs,
         UiTab,
         SceneObjPanel,
+        GeneratorPanel2d
     }
 }
 </script>
