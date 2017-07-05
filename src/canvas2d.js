@@ -65,6 +65,8 @@ export default class Canvas2D {
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
+
+        this.renderCallback = this.render.bind(this);
     }
 
     resizeCanvas() {

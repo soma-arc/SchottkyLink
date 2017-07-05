@@ -7,7 +7,7 @@
         <li class="myBtn"><a class="btnLink" href="../3d/index.html">3D</a></li>
       </ul>
     </header>
-    <main-panel-2d v-bind:scene="scene"></main-panel-2d>
+    <main-panel-2d v-bind:scene="scene" v-bind:canvas2d="canvas2d"/>
     <footer class="footer">
       <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
          target="_blank">
@@ -23,7 +23,7 @@
 <script>
 import MainPanel2D from './mainPanel2d.vue';
 export default {
-    props: ['scene'],
+    props: ['scene', 'canvas2d'],
     components: { 'main-panel-2d': MainPanel2D }
 }
 

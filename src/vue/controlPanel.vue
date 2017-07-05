@@ -4,16 +4,7 @@
       <ui-tab title="Generator" id="tab-1">
       </ui-tab>
       <ui-tab title="Scene" id="tab-2">
-        <select size="5" v-model="scene.selectedObj" class="objList">
-          <template v-for="objs in scene.objects" v-bind:objs="objs">
-            <option v-for="obj in objs" v-bind:value="obj">
-              {{ obj.name }} - {{ obj.id }}
-            </option>
-          </template>
-        </select>
-        <div v-if="selectedObjName === 'Circle'">
-          {{ scene.selectedObj.center.x }}, {{ scene.selectedObj.center.y }}, {{ scene.selectedObj.r }}
-        </div>
+        <scene-obj-panel v-bind:scene="scene" v-bind:canvas2d="canvas2d" />
       </ui-tab>
     </ui-tabs>
   </div>
@@ -23,21 +14,15 @@
 
 import UiTabs from 'keen-ui/lib/UiTabs';
 import UiTab from 'keen-ui/lib/UiTab';
-import UiButton from 'keen-ui/lib/UiButton';
-  export default {
-      props: ['scene'],
-      computed: {
-          selectedObjName: function() {
-              if (typeof this.scene.selectedObj === 'undefined') return '';
-              return this.scene.selectedObj.name;
-          }
-      },
-      components: {
-          UiTabs,
-          UiTab,
-          UiButton
-      }
-  }
+import SceneObjPanel from './sceneObjPanel.vue';
+export default {
+    props: ['scene', 'canvas2d'],
+    components: {
+        UiTabs,
+        UiTab,
+        SceneObjPanel,
+    }
+}
 </script>
 
 <style>

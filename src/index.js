@@ -13,9 +13,8 @@ window.addEventListener('load', () => {
     Promise.all(texLoad).then(function() {
         const scene = new Scene();
 
-        let canvas2d;
         const d = { 'scene': scene,
-                    'canvas': canvas2d };
+                    'canvas2d': {} };
 
         /* eslint-disable no-new */
         new Vue({
@@ -26,7 +25,8 @@ window.addEventListener('load', () => {
             },
             components: { 'root': Root }
         })
-        canvas2d = new Canvas2D('canvas', scene);
+        d.canvas2d = new Canvas2D('canvas', scene);
+        const canvas2d = d.canvas2d;
         canvas2d.render();
 
         function resized() {

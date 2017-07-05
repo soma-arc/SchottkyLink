@@ -6,14 +6,14 @@
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
-    <control-panel v-bind:scene="scene"></control-panel>
+    <control-panel v-bind:scene="scene" v-bind:canvas2d="canvas2d"/>
   </div>
 </template>
 
 <script>
 import ControlPanel from './controlPanel.vue';
 export default {
-    props: ['scene'],
+    props: ['scene', 'canvas2d'],
     components: { 'control-panel': ControlPanel }
 }
 </script>
