@@ -66,6 +66,21 @@ export default class Scene {
         this.objects['Circle'].push(new Circle(position, 0.1 * sceneScale));
     }
 
+    addHalfPlane(position, sceneScale) {
+        if (this.objects['HalfPlane'] === undefined) {
+            Vue.set(this.objects, 'HalfPlane', []);
+        }
+        this.objects['HalfPlane'].push(new HalfPlane(position, new Vec2(1, 0)));
+    }
+
+    addTwoCircles(position, sceneScale) {
+        if (this.objects['TwoCircles'] === undefined) {
+            Vue.set(this.objects, 'TwoCircles', []);
+        }
+        this.objects['TwoCircles'].push(new TwoCircles(new Circle(position, 0.1 * sceneScale),
+                                                       new Circle(position, 0.2 * sceneScale)));
+    }
+
     move (mouse) {
         if (this.selectedState.isSelectingObj()) {
             this.selectedState.selectedObj.move(this.selectedState, mouse);

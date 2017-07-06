@@ -22,7 +22,8 @@ import UiSlider from 'keen-ui/lib/UiSlider';
         },
         methods: {
             update: function() {
-                const angle = 2 * Math.PI * this.halfPlane.normalAngle / 100;
+                let angle = 2 * Math.PI * this.halfPlane.normalAngle / 100;
+                angle = Math.max(0, Math.min(angle, 2 * Math.PI));
                 this.halfPlane.normal = new Vec2(Math.cos(angle), Math.sin(angle))
                 this.halfPlane.update();
                 this.canvas2d.renderCallback();

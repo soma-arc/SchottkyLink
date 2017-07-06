@@ -20,13 +20,14 @@ export default class HalfPlane extends Shape {
         this.normal = normal.normalize();
         this.normalUIPointLen = 0.1;
         this.UIPointRadius = 0.01;
-        this.normalAngle = Math.atan2(this.normal.y, this.normal.x);
-        this.normalAngle += this.normalAngle < 0 ? 2 * Math.PI : 0;
-        this.normalAngle *= 100 / (2 * Math.PI);
         this.update();
     }
 
     update() {
+        this.normalAngle = Math.atan2(this.normal.y, this.normal.x);
+        this.normalAngle += this.normalAngle < 0 ? 2 * Math.PI : 0;
+        this.normalAngle *= 100 / (2 * Math.PI);
+        this.normalAngle = Math.max(0.0, Math.min(this.normalAngle, 100.0));
         this.boundaryDir = new Vec2(-this.normal.y,
                                     this.normal.x);
     }

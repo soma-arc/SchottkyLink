@@ -1,11 +1,11 @@
 <template>
   <div id="generatorPanel2d">
     <img-button label="Circle" :src="circleUrl"
-                width="128px" height="128px" v-on:click.native="addCircle"/>
+                width="128px" height="128px" @click.native="addCircle"/>
     <img-button label="Half Plane" :src="halfPlaneUrl"
-                width="128px" height="128px"/>
+                width="128px" height="128px" @click.native="addHalfPlane"/>
     <img-button label="Two Circles" :src="twoCirclesUrl"
-                width="128px" height="128px"/>
+                width="128px" height="128px" @click.native="addTwoCircles"/>
     <img-button label="Loxodromic" :src="loxodromicUrl"
                 width="128px" height="128px"/>
   </div>
@@ -32,6 +32,16 @@ export default {
     methods: {
         addCircle: function() {
             this.scene.addCircle(new Vec2(0, 0), this.canvas2d.scale);
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        },
+        addHalfPlane: function() {
+            this.scene.addHalfPlane(new Vec2(0, 0), this.canvas2d.scale);
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        },
+        addTwoCircles: function() {
+            this.scene.addTwoCircles(new Vec2(0, 0), this.canvas2d.scale);
             this.canvas2d.compileRenderShader();
             this.canvas2d.render();
         }
