@@ -10,15 +10,20 @@
     <circle-control v-if="selectedObjName === 'Circle'"
                     v-bind:circle="scene.selectedObj"
                     v-bind:canvas2d="canvas2d"/>
+    <half-plane-control v-else-if="selectedObjName === 'HalfPlane'"
+                        v-bind:halfPlane="scene.selectedObj"
+                        v-bind:canvas2d="canvas2d"/>
   </div>
 </template>
 
 <script>
-import CircleControl from './circleControl.vue';
+    import CircleControl from './circleControl.vue';
+import HalfPlaneControl from './halfPlaneControl.vue'
 export default {
     props: ['scene', 'canvas2d'],
     components: {
-        CircleControl
+        CircleControl,
+        HalfPlaneControl
     },
     computed: {
         selectedObjName: function() {
