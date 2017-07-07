@@ -26,12 +26,16 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'Scaling': Scaling,
                         'OrbitSeed': OrbitSeed };
 
-const PRESETS = [require('../presets/fourCircle.json'),
-                 require('../presets/halfPlane.json')];
+const PRESETS_CONTEXT = require.context('../presets', true, /.json$/);
+const PRESETS = [];
+for (const k of PRESETS_CONTEXT.keys()) {
+    PRESETS.push(PRESETS_CONTEXT(k));
+}
 
 export default class Scene {
     constructor() {
         this.objects = {};
+        this.presets = PRESETS;
 
         this.selectedObj = undefined;
         this.selectedState = new SelectionState();
@@ -47,7 +51,9 @@ export default class Scene {
     }
 
     select (mouse, sceneScale) {
-        this.selectedObj.selected = false;
+        if (this.selectedObj !== undefined) {
+            this.selectedObj.selected = false;
+        }
 
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {

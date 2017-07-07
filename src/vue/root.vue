@@ -6,6 +6,7 @@
         <li class="myBtn"><a class="btnLink" href="index.html">2D</a></li>
         <li class="myBtn"><a class="btnLink" href="../3d/index.html">3D</a></li>
       </ul>
+      <header-menu-2d :scene="scene" :canvas2d="canvas2d"/>
     </header>
     <main-panel-2d v-bind:scene="scene" v-bind:canvas2d="canvas2d"/>
     <footer class="footer">
@@ -21,10 +22,12 @@
 </template>
 
 <script>
-import MainPanel2D from './mainPanel2d.vue';
+    import MainPanel2D from './mainPanel2d.vue';
+import HeaderMenu2D from './headerMenu2d.vue';
 export default {
     props: ['scene', 'canvas2d'],
-    components: { 'main-panel-2d': MainPanel2D }
+    components: { 'main-panel-2d': MainPanel2D,
+                  'header-menu-2d': HeaderMenu2D }
 }
 
 </script>
@@ -33,6 +36,7 @@ export default {
 
 html {
     height: 100%;
+    font-family: "Times New Roman";
 }
 
 #body {
