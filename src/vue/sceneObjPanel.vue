@@ -7,6 +7,8 @@
         </option>
       </template>
     </select>
+    <ui-button id="deleteButton" type="secondary" raised color="primary"
+               @click="deleteSelectedObj">Delete</ui-button>
     <circle-control v-if="selectedObjName === 'Circle'"
                     v-bind:circle="scene.selectedObj"
                     v-bind:canvas2d="canvas2d"/>
@@ -19,18 +21,33 @@
 <script>
     import CircleControl from './circleControl.vue';
 import HalfPlaneControl from './halfPlaneControl.vue'
+import UiButton from 'keen-ui/lib/UiButton';
+
 export default {
     props: ['scene', 'canvas2d'],
     components: {
         CircleControl,
-        HalfPlaneControl
+        HalfPlaneControl,
+        UiButton
     },
     computed: {
         selectedObjName: function() {
-            if (typeof this.scene.selectedObj === 'undefined') return '';
+            if (this.scene.selectedObj === undefined) return '';
             return this.scene.selectedObj.name;
         }
     },
+    methods: {
+        deleteSelectedObj: function() {
+            if (this.scene.selectedObj === undefined) return;
+            const name = this.scene.selectedObj.name;
+            const index = this.scene.objects[name].findIndex((elem) => {
+                return elem.id === this.scene.selectedObj.id;
+            });
+            this.scene.objects[name].splice(index, 1);
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        }
+    }
 }
 </script>
 
@@ -46,5 +63,9 @@ export default {
     padding-left: 0;
     width: 200px;
     height: 100px;
+}
+
+#deleteButton {
+    margin: 5px;
 }
 </style>

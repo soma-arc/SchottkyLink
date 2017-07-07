@@ -32,16 +32,23 @@ const PRESETS = [require('../presets/fourCircle.json'),
 export default class Scene {
     constructor() {
         this.objects = {};
-        this.none = { id: -1,
-                      name: '' };
-        this.selectedObj = this.none;
+
+        this.selectedObj = undefined;
         this.selectedState = new SelectionState();
     }
 
     select (mouse, sceneScale) {
         if (this.selectedState.isSelectingObj()) {
+            // const state = this.selectedState.selectedObj.select(mouse, sceneScale);
+            // if (state.isSelectingObj()) {
+            //     this.selectedState = state;
+            //     this.selectedState.selectedObj.selected = true;
+            //     return true;
+            // } else {
             this.selectedState.selectedObj.selected = false;
+            // }
         }
+
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             for (const obj of this.objects[objName]) {
@@ -55,7 +62,7 @@ export default class Scene {
             }
         }
         this.selectedState = new SelectionState();
-        this.selectedObj = this.none;
+        this.selectedObj = undefined;
         return false;
     }
 
