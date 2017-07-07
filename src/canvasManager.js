@@ -1,4 +1,4 @@
-import Scene2D from './geometry/scene.js';
+import Scene2D from './geometry2d/scene.js';
 import Canvas2D from './canvas2d.js';
 
 const RENDER_2D = 0;

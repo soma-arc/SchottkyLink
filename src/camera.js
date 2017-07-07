@@ -9,7 +9,7 @@ export class Camera {
     constructor(pos, target, fov) {
         this.pos = pos;
         this.target = target;
-        this.fov = fov;
+        this.fov = fov; // radians
         this.up = new Vec3(0, 1, 0);
     }
 
@@ -30,6 +30,25 @@ export class Camera {
         const origin = center.sub(focalXAxis.scale(screenWidth * 0.5))
               .sub(focalYAxis.scale(screenHeight * 0.5));
         return Vec3.normalize(origin.add(focalXAxis.scale(coordX)).add(focalYAxis.scale(coordY)));
+    }
+
+    setUniformLocations(gl, uniLocations, program) {
+        uniLocations.push(gl.getUniformLocation(program, 'u_camera.pos'));
+        uniLocations.push(gl.getUniformLocation(program, 'u_camera.target'));
+        uniLocations.push(gl.getUniformLocation(program, 'u_camera.fov'));
+        uniLocations.push(gl.getUniformLocation(program, 'u_camera.up'));
+    }
+
+    setUniformValues(gl, uniLocations, uniI) {
+        gl.uniform3f(uniLocations[uniI++],
+                     this.pos.x, this.pos.y, this.pos.z);
+        gl.uniform3f(uniLocations[uniI++],
+                     this.target.x, this.target.y, this.target.z);
+        gl.uniform1f(uniLocations[uniI++],
+                     this.fov);
+        gl.uniform3f(uniLocations[uniI++],
+                     this.up.x, this.up.y, this.up.z);
+        return uniI;
     }
 }
 

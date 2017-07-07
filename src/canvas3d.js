@@ -1,56 +1,21 @@
-import assert from 'power-assert';
+import Canvas from './canvas.js';
+import Vec2 from './vector2d.js';
+import Vec3 from './vector3d.js';
+import TextureHandler from './textureHandler.js';
+import { CameraOnSphere } from './camera.js';
 import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
-import Vec2 from './vector2d.js';
-import TextureHandler from './textureHandler.js';
-import Canvas from './canvas.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
-const RENDER_FRAGMENT = require('./shaders/render.frag');
+const RENDER_FRAGMENT_TMPL = require('./shaders/3dOrbit.njk.frag');
 
-const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
-
-/**
- * canvas class
- * @param {} canvasId
- * @param {} scene
- */
-export default class Canvas2D extends Canvas {
+export default class Canvas3D extends Canvas {
     constructor(canvasId, scene) {
-        super(canvasId, scene)
+        super(canvasId, scene);
+        this.camera = new CameraOnSphere(new Vec3(0, 0, 0), Math.PI / 3,
+                                         100, new Vec3(0, 1, 0));
 
-        this.gl = getWebGL2Context(this.canvas);
-        this.vertexBuffer = createSquareVbo(this.gl);
-
-        // render to canvas
-        this.renderCanvasProgram = this.gl.createProgram();
-        attachShader(this.gl, RENDER_VERTEX,
-                     this.renderCanvasProgram, this.gl.VERTEX_SHADER);
-        attachShader(this.gl, RENDER_FRAGMENT,
-                     this.renderCanvasProgram, this.gl.FRAGMENT_SHADER);
-        linkProgram(this.gl, this.renderCanvasProgram);
-        this.renderCanvasVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
-                                                             'a_vertex');
-
-        // render to texture
-        this.compileRenderShader();
-        this.renderTextures = createRGBTextures(this.gl, this.canvas.width,
-                                                this.canvas.height, 2);
-        this.texturesFrameBuffer = this.gl.createFramebuffer();
-
-        // geometry
-        this.scale = 1;
-        this.scaleFactor = 1.5;
-        this.translate = new Vec2(0, 0);
-
-        this.maxIterations = 40;
-
-        // mouse
-        this.mouseState = {
-            isPressing: false,
-            prevPosition: new Vec2(0, 0),
-            prevTranslate: new Vec2(0, 0)
-        };
+        this.numSamples = 0;
     }
 
     /**
@@ -79,36 +44,14 @@ export default class Canvas2D extends Canvas {
     }
 
     mouseWheelListener(event) {
-        event.preventDefault();
-        if (event.deltaY < 0) {
-            this.scale /= this.scaleFactor;
-        } else {
-            this.scale *= this.scaleFactor;
-        }
-        this.render();
+
     }
 
     mouseDownListener(event) {
         event.preventDefault();
-        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            this.scene.select(mouse, this.scale);
-            this.render();
-        } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
-            // TODO: add circle
-            this.scene.addCircle(mouse, this.scale);
-            this.compileRenderShader();
-            this.render();
-        }
-        this.mouseState.prevPosition = mouse;
-        this.mouseState.prevTranslate = this.translate;
-        this.mouseState.isPressing = true;
     }
 
     mouseDblClickListener(event) {
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            this.scene.remove(this.calcSceneCoord(event.clientX, event.clientY));
-        }
     }
 
     mouseUpListener(event) {
@@ -116,23 +59,12 @@ export default class Canvas2D extends Canvas {
     }
 
     mouseMoveListener(event) {
-        // envent.button return 0 when the mouse is not pressed.
-        // Thus we check if the mouse is pressed.
-        if (!this.mouseState.isPressing) return;
-        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            const moved = this.scene.move(mouse);
-            if (moved) this.render();
-        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
-            this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-            this.render();
-        }
     }
 
     compileRenderShader() {
         this.renderProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
-        attachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
+        attachShader(this.gl, RENDER_FRAGMENT_TMPL.render({}),
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
@@ -150,11 +82,14 @@ export default class Canvas2D extends Canvas {
                                                           'u_accTexture'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_resolution'));
+
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
-                                                          'u_geometry'));
+                                                          'u_textureWeight'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_numSamples'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_maxIISIterations'));
-        this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
+        this.camera.setUniformLocations(this.gl, this.uniLocations, this.renderProgram);
     }
 
     setRenderUniformValues(width, height, texture) {

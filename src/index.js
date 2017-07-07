@@ -1,7 +1,4 @@
 import Vue from 'vue';
-import Canvas2D from './canvas2d';
-import Scene from './geometry/scene.js';
-import ControlPanel from './vue/controlPanel.vue';
 import TextureHandler from './textureHandler.js';
 import Root from './vue/root.vue';
 import 'keen-ui/src/bootstrap';

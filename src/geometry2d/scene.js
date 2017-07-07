@@ -26,7 +26,7 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'Scaling': Scaling,
                         'OrbitSeed': OrbitSeed };
 
-const PRESETS_CONTEXT = require.context('../presets', true, /.json$/);
+const PRESETS_CONTEXT = require.context('../presets2d', true, /.json$/);
 const PRESETS = [];
 for (const k of PRESETS_CONTEXT.keys()) {
     PRESETS.push(PRESETS_CONTEXT(k));
