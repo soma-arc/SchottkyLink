@@ -1,6 +1,6 @@
 <template>
   <div id="sceneObjPanel">
-    <select size="5" v-model="scene.selectedObj" class="objList">
+    <select size="5" @change="updateSelection"  v-model="scene.selectedObj" class="objList">
       <template v-for="objs in scene.objects" v-bind:objs="objs">
         <option v-for="obj in objs" v-bind:value="obj" key="obj.id">
           {{ obj.name }} - {{ obj.id }}
@@ -37,6 +37,12 @@ export default {
         }
     },
     methods: {
+        updateSelection: function() {
+            this.scene.unselectAll();
+            if (this.scene.selectedObj === undefined) return;
+            this.scene.selectedObj.selected = true;
+            this.canvas2d.render();
+        },
         deleteSelectedObj: function() {
             if (this.scene.selectedObj === undefined) return;
             const name = this.scene.selectedObj.name;
