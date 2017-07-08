@@ -29,6 +29,27 @@ export default class canvasManager {
             this.canvas2d.resizeCanvas();
             this.canvas2d.compileRenderShader();
             this.canvas2d.render();
+        } else if (this.mode === RENDER_3D) {
+
         }
+    }
+
+    switch2d() {
+        if (this.mode === RENDER_2D) return;
+        this.mode = RENDER_2D;
+        window.setTimeout(this.resize, 1000);
+    }
+
+    switch3d() {
+        if (this.mode === RENDER_3D) return;
+        this.mode = RENDER_3D;
+    }
+
+    get isRendering2d() {
+        return this.mode === RENDER_2D;
+    }
+
+    get isRendering3d() {
+        return this.mode === RENDER_3D;
     }
 }

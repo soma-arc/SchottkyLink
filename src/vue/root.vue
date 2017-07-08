@@ -2,15 +2,16 @@
   <div id="body">
     <header class="header">
       <ul class="headerLeft">
-        <li class="myBtn"><a class="btnLink" href="/">SchottkyLink</a></li>
-        <li class="myBtn"><a class="btnLink" href="/2d">2D</a></li>
-        <li class="myBtn"><a class="btnLink" href="/3d">3D</a></li>
+        <li class="myBtn"><a class="btnLink">SchottkyLink</a></li>
+        <li class="myBtn" @click="switchTo2d"><a class="btnLink">2D</a></li>
+        <li class="myBtn" @click="switchTo3d"><a class="btnLink">3D</a></li>
       </ul>
-      <header-menu-2d :scene="canvasManager.scene2d"
-                      :canvas2d="canvasManager.canvas2d"/>
+      <header-menu :canvasManager="canvasManager"/>
     </header>
-    <main-panel-2d :scene="canvasManager.scene2d"
-                   :canvas2d="canvasManager.canvas2d"/>
+    <main-panel-2d v-show="canvasManager.isRendering2d"
+                   :canvasManager="canvasManager"/>
+    <main-panel-3d v-show="canvasManager.isRendering3d"
+                   :canvasManager="canvasManager"/>
     <footer class="footer">
       <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
          target="_blank">
@@ -24,18 +25,28 @@
 </template>
 
 <script>
-    import MainPanel2D from './mainPanel2d.vue';
-import HeaderMenu2D from './headerMenu2d.vue';
+     import MainPanel2D from './mainPanel2d.vue';
+     import MainPanel3D from './mainPanel3d.vue';
+     import HeaderMenu from './headerMenu.vue';
 
-export default {
-    props: ['canvasManager'],
-    data: function() {
-        return {
-            currentRoute: window.location.pathname
-        }
-    },
-    components: { 'main-panel-2d': MainPanel2D,
-                  'header-menu-2d': HeaderMenu2D }
+     export default {
+         props: ['canvasManager'],
+         data: function() {
+             return {
+                 currentRoute: window.location.pathname
+             }
+         },
+         components: { 'main-panel-2d': MainPanel2D,
+                       'main-panel-3d': MainPanel3D,
+                       HeaderMenu },
+         methods: {
+             switchTo2d: function() {
+                 this.canvasManager.switch2d();
+             },
+             switchTo3d: function() {
+                 this.canvasManager.switch3d();
+             }
+         }
 }
 
 </script>

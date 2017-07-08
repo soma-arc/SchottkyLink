@@ -3,8 +3,13 @@
     <li class="headerButton">
       <ui-button type="secondary" raised color="primary"
                  open-dropdown-on="hover" has-dropdown ref="dropdownButton">
-        <ui-menu slot="dropdown" :options="scene.presets"
-                 @select="presetSelected"
+        <ui-menu v-show="canvasManager.isRendering2d"
+                 slot="dropdown" :options="canvasManager.scene2d.presets"
+                 @select="presetSelected2d"
+                 @close="$refs.dropdownButton.closeDropdown()"/>
+        <ui-menu v-show="canvasManager.isRendering3d"
+                 slot="dropdown"
+                 @select="presetSelected3d"
                  @close="$refs.dropdownButton.closeDropdown()"/>
         Load Preset
       </ui-button>
@@ -16,16 +21,18 @@
 import UiMenu from 'keen-ui/lib/UiMenu';
 import UiButton from 'keen-ui/lib/UiButton';
 export default {
-    props: ['scene', 'canvas2d'],
+    props: ['canvasManager'],
     components: {
         UiButton,
         UiMenu
     },
     methods: {
-        presetSelected(preset) {
-            this.scene.load(preset);
-            this.canvas2d.compileRenderShader();
-            this.canvas2d.render();
+        presetSelected2d(preset) {
+            this.canvasManager.scene2d.load(preset);
+            this.canvasManager.canvas2d.compileRenderShader();
+            this.canvasManager.canvas2d.render();
+        },
+        presetSelected3d(preset) {
         }
     }
 }

@@ -2,20 +2,26 @@
   <div class="contentPanel">
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas2"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
-    <control-panel2d v-bind:scene="canvasManager.scene2d"
-                     v-bind:canvas2d="canvasManager.canvas2d"/>
+    <div class="canvasPanel">
+      <div class="canvasParent">
+        <canvas id="canvas3"></canvas>
+      </div>
+      <div class="renderPropertyPanel"></div>
+    </div>
+    <control-panel3d/>
   </div>
 </template>
 
 <script>
-import ControlPanel2d from './controlPanel2d.vue';
+    import ControlPanel3d from './controlPanel3d.vue';
+
 export default {
     props: ['canvasManager'],
-    components: { ControlPanel2d }
+    components: { ControlPanel3d }
 }
 </script>
 
