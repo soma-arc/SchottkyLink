@@ -62,6 +62,16 @@ struct OrbitSeed {
     bool selected;
 };
 
+struct Scaling {
+    vec4 c1;
+    vec4 c2;
+    vec4 c1d;
+    vec4 line1;
+    vec4 line2;
+    vec2 ui; // [pointRadius, lineWidth]
+    bool selected;
+};
+
 //[x, y, r, r * r]
 {% for n  in range(0,  numCircle ) %}
 uniform Circle u_circle{{ n }};
@@ -99,6 +109,10 @@ uniform Loxodromic u_loxodromic{{ n }};
 
 {% for n in range(0, numOrbitSeed) %}
 uniform OrbitSeed u_orbitSeed{{ n }};
+{% endfor %}
+
+{% for n in range(0, numScaling) %}
+uniform Scaling u_scaling{{ n }};
 {% endfor %}
 
 out vec4 outColor;
@@ -256,6 +270,36 @@ bool IIS(vec2 pos, out vec3 col) {
         }
         {% endfor %}
 
+        {% for n in range(0, numScaling) %}
+        if(distance(pos, u_scaling{{ n }}.c1.xy) < u_scaling{{ n }}.c1.z){
+            pos -= u_scaling{{ n }}.line1.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
+            pos += u_scaling{{ n }}.line1.xy;
+
+            pos -= u_scaling{{ n }}.c2.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
+            pos += u_scaling{{ n }}.c2.xy;
+            
+            pos = circleInvert(pos, u_scaling{{ n }}.c1);
+            pos = circleInvert(pos, u_scaling{{ n }}.c2);
+
+            inFund = false;
+       }else if(distance(pos, u_scaling{{ n }}.c1d.xy) >= u_scaling{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_scaling{{ n }}.c2);
+            pos = circleInvert(pos, u_scaling{{ n }}.c1);
+
+            pos -= u_scaling{{ n }}.c2.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
+            pos += u_scaling{{ n }}.c2.xy;
+            
+            pos -= u_scaling{{ n }}.line1.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
+            pos += u_scaling{{ n }}.line1.xy;
+            
+            inFund = false;
+        }
+        {% endfor %}
+
         if (inFund) break;
     }
 
@@ -391,6 +435,17 @@ bool renderUI(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
+    {% for n in range(0, numScaling) %}
+    if(distance(pos, u_scaling{{ n }}.line1.xy) < u_scaling{{ n }}.ui.x) {
+        color = LIGHT_BLUE;
+        return true;
+    }
+    if(distance(pos, u_scaling{{ n }}.line2.xy) < u_scaling{{ n }}.ui.x) {
+        color = LIGHT_BLUE;
+        return true;
+    }
+    {% endfor %}
+
     return false;
 }
 
@@ -439,6 +494,32 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         return true;
     }
     {% endfor %}
+
+    {% for n in range(0, numScaling) %}
+    if(abs(dot(pos - u_scaling{{ n }}.line1.xy,
+               u_scaling{{ n }}.line1.zw)) < u_scaling{{ n }}.ui.y) {
+        color = WHITE;
+        return true;
+    }
+    if(abs(dot(pos - u_scaling{{ n }}.line2.xy,
+               u_scaling{{ n }}.line2.zw)) < u_scaling{{ n }}.ui.y) {
+        color = WHITE;
+        return true;
+    }
+    if(distance(pos, u_scaling{{ n }}.c1.xy) < u_scaling{{ n }}.c1.z) {
+        color = RED;
+        return true;
+    }
+    if(distance(pos, u_scaling{{ n }}.c2.xy) < u_scaling{{ n }}.c2.z) {
+        color = GREEN;
+        return true;
+    }
+    if(distance(pos, u_scaling{{ n }}.c1d.xy) < u_scaling{{ n }}.c1d.z) {
+        color = BLUE;
+        return true;
+    }
+    {% endfor %}
+    
     return false;
 }
 
