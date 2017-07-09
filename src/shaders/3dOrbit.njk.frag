@@ -2,20 +2,11 @@
 
 precision mediump float;
 
-struct Camera {
-    vec3 pos;
-    vec3 target;
-    float fov;
-    vec3 up;
-};
+{% include "./3dUniforms.njk.frag" %}
 
-uniform sampler2D u_textures[20];
-uniform sampler2D u_accTexture;
-uniform vec2 u_resolution;
-uniform float u_textureWeight;
-uniform float u_numSamples;
-uniform float u_maxIISIterations;
-uniform Camera u_camera;
+// from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
+// include Color constants, hsv2rgb, and blendCol
+{% include "./color.njk.frag" %}
 
 vec2 rand2n(const vec2 co, const float sampleIndex) {
     vec2 seed = co * (sampleIndex + 1.0);
