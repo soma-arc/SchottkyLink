@@ -12,3 +12,13 @@ uniform float u_textureWeight;
 uniform float u_numSamples;
 uniform float u_maxIISIterations;
 uniform Camera u_camera;
+
+struct Sphere {
+    vec3 pos;
+    vec2 r; // [r, rSq]
+    bool selected;
+};
+
+{% for n in range(0, numBaseSpheres) %}
+uniform Sphere u_baseSphere{{ n }};
+{% endfor %}
