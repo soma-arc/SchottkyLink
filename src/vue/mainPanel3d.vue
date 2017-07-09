@@ -2,13 +2,13 @@
   <div class="contentPanel">
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas2"></canvas>
+        <canvas id="canvas3dGen"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas3"></canvas>
+        <canvas id="canvas3dOrb"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
@@ -36,7 +36,7 @@ export default {
     display: flex;
 }
 
-#canvas {
+#canvas3dOrb #canvas3dGen {
     width: 100%;
     height: 100%;
     cursor: crosshair;

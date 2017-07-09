@@ -34,8 +34,7 @@ export default class Canvas2D extends Canvas {
 
         // render to texture
         this.compileRenderShader();
-        this.renderTextures = createRGBTextures(this.gl, this.canvas.width,
-                                                this.canvas.height, 2);
+        this.initRenderTextures();
         this.texturesFrameBuffer = this.gl.createFramebuffer();
 
         // geometry
@@ -136,9 +135,12 @@ export default class Canvas2D extends Canvas {
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
+        this.getRenderUniformLocations();
+    }
+
+    initRenderTextures() {
         this.renderTextures = createRGBTextures(this.gl, this.canvas.width,
                                                 this.canvas.height, 2);
-        this.getRenderUniformLocations();
     }
 
     getRenderUniformLocations() {

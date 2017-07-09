@@ -7,6 +7,8 @@ import { getWebGL2Context, createSquareVbo, attachShader,
          linkProgram, createRGBTextures } from './glUtils';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
+const RENDER_FRAGMENT = require('./shaders/render.frag');
+
 const RENDER_FRAGMENT_TMPL = require('./shaders/3dOrbit.njk.frag');
 
 export default class Canvas3D extends Canvas {
@@ -15,7 +17,25 @@ export default class Canvas3D extends Canvas {
         this.camera = new CameraOnSphere(new Vec3(0, 0, 0), Math.PI / 3,
                                          100, new Vec3(0, 1, 0));
 
+        this.gl = getWebGL2Context(this.canvas);
+        this.vertexBuffer = createSquareVbo(this.gl);
+
+        this.renderCanvasProgram = this.gl.createProgram();
+        attachShader(this.gl, RENDER_VERTEX,
+                     this.renderCanvasProgram, this.gl.VERTEX_SHADER);
+        attachShader(this.gl, RENDER_FRAGMENT,
+                     this.renderCanvasProgram, this.gl.FRAGMENT_SHADER);
+        linkProgram(this.gl, this.renderCanvasProgram);
+        this.renderCanvasVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
+                                                             'a_vertex');
+
+        this.lowResRatio = 0.5;
         this.numSamples = 0;
+        this.compileRenderShader();
+        this.initRenderTextures();
+        this.texturesFrameBuffer = this.gl.createFramebuffer();
+
+        this.maxIterations = 20;
     }
 
     /**
@@ -68,9 +88,15 @@ export default class Canvas3D extends Canvas {
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
+        this.getRenderUniformLocations();
+    }
+
+    initRenderTextures() {
         this.renderTextures = createRGBTextures(this.gl, this.canvas.width,
                                                 this.canvas.height, 2);
-        this.getRenderUniformLocations();
+        this.lowResTextures = createRGBTextures(this.gl,
+                                                this.canvas.width * this.lowResRatio,
+                                                this.canvas.height * this.lowResRatio, 2);
     }
 
     getRenderUniformLocations() {
@@ -82,7 +108,6 @@ export default class Canvas3D extends Canvas {
                                                           'u_accTexture'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_resolution'));
-
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_textureWeight'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
@@ -105,10 +130,11 @@ export default class Canvas3D extends Canvas {
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
         this.gl.uniform1i(this.uniLocations[i++], textureIndex);
         this.gl.uniform2f(this.uniLocations[i++], width, height);
-        this.gl.uniform3f(this.uniLocations[i++],
-                          this.translate.x, this.translate.y, this.scale);
-        this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
-        i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
+        this.gl.uniform1f(this.uniLocations[i++], this.numSamples / (this.numSamples + 1));
+        this.gl.uniform1f(this.uniLocations[i++], this.numSamples);
+        this.gl.uniform1f(this.uniLocations[i++], this.maxIterations);
+        i = this.camera.setUniformValues(this.gl, this.uniLocations, i);
+//        i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
     renderToTexture(textures, width, height) {

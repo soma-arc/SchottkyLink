@@ -41,6 +41,6 @@ void main() {
     vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
     vec3 ray = calcRay(u_camera.pos, u_camera.target, u_camera.up, u_camera.fov,
                        u_resolution, gl_FragCoord.xy + coordOffset);
-    vec3 texCol = texture2D(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
+    vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
     outColor = vec4(mix(ray, texCol, u_textureWeight), 1.0);
 }
