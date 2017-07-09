@@ -5,6 +5,7 @@ export class Camera {
      *
      * @param {Vec3} pos
      * @param {Vec3} target
+     * @param {number} fov
      */
     constructor(pos, target, fov) {
         this.pos = pos;
@@ -61,7 +62,7 @@ export class CameraOnSphere extends Camera {
      * @param {Vec3} up
      */
     constructor(target, fov, cameraDistance, up) {
-        super();
+        super(new Vec3(0, 0, 0), target, fov);
         this.prevTarget = target;
         this.target = target;
         this.fov = fov;
