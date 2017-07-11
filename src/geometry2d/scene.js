@@ -55,8 +55,9 @@ export default class Scene {
             this.selectedObj.selected = false;
         }
 
-        const objKeyNames = Object.keys(this.objects);
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
                 const state = obj.select(mouse, sceneScale);
                 if (state.isSelectingObj()) {
