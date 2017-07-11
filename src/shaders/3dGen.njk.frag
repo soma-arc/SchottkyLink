@@ -3,6 +3,7 @@
 precision mediump float;
 
 {% include "./3dUniforms.njk.frag" %}
+{% include "./raytrace.njk.frag" %}
 
 // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
 // include Color constants, hsv2rgb, and blendCol
@@ -16,29 +17,7 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
                 fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
 }
 
-vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
-              const vec2 resolution, const vec2 coord){
-    float imagePlane = (resolution.y * .5) / tan(fov * .5);
-    vec3 v = normalize(target - eye);
-    vec3 xaxis = normalize(cross(v, up));
-    vec3 yaxis =  normalize(cross(v, xaxis));
-    vec3 center = v * imagePlane;
-    vec3 origin = center - (xaxis * (resolution.x  *.5)) - (yaxis * (resolution.y * .5));
-    return normalize(origin + (xaxis * coord.x) + (yaxis * (resolution.y - coord.y)));
-}
-
-struct IsectInfo {
-    int objId;
-    int objIndex;
-    vec3 normal;
-    vec3 intersection;
-    float mint;
-    float maxt;
-    bool hit;
-};
-
 float MAX_FLOAT = 1e20;
-int ID_BASE_SPHERE = 0;
 
 float distSphere(vec3 pos, vec3 center, float radius) {
     return distance(pos, center) - radius;
@@ -55,6 +34,13 @@ vec3 distFunc(vec3 pos) {
                                          u_baseSphere{{ n }}.pos,
                                          u_baseSphere{{ n }}.r.x),
                               ID_BASE_SPHERE, {{ n }}));
+    {% endfor %}
+
+    {% for n in range(0, numInversionSphere) %}
+    hit = distUnion(hit, vec3(distSphere(pos,
+                                         u_inversionSphere{{ n }}.pos,
+                                         u_inversionSphere{{ n }}.r.x),
+                              ID_INVERSION_SPHERE, {{ n }}));
     {% endfor %}
     return hit;
 }
@@ -104,8 +90,10 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
     vec3 l = BLACK;
     if(isectInfo.hit) {
         vec3 matColor = BLUE;
-        if(isectInfo.objId == ID_BASE_SPHERE) {
+        if (isectInfo.objId == ID_BASE_SPHERE) {
             matColor = GREEN;
+        } else if (isectInfo.objId == ID_INVERSION_SPHERE) {
+            matColor = GRAY;
         }
 
         vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;

@@ -1,5 +1,6 @@
 const vec3 BLACK = vec3(0);
 const vec3 WHITE = vec3(1);
+const vec3 GRAY = vec3(0.78);
 const vec3 RED = vec3(0.8, 0, 0);
 const vec3 GREEN = vec3(0, 0.8, 0);
 const vec3 BLUE = vec3(0, 0, 0.8);

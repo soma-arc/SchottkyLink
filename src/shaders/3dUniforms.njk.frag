@@ -19,6 +19,12 @@ struct Sphere {
     bool selected;
 };
 
+int ID_BASE_SPHERE = 0;
 {% for n in range(0, numBaseSphere) %}
 uniform Sphere u_baseSphere{{ n }};
+{% endfor %}
+
+int ID_INVERSION_SPHERE = 1;
+{% for n in range(0, numInversionSphere) %}
+uniform Sphere u_inversionSphere{{ n }};
 {% endfor %}

@@ -1,4 +1,5 @@
 import BaseSphere from './baseSphere.js'
+import InversionSphere from './inversionSphere.js';
 import Vue from 'vue';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
@@ -8,7 +9,8 @@ for (const k of PRESETS_CONTEXT.keys()) {
 }
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = { 'BaseSphere': BaseSphere };
+const STR_CLASS_MAP = { 'BaseSphere': BaseSphere,
+                        'InversionSphere': InversionSphere };
 
 export default class Scene3D {
     constructor() {
