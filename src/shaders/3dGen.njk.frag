@@ -62,7 +62,7 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
         if(rayLength > isectInfo.maxt) break;
         dist = distFunc(rayPos);
         rayLength += dist.x;
-        rayPos = rayPos + rayDir * rayLength;
+        rayPos = rayOrg + rayDir * rayLength;
         if(dist.x < MARCHING_THRESHOLD) {
             isectInfo.objId = int(dist.y);
             isectInfo.objIndex = int(dist.z);
