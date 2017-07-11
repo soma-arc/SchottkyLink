@@ -22,9 +22,9 @@ export default class BaseSphere extends Shape3d {
 
     setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
-        gl.uniform4f(uniLocation[uniI++],
+        gl.uniform3f(uniLocation[uniI++],
                      this.center.x, this.center.y, this.center.z);
-        gl.uniform2fv(uniLocation[uniI++],
+        gl.uniform2f(uniLocation[uniI++],
                      this.r, this.rSq);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);

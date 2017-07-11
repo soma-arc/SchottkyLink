@@ -19,6 +19,6 @@ struct Sphere {
     bool selected;
 };
 
-{% for n in range(0, numBaseSpheres) %}
+{% for n in range(0, numBaseSphere) %}
 uniform Sphere u_baseSphere{{ n }};
 {% endfor %}

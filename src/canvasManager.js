@@ -1,7 +1,7 @@
 import Scene2D from './geometry2d/scene.js';
 import Scene3D from './geometry3d/scene.js';
 import Canvas2D from './canvas2d.js';
-import Canvas3D from './canvas3d.js';
+import { GeneratorCanvas, OrbitCanvas } from './canvas3d.js';
 
 const RENDER_2D = 0;
 const RENDER_3D = 1;
@@ -25,8 +25,8 @@ export default class canvasManager {
         this.canvas2d = new Canvas2D('canvas', this.scene2d);
         this.canvas2d.render();
 
-        this.canvas3dGen = new Canvas3D('canvas3dGen', this.scene3d);
-        this.canvas3dOrb = new Canvas3D('canvas3dOrb', this.scene3d);
+        this.canvas3dGen = new GeneratorCanvas('canvas3dGen', this.scene3d);
+        this.canvas3dOrb = new OrbitCanvas('canvas3dOrb', this.scene3d);
     }
 
     resize() {

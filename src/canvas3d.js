@@ -9,16 +9,18 @@ import { getWebGL2Context, createSquareVbo, attachShader,
 const RENDER_VERTEX = require('./shaders/render.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
 
-const RENDER_FRAGMENT_TMPL = require('./shaders/3dOrbit.njk.frag');
+const RENDER_ORBIT_TMPL = require('./shaders/3dOrbit.njk.frag');
+const RENDER_GENERATOR_TMPL = require('./shaders/3dGen.njk.frag');
 
-export default class Canvas3D extends Canvas {
-    constructor(canvasId, scene) {
+export class Canvas3D extends Canvas {
+    constructor(canvasId, scene, renderFragmentTmpl) {
         super(canvasId, scene);
         this.camera = new CameraOnSphere(new Vec3(0, 0, 0), Math.PI / 3,
-                                         100, new Vec3(0, 1, 0));
-
+                                         250, new Vec3(0, 1, 0));
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
+
+        this.renderFragmentTmpl = renderFragmentTmpl;
 
         this.renderCanvasProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX,
@@ -75,7 +77,6 @@ export default class Canvas3D extends Canvas {
     }
 
     mouseUpListener(event) {
-        this.mouseState.isPressing = false;
     }
 
     mouseMoveListener(event) {
@@ -84,7 +85,8 @@ export default class Canvas3D extends Canvas {
     compileRenderShader() {
         this.renderProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
-        attachShader(this.gl, RENDER_FRAGMENT_TMPL.render({}),
+        attachShader(this.gl,
+                     this.renderFragmentTmpl.render(this.scene.getContext()),
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
@@ -115,6 +117,7 @@ export default class Canvas3D extends Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_maxIISIterations'));
         this.camera.setUniformLocations(this.gl, this.uniLocations, this.renderProgram);
+        this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
     setRenderUniformValues(width, height, texture) {
@@ -134,7 +137,7 @@ export default class Canvas3D extends Canvas {
         this.gl.uniform1f(this.uniLocations[i++], this.numSamples);
         this.gl.uniform1f(this.uniLocations[i++], this.maxIterations);
         i = this.camera.setUniformValues(this.gl, this.uniLocations, i);
-//        i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
+        i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
     }
 
     renderToTexture(textures, width, height) {
@@ -169,5 +172,17 @@ export default class Canvas3D extends Canvas {
     render() {
         this.renderToTexture(this.renderTextures, this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
+    }
+}
+
+export class GeneratorCanvas extends Canvas3D {
+    constructor(canvasId, scene) {
+        super(canvasId, scene, RENDER_GENERATOR_TMPL);
+    }
+}
+
+export class OrbitCanvas extends Canvas3D {
+    constructor(canvasId, scene) {
+        super(canvasId, scene, RENDER_ORBIT_TMPL);
     }
 }

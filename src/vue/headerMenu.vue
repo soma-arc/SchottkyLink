@@ -8,7 +8,7 @@
                  @select="presetSelected2d"
                  @close="$refs.dropdownButton.closeDropdown()"/>
         <ui-menu v-show="canvasManager.isRendering3d"
-                 slot="dropdown"
+                 slot="dropdown" :options="canvasManager.scene3d.presets"
                  @select="presetSelected3d"
                  @close="$refs.dropdownButton.closeDropdown()"/>
         Load Preset
@@ -33,6 +33,9 @@ export default {
             this.canvasManager.canvas2d.render();
         },
         presetSelected3d(preset) {
+            this.canvasManager.scene3d.load(preset);
+            this.canvasManager.canvas3dGen.compileRenderShader();
+            this.canvasManager.canvas3dGen.render();
         }
     }
 }

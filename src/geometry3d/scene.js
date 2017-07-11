@@ -1,4 +1,5 @@
 import BaseSphere from './baseSphere.js'
+import Vue from 'vue';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -27,7 +28,7 @@ export default class Scene3D {
         }
     }
 
-    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
+    setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
@@ -46,5 +47,20 @@ export default class Scene3D {
             context[`num${objName}`] = this.objects[objName].length;
         }
         return context;
+    }
+
+    load(sceneObjects) {
+        this.objects = {};
+        const generators = sceneObjects.generators;
+        const objKeyNames = Object.keys(generators);
+
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) {
+                Vue.set(this.objects, objName, []);
+            }
+            for (const objParam of generators[objName]) {
+                this.objects[objName].push(STR_CLASS_MAP[objName].loadJson(objParam, this));
+            }
+        }
     }
 }
