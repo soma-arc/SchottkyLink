@@ -87,12 +87,50 @@ export default class Scene {
         this.objects['HalfPlane'].push(new HalfPlane(position, new Vec2(1, 0)));
     }
 
+    addParallelTranslation(position, sceneScale) {
+        if (this.objects['ParallelTranslation'] === undefined) {
+            Vue.set(this.objects, 'ParallelTranslation', []);
+        }
+        this.objects['ParallelTranslation'].push(new ParallelTranslation(position, new Vec2(1, 0), 2));
+    }
+
+    addRotation(position, sceneScale) {
+        if (this.objects['Rotation'] === undefined) {
+            Vue.set(this.objects, 'Rotation', []);
+        }
+        this.objects['Rotation'].push(new Rotation(position, new Vec2(1, 0), Math.PI / 4));
+    }
+
     addTwoCircles(position, sceneScale) {
         if (this.objects['TwoCircles'] === undefined) {
             Vue.set(this.objects, 'TwoCircles', []);
         }
         this.objects['TwoCircles'].push(new TwoCircles(new Circle(position, 0.1 * sceneScale),
                                                        new Circle(position, 0.2 * sceneScale)));
+    }
+
+    addLoxodromic(position, sceneScale) {
+        if (this.objects['Loxodromic'] === undefined) {
+            Vue.set(this.objects, 'Loxodromic', []);
+        }
+        this.objects['Loxodromic'].push(new Loxodromic(new Circle(position, 0.1 * sceneScale),
+                                                       new Circle(position.add(new Vec2(0.01 * sceneScale, 0.0)),
+                                                                  0.11 * sceneScale),
+                                                       position.add(new Vec2(1, 1))));
+    }
+
+    addScaling(position, sceneScale) {
+        if (this.objects['Scaling'] === undefined) {
+            Vue.set(this.objects, 'Scaling', []);
+        }
+        this.objects['Scaling'].push(new Scaling(position, new Vec2(1, 0)));
+    }
+
+    addOrbitSeed(position, sceneScale) {
+        if (this.objects['OrbitSeed'] === undefined) {
+            Vue.set(this.objects, 'OrbitSeed', []);
+        }
+        this.objects['OrbitSeed'].push(new OrbitSeed(position.x, position.y, 0.1 * sceneScale, 0.1 * sceneScale));
     }
 
     move (mouse) {
