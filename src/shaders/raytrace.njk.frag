@@ -12,6 +12,7 @@ vec3 calcRay (const vec3 eye, const vec3 target, const vec3 up, const float fov,
 struct IsectInfo {
     int objId;
     int objIndex;
+    int objComponentId;
     vec3 normal;
     vec3 intersection;
     float mint;
