@@ -23,6 +23,8 @@ export default class Canvas {
 
     resizeCanvas() {
         const parent = this.canvas.parentElement;
+        this.canvas.style.width = parent.clientWidth + 'px';
+        this.canvas.style.height = parent.clientHeight + 'px';
         this.canvas.width = parent.clientWidth * this.pixelRatio;
         this.canvas.height = parent.clientHeight * this.pixelRatio;
         this.canvasRatio = this.canvas.width / this.canvas.height / 2;
