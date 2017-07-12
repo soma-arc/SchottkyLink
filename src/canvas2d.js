@@ -112,6 +112,7 @@ export default class Canvas2D extends Canvas {
 
     mouseUpListener(event) {
         this.mouseState.isPressing = false;
+        this.isRendering = false;
     }
 
     mouseMoveListener(event) {
@@ -121,10 +122,10 @@ export default class Canvas2D extends Canvas {
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             const moved = this.scene.move(mouse);
-            if (moved) this.render();
+            if (moved) this.isRendering = true;
         } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-            this.render();
+            this.isRendering = true;
         }
     }
 

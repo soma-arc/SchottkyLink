@@ -56,6 +56,21 @@ export default class canvasManager {
         window.setTimeout(this.resizeCallback, 1);
     }
 
+    renderLoop() {
+        if (this.mode === RENDER_2D) {
+            if (this.canvas2d.isRendering) {
+                this.canvas2d.render();
+            }
+        } else if (this.mode === RENDER_3D) {
+            if (this.canvas3dOrb.isRendering) {
+                this.canvas3dOrb.render();
+            }
+            if (this.canvas3dGen.isRendering) {
+                this.canvas3dGen.render();
+            }
+        }
+    }
+
     get isRendering2d() {
         return this.mode === RENDER_2D;
     }

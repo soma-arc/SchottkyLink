@@ -6,6 +6,8 @@ export default class Canvas {
         this.pixelRatio = window.devicePixelRatio;
         this.resizeCanvas();
 
+        this.isRendering = false;
+
         this.boundMouseDownListener = this.mouseDownListener.bind(this);
         this.boundMouseUpListener = this.mouseUpListener.bind(this);
         this.boundMouseWheelListener = this.mouseWheelListener.bind(this);

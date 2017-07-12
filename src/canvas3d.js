@@ -97,6 +97,7 @@ export class Canvas3D extends Canvas {
 
     mouseUpListener(event) {
         this.mouseState.isPressing = false;
+        this.isRendering = false;
     }
 
     mouseMoveListener(event) {
@@ -109,7 +110,7 @@ export class Canvas3D extends Canvas {
             this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
             this.camera.update();
             this.numSamples = 0;
-            this.render();
+            this.isRendering = true;
         }
     }
 

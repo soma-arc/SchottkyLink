@@ -31,8 +31,10 @@ window.addEventListener('load', () => {
             resizeTimer = window.setTimeout(canvasManager.resizeCallback, 500);
         })
 
-        window.addEventListener('popstate', () => {
-            app.currentRoute = window.location.pathname
-        })
+        function renderLoop() {
+            canvasManager.renderLoop();
+            requestAnimationFrame(renderLoop);
+        }
+        renderLoop();
     });
 });
