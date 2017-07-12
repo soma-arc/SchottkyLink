@@ -36,6 +36,8 @@ export default {
             this.canvasManager.scene3d.load(preset);
             this.canvasManager.canvas3dGen.compileRenderShader();
             this.canvasManager.canvas3dGen.render();
+            this.canvasManager.canvas3dOrb.compileRenderShader();
+            this.canvasManager.canvas3dOrb.render();
         }
     }
 }

@@ -10,7 +10,7 @@ uniform sampler2D u_accTexture;
 uniform vec2 u_resolution;
 uniform float u_textureWeight;
 uniform float u_numSamples;
-uniform float u_maxIISIterations;
+uniform int u_maxIISIterations;
 uniform Camera u_camera;
 
 struct Sphere {
@@ -28,3 +28,5 @@ int ID_INVERSION_SPHERE = 1;
 {% for n in range(0, numInversionSphere) %}
 uniform Sphere u_inversionSphere{{ n }};
 {% endfor %}
+
+int ID_ORBIT = 2;

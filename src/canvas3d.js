@@ -15,6 +15,7 @@ const RENDER_GENERATOR_TMPL = require('./shaders/3dGen.njk.frag');
 export class Canvas3D extends Canvas {
     constructor(canvasId, scene, renderFragmentTmpl) {
         super(canvasId, scene);
+        this.pixelRatio = 1;
         this.camera = new CameraOnSphere(new Vec3(0, 0, 0), Math.PI / 3,
                                          1500, new Vec3(0, 1, 0));
         this.cameraDistScale = 1.25;
@@ -39,7 +40,7 @@ export class Canvas3D extends Canvas {
         this.initRenderTextures();
         this.texturesFrameBuffer = this.gl.createFramebuffer();
 
-        this.maxIterations = 20;
+        this.maxIterations = 12;
 
         this.mouseState = {
             isPressing: false,
@@ -165,7 +166,7 @@ export class Canvas3D extends Canvas {
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform1f(this.uniLocations[i++], this.numSamples / (this.numSamples + 1));
         this.gl.uniform1f(this.uniLocations[i++], this.numSamples);
-        this.gl.uniform1f(this.uniLocations[i++], this.maxIterations);
+        this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
         i = this.camera.setUniformValues(this.gl, this.uniLocations, i);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
     }
