@@ -31,14 +31,14 @@ vec3 distFunc(vec3 pos) {
     vec3 hit = vec3(MAX_FLOAT, -1, -1);
     {% for n in range(0, numBaseSphere) %}
     hit = distUnion(hit, vec3(distSphere(pos,
-                                         u_baseSphere{{ n }}.pos,
+                                         u_baseSphere{{ n }}.center,
                                          u_baseSphere{{ n }}.r.x),
                               ID_BASE_SPHERE, {{ n }}));
     {% endfor %}
 
     {% for n in range(0, numInversionSphere) %}
     hit = distUnion(hit, vec3(distSphere(pos,
-                                         u_inversionSphere{{ n }}.pos,
+                                         u_inversionSphere{{ n }}.center,
                                          u_inversionSphere{{ n }}.r.x),
                               ID_INVERSION_SPHERE, {{ n }}));
     {% endfor %}
@@ -52,7 +52,7 @@ vec3 computeNormal(const vec3 p) {
                           distFunc(p + NORMAL_COEFF.yyx).x - distFunc(p - NORMAL_COEFF.yyx).x));
 }
 
-const int MAX_MARCHING_LOOP = 500;
+const int MAX_MARCHING_LOOP = 1000;
 const float MARCHING_THRESHOLD = 0.001;
 void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     float rayLength = isectInfo.mint;
@@ -69,7 +69,6 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
             isectInfo.intersection = rayPos;
             isectInfo.normal = computeNormal(rayPos);
             isectInfo.hit = true;
-            isectInfo = isectInfo;
             break;
         }
     }

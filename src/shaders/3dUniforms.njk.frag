@@ -14,7 +14,7 @@ uniform float u_maxIISIterations;
 uniform Camera u_camera;
 
 struct Sphere {
-    vec3 pos;
+    vec3 center;
     vec2 r; // [r, rSq]
     bool selected;
 };
