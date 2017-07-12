@@ -1,6 +1,36 @@
-import BaseSphere from './baseSphere.js';
+import Vec3 from '../vector3d.js';
+import Shape3d from './shape3d.js';
 
-export default class InversionSphere extends BaseSphere {
+export default class InversionSphere extends Shape3d {
+    /**
+     *
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     * @param {number} r
+     */
+    constructor (x, y, z, r) {
+        super();
+        this.center = new Vec3(x, y, z);
+        this.r = r;
+        this.update();
+    }
+
+    update() {
+        this.rSq = this.r * this.r;
+    }
+
+    setUniformValues(gl, uniLocation, uniIndex) {
+        let uniI = uniIndex;
+        gl.uniform3f(uniLocation[uniI++],
+                     this.center.x, this.center.y, this.center.z);
+        gl.uniform2f(uniLocation[uniI++],
+                     this.r, this.rSq);
+        gl.uniform1i(uniLocation[uniI++],
+                     this.selected);
+        return uniI;
+    }
+
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program, `u_inversionSphere${index}.center`));
         uniLocation.push(gl.getUniformLocation(program, `u_inversionSphere${index}.r`));
@@ -10,9 +40,16 @@ export default class InversionSphere extends BaseSphere {
     static loadJson(obj, scene) {
         const nc = new InversionSphere(obj.center[0], obj.center[1], obj.center[2],
                                        obj.radius);
-        console.log(nc);
         nc.setId(obj.id);
         return nc;
+    }
+
+    exportJson() {
+        return {
+            id: this.id,
+            center: [this.center.x, this.center.y, this.center.z],
+            radius: this.r,
+        };
     }
 
     get name() {
