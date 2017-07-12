@@ -16,7 +16,9 @@ export class Canvas3D extends Canvas {
     constructor(canvasId, scene, renderFragmentTmpl) {
         super(canvasId, scene);
         this.camera = new CameraOnSphere(new Vec3(0, 0, 0), Math.PI / 3,
-                                         250, new Vec3(0, 1, 0));
+                                         1500, new Vec3(0, 1, 0));
+        this.cameraDistScale = 1.25;
+
         this.gl = getWebGL2Context(this.canvas);
         this.vertexBuffer = createSquareVbo(this.gl);
 
@@ -38,21 +40,24 @@ export class Canvas3D extends Canvas {
         this.texturesFrameBuffer = this.gl.createFramebuffer();
 
         this.maxIterations = 20;
+
+        this.mouseState = {
+            isPressing: false,
+            prevPosition: new Vec2(0, 0),
+        };
     }
 
     /**
      * Calculate screen coordinates from mouse position
-     * scale * [-width/2, width/2]x[-height/2, height/2]
+     * [0, 0]x[width, height]
      * @param {number} mx
      * @param {number} my
      * @returns {Vec2}
      */
     calcCanvasCoord(mx, my) {
         const rect = this.canvas.getBoundingClientRect();
-        return new Vec2(this.scale * (((mx - rect.left) * this.pixelRatio) /
-                                      this.canvas.height - this.canvasRatio),
-                        this.scale * -(((my - rect.top) * this.pixelRatio) /
-                                       this.canvas.height - 0.5));
+        return new Vec2((mx - rect.left) * this.pixelRatio,
+                        (my - rect.top) * this.pixelRatio);
     }
 
     /**
@@ -66,20 +71,45 @@ export class Canvas3D extends Canvas {
     }
 
     mouseWheelListener(event) {
-
+        event.preventDefault();
+        if (event.deltaY < 0) {
+            this.camera.cameraDistance /= this.cameraDistScale;
+        } else {
+            this.camera.cameraDistance *= this.cameraDistScale;
+        }
+        this.camera.update();
+        this.numSamples = 0;
+        this.render();
     }
 
     mouseDownListener(event) {
         event.preventDefault();
+        this.mouseState.isPressing = true;
+        this.mouseState.prevPosition = this.calcCanvasCoord(event.clientX, event.clientY);
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
+        }
     }
 
     mouseDblClickListener(event) {
     }
 
     mouseUpListener(event) {
+        this.mouseState.isPressing = false;
     }
 
     mouseMoveListener(event) {
+        event.preventDefault();
+        if (!this.mouseState.isPressing) return;
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            const prevThetaPhi = this.camera.prevThetaPhi;
+            this.camera.theta = prevThetaPhi.x + (this.mouseState.prevPosition.x - mouse.x) * 0.01;
+            this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
+            this.camera.update();
+            this.numSamples = 0;
+            this.render();
+        }
     }
 
     compileRenderShader() {

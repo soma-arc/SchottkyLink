@@ -1,3 +1,4 @@
+import Vec2 from './vector2d.js';
 import Vec3 from './vector3d.js';
 
 export class Camera {
@@ -70,6 +71,8 @@ export class CameraOnSphere extends Camera {
         this.up = up;
         this.theta = 0;
         this.phi = 0;
+
+        this.prevThetaPhi = new Vec2(this.theta, this.phi);
 
         this.update();
     }
