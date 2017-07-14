@@ -6,6 +6,7 @@ import Shape from './shape.js';
 
 export default class ParallelTranslation extends Shape {
     /**
+     * Translation is 2 * (distance between hp1 and hp2)
      * //// hp2 /////
      * //////////////
      * ------+-------
@@ -18,13 +19,13 @@ export default class ParallelTranslation extends Shape {
      * //// hp1 /////
      * @param {Vec2} p
      * @param {Vec2} normal
-     * @param {number} translation
+     * @param {number} planeDist
      */
-    constructor(p, normal, translation) {
+    constructor(p, normal, planeDist) {
         super();
         this.p = p;
         this.normal = normal.normalize();
-        this.translation = translation;
+        this.planeDist = planeDist;
 
         this.normalUIRingRadius = 0.1;
         this.UIPointRadius = 0.01;
@@ -36,7 +37,7 @@ export default class ParallelTranslation extends Shape {
         this.boundaryDir = new Vec2(-this.normal.y,
                                     this.normal.x);
         this.hp1 = new HalfPlane(this.p, this.normal);
-        this.hp2 = new HalfPlane(this.p.add(this.normal.scale(this.translation)),
+        this.hp2 = new HalfPlane(this.p.add(this.normal.scale(this.planeDist)),
                                  this.normal.scale(-1));
     }
 
@@ -51,7 +52,7 @@ export default class ParallelTranslation extends Shape {
         }
 
         // point of hp2
-        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.translation)))
+        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)))
         if (dp2.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(ParallelTranslation.POINT_HP2)
@@ -81,7 +82,7 @@ export default class ParallelTranslation extends Shape {
         case ParallelTranslation.POINT_HP2: {
             const len = Vec2.dot(this.normal, mouse.sub(this.p));
             if (len < 0) return;
-            this.translation = len;
+            this.planeDist = len;
             break;
         }
         }
@@ -109,8 +110,8 @@ export default class ParallelTranslation extends Shape {
         let uniI = uniIndex;
         gl.uniform2f(uniLocation[uniI++],
                      this.p.x, this.p.y);
-        gl.uniform3f(uniLocation[uniI++],
-                     this.normal.x, this.normal.y, this.translation);
+        gl.uniform4f(uniLocation[uniI++],
+                     this.normal.x, this.normal.y, this.planeDist, this.planeDist * 2);
         gl.uniform2f(uniLocation[uniI++],
                      this.normalUIRingRadius * sceneScale,
                      this.UIPointRadius * sceneScale);
@@ -135,14 +136,14 @@ export default class ParallelTranslation extends Shape {
             id: this.id,
             p: [this.p.x, this.p.y],
             normal: [this.normal.x, this.normal.y],
-            translation: this.translation
+            planeDist: this.planeDist
         };
     }
 
     static loadJson(obj, scene) {
         const nh = new ParallelTranslation(new Vec2(obj.p[0], obj.p[1]),
                                            new Vec2(obj.normal[0], obj.normal[1]),
-                                           obj.translation);
+                                           obj.planeDist);
         nh.setId(obj.id);
         return nh;
     }

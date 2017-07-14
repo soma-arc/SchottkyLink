@@ -23,7 +23,7 @@ struct HalfPlane {
 
 struct ParallelTranslation {
     vec2 p;
-    vec3 normal; //[x, y, translation length]
+    vec4 normal; //[x, y, halfplane distance, translation length]
     vec2 ui; //[normal ring radius, point radius]
     bool selected;
 };
@@ -191,7 +191,13 @@ bool IIS(vec2 pos, out vec3 col) {
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
         if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
             invNum += abs(floor(hpd{{ n }} / u_translate{{ n }}.normal.z));
-            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.z));
+            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w));
+
+            pos -= u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
+            hpd{{ n }} = dot(pos, u_translate{{ n }}.normal.xy);
+            pos -= 2.0 * max(0., hpd{{ n }}) * u_translate{{ n }}.normal.xy;
+            pos += u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
+
             inFund = false;
         }
         pos += u_translate{{ n }}.p;
@@ -261,7 +267,7 @@ bool IIS(vec2 pos, out vec3 col) {
             pos -= u_scaling{{ n }}.c2.xy;
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
             pos += u_scaling{{ n }}.c2.xy;
-            
+
             pos = circleInvert(pos, u_scaling{{ n }}.c1);
             pos = circleInvert(pos, u_scaling{{ n }}.c2);
 
@@ -273,11 +279,11 @@ bool IIS(vec2 pos, out vec3 col) {
             pos -= u_scaling{{ n }}.c2.xy;
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
             pos += u_scaling{{ n }}.c2.xy;
-            
+
             pos -= u_scaling{{ n }}.line1.xy;
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
             pos += u_scaling{{ n }}.line1.xy;
-            
+
             inFund = false;
         }
         {% endfor %}
@@ -501,7 +507,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         return true;
     }
     {% endfor %}
-    
+
     return false;
 }
 
