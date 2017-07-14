@@ -70,6 +70,92 @@ void intersectSphere(const int objId, const int objIndex, const int objComponent
     }
 }
 
+void intersectXYCylinder(const int objId, const int objIndex, const int objComponentId,
+                         const vec3 matColor,
+                         const vec3 center, const float r, const float len,
+                         vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo){
+    rayOrigin = rayOrigin - center;
+    float a = rayDir.x * rayDir.x + rayDir.y * rayDir.y;
+    float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.y * rayDir.y);
+    float c = rayOrigin.x * rayOrigin.x + rayOrigin.y * rayOrigin.y - r * r;
+    float d = b * b - 4. * a * c;
+    if(d >= 0.){
+        float s = sqrt(d);
+        float t = (-b - s) / (2. * a);
+        if(t <= THRESHOLD) t = (-b + s) / (2. * a);
+        vec3 p = (rayOrigin + t * rayDir);
+        if(THRESHOLD < t && t < isectInfo.mint &&
+           0. < p.z && p.z < len){
+            isectInfo.objId = objId;
+            isectInfo.objIndex = objIndex;
+            isectInfo.objComponentId = objComponentId;
+            isectInfo.matColor = matColor;
+            isectInfo.mint = t;
+            isectInfo.intersection = p;
+            isectInfo.normal = normalize(vec3(isectInfo.intersection.xy, 0));
+            isectInfo.hit = true;
+        }
+    }
+}
+
+void intersectYZCylinder(const int objId, const int objIndex, const int objComponentId,
+                         const vec3 matColor,
+                         const vec3 center, const float r, const float len,
+                         vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo){
+    rayOrigin = rayOrigin - center;
+    float a = rayDir.y * rayDir.y + rayDir.z * rayDir.z;
+    float b = 2. * ( rayOrigin.y * rayDir.y + rayOrigin.z * rayDir.z);
+    float c = rayOrigin.y * rayOrigin.y + rayOrigin.z * rayOrigin.z - r * r;
+    float d = b * b - 4. * a * c;
+    if(d >= 0.){
+        float s = sqrt(d);
+        float t = (-b - s) / (2. * a);
+        if(t <= THRESHOLD) t = (-b + s) / (2. * a);
+        vec3 p = (rayOrigin + t * rayDir);
+        if(THRESHOLD < t && t < isectInfo.mint &&
+           0. < p.x && p.x < len){
+            isectInfo.objId = objId;
+            isectInfo.objIndex = objIndex;
+            isectInfo.objComponentId = objComponentId;
+            isectInfo.matColor = matColor;
+            isectInfo.mint = t;
+            isectInfo.intersection = p;
+            isectInfo.normal = normalize(vec3(0, isectInfo.intersection.yz));
+            isectInfo.hit = true;
+        }
+    }
+}
+
+void intersectXZCylinder(const int objId, const int objIndex, const int objComponentId,
+                         const vec3 matColor,
+                         const vec3 center, const float r, const float len,
+                         vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo){
+    rayOrigin = rayOrigin - center;
+    float a = rayDir.x * rayDir.x + rayDir.z * rayDir.z;
+    float b = 2. * ( rayOrigin.x * rayDir.x + rayOrigin.z * rayDir.z);
+    float c = rayOrigin.x * rayOrigin.x + rayOrigin.z * rayOrigin.z - r * r;
+    float d = b * b - 4. * a * c;
+    if(d >= 0.){
+        float s = sqrt(d);
+        float t = (-b - s) / (2. * a);
+        if(t <= THRESHOLD) t = (-b + s) / (2. * a);
+        vec3 p = (rayOrigin + t * rayDir);
+        if(THRESHOLD < t && t < isectInfo.mint &&
+           0. < p.y && p.y < len){
+            isectInfo.objId = objId;
+            isectInfo.objIndex = objIndex;
+            isectInfo.objComponentId = objComponentId;
+            isectInfo.matColor = matColor;
+            isectInfo.mint = t;
+            isectInfo.intersection = p;
+            isectInfo.normal = normalize(vec3(isectInfo.intersection.x,
+                                              0,
+                                              isectInfo.intersection.z));
+            isectInfo.hit = true;
+        }
+    }
+}
+
 float distSphere(vec3 pos, vec3 center, float radius) {
     return distance(pos, center) - radius;
 }
@@ -124,6 +210,23 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     }
 }
 
+void intersectBasisCylinder(const int objId, const int objIndex,
+                            const vec3 center, const float r, const float len,
+                            vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
+    intersectXYCylinder(objId, objIndex, -1,
+                        PINK,
+                        center, r, len,
+                        rayOrg, rayDir, isectInfo);
+    intersectYZCylinder(objId, objIndex, -1,
+                        BLUE,
+                        center, r, len,
+                        rayOrg, rayDir, isectInfo);
+    intersectXZCylinder(objId, objIndex, -1,
+                        YELLOW,
+                        center, r, len,
+                        rayOrg, rayDir, isectInfo);
+}
+
 void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     {% for n in range(0, numBaseSphere) %}
     intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, (u_baseSphere{{ n }}.selected) ? RED : GREEN,
@@ -151,8 +254,17 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
     isectInfo.hit = false;
 
     vec3 l = BLACK;
-
     vec3 rayPos = rayOrg;
+
+    if(u_isSelectingObj) {
+        intersectBasisCylinder(-1, -1,
+                               u_objBasis.center, u_objBasis.r, u_objBasis.len,
+                               rayPos, rayDir, isectInfo);
+        if(isectInfo.hit) {
+            return isectInfo.matColor;
+        }
+    }
+
     float transparency = 0.8;
     float coeff = 1.;
     for(int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++) {
@@ -163,9 +275,9 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
             vec3 matColor = isectInfo.matColor;
             float alpha = 1.;
             bool transparent = false;
-            if (isectInfo.objId == ID_INVERSION_SPHERE) {
-                transparent = true;
-            }
+            transparent =  (isectInfo.objId == ID_INVERSION_SPHERE &&
+                            isectInfo.objComponentId == 0) ?
+                true : false;
 
             vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;
             vec3 ambient = matColor * AMBIENT_FACTOR;

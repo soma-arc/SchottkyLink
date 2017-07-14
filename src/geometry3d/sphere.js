@@ -21,6 +21,16 @@ export default class Sphere extends Shape3d {
         this.rSq = this.r * this.r;
     }
 
+    setObjBasisUniformValues(gl, uniLocation, uniIndex) {
+        gl.uniform3f(uniLocation[uniIndex++],
+                     this.center.x, this.center.y, this.center.z);
+        gl.uniform1f(uniLocation[uniIndex++],
+                     10);
+        gl.uniform1f(uniLocation[uniIndex++],
+                     this.r);
+        return uniIndex;
+    }
+
     setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
         gl.uniform3f(uniLocation[uniI++],

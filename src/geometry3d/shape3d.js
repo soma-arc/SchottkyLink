@@ -47,6 +47,13 @@ export default class Shape3d {
     setUniformLocation(gl, uniLocation, program, index) {}
 
     /**
+     * @param {Vec3} rayOrg
+     * @param {Vec3} rayDir
+     * @param {IsectInfo} isectInfo
+     */
+    castRay(rayOrg, rayDir, isectInfo) {}
+
+    /**
      *
      * @returns {Object.}
      */

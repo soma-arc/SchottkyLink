@@ -24,6 +24,15 @@ export default class Scene3D {
     }
 
     setUniformLocation(gl, uniLocations, program) {
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_isSelectingObj'));
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_objBasis.center'));
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_objBasis.r'));
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_objBasis.len'));
+
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             const objArray = this.objects[objName];
@@ -35,6 +44,16 @@ export default class Scene3D {
 
     setUniformValues(gl, uniLocation, uniIndex) {
         let uniI = uniIndex;
+
+        gl.uniform1i(uniLocation[uniI++], this.selectedObj !== undefined);
+        if (this.selectedObj !== undefined) {
+            uniI = this.selectedObj.setObjBasisUniformValues(gl, uniLocation, uniI);
+        } else {
+            uniI++;
+            uniI++;
+            uniI++;
+        }
+
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             const objArray = this.objects[objName];
@@ -94,4 +113,6 @@ export default class Scene3D {
         this.selectedObj = isectInfo.hitObject;
         if (this.selectedObj !== undefined) this.selectedObj.selected = true;
     }
+
+
 }

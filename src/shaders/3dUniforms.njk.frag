@@ -13,6 +13,15 @@ uniform float u_numSamples;
 uniform int u_maxIISIterations;
 uniform Camera u_camera;
 
+struct ObjBasis {
+    vec3 center;
+    float r;
+    float len;
+};
+
+uniform bool u_isSelectingObj;
+uniform ObjBasis u_objBasis;
+
 struct Sphere {
     vec3 center;
     vec2 r; // [r, rSq]
