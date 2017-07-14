@@ -1,6 +1,7 @@
 import assert from 'power-assert';
 import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js'
 import Shape from './shape.js';
 
 export default class Circle extends Shape {
@@ -10,6 +11,8 @@ export default class Circle extends Shape {
         this.r = r;
         this.rSq = r * r;
         this.circumferenceThickness = 0.01;
+
+        this.snapMode = Circle.SNAP_NONE;
     }
 
     update() {
@@ -42,15 +45,30 @@ export default class Circle extends Shape {
      * Move circle
      * @param { SelectionState } selectionState
      * @param { Vec2 } mouse
+     * @param { Scene } scene
      */
-    move(selectionState, mouse) {
+    move(selectionState, mouse, scene) {
         if (selectionState.componentId === Circle.CIRCUMFERENCE) {
             this.r = Vec2.distance(this.center, mouse) + selectionState.distToComponent;
         } else {
             this.center = mouse.sub(selectionState.diffObj);
+            if (this.snapMode === Circle.SNAP_NEAREST) {
+                const d = scene.getNearObjectsDistance(this, this.center)[0].distance;
+                this.r = (d === Number.MAX_VALUE) ? this.r : d;
+            }
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        return [new DistanceState(Math.abs(Vec2.distance(this.center, p) - this.r),
+                                  this,
+                                  Circle.CIRCUMFERENCE)];
     }
 
     cloneDeeply() {
@@ -139,6 +157,14 @@ export default class Circle extends Shape {
     }
 
     static get CIRCUMFERENCE() {
+        return 1;
+    }
+
+    static get SNAP_NONE() {
+        return 0;
+    }
+
+    static get SNAP_NEAREST() {
         return 1;
     }
 

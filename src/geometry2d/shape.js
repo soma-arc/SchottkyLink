@@ -1,4 +1,5 @@
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 
 let gId = 0;
 let gIdList = [];
@@ -56,6 +57,14 @@ export default class Shape {
      * @param {Vec2} mouse
      */
     move(mouseState, mouse) {}
+
+    /**
+     * compute distance between p and object's components
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        return [new DistanceState(Number.MAX_VALUE, this, 0)];
+    }
 
     /**
      *

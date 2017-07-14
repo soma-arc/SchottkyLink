@@ -1,5 +1,6 @@
 import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 import Shape from './shape.js';
 
 export default class HalfPlane extends Shape {
@@ -53,10 +54,19 @@ export default class HalfPlane extends Shape {
             this.p = mouse.sub(mouseState.diffObj);
         } else if (mouseState.componentId === HalfPlane.NORMAL_POINT) {
             this.normal = mouse.sub(this.p).normalize();
-            this.update();
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        return [new DistanceState(Math.abs(Vec2.dot(p.sub(this.p), this.normal)),
+                                  this,
+                                  HalfPlane.BODY)];
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {

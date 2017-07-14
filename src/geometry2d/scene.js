@@ -2,6 +2,7 @@ import assert from 'power-assert';
 import Vec2 from '../vector2d.js';
 import Shape from './shape.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 import Circle from './circle.js';
 import Point from './point.js';
 import CircleFromPoints from './circleFromPoints.js';
@@ -135,10 +136,37 @@ export default class Scene {
 
     move (mouse) {
         if (this.selectedState.isSelectingObj()) {
-            this.selectedState.selectedObj.move(this.selectedState, mouse);
+            this.selectedState.selectedObj.move(this.selectedState, mouse, this);
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param {Shape} selectedObj
+     * @param {Vec2} p
+     */
+    getNearObjectsDistance(selectedObj, p) {
+        let minDist1 = new DistanceState(Number.MAX_VALUE, undefined, 0);
+        let minDist2 = new DistanceState(Number.MAX_VALUE, undefined, 0);
+
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            for (const obj of this.objects[objName]) {
+                if (obj.id === selectedObj.id) continue;
+                for (const distState of obj.getDistances(p)) {
+                    const dist = distState.distance;
+                    if (dist < minDist1.distance) {
+                        minDist2 = minDist1;
+                        minDist1 = distState;
+                    } else if (dist < minDist2.distance) {
+                        minDist2 = distState;
+                    }
+                }
+            }
+        }
+        return [minDist1, minDist2];
     }
 
     /**

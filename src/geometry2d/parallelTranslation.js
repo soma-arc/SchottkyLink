@@ -1,6 +1,7 @@
 import Vec2 from '../vector2d.js';
 import HalfPlane from './halfPlane.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 import Shape from './shape.js';
 
 export default class ParallelTranslation extends Shape {
@@ -86,6 +87,22 @@ export default class ParallelTranslation extends Shape {
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        const d1 = Math.abs(Vec2.dot(p.sub(this.p), this.normal));
+        const d2 = Math.abs(Vec2.dot(p.sub(this.hp2.p), this.hp2.normal));
+        if (d1 < d2) {
+            return [new DistanceState(d1, this.hp1, HalfPlane.BODY),
+                    new DistanceState(d2, this.hp2, HalfPlane.BODY)]
+        } else {
+            return [new DistanceState(d2, this.hp2, HalfPlane.BODY),
+                    new DistanceState(d1, this.hp1, HalfPlane.BODY)]
+        }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
