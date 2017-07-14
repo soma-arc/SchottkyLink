@@ -15,7 +15,8 @@ import OrbitSeed from './orbitSeed.js';
 import Vue from 'vue';
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = { 'Circle': Circle,
+const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
+                        'Circle': Circle,
                         'Point': Point,
                         'CircleFromPoints': CircleFromPoints,
                         'HalfPlane': HalfPlane,
@@ -23,8 +24,7 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'Rotation': Rotation,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
-                        'Scaling': Scaling,
-                        'OrbitSeed': OrbitSeed };
+                        'Scaling': Scaling };
 
 const PRESETS_CONTEXT = require.context('../presets2d', true, /.json$/);
 const PRESETS = [];
