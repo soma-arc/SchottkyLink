@@ -17,5 +17,6 @@ struct IsectInfo {
     vec3 intersection;
     float mint;
     float maxt;
+    vec3 matColor;
     bool hit;
 };

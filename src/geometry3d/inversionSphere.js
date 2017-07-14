@@ -1,36 +1,6 @@
-import Vec3 from '../vector3d.js';
-import Shape3d from './shape3d.js';
+import Sphere from './sphere.js';
 
-export default class InversionSphere extends Shape3d {
-    /**
-     *
-     * @param {number} x
-     * @param {number} y
-     * @param {number} z
-     * @param {number} r
-     */
-    constructor (x, y, z, r) {
-        super();
-        this.center = new Vec3(x, y, z);
-        this.r = r;
-        this.update();
-    }
-
-    update() {
-        this.rSq = this.r * this.r;
-    }
-
-    setUniformValues(gl, uniLocation, uniIndex) {
-        let uniI = uniIndex;
-        gl.uniform3f(uniLocation[uniI++],
-                     this.center.x, this.center.y, this.center.z);
-        gl.uniform2f(uniLocation[uniI++],
-                     this.r, this.rSq);
-        gl.uniform1i(uniLocation[uniI++],
-                     this.selected);
-        return uniI;
-    }
-
+export default class InversionSphere extends Sphere {
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program, `u_inversionSphere${index}.center`));
         uniLocation.push(gl.getUniformLocation(program, `u_inversionSphere${index}.r`));
@@ -42,14 +12,6 @@ export default class InversionSphere extends Shape3d {
                                        obj.radius);
         nc.setId(obj.id);
         return nc;
-    }
-
-    exportJson() {
-        return {
-            id: this.id,
-            center: [this.center.x, this.center.y, this.center.z],
-            radius: this.r,
-        };
     }
 
     get name() {

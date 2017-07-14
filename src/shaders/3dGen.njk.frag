@@ -45,9 +45,10 @@ bool intersectBoundingSphere(vec3 sphereCenter, float radius,
   	return false;
 }
 
-void intersectSphere(int objId, int objIndex, int objComponentId,
-                     vec3 sphereCenter, float radius,
-                     vec3 rayOrigin, vec3 rayDir, inout IsectInfo isectInfo){
+void intersectSphere(const int objId, const int objIndex, const int objComponentId,
+                     const vec3 matColor,
+                     const vec3 sphereCenter, const float radius,
+                     const vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo){
     vec3 v = rayOrigin - sphereCenter;
     float b = dot(rayDir, v);
     float c = dot(v, v) - radius * radius;
@@ -60,6 +61,7 @@ void intersectSphere(int objId, int objIndex, int objComponentId,
             isectInfo.objId = objId;
             isectInfo.objIndex = objIndex;
             isectInfo.objComponentId = objComponentId;
+            isectInfo.matColor = matColor;
             isectInfo.mint = t;
             isectInfo.intersection = (rayOrigin + t * rayDir);
             isectInfo.normal = normalize(isectInfo.intersection - sphereCenter);
@@ -124,13 +126,14 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
 
 void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     {% for n in range(0, numBaseSphere) %}
-    intersectSphere(ID_BASE_SPHERE, {{ n }}, 0,
+    intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, (u_baseSphere{{ n }}.selected) ? RED : GREEN,
                     u_baseSphere{{ n }}.center, u_baseSphere{{ n }}.r.x,
                     rayOrg, rayDir, isectInfo);
     {% endfor %}
 
     {% for n in range(0, numInversionSphere) %}
     intersectSphere(ID_INVERSION_SPHERE, {{ n }}, 0,
+                    (u_inversionSphere{{ n }}.selected) ? RED : GRAY,
                     u_inversionSphere{{ n }}.center, u_inversionSphere{{ n }}.r.x,
                     rayOrg, rayDir, isectInfo);
     {% endfor %}
@@ -157,13 +160,10 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
         intersectGenerators(rayPos, rayDir, isectInfo);
 
         if(isectInfo.hit) {
-            vec3 matColor = BLUE;
+            vec3 matColor = isectInfo.matColor;
             float alpha = 1.;
             bool transparent = false;
-            if (isectInfo.objId == ID_BASE_SPHERE) {
-                matColor = GREEN;
-            } else if (isectInfo.objId == ID_INVERSION_SPHERE) {
-                matColor = GRAY;
+            if (isectInfo.objId == ID_INVERSION_SPHERE) {
                 transparent = true;
             }
 
@@ -172,7 +172,7 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
             if(transparent) {
                 coeff *= transparency;
                 l += (diffuse + ambient) * coeff;
-                rayPos = isectInfo.intersection + rayDir * THRESHOLD;
+                rayPos = isectInfo.intersection + rayDir * THRESHOLD * 2.;
                 isectInfo.mint = MAX_FLOAT;
                 isectInfo.hit = false;
                 continue;

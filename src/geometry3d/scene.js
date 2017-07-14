@@ -1,6 +1,9 @@
 import BaseSphere from './baseSphere.js'
 import InversionSphere from './inversionSphere.js';
 import Vue from 'vue';
+import { Camera } from '../camera.js';
+import Vec2 from '../vector2d.js';
+import IsectInfo from './isectInfo.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -69,5 +72,26 @@ export default class Scene3D {
     clear() {
         this.objects = {};
         this.selectedObj = undefined;
+    }
+
+    /**
+     * @param {number} width
+     * @param {number} height
+     * @param {Vec2} mouse
+     * @param {Camera} camera
+     */
+    select(width, height, mouse, camera) {
+        if (this.selectedObj !== undefined) this.selectedObj.selected = false;
+        const ray = camera.computeRay(width, height, mouse.x, mouse.y);
+        const isectInfo = new IsectInfo(Number.MAX_VALUE, Number.MAX_VALUE);
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            for (const obj of this.objects[objName]) {
+                obj.castRay(camera.pos, ray, isectInfo);
+            }
+        }
+        this.selectedObj = isectInfo.hitObject;
+        if (this.selectedObj !== undefined) this.selectedObj.selected = true;
     }
 }

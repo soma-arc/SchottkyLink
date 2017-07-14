@@ -13,6 +13,12 @@ const RENDER_ORBIT_TMPL = require('./shaders/3dOrbit.njk.frag');
 const RENDER_GENERATOR_TMPL = require('./shaders/3dGen.njk.frag');
 
 export class Canvas3D extends Canvas {
+
+    /**
+     * @param {String} canvasId
+     * @param {Scene3D} scene
+     * @param {} renderFragmentTmpl
+     */
     constructor(canvasId, scene, renderFragmentTmpl) {
         super(canvasId, scene);
         this.pixelRatio = 1;
@@ -86,8 +92,9 @@ export class Canvas3D extends Canvas {
     mouseDownListener(event) {
         event.preventDefault();
         this.mouseState.isPressing = true;
-        this.mouseState.prevPosition = this.calcCanvasCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        this.mouseState.prevPosition = mouse
+        if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
         }
     }
@@ -104,7 +111,7 @@ export class Canvas3D extends Canvas {
         event.preventDefault();
         if (!this.mouseState.isPressing) return;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             const prevThetaPhi = this.camera.prevThetaPhi;
             this.camera.theta = prevThetaPhi.x + (this.mouseState.prevPosition.x - mouse.x) * 0.01;
             this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
@@ -210,6 +217,20 @@ export class Canvas3D extends Canvas {
 export class GeneratorCanvas extends Canvas3D {
     constructor(canvasId, scene) {
         super(canvasId, scene, RENDER_GENERATOR_TMPL);
+    }
+
+    mouseDownListener(event) {
+        event.preventDefault();
+        this.mouseState.isPressing = true;
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        this.mouseState.prevPosition = mouse
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            this.scene.select(this.canvas.width, this.canvas.height,
+                              mouse, this.camera);
+            this.render();
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
+        }
     }
 }
 
