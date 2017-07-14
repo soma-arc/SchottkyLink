@@ -215,4 +215,9 @@ export default class Scene {
             this.load(PRESETS[index]);
         }
     }
+
+    clear() {
+        this.objects = {};
+        this.selectedObj = undefined;
+    }
 }

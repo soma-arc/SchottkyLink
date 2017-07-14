@@ -71,6 +71,21 @@ export default class canvasManager {
         }
     }
 
+    clearCurrentScene() {
+        if (this.mode === RENDER_2D) {
+            this.scene2d.clear();
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        } else if (this.mode === RENDER_3D) {
+            this.scene3d.clear();
+
+            this.canvas3dGen.compileRenderShader();
+            this.canvas3dGen.render();
+            this.canvas3dOrb.compileRenderShader();
+            this.canvas3dOrb.render();
+        }
+    }
+
     get isRendering2d() {
         return this.mode === RENDER_2D;
     }

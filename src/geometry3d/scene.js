@@ -65,4 +65,9 @@ export default class Scene3D {
             }
         }
     }
+
+    clear() {
+        this.objects = {};
+        this.selectedObj = undefined;
+    }
 }

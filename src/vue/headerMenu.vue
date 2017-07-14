@@ -2,6 +2,10 @@
   <ul id="headerRight">
     <li class="headerButton">
       <ui-button type="secondary" raised color="primary"
+                 @click="clearScene">
+        Clear
+      </ui-button>
+      <ui-button type="secondary" raised color="primary"
                  open-dropdown-on="hover" has-dropdown ref="dropdownButton">
         <ui-menu v-show="canvasManager.isRendering2d"
                  slot="dropdown" :options="canvasManager.scene2d.presets"
@@ -27,6 +31,9 @@ export default {
         UiMenu
     },
     methods: {
+        clearScene(preset) {
+            this.canvasManager.clearCurrentScene();
+        },
         presetSelected2d(preset) {
             this.canvasManager.scene2d.load(preset);
             this.canvasManager.canvas2d.compileRenderShader();
