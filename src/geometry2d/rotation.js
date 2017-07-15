@@ -1,6 +1,8 @@
 import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 import Shape from './shape.js';
+import Radians from '../radians.js';
 
 export default class Rotation extends Shape {
      /**
@@ -74,6 +76,17 @@ export default class Rotation extends Shape {
         }
         case Rotation.BOUNDARY_POINT: {
             this.boundaryDir1 = mouse.sub(this.p).normalize();
+            let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+            rad = (Math.abs(rad) < 0.2) ? 0 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.2) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad + Radians.PI_4) < 0.2) ? -Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_2) < 0.2) ? Radians.PI_2 : rad;
+            rad = (Math.abs(rad + Radians.PI_2) < 0.2) ? -Radians.PI_2 : rad;
+            rad = (Math.abs(rad - Radians.THREE_PI_4) < 0.2) ? Radians.THREE_PI_4 : rad;
+            rad = (Math.abs(rad + Radians.THREE_PI_4) < 0.2) ? -Radians.THREE_PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI) < 0.2) ? Radians.PI : rad;
+            rad = (Math.abs(rad + Radians.PI) < 0.2) ? Radians.PI : rad;
+            this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
             break;
         }
         case Rotation.ROTATION_POINT: {
@@ -81,14 +94,35 @@ export default class Rotation extends Shape {
             const theta1 = Math.atan2(mp.y, mp.x);
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             let rad = theta1 - theta2;
-            rad = (rad > Math.PI * 0.5) ? Math.PI * 0.5 : rad;
+            rad = (rad > Radians.PI_2) ? Radians.PI_2 : rad;
             rad = (rad < 0) ? 0 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.15) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_3) < 0.15) ? Radians.PI_3 : rad;
+            rad = (Math.abs(rad - Radians.PI_6) < 0.15) ? Radians.PI_6 : rad;
             this.radians = rad;
             break;
         }
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius));
+        const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius));
+        const d1 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint1), this.normal1));
+        const d2 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint2), this.normal2));
+        if (d1 < d2) {
+            return [new DistanceState(d1, this, Rotation.BODY),
+                    new DistanceState(d2, this, Rotation.BODY)]
+        } else {
+            return [new DistanceState(d2, this, Rotation.BODY),
+                    new DistanceState(d1, this, Rotation.BODY)]
+        }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {

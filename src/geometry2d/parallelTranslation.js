@@ -3,6 +3,7 @@ import HalfPlane from './halfPlane.js';
 import SelectionState from './selectionState.js';
 import DistanceState from './distanceState.js';
 import Shape from './shape.js';
+import Radians from '../radians.js';
 
 export default class ParallelTranslation extends Shape {
     /**
@@ -77,6 +78,17 @@ export default class ParallelTranslation extends Shape {
         }
         case ParallelTranslation.NORMAL_POINT: {
             this.normal = mouse.sub(this.p).normalize();
+            let rad = Math.atan2(this.normal.y, this.normal.x);
+            rad = (Math.abs(rad) < 0.2) ? 0 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.2) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad + Radians.PI_4) < 0.2) ? -Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_2) < 0.2) ? Radians.PI_2 : rad;
+            rad = (Math.abs(rad + Radians.PI_2) < 0.2) ? -Radians.PI_2 : rad;
+            rad = (Math.abs(rad - Radians.THREE_PI_4) < 0.2) ? Radians.THREE_PI_4 : rad;
+            rad = (Math.abs(rad + Radians.THREE_PI_4) < 0.2) ? -Radians.THREE_PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI) < 0.2) ? Radians.PI : rad;
+            rad = (Math.abs(rad + Radians.PI) < 0.2) ? Radians.PI : rad;
+            this.normal = new Vec2(Math.cos(rad), Math.sin(rad));
             break;
         }
         case ParallelTranslation.POINT_HP2: {

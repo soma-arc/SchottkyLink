@@ -1,6 +1,7 @@
 import Shape from './shape.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 import Vec2 from '../vector2d.js';
 
 export default class TwoCircles extends Shape {
@@ -56,7 +57,16 @@ export default class TwoCircles extends Shape {
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
         case TwoCircles.C1_BODY: {
-            this.c1.center = mouse.sub(selectionState.diffObj);
+            const np = mouse.sub(selectionState.diffObj);
+            const npc2Len = this.c2.center.sub(np).length();
+            if (Math.abs(this.c2.r - this.c1.r - npc2Len) < 0.015) {
+                const mv = np.sub(this.c2.center).normalize();
+                this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
+//                selectionState.setDiffObj(mouse.sub(this.c1.center));
+                this.c1.update();
+                break;
+            }
+            this.c1.center = np;
             this.c1.update();
             break;
         }
@@ -80,6 +90,22 @@ export default class TwoCircles extends Shape {
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        const d1 = Math.abs(Vec2.distance(this.c1.center, p) - this.c1.r);
+        const d2 = Math.abs(Vec2.distance(this.c1d.center, p) - this.c1d.r);
+        if (d1 < d2) {
+            return [new DistanceState(d1, this, TwoCircles.C1_CIRCUMFERENCE),
+                    new DistanceState(d2, this, TwoCircles.C2_CIRCUMFERENCE)];
+        } else {
+            return [new DistanceState(d2, this, TwoCircles.C2_CIRCUMFERENCE),
+                    new DistanceState(d1, this, TwoCircles.C1_CIRCUMFERENCE)];
+        }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {

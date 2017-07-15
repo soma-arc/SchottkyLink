@@ -2,6 +2,7 @@ import Shape from './shape';
 import Vec2 from '../vector2d.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 
 export default class Loxodromic extends Shape {
     /**
@@ -83,7 +84,7 @@ export default class Loxodromic extends Shape {
                 selectionState.setDiffObj(mouse.sub(this.c1.center));
                 break;
             }
-            this.c1.center = mouse.sub(selectionState.diffObj);
+            this.c1.center = np;
             this.c1.update();
             break;
         }
@@ -129,6 +130,22 @@ export default class Loxodromic extends Shape {
         }
 
         this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        const d1 = Math.abs(Vec2.distance(this.c1.center, p) - this.c1.r);
+        const d2 = Math.abs(Vec2.distance(this.c1d.center, p) - this.c1d.r);
+        if (d1 < d2) {
+            return [new DistanceState(d1, this, Loxodromic.C1_CIRCUMFERENCE),
+                    new DistanceState(d2, this, Loxodromic.C2_CIRCUMFERENCE)];
+        } else {
+            return [new DistanceState(d2, this, Loxodromic.C2_CIRCUMFERENCE),
+                    new DistanceState(d1, this, Loxodromic.C1_CIRCUMFERENCE)];
+        }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {

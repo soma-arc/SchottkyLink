@@ -2,6 +2,7 @@ import Vec2 from '../vector2d.js';
 import Shape from './shape.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
+import DistanceState from './distanceState.js';
 
 export default class Scaling extends Shape {
     /**
@@ -142,6 +143,22 @@ export default class Scaling extends Shape {
         }
 
 //        this.update();
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     */
+    getDistances(p) {
+        const d1 = Math.abs(Vec2.distance(this.c1.center, p) - this.c1.r);
+        const d2 = Math.abs(Vec2.distance(this.c1d.center, p) - this.c1d.r);
+        if (d1 < d2) {
+            return [new DistanceState(d1, this, Scaling.C1_CIRCUMFERENCE),
+                    new DistanceState(d2, this, Scaling.C2_CIRCUMFERENCE)];
+        } else {
+            return [new DistanceState(d2, this, Scaling.C2_CIRCUMFERENCE),
+                    new DistanceState(d1, this, Scaling.C1_CIRCUMFERENCE)];
+        }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
