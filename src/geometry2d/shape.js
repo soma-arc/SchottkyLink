@@ -95,6 +95,8 @@ export default class Shape {
      */
     setUniformLocation(gl, uniLocation, program, index) {}
 
+    toggleSnapMode() {}
+
     /**
      *
      * @returns {Object.}

@@ -74,6 +74,12 @@ export default class Scene {
         return false;
     }
 
+    toggleSnapMode() {
+        if (this.selectedObj !== undefined) {
+            this.selectedObj.toggleSnapMode();
+        }
+    }
+
     addCircle(position, sceneScale) {
         if (this.objects['Circle'] === undefined) {
             Vue.set(this.objects, 'Circle', []);

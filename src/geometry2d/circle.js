@@ -49,7 +49,14 @@ export default class Circle extends Shape {
      */
     move(selectionState, mouse, scene) {
         if (selectionState.componentId === Circle.CIRCUMFERENCE) {
-            this.r = Vec2.distance(this.center, mouse) + selectionState.distToComponent;
+            const nr = Vec2.distance(this.center, mouse) + selectionState.distToComponent;
+            this.r = nr
+            if (this.snapMode === Circle.SNAP_NEAREST) {
+                const nearObj = scene.getNearObjectsDistance(this, this.center)[0].obj;
+                if (Math.abs(nr + nearObj.r - nearObj.center.sub(this.center).length()) < 0.015) {
+                    this.r = -nearObj.r + nearObj.center.sub(this.center).length();
+                }
+            }
         } else {
             this.center = mouse.sub(selectionState.diffObj);
             if (this.snapMode === Circle.SNAP_NEAREST) {
@@ -69,6 +76,14 @@ export default class Circle extends Shape {
         return [new DistanceState(Math.abs(Vec2.distance(this.center, p) - this.r),
                                   this,
                                   Circle.CIRCUMFERENCE)];
+    }
+
+    toggleSnapMode() {
+        if (this.snapMode === Circle.SNAP_NONE) {
+            this.snapMode = Circle.SNAP_NEAREST;
+        } else {
+            this.snapMode = Circle.SNAP_NONE;
+        }
     }
 
     cloneDeeply() {
