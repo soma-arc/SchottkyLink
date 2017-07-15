@@ -90,47 +90,54 @@ export default class Sphere extends Shape3d {
 
     move(width, height, mouse, camera, isectInfo, scene) {
         const tmpInfo = new IsectInfo(Number.MAX_VALUE, Number.MAX_VALUE);
-        switch (isectInfo.isectComponentId) {
-        case Shape3d.X_AXIS: {
-            const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShapePosition,
+        if (isectInfo.isectComponentId === Shape3d.X_AXIS ||
+            isectInfo.isectComponentId === Shape3d.Y_AXIS ||
+            isectInfo.isectComponentId === Shape3d.Z_AXIS) {
+            const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.center,
                                                                width, height);
             const v = mouse.sub(isectInfo.prevMouse);
             const d = Vec2.dot(v, isectInfo.axisDirection);
             const coord = centerOnScreen.add(isectInfo.axisDirection.scale(d));
             const ray = camera.computeRay(width, height, coord.x, coord.y);
-            this.intersectYZCylinder(isectInfo.prevShapePosition, this.basisRadius,
-                                     camera.pos, ray, tmpInfo);
-            this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
-            return true;
-        }
-        case Shape3d.Y_AXIS: {
-            const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShapePosition,
-                                                               width, height);
-            const v = mouse.sub(isectInfo.prevMouse);
-            const d = Vec2.dot(v, isectInfo.axisDirection);
-            const coord = centerOnScreen.add(isectInfo.axisDirection.scale(d));
-            const ray = camera.computeRay(width, height,
-                                          coord.x, coord.y);
-            this.intersectXZCylinder(isectInfo.prevShapePosition, this.basisRadius,
-                                     camera.pos, ray, tmpInfo);
-            this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
-            return true;
-        }
-        case Shape3d.Z_AXIS: {
-            const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShapePosition,
-                                                               width, height);
-            const v = mouse.sub(isectInfo.prevMouse);
-            const d = Vec2.dot(v, isectInfo.axisDirection);
-            const coord = centerOnScreen.add(isectInfo.axisDirection.scale(d));
-            const ray = camera.computeRay(width, height,
-                                          coord.x, coord.y);
-            this.intersectXYCylinder(isectInfo.prevShapePosition, this.basisRadius,
-                                     camera.pos, ray, tmpInfo);
-            this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
-            return true;
-        }
+
+            switch (isectInfo.isectComponentId) {
+            case Shape3d.X_AXIS: {
+                this.intersectYZCylinder(isectInfo.prevShape.center, this.basisRadius,
+                                         camera.pos, ray, tmpInfo);
+                this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                return true;
+            }
+            case Shape3d.Y_AXIS: {
+                this.intersectXZCylinder(isectInfo.prevShape.center, this.basisRadius,
+                                         camera.pos, ray, tmpInfo);
+                this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                return true;
+            }
+            case Shape3d.Z_AXIS: {
+                this.intersectXYCylinder(isectInfo.prevShape.center, this.basisRadius,
+                                         camera.pos, ray, tmpInfo);
+                this.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                return true;
+            }
+            }
         }
         return false;
+    }
+
+    operateScale(width, height, mouse, camera, isectInfo, scene) {
+        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.center,
+                                                           width, height);
+        const distCenterPrevMouse = Vec2.distance(centerOnScreen, isectInfo.prevMouse);
+        const distCenterCurrentMouse = Vec2.distance(centerOnScreen, mouse);
+        const d = distCenterCurrentMouse - distCenterPrevMouse;
+        const scaleFactor = 3;
+        this.r = isectInfo.prevShape.r + d * scaleFactor;
+        this.update();
+        return true;
+    }
+
+    cloneDeeply() {
+        return new Sphere(this.center.x, this.center.y, this.center.z, this.r);
     }
 
     static get BODY() {

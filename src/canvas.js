@@ -13,11 +13,15 @@ export default class Canvas {
         this.boundMouseWheelListener = this.mouseWheelListener.bind(this);
         this.boundMouseMoveListener = this.mouseMoveListener.bind(this);
         this.boundDblClickLisntener = this.mouseDblClickListener.bind(this);
+        this.boundKeydown = this.keydownListener.bind(this);
+        this.boundKeyup = this.keyupListener.bind(this);
         this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
         this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
+        this.canvas.addEventListener('keydown', this.boundKeydown);
+        this.canvas.addEventListener('keyup', this.boundKeyup);
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
 
         this.renderCallback = this.render.bind(this);
@@ -41,6 +45,10 @@ export default class Canvas {
     mouseUpListener(event) {}
 
     mouseMoveListener(event) {}
+
+    keydownListener(event) {}
+
+    keyupListener(event) {}
 
     render() {}
 

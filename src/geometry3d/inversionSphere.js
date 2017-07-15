@@ -14,6 +14,10 @@ export default class InversionSphere extends Sphere {
         return nc;
     }
 
+    cloneDeeply() {
+        return new InversionSphere(this.center.x, this.center.y, this.center.z, this.r);
+    }
+
     get name() {
         return 'InversionSphere';
     }

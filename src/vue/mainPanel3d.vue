@@ -2,13 +2,13 @@
   <div class="contentPanel">
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas3dGen"></canvas>
+        <canvas id="canvas3dGen" tabIndex="1001"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas3dOrb"></canvas>
+        <canvas id="canvas3dOrb" tabIndex="1002"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>

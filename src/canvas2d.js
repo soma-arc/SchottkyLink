@@ -89,6 +89,7 @@ export default class Canvas2D extends Canvas {
 
     mouseDownListener(event) {
         event.preventDefault();
+        this.canvas.focus();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             this.scene.select(mouse, this.scale);
@@ -127,6 +128,12 @@ export default class Canvas2D extends Canvas {
             this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
             this.isRendering = true;
         }
+    }
+
+    keydownListener(event) {
+    }
+
+    keyupListener(event) {
     }
 
     compileRenderShader() {

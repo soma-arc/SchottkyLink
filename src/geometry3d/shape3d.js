@@ -93,7 +93,6 @@ export default class Shape3d {
      */
     intersectYZBasis(center, r, len,
                      rayOrg, rayDir, isectInfo) {
-        console.log('yz')
         const rayPos = rayOrg.sub(center);
         const a = rayDir.y * rayDir.y + rayDir.z * rayDir.z;
         const b = 2 * (rayPos.y * rayDir.y + rayPos.z * rayDir.z);
@@ -182,7 +181,6 @@ export default class Shape3d {
             if (t <= isectInfo.THRESHOLD) t = (-b + s) / (2 * a);
             if (isectInfo.THRESHOLD < t && t < isectInfo.tmin) {
                 isectInfo.setInfo(t, this, Shape3d.X_AXIS);
-                console.log('true');
             }
         }
     }
@@ -210,6 +208,8 @@ export default class Shape3d {
             }
         }
     }
+
+    cloneDeeply() {}
 
     /**
      *

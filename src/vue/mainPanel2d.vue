@@ -2,7 +2,7 @@
   <div class="contentPanel">
     <div class="canvasPanel">
       <div class="canvasParent">
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" tabIndex="1000"></canvas>
       </div>
       <div class="renderPropertyPanel"></div>
     </div>

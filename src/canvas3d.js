@@ -52,6 +52,8 @@ export class Canvas3D extends Canvas {
             isPressing: false,
             prevPosition: new Vec2(0, 0),
         };
+
+        this.canvas.style.outline = 'none';
     }
 
     /**
@@ -91,6 +93,7 @@ export class Canvas3D extends Canvas {
 
     mouseDownListener(event) {
         event.preventDefault();
+        this.canvas.focus();
         this.mouseState.isPressing = true;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
         this.mouseState.prevPosition = mouse
@@ -218,14 +221,19 @@ export class Canvas3D extends Canvas {
 export class GeneratorCanvas extends Canvas3D {
     constructor(canvasId, scene) {
         super(canvasId, scene, RENDER_GENERATOR_TMPL);
+        this.operateScale = false;
     }
 
     mouseDownListener(event) {
         event.preventDefault();
+        this.canvas.focus();
         this.mouseState.isPressing = true;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
-        this.mouseState.prevPosition = mouse
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        this.mouseState.prevPosition = mouse;
+
+        if (this.operateScale) {
+            this.scene.keydown(mouse);
+        } else if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             this.scene.select(this.canvas.width, this.canvas.height,
                               mouse, this.camera);
             this.render();
@@ -236,8 +244,19 @@ export class GeneratorCanvas extends Canvas3D {
 
     mouseMoveListener(event) {
         event.preventDefault();
-        if (!this.mouseState.isPressing) return;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        if (!this.mouseState.isPressing) return;
+
+        if (this.operateScale) {
+            const operated = this.scene.operateScale(this.canvas.width, this.canvas.height,
+                                                     mouse, this.camera);
+            if (operated) {
+                this.scene.updated = true;
+                this.numSamples = 0;
+            } else {
+                this.isRendering = false;
+            }
+        }
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             const moved = this.scene.move(this.canvas.width, this.canvas.height,
                                           mouse, this.camera);
@@ -255,6 +274,16 @@ export class GeneratorCanvas extends Canvas3D {
             this.numSamples = 0;
             this.isRendering = true;
         }
+    }
+
+    keydownListener(event) {
+        if (event.key === 's') {
+            this.operateScale = true;
+        }
+    }
+
+    keyupListener(event) {
+        this.operateScale = false;
     }
 }
 

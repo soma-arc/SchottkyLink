@@ -112,9 +112,7 @@ export default class Scene3D {
             this.selectedObj.castRayToBasis(camera.pos, ray, isectInfo);
             if (isectInfo.hitObject !== undefined) {
                 this.selectionInfo = isectInfo;
-                this.selectionInfo.prevShapePosition = new Vec3(this.selectedObj.center.x,
-                                                                this.selectedObj.center.y,
-                                                                this.selectedObj.center.z);
+                this.selectionInfo.prevShape = this.selectedObj.cloneDeeply();
                 if (this.selectionInfo.isectComponentId === Shape3D.X_AXIS) {
                     this.selectionInfo.axisDirection = camera.computeXAxisDirOnScreen(this.selectedObj.center, width, height);
                 } else if (this.selectionInfo.isectComponentId === Shape3D.Y_AXIS) {
@@ -123,8 +121,6 @@ export default class Scene3D {
                     this.selectionInfo.axisDirection = camera.computeZAxisDirOnScreen(this.selectedObj.center, width, height);
                 }
                 return;
-            } else {
-                console.log('not hit');
             }
             this.selectedObj.selected = false;
         }
@@ -148,6 +144,21 @@ export default class Scene3D {
             return this.selectedObj.move(width, height,
                                          mouse, camera,
                                          this.selectionInfo, this);
+        }
+        return false;
+    }
+
+    keydown(mouse) {
+        if (this.selectedObj === undefined) return;
+        this.selectionInfo.prevMouse = mouse;
+        this.selectionInfo.prevShape = this.selectedObj.cloneDeeply();
+    }
+
+    operateScale(width, height, mouse, camera) {
+        if (this.selectedObj !== undefined) {
+            return this.selectedObj.operateScale(width, height,
+                                                 mouse, camera,
+                                                 this.selectionInfo, this);
         }
         return false;
     }

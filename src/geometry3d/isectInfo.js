@@ -14,7 +14,7 @@ export default class IsectInfo {
         this.isectComponentId = -1;
         this.axisDirection = undefined;
         this.prevMouse = undefined;
-        this.prevShapePosition = undefined;
+        this.prevShape = undefined;
     }
 
     /**

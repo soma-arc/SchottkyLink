@@ -14,6 +14,10 @@ export default class BaseSphere extends Sphere {
         return nc;
     }
 
+    cloneDeeply() {
+        return new BaseSphere(this.center.x, this.center.y, this.center.z, this.r);
+    }
+
     get name() {
         return 'BaseSphere';
     }
