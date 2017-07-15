@@ -11,16 +11,22 @@ export default class IsectInfo {
         this.tmin = tmin;
         this.tmax = tmax;
         this.hitObject = undefined;
+        this.isectComponentId = -1;
+        this.axisDirection = undefined;
+        this.prevMouse = undefined;
+        this.prevShapePosition = undefined;
     }
 
     /**
      *
      * @param {number} tmin
      * @param {Shape3d} hitObject
+     * @param {number} isectComponentId
      */
-    setInfo(tmin, hitObject) {
+    setInfo(tmin, hitObject, isectComponentId) {
         this.tmin = tmin;
         this.hitObject = hitObject;
+        this.isectComponentId = isectComponentId;
     }
 
     get THRESHOLD() {

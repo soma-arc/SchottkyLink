@@ -53,6 +53,10 @@ export default class Vec2 {
         return new Vec2(this.x, this.y);
     }
 
+    static normalize(v) {
+        return v.normalize();
+    }
+
     static dot(v1, v2) {
         assert.ok(v1 instanceof Vec2);
         assert.ok(v2 instanceof Vec2);

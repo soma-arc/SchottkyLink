@@ -62,11 +62,16 @@ export default class canvasManager {
                 this.canvas2d.render();
             }
         } else if (this.mode === RENDER_3D) {
-            if (this.canvas3dOrb.isRendering) {
+            if (this.scene3d.updated) {
                 this.canvas3dOrb.render();
-            }
-            if (this.canvas3dGen.isRendering) {
                 this.canvas3dGen.render();
+            } else {
+                if (this.canvas3dOrb.isRendering) {
+                    this.canvas3dOrb.render();
+                }
+                if (this.canvas3dGen.isRendering) {
+                    this.canvas3dGen.render();
+                }
             }
         }
     }

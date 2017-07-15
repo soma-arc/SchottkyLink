@@ -105,6 +105,7 @@ export class Canvas3D extends Canvas {
     mouseUpListener(event) {
         this.mouseState.isPressing = false;
         this.isRendering = false;
+        this.scene.updated = false;
     }
 
     mouseMoveListener(event) {
@@ -230,6 +231,29 @@ export class GeneratorCanvas extends Canvas3D {
             this.render();
         } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
+        }
+    }
+
+    mouseMoveListener(event) {
+        event.preventDefault();
+        if (!this.mouseState.isPressing) return;
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            const moved = this.scene.move(this.canvas.width, this.canvas.height,
+                                          mouse, this.camera);
+            if (moved) {
+                this.scene.updated = true;
+                this.numSamples = 0;
+            } else {
+                this.isRendering = false;
+            }
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            const prevThetaPhi = this.camera.prevThetaPhi;
+            this.camera.theta = prevThetaPhi.x + (this.mouseState.prevPosition.x - mouse.x) * 0.01;
+            this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
+            this.camera.update();
+            this.numSamples = 0;
+            this.isRendering = true;
         }
     }
 }

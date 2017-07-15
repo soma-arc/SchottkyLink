@@ -3,7 +3,9 @@ import InversionSphere from './inversionSphere.js';
 import Vue from 'vue';
 import { Camera } from '../camera.js';
 import Vec2 from '../vector2d.js';
+import Vec3 from '../vector3d.js';
 import IsectInfo from './isectInfo.js';
+import Shape3D from './shape3d.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -21,6 +23,9 @@ export default class Scene3D {
         this.presets = PRESETS;
 
         this.selectedObj = undefined;
+        this.selectionInfo = undefined;
+
+        this.updated = false;
     }
 
     setUniformLocation(gl, uniLocations, program) {
@@ -100,9 +105,30 @@ export default class Scene3D {
      * @param {Camera} camera
      */
     select(width, height, mouse, camera) {
-        if (this.selectedObj !== undefined) this.selectedObj.selected = false;
         const ray = camera.computeRay(width, height, mouse.x, mouse.y);
         const isectInfo = new IsectInfo(Number.MAX_VALUE, Number.MAX_VALUE);
+        isectInfo.prevMouse = mouse;
+        if (this.selectedObj !== undefined) {
+            this.selectedObj.castRayToBasis(camera.pos, ray, isectInfo);
+            if (isectInfo.hitObject !== undefined) {
+                this.selectionInfo = isectInfo;
+                this.selectionInfo.prevShapePosition = new Vec3(this.selectedObj.center.x,
+                                                                this.selectedObj.center.y,
+                                                                this.selectedObj.center.z);
+                if (this.selectionInfo.isectComponentId === Shape3D.X_AXIS) {
+                    this.selectionInfo.axisDirection = camera.computeXAxisDirOnScreen(this.selectedObj.center, width, height);
+                } else if (this.selectionInfo.isectComponentId === Shape3D.Y_AXIS) {
+                    this.selectionInfo.axisDirection = camera.computeYAxisDirOnScreen(this.selectedObj.center, width, height);
+                } else if (this.selectionInfo.isectComponentId === Shape3D.Z_AXIS) {
+                    this.selectionInfo.axisDirection = camera.computeZAxisDirOnScreen(this.selectedObj.center, width, height);
+                }
+                return;
+            } else {
+                console.log('not hit');
+            }
+            this.selectedObj.selected = false;
+        }
+
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
             if (this.objects[objName] === undefined) continue;
@@ -111,8 +137,18 @@ export default class Scene3D {
             }
         }
         this.selectedObj = isectInfo.hitObject;
-        if (this.selectedObj !== undefined) this.selectedObj.selected = true;
+        this.selectionInfo = isectInfo;
+        if (this.selectedObj !== undefined) {
+            this.selectedObj.selected = true;
+        }
     }
 
-
+    move(width, height, mouse, camera) {
+        if (this.selectedObj !== undefined) {
+            return this.selectedObj.move(width, height,
+                                         mouse, camera,
+                                         this.selectionInfo, this);
+        }
+        return false;
+    }
 }
