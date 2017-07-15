@@ -30,8 +30,8 @@ struct ParallelTranslation {
 
 struct Rotation {
     vec2 p;
-    vec4 normal;
-    vec4 boundaryPoint;
+    vec4 normal; // [normal1, normal2]
+    vec4 boundaryPoint; // [p1, p2]
     vec2 ui; //[normal ring radius, point radius]
     bool selected;
 };
@@ -319,16 +319,22 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_halfPlane{{ n }}.selected) {
         // normal point
         if(distance(pos, u_halfPlane{{ n }}.p + u_halfPlane{{ n }}.normal.xy * u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w) {
-            color = LIGHT_BLUE;
+            color = PINK;
             return true;
         }
         // point p
         if(distance(pos, u_halfPlane{{ n }}.p) < u_halfPlane{{ n }}.normal.w) {
-            color = WHITE;
+            color = LIGHT_BLUE;
             return true;
         }
         // ring
         if(abs(distance(pos, u_halfPlane{{ n }}.p) - u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w *.5) {
+            color = WHITE;
+            return true;
+        }
+        // line
+        dist = dot(pos - u_halfPlane{{ n }}.p , u_halfPlane{{ n }}.normal.xy);
+        if(-u_halfPlane{{ n }}.normal.w < dist && dist < 0.) {
             color = WHITE;
             return true;
         }
@@ -349,7 +355,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         }
         // point p
         if(distance(pos, u_translate{{ n }}.p) < u_translate{{ n }}.ui.y) {
-            color = WHITE;
+            color = LIGHT_BLUE;
             return true;
         }
         // point on hp2
@@ -357,6 +363,20 @@ bool renderUI(vec2 pos, out vec3 color) {
             color = PINK;
             return true;
         }
+        // boundary
+        dist = dot(pos - u_translate{{ n }}.p, - u_translate{{ n }}.normal.xy);
+        if(0. < dist && dist < u_translate{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        dist = dot(pos - (u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z),
+                   - u_translate{{ n }}.normal.xy);
+        if(0. < dist && dist < u_translate{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
         // line
         pos -= u_translate{{ n }}.p;
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
@@ -386,11 +406,17 @@ bool renderUI(vec2 pos, out vec3 color) {
         }
         // line
         pos -= u_rotation{{ n }}.p;
-        float rotDot{{ n }} = dot(u_rotation{{ n }}.normal.xy, pos);
-        if(abs(rotDot{{ n }}) < u_rotation{{ n }}.ui.y * .5) {
+        dist = dot(-u_rotation{{ n }}.normal.xy, pos);
+        if(0. < dist && dist < u_rotation{{ n }}.ui.y) {
             color = WHITE;
             return true;
         }
+        dist = dot(-u_rotation{{ n }}.normal.zw, pos);
+        if(0. < dist && dist < u_rotation{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
         // ring
         if(dot(pos, u_rotation{{ n }}.normal.xy) > 0. &&
            dot(pos, u_rotation{{ n }}.normal.zw) > 0. &&
@@ -405,7 +431,7 @@ bool renderUI(vec2 pos, out vec3 color) {
     {% for n in range(0, numLoxodromic) %}
     // point p
     if(distance(pos, u_loxodromic{{ n }}.p) < u_loxodromic{{ n }}.ui.x) {
-        color = LIGHT_BLUE;
+        color = PINK;
         return true;
     }
     {% endfor %}
@@ -425,11 +451,11 @@ bool renderUI(vec2 pos, out vec3 color) {
 
     {% for n in range(0, numScaling) %}
     if(distance(pos, u_scaling{{ n }}.line1.xy) < u_scaling{{ n }}.ui.x) {
-        color = LIGHT_BLUE;
+        color = PINK;
         return true;
     }
     if(distance(pos, u_scaling{{ n }}.line2.xy) < u_scaling{{ n }}.ui.x) {
-        color = LIGHT_BLUE;
+        color = PINK;
         return true;
     }
     {% endfor %}
