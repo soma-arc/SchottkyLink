@@ -32,7 +32,7 @@ module.exports = () => ({
             },
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
+                exclude: /node_modules(?!(\/|\\)keen-ui)/,
                 loader: 'babel-loader',
             },
             {
