@@ -12,7 +12,7 @@
       </div>
       <div class="renderPropertyPanel"></div>
     </div>
-    <control-panel3d/>
+    <control-panel3d v-bind:canvasManager="canvasManager"/>
   </div>
 </template>
 

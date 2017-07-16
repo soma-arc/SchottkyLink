@@ -162,4 +162,18 @@ export default class Scene3D {
         }
         return false;
     }
+
+    addBaseSphere() {
+        if (this.objects['BaseSphere'] === undefined) {
+            Vue.set(this.objects, 'BaseSphere', []);
+        }
+        this.objects['BaseSphere'].push(new BaseSphere(0, 0, 0, 125));
+    }
+
+    addInversionSphere() {
+        if (this.objects['InversionSphere'] === undefined) {
+            Vue.set(this.objects, 'InversionSphere', []);
+        }
+        this.objects['InversionSphere'].push(new InversionSphere(100, 100, 0, 125));
+    }
 }

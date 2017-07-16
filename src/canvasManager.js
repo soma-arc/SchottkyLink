@@ -91,6 +91,13 @@ export default class canvasManager {
         }
     }
 
+    compile3dCanvases() {
+        this.canvas3dGen.compileRenderShader();
+        this.canvas3dGen.render();
+        this.canvas3dOrb.compileRenderShader();
+        this.canvas3dOrb.render();
+    }
+
     get isRendering2d() {
         return this.mode === RENDER_2D;
     }

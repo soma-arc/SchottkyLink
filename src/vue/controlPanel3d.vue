@@ -2,6 +2,7 @@
   <div class="controlPanel">
     <ui-tabs fullwidth id="tabs">
       <ui-tab title="Generator" id="tab-1">
+        <generator-panel3d v-bind:canvasManager="canvasManager" />
       </ui-tab>
       <ui-tab title="Scene" id="tab-2">
       </ui-tab>
@@ -12,12 +13,14 @@
 <script>
 import UiTabs from 'keen-ui/lib/UiTabs';
 import UiTab from 'keen-ui/lib/UiTab';
+import GeneratorPanel3d from './generatorPanel3d.vue';
 
 export default {
-    props: [],
+    props: ['canvasManager'],
     components: {
         UiTabs,
         UiTab,
+        GeneratorPanel3d
     }
 }
 </script>

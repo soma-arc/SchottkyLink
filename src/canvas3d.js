@@ -256,8 +256,7 @@ export class GeneratorCanvas extends Canvas3D {
             } else {
                 this.isRendering = false;
             }
-        }
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        } else if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             const moved = this.scene.move(this.canvas.width, this.canvas.height,
                                           mouse, this.camera);
             if (moved) {

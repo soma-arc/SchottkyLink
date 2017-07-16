@@ -131,7 +131,7 @@ export default class Sphere extends Shape3d {
         const distCenterCurrentMouse = Vec2.distance(centerOnScreen, mouse);
         const d = distCenterCurrentMouse - distCenterPrevMouse;
         const scaleFactor = 3;
-        this.r = isectInfo.prevShape.r + d * scaleFactor;
+        this.r = Math.abs(isectInfo.prevShape.r + d * scaleFactor);
         this.update();
         return true;
     }
