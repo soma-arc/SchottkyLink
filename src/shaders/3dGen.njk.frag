@@ -301,9 +301,15 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
 
 out vec4 outColor;
 void main() {
-    vec2 coordOffset = rand2n(gl_FragCoord.xy, u_numSamples);
-    vec3 ray = calcRay(u_camera.pos, u_camera.target, u_camera.up, u_camera.fov,
-                       u_resolution, gl_FragCoord.xy + coordOffset);
-    vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
-    outColor = vec4(mix(computeColor(u_camera.pos, ray), texCol, u_textureWeight), 1.0);
+    vec3 sum = vec3(0);
+    float MAX_SAMPLES = 5.;
+    for (float i = 0. ; i < MAX_SAMPLES ; i++) {
+        vec2 coordOffset = rand2n(gl_FragCoord.xy, i);
+        vec3 ray = calcRay(u_camera.pos, u_camera.target, u_camera.up, u_camera.fov,
+                           u_resolution, gl_FragCoord.xy + coordOffset);
+        sum += computeColor(u_camera.pos, ray);
+    }
+    //    vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
+
+    outColor = vec4(sum / MAX_SAMPLES, 1.);//vec4(mix(computeColor(u_camera.pos, ray), texCol, u_textureWeight), 1.0);
 }
