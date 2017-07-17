@@ -57,6 +57,13 @@ export default class Shape3d {
     castRay(rayOrg, rayDir, isectInfo) {}
 
     /**
+     * @param {Vec3} rayOrg
+     * @param {Vec3} rayDir
+     * @param {IsectInfo} isectInfo
+     */
+    castRayToBasis(rayOrg, rayDir, isectInfo) {}
+
+    /**
      * @param {Vec3} center
      * @param {Number} r
      * @param {Number} len

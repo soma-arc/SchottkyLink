@@ -1,11 +1,13 @@
-import BaseSphere from './baseSphere.js'
-import InversionSphere from './inversionSphere.js';
 import Vue from 'vue';
 import { Camera } from '../camera.js';
 import Vec2 from '../vector2d.js';
 import Vec3 from '../vector3d.js';
 import IsectInfo from './isectInfo.js';
 import Shape3D from './shape3d.js';
+
+import BaseSphere from './baseSphere.js'
+import InversionSphere from './inversionSphere.js';
+import HyperPlane from './hyperPlane.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -15,7 +17,8 @@ for (const k of PRESETS_CONTEXT.keys()) {
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'BaseSphere': BaseSphere,
-                        'InversionSphere': InversionSphere };
+                        'InversionSphere': InversionSphere,
+                        'HyperPlane': HyperPlane };
 
 export default class Scene3D {
     constructor() {
@@ -175,5 +178,13 @@ export default class Scene3D {
             Vue.set(this.objects, 'InversionSphere', []);
         }
         this.objects['InversionSphere'].push(new InversionSphere(100, 100, 0, 125));
+    }
+
+    addHyperPlane() {
+        if (this.objects['HyperPlane'] === undefined) {
+            Vue.set(this.objects, 'HyperPlane', []);
+        }
+        this.objects['HyperPlane'].push(new HyperPlane(new Vec3(0, 0, 100),
+                                                       new Vec3(0, 0, 1)));
     }
 }

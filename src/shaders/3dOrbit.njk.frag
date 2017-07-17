@@ -49,6 +49,15 @@ float distIIS(vec3 pos) {
         }
         {% endfor %}
 
+        {% for n in range(0, numHyperPlane) %}
+        pos -= u_hyperPlane{{ n }}.center;
+        float dHyperPlane{{ n }} = dot(pos, u_hyperPlane{{ n }}.normal);
+        invNum += (dHyperPlane{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dHyperPlane{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dHyperPlane{{ n }}) * u_hyperPlane{{ n }}.normal;
+        pos += u_hyperPlane{{ n }}.center;
+        {% endfor %}
+
         if(inFund) break;
     }
     g_invNum = invNum;

@@ -4,6 +4,8 @@
                 width="128px" height="128px" @click.native="addBaseSphere"/>
     <img-button label="Inversion Sphere" :src="inversionSphereUrl"
                 width="128px" height="128px" @click.native="addInversionSphere"/>
+    <img-button label="Hyper Plane" :src="hyperPlaneUrl"
+                width="128px" height="128px" @click.native="addHyperPlane"/>
   </div>
 </template>
 
@@ -12,13 +14,15 @@ import ImgButton from './imgButton.vue';
 
 const BASE_SPHERE_IMG = require('../img/3dGenerator/baseSphere.png');
 const INVERSION_SPHERE_IMG = require('../img/3dGenerator/inversionSphere.png');
+const HYPER_PALNE_IMG = require('../img/3dGenerator/hyperPlane.png');
 
 export default {
     props: ['canvasManager'],
     components: { ImgButton },
     data: function() {
         return { 'baseSphereUrl': BASE_SPHERE_IMG,
-                 'inversionSphereUrl': INVERSION_SPHERE_IMG }
+                 'inversionSphereUrl': INVERSION_SPHERE_IMG,
+                 'hyperPlaneUrl': HYPER_PALNE_IMG }
     },
     methods: {
         addBaseSphere: function() {
@@ -27,6 +31,10 @@ export default {
         },
         addInversionSphere: function() {
             this.canvasManager.scene3d.addInversionSphere();
+            this.canvasManager.compile3dCanvases();
+        },
+        addHyperPlane: function() {
+            this.canvasManager.scene3d.addHyperPlane();
             this.canvasManager.compile3dCanvases();
         }
     }

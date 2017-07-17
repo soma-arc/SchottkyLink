@@ -28,14 +28,26 @@ struct Sphere {
     bool selected;
 };
 
+struct HyperPlane {
+    vec3 center;
+    vec3 normal;
+    vec2 ui; //[sizeX, sizeY]
+    bool selected;
+};
+
 int ID_BASE_SPHERE = 0;
+int ID_INVERSION_SPHERE = 1;
+int ID_ORBIT = 2;
+int ID_HYPER_PLANE = 3;
+
 {% for n in range(0, numBaseSphere) %}
 uniform Sphere u_baseSphere{{ n }};
 {% endfor %}
 
-int ID_INVERSION_SPHERE = 1;
 {% for n in range(0, numInversionSphere) %}
 uniform Sphere u_inversionSphere{{ n }};
 {% endfor %}
 
-int ID_ORBIT = 2;
+{% for n in range(0, numHyperPlane) %}
+uniform HyperPlane u_hyperPlane{{ n }};
+{% endfor %}

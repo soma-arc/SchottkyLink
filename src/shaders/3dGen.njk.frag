@@ -156,6 +156,34 @@ void intersectXZCylinder(const int objId, const int objIndex, const int objCompo
     }
 }
 
+void intersectRect(const int objId, const int objIndex, const int objComponentId,
+                   const vec3 matColor,
+                   const vec3 center, const vec3 normal, const vec2 size,
+                   vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo) {
+    rayOrigin = rayOrigin - center;
+    float v = dot(normal, rayDir);
+    float t = -(dot(normal, rayOrigin)) / v;
+    if(THRESHOLD < t && t < isectInfo.mint){
+        vec3 p = rayOrigin + t * rayDir;
+        vec2 hSize = size * .5;
+        vec3 yAxis = vec3(normal.x, -normal.z, normal.y);
+        vec3 xAxis = cross(yAxis, normal);
+        float x = dot(p, xAxis);
+        float y = dot(p, yAxis);
+        if(-hSize.x <= x && x <= hSize.x &&
+           -hSize.y <= y && y <= hSize.y ){
+            isectInfo.objId = objId;
+            isectInfo.objIndex = objIndex;
+            isectInfo.objComponentId = objComponentId;
+            isectInfo.matColor = matColor;
+            isectInfo.mint = t;
+            isectInfo.intersection = p + center;
+            isectInfo.normal = normal;
+            isectInfo.hit = true;
+        }
+    }
+}
+
 float distSphere(vec3 pos, vec3 center, float radius) {
     return distance(pos, center) - radius;
 }
@@ -239,6 +267,14 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
                     (u_inversionSphere{{ n }}.selected) ? RED : GRAY,
                     u_inversionSphere{{ n }}.center, u_inversionSphere{{ n }}.r.x,
                     rayOrg, rayDir, isectInfo);
+    {% endfor %}
+
+    {% for n in range(0, numHyperPlane) %}
+    intersectRect(ID_HYPER_PLANE, {{ n }}, 0,
+                  (u_hyperPlane{{ n }}.selected) ? RED : BLUE,
+                  u_hyperPlane{{ n }}.center, u_hyperPlane{{ n }}.normal,
+                  u_hyperPlane{{ n }}.ui.xy,
+                  rayOrg, rayDir, isectInfo);
     {% endfor %}
 }
 
