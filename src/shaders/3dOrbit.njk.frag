@@ -3,11 +3,12 @@
 precision mediump float;
 
 {% include "./3dUniforms.njk.frag" %}
-{% include "./raytrace.njk.frag" %}
 
 // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
 // include Color constants, hsv2rgb, and blendCol
 {% include "./color.njk.frag" %}
+
+{% include "./raytrace.njk.frag" %}
 
 vec2 rand2n(const vec2 co, const float sampleIndex) {
     vec2 seed = co * (sampleIndex + 1.0);
@@ -17,15 +18,6 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
                 fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
 }
 
-float MAX_FLOAT = 1e20;
-
-float distSphere(vec3 pos, vec3 center, float radius) {
-    return distance(pos, center) - radius;
-}
-
-vec3 distUnion(vec3 t1, vec3 t2) {
-    return (t1.x < t2.x) ? t1 : t2;
-}
 float g_invNum;
 const float scalingFactor = 0.08;
 float distIIS(vec3 pos) {
@@ -69,10 +61,10 @@ float distIIS(vec3 pos) {
     return minDist;
 }
 
-vec3 distFunc(vec3 pos) {
-    vec3 hit = vec3(MAX_FLOAT, -1, -1);
+vec4 distFunc(vec3 pos) {
+    vec4 hit = vec4(MAX_FLOAT, -1, -1, -1);
     {% if 0 < numBaseSphere %}
-    hit = distUnion(hit, vec3(distIIS(pos), ID_ORBIT, 0));
+    hit = distUnion(hit, vec4(distIIS(pos), ID_ORBIT, 0, 0));
     {% endif %}
     return hit;
 }
@@ -84,20 +76,24 @@ vec3 computeNormal(const vec3 p) {
                           distFunc(p + NORMAL_COEFF.yyx).x - distFunc(p - NORMAL_COEFF.yyx).x));
 }
 
-const int MAX_MARCHING_LOOP = 1000;
 const float MARCHING_THRESHOLD = 0.01;
 void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
-    float rayLength = isectInfo.mint;
+    float rayLength = 0.;
     vec3 rayPos = rayOrg + rayDir * rayLength;
-    vec3 dist = vec3(-1);
+    vec4 dist = vec4(-1);
     for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++) {
-        if(rayLength > isectInfo.maxt) break;
+        if(rayLength > isectInfo.maxt ||
+           rayLength > isectInfo.mint) break;
         dist = distFunc(rayPos);
         rayLength += dist.x;
         rayPos = rayOrg + rayDir * rayLength;
         if(dist.x < MARCHING_THRESHOLD) {
             isectInfo.objId = int(dist.y);
             isectInfo.objIndex = int(dist.z);
+            isectInfo.objComponentId = int(dist.w);
+            isectInfo.matColor = (g_invNum == 0.) ?
+                hsv2rgb(0.33, 1., .77) :
+                hsv2rgb(0.0 + g_invNum * 0.21 , 1., 1.);
             isectInfo.intersection = rayPos;
             isectInfo.normal = computeNormal(rayPos);
             isectInfo.hit = true;
@@ -106,35 +102,84 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     }
 }
 
+// This function is based on FractalLab's implementation
+// http://hirnsohle.de/test/fractalLab/
+float ambientOcclusion(vec3 p, vec3 n, float eps, float aoIntensity ){
+    float o = 1.0;
+    float k = aoIntensity / eps;
+    float d = 2.0 * eps;
+
+    for (int i = 0; i < 5; i++) {
+        o -= (d - distFunc(p + n * d).x) * k;
+        d += eps;
+        k *= 0.5;
+    }
+
+    return clamp(o, 0.0, 1.0);
+}
+
+void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
+    {% for n in range(0, numBaseSphere) %}
+    intersectSphere(ID_BASE_SPHERE, {{ n }}, 0, (u_baseSphere{{ n }}.selected) ? RED : GREEN,
+                    u_baseSphere{{ n }}.center, u_baseSphere{{ n }}.r.x,
+                    rayOrg, rayDir, isectInfo);
+    {% endfor %}
+
+    {% for n in range(0, numInversionSphere) %}
+    intersectSphere(ID_INVERSION_SPHERE, {{ n }}, 0,
+                    (u_inversionSphere{{ n }}.selected) ? RED : GRAY,
+                    u_inversionSphere{{ n }}.center, u_inversionSphere{{ n }}.r.x,
+                    rayOrg, rayDir, isectInfo);
+    {% endfor %}
+
+    {% for n in range(0, numHyperPlane) %}
+    intersectRect(ID_HYPER_PLANE, {{ n }}, 0,
+                  (u_hyperPlane{{ n }}.selected) ? RED : BLUE,
+                  u_hyperPlane{{ n }}.center, u_hyperPlane{{ n }}.normal,
+                  u_hyperPlane{{ n }}.up, u_hyperPlane{{ n }}.ui.xy,
+                  rayOrg, rayDir, isectInfo);
+    {% endfor %}
+}
+
+const int MAX_TRACE_DEPTH = 5;
 const vec3 AMBIENT_FACTOR = vec3(0.1);
 const vec3 LIGHT_DIR = normalize(vec3(1, 1, 0));
 vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
-    IsectInfo isectInfo;
-    isectInfo.objId = -1;
-    isectInfo.objIndex = -1;
-    isectInfo.mint = 0.;
-    isectInfo.maxt = 9999999.;
-    isectInfo.hit = false;
-
-    march(rayOrg, rayDir, isectInfo);
+    IsectInfo isectInfo = newIsectInfo();
+    vec3 rayPos = rayOrg;
 
     vec3 l = BLACK;
-    if(isectInfo.hit) {
-        vec3 matColor = BLUE;
-        if (isectInfo.objId == ID_BASE_SPHERE) {
-            matColor = GREEN;
-        } else if (isectInfo.objId == ID_INVERSION_SPHERE) {
-            matColor = GRAY;
-        } else if (isectInfo.objId == ID_ORBIT) {
-            //            float invNum = IISOrbitDepth(isectInfo.intersection);
-            matColor = (g_invNum == 0.) ?
-                hsv2rgb(0.33, 1., .77) :
-                matColor = hsv2rgb(0.0 + g_invNum * 0.21 , 1., 1.);
+    float transparency = 0.8;
+    float coeff = 1.;
+    for(int depth = 0 ; depth < MAX_TRACE_DEPTH ; depth++) {
+        if(u_renderGenerators)
+            intersectGenerators(rayPos, rayDir, isectInfo);
+        march(rayPos, rayDir, isectInfo);
+
+        if(isectInfo.hit) {
+            vec3 matColor = isectInfo.matColor;
+            float alpha = 1.;
+            bool transparent = false;
+            transparent =  (isectInfo.objId == ID_INVERSION_SPHERE &&
+                            isectInfo.objComponentId == 0) ? true : false;
+
+            vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;
+            vec3 ambient = matColor * AMBIENT_FACTOR;
+            if(transparent) {
+                coeff *= transparency;
+                l += (diffuse + ambient) * coeff;
+                rayPos = isectInfo.intersection + rayDir * 0.01 * 2.;
+                isectInfo.mint = MAX_FLOAT;
+                isectInfo.hit = false;
+                continue;
+            } else {
+                l += (diffuse + matColor * vec3(ambientOcclusion(isectInfo.intersection,
+                                                               isectInfo.normal,
+                                                                 10., .15 )))*coeff;
+            }
         }
 
-        vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;
-        vec3 ambient = matColor * AMBIENT_FACTOR;
-        l = diffuse + ambient;
+        break;
     }
 
     return l;

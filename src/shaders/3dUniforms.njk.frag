@@ -12,6 +12,7 @@ uniform float u_textureWeight;
 uniform float u_numSamples;
 uniform int u_maxIISIterations;
 uniform Camera u_camera;
+uniform bool u_renderGenerators;
 
 struct ObjBasis {
     vec3 center;

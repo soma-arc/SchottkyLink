@@ -56,6 +56,8 @@ export class Canvas3D extends Canvas {
         this.isRenderingLowRes = false;
         this.renderTimer = undefined;
 
+        this.renderGenerators = false;
+
         this.canvas.style.outline = 'none';
     }
 
@@ -162,6 +164,8 @@ export class Canvas3D extends Canvas {
                                                           'u_numSamples'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_maxIISIterations'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_renderGenerators'));
         this.camera.setUniformLocations(this.gl, this.uniLocations, this.renderProgram);
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
@@ -182,6 +186,7 @@ export class Canvas3D extends Canvas {
         this.gl.uniform1f(this.uniLocations[i++], this.numSamples / (this.numSamples + 1));
         this.gl.uniform1f(this.uniLocations[i++], this.numSamples);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
+        this.gl.uniform1i(this.uniLocations[i++], this.renderGenerators);
         i = this.camera.setUniformValues(this.gl, this.uniLocations, i);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i);
     }

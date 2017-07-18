@@ -13,6 +13,9 @@
       <div class="renderPropertyPanel">
         <ui-switch label="lowRes"
                    v-model="canvasManager.canvas3dOrb.isRenderingLowRes"/>
+        <ui-switch label="renderGen"
+                   v-model="canvasManager.canvas3dOrb.renderGenerators"
+                   @change="renderOrb"/>
       </div>
     </div>
     <control-panel3d v-bind:canvasManager="canvasManager"/>
@@ -26,7 +29,12 @@ import UiSwitch from 'keen-ui/lib/UiSwitch';
 export default {
     props: ['canvasManager'],
     components: { ControlPanel3d,
-                  UiSwitch }
+                  UiSwitch },
+    methods: {
+        renderOrb: function() {
+            this.canvasManager.canvas3dOrb.render();
+        }
+    }
 }
 </script>
 
