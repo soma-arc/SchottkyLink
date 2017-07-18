@@ -39,6 +39,14 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
                   u_hyperPlane{{ n }}.up, u_hyperPlane{{ n }}.ui.xy,
                   rayOrg, rayDir, isectInfo);
     {% endfor %}
+
+    {% for n in range(0, numParallelPlanes) %}
+    intersectParallelPlanes(ID_PARALLEL_PLANES, {{ n }},
+                            u_parallelPlanes{{ n }}.p, u_parallelPlanes{{ n }}.normal,
+                            u_parallelPlanes{{ n }}.up, u_parallelPlanes{{ n }}.ui.xy,
+                            u_parallelPlanes{{ n }}.dist,
+                            rayOrg, rayDir, isectInfo);
+    {% endfor %}
 }
 
 const int MAX_TRACE_DEPTH = 5;

@@ -50,6 +50,23 @@ float distIIS(vec3 pos) {
         pos += u_hyperPlane{{ n }}.center;
         {% endfor %}
 
+        {% for n in range(0, numParallelPlanes) %}
+        pos -= u_parallelPlanes{{ n }}.p;
+        float hpd{{ n }} = dot(u_parallelPlanes{{ n }}.normal, pos);
+        if(hpd{{ n }} < 0. || u_parallelPlanes{{ n }}.dist.x < hpd{{ n }}) {
+            invNum += abs(floor(hpd{{ n }} / u_parallelPlanes{{ n }}.dist.x));
+            pos -= u_parallelPlanes{{ n }}.normal * (hpd{{ n }} - mod(hpd{{ n }}, u_parallelPlanes{{ n }}.dist.y));
+
+            pos -= u_parallelPlanes{{ n }}.normal * u_parallelPlanes{{ n }}.dist.x;
+            hpd{{ n }} = dot(pos, u_parallelPlanes{{ n }}.normal);
+            pos -= 2.0 * max(0., hpd{{ n }}) * u_parallelPlanes{{ n }}.normal;
+            pos += u_parallelPlanes{{ n }}.normal * u_parallelPlanes{{ n }}.dist.x;
+
+            inFund = false;
+        }
+        pos += u_parallelPlanes{{ n }}.p;
+        {% endfor %}
+
         if(inFund) break;
     }
     g_invNum = invNum;
@@ -138,6 +155,14 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
                   u_hyperPlane{{ n }}.center, u_hyperPlane{{ n }}.normal,
                   u_hyperPlane{{ n }}.up, u_hyperPlane{{ n }}.ui.xy,
                   rayOrg, rayDir, isectInfo);
+    {% endfor %}
+
+    {% for n in range(0, numParallelPlanes) %}
+    intersectParallelPlanes(ID_PARALLEL_PLANES, {{ n }},
+                            u_parallelPlanes{{ n }}.p, u_parallelPlanes{{ n }}.normal,
+                            u_parallelPlanes{{ n }}.up, u_parallelPlanes{{ n }}.ui.xy,
+                            u_parallelPlanes{{ n }}.dist,
+                            rayOrg, rayDir, isectInfo);
     {% endfor %}
 }
 

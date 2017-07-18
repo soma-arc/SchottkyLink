@@ -6,6 +6,8 @@
                 width="128px" height="128px" @click.native="addInversionSphere"/>
     <img-button label="Hyper Plane" :src="hyperPlaneUrl"
                 width="128px" height="128px" @click.native="addHyperPlane"/>
+    <img-button label="Parallel Planes" :src="parallelPlanesUrl"
+                width="128px" height="128px" @click.native="addParallelPlanes"/>
   </div>
 </template>
 
@@ -15,6 +17,7 @@ import ImgButton from './imgButton.vue';
 const BASE_SPHERE_IMG = require('../img/3dGenerator/baseSphere.png');
 const INVERSION_SPHERE_IMG = require('../img/3dGenerator/inversionSphere.png');
 const HYPER_PALNE_IMG = require('../img/3dGenerator/hyperPlane.png');
+const PARALLEL_PLANES_IMG = require('../img/3dGenerator/translation.png');
 
 export default {
     props: ['canvasManager'],
@@ -22,7 +25,8 @@ export default {
     data: function() {
         return { 'baseSphereUrl': BASE_SPHERE_IMG,
                  'inversionSphereUrl': INVERSION_SPHERE_IMG,
-                 'hyperPlaneUrl': HYPER_PALNE_IMG }
+                 'hyperPlaneUrl': HYPER_PALNE_IMG,
+                 'parallelPlanesUrl': PARALLEL_PLANES_IMG }
     },
     methods: {
         addBaseSphere: function() {
@@ -35,6 +39,10 @@ export default {
         },
         addHyperPlane: function() {
             this.canvasManager.scene3d.addHyperPlane();
+            this.canvasManager.compile3dCanvases();
+        },
+        addParallelPlanes: function() {
+            this.canvasManager.scene3d.addParallelPlanes();
             this.canvasManager.compile3dCanvases();
         }
     }

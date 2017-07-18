@@ -8,6 +8,7 @@ import Shape3D from './shape3d.js';
 import BaseSphere from './baseSphere.js'
 import InversionSphere from './inversionSphere.js';
 import HyperPlane from './hyperPlane.js';
+import ParallelPlanes from './parallelTranslation.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -18,7 +19,8 @@ for (const k of PRESETS_CONTEXT.keys()) {
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'BaseSphere': BaseSphere,
                         'InversionSphere': InversionSphere,
-                        'HyperPlane': HyperPlane };
+                        'HyperPlane': HyperPlane,
+                        'ParallelPlanes': ParallelPlanes };
 
 export default class Scene3D {
     constructor() {
@@ -194,5 +196,13 @@ export default class Scene3D {
         }
         this.objects['HyperPlane'].push(new HyperPlane(new Vec3(0, 0, 100),
                                                        Math.PI * 0.5, 0));
+    }
+
+    addParallelPlanes() {
+        if (this.objects['ParallelPlanes'] === undefined) {
+            Vue.set(this.objects, 'ParallelPlanes', []);
+        }
+        this.objects['ParallelPlanes'].push(new ParallelPlanes(new Vec3(0, 0, -500),
+                                                               Math.PI * 0.5, 0, 1000));
     }
 }

@@ -261,3 +261,17 @@ void intersectBasisCylinder(const int objId, const int objIndex,
                         center, r, len,
                         rayOrg, rayDir, isectInfo);
 }
+
+void intersectParallelPlanes(const int objId, const int objIndex,
+                             const vec3 p, const vec3 normal, const vec3 up, const vec2 size,
+                             const vec2 dist,
+                             vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
+    intersectRect(objId, objIndex, 0,
+                  BLUE,
+                  p, normal, up, size,
+                  rayOrg, rayDir, isectInfo);
+    intersectRect(objId, objIndex, 1,
+                  BLUE,
+                  p + normal * dist.x, normal, up, size,
+                  rayOrg, rayDir, isectInfo);
+}

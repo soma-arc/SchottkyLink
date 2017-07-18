@@ -39,10 +39,20 @@ struct HyperPlane {
     bool selected;
 };
 
+struct ParallelPlanes {
+    vec3 p;
+    vec3 normal;
+    vec3 up;
+    vec2 dist; //[plane distance, planeDist * 2]
+    vec2 ui; //[sizeX, sizeY]
+    bool selected;
+};
+
 int ID_BASE_SPHERE = 0;
 int ID_INVERSION_SPHERE = 1;
 int ID_ORBIT = 2;
 int ID_HYPER_PLANE = 3;
+int ID_PARALLEL_PLANES = 4;
 
 {% for n in range(0, numBaseSphere) %}
 uniform Sphere u_baseSphere{{ n }};
@@ -54,4 +64,8 @@ uniform Sphere u_inversionSphere{{ n }};
 
 {% for n in range(0, numHyperPlane) %}
 uniform HyperPlane u_hyperPlane{{ n }};
+{% endfor %}
+
+{% for n in range(0, numParallelPlanes) %}
+uniform ParallelPlanes u_parallelPlanes{{ n }};
 {% endfor %}
