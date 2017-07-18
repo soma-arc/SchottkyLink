@@ -512,7 +512,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     {% for n in range(0, numScaling) %}
     if(abs(dot(pos - u_scaling{{ n }}.line1.xy,
                u_scaling{{ n }}.line1.zw)) < u_scaling{{ n }}.ui.y) {
-        color = WHITE;
+        color = YELLOW;
         return true;
     }
     if(abs(dot(pos - u_scaling{{ n }}.line2.xy,

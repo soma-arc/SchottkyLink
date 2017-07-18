@@ -4,6 +4,8 @@
                 width="128px" height="128px" @click.native="addCircle"/>
     <img-button label="Half Plane" :src="halfPlaneUrl"
                 width="128px" height="128px" @click.native="addHalfPlane"/>
+    <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
+                width="128px" height="128px"/>
     <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                 width="128px" height="128px" @click.native="addParallelTranslation"/>
     <img-button label="Rotation" :src="rotationUrl"
@@ -13,8 +15,6 @@
     <img-button label="Two Circles" :src="twoCirclesUrl"
                 width="128px" height="128px" @click.native="addTwoCircles"/>
     <img-button label="Loxodromic" :src="loxodromicUrl" @click.native="addLoxodromic"
-                width="128px" height="128px"/>
-    <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
                 width="128px" height="128px"/>
   </div>
 </template>
