@@ -102,8 +102,10 @@ export class Canvas3D extends Canvas {
         this.mouseState.isPressing = true;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
         this.mouseState.prevPosition = mouse
-        if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+        if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            this.camera.prevTarget = this.camera.target;
         }
     }
 
@@ -120,10 +122,18 @@ export class Canvas3D extends Canvas {
         event.preventDefault();
         if (!this.mouseState.isPressing) return;
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+        if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             const prevThetaPhi = this.camera.prevThetaPhi;
             this.camera.theta = prevThetaPhi.x + (this.mouseState.prevPosition.x - mouse.x) * 0.01;
             this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
+            this.camera.update();
+            this.numSamples = 0;
+            this.isRendering = true;
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            const d = mouse.sub(this.mouseState.prevPosition);
+            const [xVec, yVec] = this.camera.getFocalXYVector(this.canvas.width,
+                                                              this.canvas.height);
+            this.camera.target = this.camera.prevTarget.add(xVec.scale(-d.x).add(yVec.scale(-d.y)));
             this.camera.update();
             this.numSamples = 0;
             this.isRendering = true;
@@ -263,8 +273,10 @@ export class GeneratorCanvas extends Canvas3D {
             this.scene.select(this.canvas.width, this.canvas.height,
                               mouse, this.camera);
             this.render();
-        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+        } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            this.camera.prevTarget = this.camera.target;
         }
     }
 
@@ -291,10 +303,19 @@ export class GeneratorCanvas extends Canvas3D {
             } else {
                 this.isRendering = false;
             }
-        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+        } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             const prevThetaPhi = this.camera.prevThetaPhi;
             this.camera.theta = prevThetaPhi.x + (this.mouseState.prevPosition.x - mouse.x) * 0.01;
             this.camera.phi = prevThetaPhi.y - (this.mouseState.prevPosition.y - mouse.y) * 0.01;
+            this.camera.update();
+            this.numSamples = 0;
+            this.isRendering = true;
+        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+            const moveTargetScale = 5;
+            const d = mouse.sub(this.mouseState.prevPosition);
+            const [xVec, yVec] = this.camera.getFocalXYVector(this.canvas.width,
+                                                              this.canvas.height);
+            this.camera.target = this.camera.prevTarget.add(xVec.scale(-d.x * moveTargetScale).add(yVec.scale(-d.y * moveTargetScale)));
             this.camera.update();
             this.numSamples = 0;
             this.isRendering = true;

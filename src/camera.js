@@ -11,6 +11,7 @@ export class Camera {
     constructor(pos, target, fov) {
         this.pos = pos;
         this.target = target;
+        this.prevTarget = target;
         this.fov = fov; // radians
         this.up = new Vec3(0, 1, 0);
     }
@@ -103,6 +104,19 @@ export class Camera {
     }
 
     /**
+     *
+     * @param {number} screenWidth
+     * @param {number} screenHeight
+     * @return {[Vec3, Vec3]}
+     */
+    getFocalXYVector(screenWidth, screenHeight) {
+        const v = Vec3.normalize(this.target.sub(this.pos));
+        const focalXAxis = Vec3.normalize(Vec3.cross(v, this.up));
+        const focalYAxis = Vec3.normalize(Vec3.cross(v, focalXAxis));
+        return [focalXAxis, focalYAxis];
+    }
+
+    /**
      * Cast ray from rayOrg and compute distance between screen and rayOrg
      * @param {Vec3} center
      * @param {Vec3} normal
@@ -147,7 +161,6 @@ export class CameraOnSphere extends Camera {
      */
     constructor(target, fov, cameraDistance, up) {
         super(new Vec3(0, 0, 0), target, fov);
-        this.prevTarget = target;
         this.target = target;
         this.fov = fov;
         this.cameraDistance = cameraDistance;
