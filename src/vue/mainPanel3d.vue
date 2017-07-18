@@ -10,7 +10,10 @@
       <div class="canvasParent">
         <canvas id="canvas3dOrb" tabIndex="1002"></canvas>
       </div>
-      <div class="renderPropertyPanel"></div>
+      <div class="renderPropertyPanel">
+        <ui-switch label="lowRes"
+                   v-model="canvasManager.canvas3dOrb.isRenderingLowRes"/>
+      </div>
     </div>
     <control-panel3d v-bind:canvasManager="canvasManager"/>
   </div>
@@ -18,10 +21,12 @@
 
 <script>
     import ControlPanel3d from './controlPanel3d.vue';
+import UiSwitch from 'keen-ui/lib/UiSwitch';
 
 export default {
     props: ['canvasManager'],
-    components: { ControlPanel3d }
+    components: { ControlPanel3d,
+                  UiSwitch }
 }
 </script>
 

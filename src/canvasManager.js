@@ -63,14 +63,14 @@ export default class canvasManager {
             }
         } else if (this.mode === RENDER_3D) {
             if (this.scene3d.updated) {
-                this.canvas3dOrb.render();
-                this.canvas3dGen.render();
+                this.canvas3dOrb.callRender();
+                this.canvas3dGen.callRender();
             } else {
                 if (this.canvas3dOrb.isRendering) {
-                    this.canvas3dOrb.render();
+                    this.canvas3dOrb.callRender();
                 }
                 if (this.canvas3dGen.isRendering) {
-                    this.canvas3dGen.render();
+                    this.canvas3dGen.callRender();
                 }
             }
         }

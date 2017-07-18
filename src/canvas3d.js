@@ -53,6 +53,9 @@ export class Canvas3D extends Canvas {
             prevPosition: new Vec2(0, 0),
         };
 
+        this.isRenderingLowRes = false;
+        this.renderTimer = undefined;
+
         this.canvas.style.outline = 'none';
     }
 
@@ -212,9 +215,27 @@ export class Canvas3D extends Canvas {
         this.gl.flush();
     }
 
+    callRender() {
+        if (this.isRenderingLowRes) {
+            this.renderLowRes();
+        } else {
+            this.render();
+        }
+    }
+
     render() {
-        this.renderToTexture(this.renderTextures, this.canvas.width, this.canvas.height);
+        this.renderToTexture(this.renderTextures,
+                             this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
+    }
+
+    renderLowRes() {
+        if (this.renderTimer !== undefined) window.clearTimeout(this.renderTimer);
+        this.renderToTexture(this.lowResTextures,
+                             this.canvas.width * this.lowResRatio,
+                             this.canvas.height * this.lowResRatio);
+        this.renderTexturesToCanvas(this.lowResTextures);
+        this.renderTimer = window.setTimeout(this.render.bind(this), 200);
     }
 }
 
