@@ -17,6 +17,8 @@ struct ObjBasis {
     vec3 center;
     float r;
     float len;
+    bool hasRotationUI;
+    vec2 rotationParam; // [radius, pipeRadius]
 };
 
 uniform bool u_isSelectingObj;
@@ -31,6 +33,7 @@ struct Sphere {
 struct HyperPlane {
     vec3 center;
     vec3 normal;
+    vec3 up;
     vec2 ui; //[sizeX, sizeY]
     bool selected;
 };

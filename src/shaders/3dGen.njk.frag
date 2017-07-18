@@ -158,7 +158,7 @@ void intersectXZCylinder(const int objId, const int objIndex, const int objCompo
 
 void intersectRect(const int objId, const int objIndex, const int objComponentId,
                    const vec3 matColor,
-                   const vec3 center, const vec3 normal, const vec2 size,
+                   const vec3 center, const vec3 normal, const vec3 up, const vec2 size,
                    vec3 rayOrigin, const vec3 rayDir, inout IsectInfo isectInfo) {
     rayOrigin = rayOrigin - center;
     float v = dot(normal, rayDir);
@@ -166,7 +166,7 @@ void intersectRect(const int objId, const int objIndex, const int objComponentId
     if(THRESHOLD < t && t < isectInfo.mint){
         vec3 p = rayOrigin + t * rayDir;
         vec2 hSize = size * .5;
-        vec3 yAxis = vec3(normal.x, -normal.z, normal.y);
+        vec3 yAxis = up;
         vec3 xAxis = cross(yAxis, normal);
         float x = dot(p, xAxis);
         float y = dot(p, yAxis);
@@ -188,50 +188,42 @@ float distSphere(vec3 pos, vec3 center, float radius) {
     return distance(pos, center) - radius;
 }
 
-vec3 distUnion(vec3 t1, vec3 t2) {
+vec4 distUnion(vec4 t1, vec4 t2) {
     return (t1.x < t2.x) ? t1 : t2;
 }
 
-vec3 distFunc(vec3 pos) {
-    vec3 hit = vec3(MAX_FLOAT, -1, -1);
-    {% for n in range(0, numBaseSphere) %}
-    hit = distUnion(hit, vec3(distSphere(pos,
-                                         u_baseSphere{{ n }}.center,
-                                         u_baseSphere{{ n }}.r.x),
-                              ID_BASE_SPHERE, {{ n }}));
-    {% endfor %}
+const int MAX_MARCHING_LOOP = 1000;
 
-    {% for n in range(0, numInversionSphere) %}
-    hit = distUnion(hit, vec3(distSphere(pos,
-                                         u_inversionSphere{{ n }}.center,
-                                         u_inversionSphere{{ n }}.r.x),
-                              ID_INVERSION_SPHERE, {{ n }}));
-    {% endfor %}
+
+vec4 distRotationTorus(vec3 pos, const vec3 center, const float radius, const float pipeRadius) {
+    vec4 hit = vec4(MAX_FLOAT, -1, -1, -1);
+    pos -= center;
+    hit = distUnion(hit, vec4(length(vec2(length(pos.yz) - radius, pos.x)) - pipeRadius,
+                              -1, -1, 0));
+    hit = distUnion(hit, vec4(length(vec2(length(pos.xz) - radius, pos.y)) - pipeRadius,
+                              -1, -1, 1));
     return hit;
 }
 
-const vec2 NORMAL_COEFF = vec2(0.001, 0.);
-vec3 computeNormal(const vec3 p) {
-    return normalize(vec3(distFunc(p + NORMAL_COEFF.xyy).x - distFunc(p - NORMAL_COEFF.xyy).x,
-                          distFunc(p + NORMAL_COEFF.yxy).x - distFunc(p - NORMAL_COEFF.yxy).x,
-                          distFunc(p + NORMAL_COEFF.yyx).x - distFunc(p - NORMAL_COEFF.yyx).x));
-}
-
-const int MAX_MARCHING_LOOP = 1000;
-void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
+void intersectRotationTorus(const int objId, const int objIndex,
+                            const vec3 center, const float radius, const float pipeRadius,
+                            vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
     float rayLength = 0.;
     vec3 rayPos = rayOrg + rayDir * rayLength;
-    vec3 dist = vec3(-1);
+    vec4 dist = vec4(-1);
     for(int i = 0 ; i < MAX_MARCHING_LOOP ; i++) {
-        if(rayLength > isectInfo.maxt) break;
-        dist = distFunc(rayPos);
+        if(rayLength > isectInfo.maxt ||
+           rayLength > isectInfo.mint) break;
+        dist = distRotationTorus(rayPos, center, radius, pipeRadius);
         rayLength += dist.x;
         rayPos = rayOrg + rayDir * rayLength;
         if(dist.x < THRESHOLD) {
             isectInfo.objId = int(dist.y);
             isectInfo.objIndex = int(dist.z);
+            isectInfo.objComponentId = int(dist.w);
+            isectInfo.matColor = (isectInfo.objComponentId == 0) ? BLUE : RED;
             isectInfo.intersection = rayPos;
-            isectInfo.normal = computeNormal(rayPos);
+            //            isectInfo.normal = computeNormal(rayPos);
             isectInfo.hit = true;
             break;
         }
@@ -273,7 +265,7 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
     intersectRect(ID_HYPER_PLANE, {{ n }}, 0,
                   (u_hyperPlane{{ n }}.selected) ? RED : BLUE,
                   u_hyperPlane{{ n }}.center, u_hyperPlane{{ n }}.normal,
-                  u_hyperPlane{{ n }}.ui.xy,
+                  u_hyperPlane{{ n }}.up, u_hyperPlane{{ n }}.ui.xy,
                   rayOrg, rayDir, isectInfo);
     {% endfor %}
 }
@@ -296,6 +288,12 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
         intersectBasisCylinder(-1, -1,
                                u_objBasis.center, u_objBasis.r, u_objBasis.len,
                                rayPos, rayDir, isectInfo);
+        if(u_objBasis.hasRotationUI) {
+            intersectRotationTorus(-1, -1,
+                                   u_objBasis.center, u_objBasis.rotationParam.x,
+                                   u_objBasis.rotationParam.y,
+                                   rayPos, rayDir, isectInfo);
+        }
         if(isectInfo.hit) {
             return isectInfo.matColor;
         }

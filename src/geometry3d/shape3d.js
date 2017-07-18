@@ -1,3 +1,4 @@
+import Vec2 from '../vector2d.js';
 import Vec3 from '../vector3d.js';
 import IsectInfo from './isectInfo.js';
 
@@ -216,6 +217,31 @@ export default class Shape3d {
         }
     }
 
+    distRotationTorus(pos, center, radius, pipeRadius) {
+        const p = pos.sub(center);
+        const yz = new Vec2(p.y, p.z);
+        const xz = new Vec2(p.x, p.z);
+        const dYZ = new Vec2(yz.length() - radius, p.x).length() - pipeRadius;
+        const dXZ = new Vec2(xz.length() - radius, p.y).length() - pipeRadius;
+        return (dYZ < dXZ) ? [dYZ, Shape3d.ROTATION_YZ] : [dXZ, Shape3d.ROTATION_XZ];
+    }
+
+    intersectRotationTorus(center, radius, pipeRadius,
+                           rayOrg, rayDir, isectInfo) {
+        let rayLength = 0;
+        let rayPos = rayOrg.add(rayDir.scale(rayLength));
+        let dist;
+        for (let i = 0; i < 1000; i++) {
+            if (rayLength > isectInfo.tmin) break;
+            dist = this.distRotationTorus(rayPos, center, radius, pipeRadius);
+            rayLength += dist[0];
+            rayPos = rayOrg.add(rayDir.scale(rayLength));
+            if (dist[0] < 0.01) {
+                isectInfo.setInfo(rayLength, this, dist[1]);
+            }
+        }
+    }
+
     cloneDeeply() {}
 
     /**
@@ -244,14 +270,22 @@ export default class Shape3d {
     }
 
     static get X_AXIS() {
-        return 0;
+        return -2;
     }
 
     static get Y_AXIS() {
-        return 1;
+        return -3;
     }
 
     static get Z_AXIS() {
-        return 2;
+        return -4;
+    }
+
+    static get ROTATION_YZ() {
+        return -5;
+    }
+
+    static get ROTATION_XZ() {
+        return -6;
     }
 }

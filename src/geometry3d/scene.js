@@ -40,7 +40,10 @@ export default class Scene3D {
                                                 'u_objBasis.r'));
         uniLocations.push(gl.getUniformLocation(program,
                                                 'u_objBasis.len'));
-
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_objBasis.hasRotationUI'));
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_objBasis.rotationParam'));
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             const objArray = this.objects[objName];
@@ -57,6 +60,8 @@ export default class Scene3D {
         if (this.selectedObj !== undefined) {
             uniI = this.selectedObj.setObjBasisUniformValues(gl, uniLocation, uniI);
         } else {
+            uniI++;
+            uniI++;
             uniI++;
             uniI++;
             uniI++;
@@ -118,9 +123,11 @@ export default class Scene3D {
                 this.selectionInfo.prevShape = this.selectedObj.cloneDeeply();
                 if (this.selectionInfo.isectComponentId === Shape3D.X_AXIS) {
                     this.selectionInfo.axisDirection = camera.computeXAxisDirOnScreen(this.selectedObj.center, width, height);
-                } else if (this.selectionInfo.isectComponentId === Shape3D.Y_AXIS) {
+                } else if (this.selectionInfo.isectComponentId === Shape3D.Y_AXIS ||
+                           this.selectionInfo.isectComponentId === Shape3D.ROTATION_YZ) {
                     this.selectionInfo.axisDirection = camera.computeYAxisDirOnScreen(this.selectedObj.center, width, height);
-                } else if (this.selectionInfo.isectComponentId === Shape3D.Z_AXIS) {
+                } else if (this.selectionInfo.isectComponentId === Shape3D.Z_AXIS ||
+                           this.selectionInfo.isectComponentId === Shape3D.ROTATION_XZ) {
                     this.selectionInfo.axisDirection = camera.computeZAxisDirOnScreen(this.selectedObj.center, width, height);
                 }
                 return;
@@ -143,7 +150,8 @@ export default class Scene3D {
     }
 
     move(width, height, mouse, camera) {
-        if (this.selectedObj !== undefined) {
+        if (this.selectedObj !== undefined &&
+            this.selectionInfo.prevShape !== undefined) {
             return this.selectedObj.move(width, height,
                                          mouse, camera,
                                          this.selectionInfo, this);
@@ -185,6 +193,6 @@ export default class Scene3D {
             Vue.set(this.objects, 'HyperPlane', []);
         }
         this.objects['HyperPlane'].push(new HyperPlane(new Vec3(0, 0, 100),
-                                                       new Vec3(0, 0, 1)));
+                                                       Math.PI * 0.5, 0));
     }
 }

@@ -32,6 +32,8 @@ export default class Sphere extends Shape3d {
                      this.basisRadius);
         gl.uniform1f(uniLocation[uniIndex++],
                      this.r);
+        gl.uniform1i(uniLocation[uniIndex++], false);
+        gl.uniform2f(uniLocation[uniIndex++], 0, 0);
         return uniIndex;
     }
 

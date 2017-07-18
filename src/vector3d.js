@@ -121,4 +121,43 @@ export default class Vec3 {
         const l = v1.sub(v2);
         return Math.sqrt(l.x * l.x + l.y * l.y);
     }
+
+    /**
+     *
+     * @param {number} radians
+     * @returns {number}
+     */
+    rotateAroundX(radians) {
+        const cosRad = Math.cos(radians);
+        const sinRad = Math.sin(radians);
+        return new Vec3(this.x,
+                        cosRad * this.y + -sinRad * this.z,
+                        sinRad * this.y + cosRad * this.z);
+    }
+
+    /**
+     *
+     * @param {number} radians
+     * @returns {number}
+     */
+    rotateAroundY(radians) {
+        const cosRad = Math.cos(radians);
+        const sinRad = Math.sin(radians);
+        return new Vec3(cosRad * this.x + sinRad * this.z,
+                        this.y,
+                        -sinRad * this.x + cosRad * this.z);
+    }
+
+    /**
+     *
+     * @param {number} radians
+     * @returns {number}
+     */
+    rotateAroundZ(radians) {
+        const cosRad = Math.cos(radians);
+        const sinRad = Math.sin(radians);
+        return new Vec3(cosRad * this.x - sinRad * this.y,
+                        sinRad * this.x + cosRad * this.y,
+                        this.z);
+    }
 }
