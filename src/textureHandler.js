@@ -1,6 +1,6 @@
 import { createRGBATextures } from './glUtils.js';
 
-const TextureData = {}
+const TextureData = {};
 const DEFAULT_IMAGE_URLS = { 'cat_fish_run': require('./img/cat_fish_run.png') };
 
 export default class TextureHandler {
@@ -12,12 +12,12 @@ export default class TextureHandler {
             const p = new Promise(function(resolve, reject) {
                 img.addEventListener('load', () => {
                     resolve();
-                })
-            })
+                });
+            });
             promises.push(p);
             img.src = imgUrl;
             TextureData[imgName] = { 'imageData': img,
-                                     'index': -1 };
+                                     'index': 0 };
         }
         return promises;
     }
