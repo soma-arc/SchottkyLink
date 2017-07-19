@@ -18,6 +18,13 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
                 fract(cos(dot(seed.xy ,vec2(4.898,7.23))) * 23421.631));
 }
 
+void sphereInvert(inout vec3 pos, inout float dr, vec3 center, vec2 r) {
+    vec3 diff = pos - center;
+    float lenSq = dot(diff, diff);
+    dr *= r.y / lenSq; // (r * r) / lenSq
+    pos = (diff * r.y) / lenSq + center;
+}
+
 float g_invNum;
 const float scalingFactor = 0.08;
 float distIIS(vec3 pos) {
@@ -31,10 +38,9 @@ float distIIS(vec3 pos) {
 
         {% for n in range(0, numInversionSphere) %}
         if(distance(pos, u_inversionSphere{{ n }}.center) < u_inversionSphere{{ n }}.r.x) {
-            vec3 diff = pos - u_inversionSphere{{ n }}.center;
-            float lenSq = dot(diff, diff);
-            dr *= u_inversionSphere{{ n }}.r.y / lenSq;
-            pos = (diff * u_inversionSphere{{ n }}.r.y) / lenSq + u_inversionSphere{{ n }}.center;
+            sphereInvert(pos, dr,
+                         u_inversionSphere{{ n }}.center,
+                         u_inversionSphere{{ n }}.r);
             invNum++;
             continue;
             //            inFund = false;
@@ -65,6 +71,20 @@ float distIIS(vec3 pos) {
             inFund = false;
         }
         pos += u_parallelPlanes{{ n }}.p;
+        {% endfor %}
+
+        {% for n in range(0, numTwoSpheres) %}
+        if (distance(pos, u_twoSpheres{{ n }}.s1.center) < u_twoSpheres{{ n }}.s1.r.x) {
+            sphereInvert(pos, dr, u_twoSpheres{{ n }}.s1.center, u_twoSpheres{{ n }}.s1.r);
+            sphereInvert(pos, dr, u_twoSpheres{{ n }}.s2.center, u_twoSpheres{{ n }}.s2.r);
+            invNum++;
+            inFund = false;
+        } else if (distance(pos, u_twoSpheres{{ n }}.s1d.center) >= u_twoSpheres{{ n }}.s1d.r.x) {
+            sphereInvert(pos, dr, u_twoSpheres{{ n }}.s2.center, u_twoSpheres{{ n }}.s2.r);
+            sphereInvert(pos, dr, u_twoSpheres{{ n }}.s1.center, u_twoSpheres{{ n }}.s1.r);
+            invNum++;
+            inFund = false;
+        }
         {% endfor %}
 
         if(inFund) break;

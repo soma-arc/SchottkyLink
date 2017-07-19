@@ -48,11 +48,19 @@ struct ParallelPlanes {
     bool selected;
 };
 
+struct TwoSpheres {
+    Sphere s1;
+    Sphere s2;
+    Sphere s1d;
+    bool selected;
+};
+
 int ID_BASE_SPHERE = 0;
 int ID_INVERSION_SPHERE = 1;
 int ID_ORBIT = 2;
 int ID_HYPER_PLANE = 3;
 int ID_PARALLEL_PLANES = 4;
+int ID_TWO_SPHERES = 5;
 
 {% for n in range(0, numBaseSphere) %}
 uniform Sphere u_baseSphere{{ n }};
@@ -68,4 +76,8 @@ uniform HyperPlane u_hyperPlane{{ n }};
 
 {% for n in range(0, numParallelPlanes) %}
 uniform ParallelPlanes u_parallelPlanes{{ n }};
+{% endfor %}
+
+{% for n in range(0, numTwoSpheres) %}
+uniform TwoSpheres u_twoSpheres{{ n }};
 {% endfor %}

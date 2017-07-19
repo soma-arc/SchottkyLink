@@ -47,6 +47,21 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
                             u_parallelPlanes{{ n }}.dist,
                             rayOrg, rayDir, isectInfo);
     {% endfor %}
+
+    {% for n in range(0, numTwoSpheres) %}
+    intersectSphere(ID_TWO_SPHERES, {{ n }}, 0,
+                    (u_twoSpheres{{ n }}.selected) ? RED : RED,
+                    u_twoSpheres{{ n }}.s1.center, u_twoSpheres{{ n }}.s1.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_TWO_SPHERES, {{ n }}, 1,
+                    (u_twoSpheres{{ n }}.selected) ? RED : GREEN,
+                    u_twoSpheres{{ n }}.s2.center, u_twoSpheres{{ n }}.s2.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_TWO_SPHERES, {{ n }}, 2,
+                    (u_twoSpheres{{ n }}.selected) ? RED : BLUE,
+                    u_twoSpheres{{ n }}.s1d.center, u_twoSpheres{{ n }}.s1d.r.x,
+                    rayOrg, rayDir, isectInfo);
+    {% endfor %}
 }
 
 const int MAX_TRACE_DEPTH = 5;
@@ -82,8 +97,8 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
             vec3 matColor = isectInfo.matColor;
             float alpha = 1.;
             bool transparent = false;
-            transparent =  (isectInfo.objId == ID_INVERSION_SPHERE &&
-                            isectInfo.objComponentId == 0) ?
+            transparent =  (isectInfo.objId == ID_INVERSION_SPHERE ||
+                            isectInfo.objId == ID_TWO_SPHERES) ?
                 true : false;
 
             vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;

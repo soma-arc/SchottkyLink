@@ -8,6 +8,8 @@
                 width="128px" height="128px" @click.native="addHyperPlane"/>
     <img-button label="Parallel Planes" :src="parallelPlanesUrl"
                 width="128px" height="128px" @click.native="addParallelPlanes"/>
+    <img-button label="Two Spheres" :src="twoSpheresUrl"
+                width="128px" height="128px" @click.native="addTwoSpheres"/>
   </div>
 </template>
 
@@ -18,6 +20,7 @@ const BASE_SPHERE_IMG = require('../img/3dGenerator/baseSphere.png');
 const INVERSION_SPHERE_IMG = require('../img/3dGenerator/inversionSphere.png');
 const HYPER_PALNE_IMG = require('../img/3dGenerator/hyperPlane.png');
 const PARALLEL_PLANES_IMG = require('../img/3dGenerator/translation.png');
+const TWO_SPHERES_IMG = require('../img/3dGenerator/twoSpheres.png');
 
 export default {
     props: ['canvasManager'],
@@ -26,7 +29,8 @@ export default {
         return { 'baseSphereUrl': BASE_SPHERE_IMG,
                  'inversionSphereUrl': INVERSION_SPHERE_IMG,
                  'hyperPlaneUrl': HYPER_PALNE_IMG,
-                 'parallelPlanesUrl': PARALLEL_PLANES_IMG }
+                 'parallelPlanesUrl': PARALLEL_PLANES_IMG,
+                 'twoSpheresUrl': TWO_SPHERES_IMG }
     },
     methods: {
         addBaseSphere: function() {
@@ -43,6 +47,10 @@ export default {
         },
         addParallelPlanes: function() {
             this.canvasManager.scene3d.addParallelPlanes();
+            this.canvasManager.compile3dCanvases();
+        },
+        addTwoSpheres: function() {
+            this.canvasManager.scene3d.addTwoSpheres();
             this.canvasManager.compile3dCanvases();
         }
     }

@@ -5,10 +5,12 @@ import Vec3 from '../vector3d.js';
 import IsectInfo from './isectInfo.js';
 import Shape3D from './shape3d.js';
 
-import BaseSphere from './baseSphere.js'
+import Sphere from './sphere.js';
+import BaseSphere from './baseSphere.js';
 import InversionSphere from './inversionSphere.js';
 import HyperPlane from './hyperPlane.js';
 import ParallelPlanes from './parallelTranslation.js';
+import TwoSpheres from './twoSpheres.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -20,7 +22,8 @@ for (const k of PRESETS_CONTEXT.keys()) {
 const STR_CLASS_MAP = { 'BaseSphere': BaseSphere,
                         'InversionSphere': InversionSphere,
                         'HyperPlane': HyperPlane,
-                        'ParallelPlanes': ParallelPlanes };
+                        'ParallelPlanes': ParallelPlanes,
+                        'TwoSpheres': TwoSpheres };
 
 export default class Scene3D {
     constructor() {
@@ -124,17 +127,21 @@ export default class Scene3D {
                 this.selectionInfo = isectInfo;
                 this.selectionInfo.prevShape = this.selectedObj.cloneDeeply();
                 if (this.selectionInfo.isectComponentId === Shape3D.X_AXIS) {
-                    this.selectionInfo.axisDirection = camera.computeXAxisDirOnScreen(this.selectedObj.center, width, height);
+                    this.selectionInfo.axisDirection = camera.computeXAxisDirOnScreen(this.selectedObj.getAxisOrg(),
+                                                                                      width, height);
                 } else if (this.selectionInfo.isectComponentId === Shape3D.Y_AXIS ||
                            this.selectionInfo.isectComponentId === Shape3D.ROTATION_YZ) {
-                    this.selectionInfo.axisDirection = camera.computeYAxisDirOnScreen(this.selectedObj.center, width, height);
+                    this.selectionInfo.axisDirection = camera.computeYAxisDirOnScreen(this.selectedObj.getAxisOrg(),
+                                                                                      width, height);
                 } else if (this.selectionInfo.isectComponentId === Shape3D.Z_AXIS ||
                            this.selectionInfo.isectComponentId === Shape3D.ROTATION_XZ) {
-                    this.selectionInfo.axisDirection = camera.computeZAxisDirOnScreen(this.selectedObj.center, width, height);
+                    this.selectionInfo.axisDirection = camera.computeZAxisDirOnScreen(this.selectedObj.getAxisOrg(),
+                                                                                      width, height);
                 }
                 return;
             }
-            this.selectedObj.selected = false;
+            //            this.selectedObj.selected = false;
+            this.selectedObj.unselect();
         }
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
@@ -147,7 +154,8 @@ export default class Scene3D {
         this.selectedObj = isectInfo.hitObject;
         this.selectionInfo = isectInfo;
         if (this.selectedObj !== undefined) {
-            this.selectedObj.selected = true;
+            //            this.selectedObj.selected = true;
+            this.selectedObj.select(isectInfo);
         }
     }
 
@@ -204,5 +212,13 @@ export default class Scene3D {
         }
         this.objects['ParallelPlanes'].push(new ParallelPlanes(new Vec3(0, 0, -500),
                                                                Math.PI * 0.5, 0, 1000));
+    }
+
+    addTwoSpheres() {
+        if (this.objects['TwoSpheres'] === undefined) {
+            Vue.set(this.objects, 'TwoSpheres', []);
+        }
+        this.objects['TwoSpheres'].push(new TwoSpheres(new Sphere(0, 0, 0, 100),
+                                                       new Sphere(0, 0, 0, 200)));
     }
 }
