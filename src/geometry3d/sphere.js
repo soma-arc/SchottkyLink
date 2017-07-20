@@ -237,6 +237,11 @@ export default class Sphere extends Shape3d {
         return new Sphere(center.x, center.y, center.z, r);
     }
 
+    /**
+     *
+     * @param {Sphere} invertSphere
+     * @returns {Sphere}
+     */
     invertOnSphere(invertSphere) {
         const r = invertSphere.r;
         const RT_3 = Math.sqrt(3);

@@ -62,6 +62,41 @@ void intersectGenerators(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo i
                     u_twoSpheres{{ n }}.s1d.center, u_twoSpheres{{ n }}.s1d.r.x,
                     rayOrg, rayDir, isectInfo);
     {% endfor %}
+
+    {% for n in range(0, numLoxodromic) %}
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 0,
+                    (u_loxodromic{{ n }}.s1.selected) ? RED : RED,
+                    u_loxodromic{{ n }}.s1.center, u_loxodromic{{ n }}.s1.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 1,
+                    (u_loxodromic{{ n }}.s2.selected) ? RED : GREEN,
+                    u_loxodromic{{ n }}.s2.center, u_loxodromic{{ n }}.s2.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 2,
+                    (u_loxodromic{{ n }}.s1d.selected) ? RED : BLUE,
+                    u_loxodromic{{ n }}.s1d.center, u_loxodromic{{ n }}.s1d.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 3,
+                    YELLOW,
+                    u_loxodromic{{ n }}.s3.center, u_loxodromic{{ n }}.s3.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 4,
+                    PINK,
+                    u_loxodromic{{ n }}.s4.center, u_loxodromic{{ n }}.s4.r.x,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 5,
+                    (u_loxodromic{{ n }}.p.w == 1.) ? RED : GRAY,
+                    u_loxodromic{{ n }}.p.xyz, u_loxodromic{{ n }}.ui,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 5,
+                    (u_loxodromic{{ n }}.q1.w == 1.) ? RED : GRAY,
+                    u_loxodromic{{ n }}.q1.xyz, u_loxodromic{{ n }}.ui,
+                    rayOrg, rayDir, isectInfo);
+    intersectSphere(ID_LOXODROMIC, {{ n }}, 5,
+                    (u_loxodromic{{ n }}.q2.w == 1.) ? RED : GRAY,
+                    u_loxodromic{{ n }}.q2.xyz, u_loxodromic{{ n }}.ui,
+                    rayOrg, rayDir, isectInfo);
+    {% endfor %}
 }
 
 const int MAX_TRACE_DEPTH = 5;
@@ -98,7 +133,8 @@ vec3 computeColor (const vec3 rayOrg, const vec3 rayDir) {
             float alpha = 1.;
             bool transparent = false;
             transparent =  (isectInfo.objId == ID_INVERSION_SPHERE ||
-                            isectInfo.objId == ID_TWO_SPHERES) ?
+                            isectInfo.objId == ID_TWO_SPHERES ||
+                            isectInfo.objId == ID_LOXODROMIC) ?
                 true : false;
 
             vec3 diffuse =  clamp(dot(isectInfo.normal, LIGHT_DIR), 0., 1.) * matColor;

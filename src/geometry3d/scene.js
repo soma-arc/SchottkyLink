@@ -11,6 +11,7 @@ import InversionSphere from './inversionSphere.js';
 import HyperPlane from './hyperPlane.js';
 import ParallelPlanes from './parallelTranslation.js';
 import TwoSpheres from './twoSpheres.js';
+import Loxodromic from './loxodromic.js';
 
 const PRESETS_CONTEXT = require.context('../presets3d', true, /.json$/);
 const PRESETS = [];
@@ -23,7 +24,8 @@ const STR_CLASS_MAP = { 'BaseSphere': BaseSphere,
                         'InversionSphere': InversionSphere,
                         'HyperPlane': HyperPlane,
                         'ParallelPlanes': ParallelPlanes,
-                        'TwoSpheres': TwoSpheres };
+                        'TwoSpheres': TwoSpheres,
+                        'Loxodromic': Loxodromic };
 
 export default class Scene3D {
     constructor() {
@@ -220,5 +222,16 @@ export default class Scene3D {
         }
         this.objects['TwoSpheres'].push(new TwoSpheres(new Sphere(0, 0, 0, 100),
                                                        new Sphere(0, 0, 0, 200)));
+    }
+
+    addLoxodromic() {
+        if (this.objects['Loxodromic'] === undefined) {
+            Vue.set(this.objects, 'Loxodromic', []);
+        }
+        this.objects['Loxodromic'].push(new Loxodromic(new Sphere(10, 160, 645, 566),
+                                                       new Sphere(100, 211, 666, 700),
+                                                       new Vec3(0, 1111, -133),
+                                                       new Vec3(100, -888, -133),
+                                                       new Vec3(1000, 111, -143)));
     }
 }

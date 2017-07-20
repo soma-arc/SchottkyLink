@@ -10,6 +10,8 @@
                 width="128px" height="128px" @click.native="addParallelPlanes"/>
     <img-button label="Two Spheres" :src="twoSpheresUrl"
                 width="128px" height="128px" @click.native="addTwoSpheres"/>
+    <img-button label="Loxodromic" :src="loxodromicUrl"
+                width="128px" height="128px" @click.native="addLoxodromic"/>
   </div>
 </template>
 
@@ -21,6 +23,7 @@ const INVERSION_SPHERE_IMG = require('../img/3dGenerator/inversionSphere.png');
 const HYPER_PALNE_IMG = require('../img/3dGenerator/hyperPlane.png');
 const PARALLEL_PLANES_IMG = require('../img/3dGenerator/translation.png');
 const TWO_SPHERES_IMG = require('../img/3dGenerator/twoSpheres.png');
+const LOXODROMIC_IMG = require('../img/3dGenerator/loxodromic.png');
 
 export default {
     props: ['canvasManager'],
@@ -30,7 +33,8 @@ export default {
                  'inversionSphereUrl': INVERSION_SPHERE_IMG,
                  'hyperPlaneUrl': HYPER_PALNE_IMG,
                  'parallelPlanesUrl': PARALLEL_PLANES_IMG,
-                 'twoSpheresUrl': TWO_SPHERES_IMG }
+                 'twoSpheresUrl': TWO_SPHERES_IMG,
+                 'loxodromicUrl': LOXODROMIC_IMG }
     },
     methods: {
         addBaseSphere: function() {
@@ -51,6 +55,10 @@ export default {
         },
         addTwoSpheres: function() {
             this.canvasManager.scene3d.addTwoSpheres();
+            this.canvasManager.compile3dCanvases();
+        },
+        addLoxodromic: function() {
+            this.canvasManager.scene3d.addLoxodromic();
             this.canvasManager.compile3dCanvases();
         }
     }
