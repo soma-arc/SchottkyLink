@@ -7,7 +7,7 @@ uniform vec2 u_resolution;
 // [translateX, translateY, scale]
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
-uniform sampler2D u_imageTextures[20];
+uniform sampler2D u_imageTextures[1];
 
 struct Circle {
     vec4 centerAndRadius; // [x, y, r, r * r]
