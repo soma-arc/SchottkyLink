@@ -2,6 +2,7 @@ import Shape3d from './shape3d.js';
 import Sphere from './sphere.js';
 import IsectInfo from './isectInfo.js';
 import Vec2 from '../vector2d.js';
+import Vec3 from '../vector3d.js';
 
 export default class TwoSpheres extends Shape3d {
     constructor(s1, s2) {
@@ -126,10 +127,12 @@ export default class TwoSpheres extends Shape3d {
             const ray = camera.computeRay(width, height, coord.x, coord.y);
 
             let operateSphere;
+            let vecToOther;
             if (this.s1.selected) {
                 operateSphere = this.s1;
             } else {
                 operateSphere = this.s2;
+                vecToOther = this.s1.center.sub(this.s2.center);
             }
 
             switch (isectInfo.isectComponentId) {
@@ -137,18 +140,30 @@ export default class TwoSpheres extends Shape3d {
                 this.intersectYZCylinder(isectInfo.prevShape.getAxisOrg(), this.basisRadius,
                                          camera.pos, ray, tmpInfo);
                 operateSphere.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                if (this.s2.selected) {
+                    this.s1.center = operateSphere.center.add(vecToOther);
+                }
+                this.update();
                 return true;
             }
             case Shape3d.Y_AXIS: {
                 this.intersectXZCylinder(isectInfo.prevShape.getAxisOrg(), this.basisRadius,
                                          camera.pos, ray, tmpInfo);
                 operateSphere.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                if (this.s2.selected) {
+                    this.s1.center = operateSphere.center.add(vecToOther);
+                }
+                this.update();
                 return true;
             }
             case Shape3d.Z_AXIS: {
                 this.intersectXYCylinder(isectInfo.prevShape.getAxisOrg(), this.basisRadius,
                                          camera.pos, ray, tmpInfo);
                 operateSphere.center = camera.pos.add(ray.scale(tmpInfo.tmin + this.basisRadius));
+                if (this.s2.selected) {
+                    this.s1.center = operateSphere.center.add(vecToOther);
+                }
+                this.update();
                 return true;
             }
             }
@@ -179,6 +194,25 @@ export default class TwoSpheres extends Shape3d {
     getAxisOrg() {
         if (this.s1.selected) return this.s1.center;
         if (this.s2.selected) return this.s2.center;
+    }
+
+    operateScale(width, height, mouse, camera, isectInfo, scene) {
+        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.getAxisOrg(),
+                                                           width, height);
+        const distCenterPrevMouse = Vec2.distance(centerOnScreen, isectInfo.prevMouse);
+        const distCenterCurrentMouse = Vec2.distance(centerOnScreen, mouse);
+        const d = distCenterCurrentMouse - distCenterPrevMouse;
+        const scaleFactor = 3;
+        if (this.s1.selected) {
+            this.s1.r = Math.abs(isectInfo.prevShape.s1.r + d * scaleFactor);
+            this.s1.update();
+            this.update();
+        } else {
+            this.s2.r = Math.abs(isectInfo.prevShape.s2.r + d * scaleFactor);
+            this.s2.update();
+            this.update();
+        }
+        return true;
     }
 
     exportJson() {

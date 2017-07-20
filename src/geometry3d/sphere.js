@@ -127,7 +127,7 @@ export default class Sphere extends Shape3d {
     }
 
     operateScale(width, height, mouse, camera, isectInfo, scene) {
-        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.center,
+        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.getAxisOrg(),
                                                            width, height);
         const distCenterPrevMouse = Vec2.distance(centerOnScreen, isectInfo.prevMouse);
         const distCenterCurrentMouse = Vec2.distance(centerOnScreen, mouse);
@@ -241,10 +241,10 @@ export default class Sphere extends Shape3d {
         const r = invertSphere.r;
         const RT_3 = Math.sqrt(3);
         const coeffR = r * RT_3 / 3;
-        const p1 = this.invertOnPoint(this.center.add(new Vec3(coeffR, coeffR, coeffR)));
-        const p2 = this.invertOnPoint(this.center.add(new Vec3(-coeffR, -coeffR, -coeffR)));
-        const p3 = this.invertOnPoint(this.center.add(new Vec3(coeffR, -coeffR, -coeffR)));
-        const p4 = this.invertOnPoint(this.center.add(new Vec3(coeffR, coeffR, -coeffR)));
+        const p1 = this.invertOnPoint(invertSphere.center.add(new Vec3(coeffR, coeffR, coeffR)));
+        const p2 = this.invertOnPoint(invertSphere.center.add(new Vec3(-coeffR, -coeffR, -coeffR)));
+        const p3 = this.invertOnPoint(invertSphere.center.add(new Vec3(coeffR, -coeffR, -coeffR)));
+        const p4 = this.invertOnPoint(invertSphere.center.add(new Vec3(coeffR, coeffR, -coeffR)));
         return Sphere.makeSphereFromPoints(p1, p2, p3, p4);
     }
 
