@@ -337,4 +337,17 @@ export class OrbitCanvas extends Canvas3D {
     constructor(canvasId, scene) {
         super(canvasId, scene, RENDER_ORBIT_TMPL);
     }
+
+    keydownListener(event) {
+        if (event.key === '+') {
+            this.maxIterations++;
+            this.numSamples = 0;
+            this.render();
+        } else if (event.key === '-') {
+            if (this.maxIterations < 1) return;
+            this.maxIterations++;
+            this.numSamples = 0;
+            this.render();
+        }
+    }
 }

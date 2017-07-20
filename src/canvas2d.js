@@ -133,6 +133,13 @@ export default class Canvas2D extends Canvas {
     keydownListener(event) {
         if (event.key === 's') {
             this.scene.toggleSnapMode();
+        } else if (event.key === '+') {
+            this.maxIterations++;
+            this.render();
+        } else if (event.key === '-') {
+            if (this.maxIterations < 1) return;
+            this.maxIterations--;
+            this.render();
         }
     }
 
