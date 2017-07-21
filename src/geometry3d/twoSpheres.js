@@ -50,7 +50,7 @@ export default class TwoSpheres extends Shape3d {
                      this.s2.center.x, this.s2.center.y, this.s2.center.z);
         gl.uniform2f(uniLocation[uniI++],
                      this.s2.r, this.s2.rSq);
-        gl.uniform1i(uniLocation[uniI++], this.s1.selected);
+        gl.uniform1i(uniLocation[uniI++], this.s2.selected);
 
         gl.uniform3f(uniLocation[uniI++],
                      this.s1d.center.x, this.s1d.center.y, this.s1d.center.z);
