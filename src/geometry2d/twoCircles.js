@@ -19,6 +19,10 @@ export default class TwoCircles extends Shape {
 
     update() {
         this.c1d = this.c2.invertOnCircle(this.c1);
+        console.log('uprdate');
+        console.log(this.c1);
+        console.log(this.c2);
+        console.log(this.c1d);
     }
 
     select(mouse, sceneScale) {
@@ -59,7 +63,7 @@ export default class TwoCircles extends Shape {
         case TwoCircles.C1_BODY: {
             const np = mouse.sub(selectionState.diffObj);
             const npc2Len = this.c2.center.sub(np).length();
-            if (Math.abs(this.c2.r - this.c1.r - npc2Len) < 0.015) {
+            if (Math.abs(this.c2.r - this.c1.r - npc2Len) < 0.02) {
                 const mv = np.sub(this.c2.center).normalize();
                 this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
 //                selectionState.setDiffObj(mouse.sub(this.c1.center));
@@ -116,6 +120,8 @@ export default class TwoCircles extends Shape {
                      this.c2.center.x, this.c2.center.y, this.c2.r, this.c2.rSq);
         gl.uniform4f(uniLocation[uniI++],
                      this.c1d.center.x, this.c1d.center.y, this.c1d.r, this.c1d.rSq);
+        gl.uniform1f(uniLocation[uniI++],
+                     this.c1.circumferenceThickness * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;
@@ -125,6 +131,7 @@ export default class TwoCircles extends Shape {
         uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.c1`));
         uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.c2`));
         uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.c1d`));
+        uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.selected`));
     }
 

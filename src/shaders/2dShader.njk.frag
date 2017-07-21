@@ -40,6 +40,7 @@ struct TwoCircles {
     vec4 c1;
     vec4 c2;
     vec4 c1d;
+    float ui; //[boundaryThickness]
     bool selected;
 };
 
@@ -166,6 +167,7 @@ bool IIS(vec2 pos, out vec3 col) {
             pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius);
             inFund = false;
             invNum++;
+            continue;
         }
         {% endfor %}
 
@@ -465,7 +467,21 @@ bool renderUI(vec2 pos, out vec3 color) {
 
 bool renderGenerator(vec2 pos, out vec3 color) {
     color = vec3(0);
+    float dist;
     {% for n in range(0, numTwoCircles) %}
+    if(u_hyperbolic{{ n }}.selected) {
+        dist = u_hyperbolic{{ n }}.c1.z - distance(pos, u_hyperbolic{{ n }}.c1.xy);
+        if(0. < dist && dist < u_hyperbolic{{ n }}.ui){
+            color = WHITE;
+            return true;
+        }
+
+        dist = u_hyperbolic{{ n }}.c2.z - distance(pos, u_hyperbolic{{ n }}.c2.xy);
+        if(0. < dist && dist < u_hyperbolic{{ n }}.ui){
+            color = WHITE;
+            return true;
+        }
+    }
     if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z) {
         color = RED;
         return true;
