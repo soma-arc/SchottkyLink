@@ -19,10 +19,6 @@ export default class TwoCircles extends Shape {
 
     update() {
         this.c1d = this.c2.invertOnCircle(this.c1);
-        console.log('uprdate');
-        console.log(this.c1);
-        console.log(this.c2);
-        console.log(this.c1d);
     }
 
     select(mouse, sceneScale) {

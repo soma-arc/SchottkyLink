@@ -44,6 +44,8 @@ export default class Canvas2D extends Canvas {
 
         this.maxIterations = 40;
 
+        this.isRenderingGenerator = true;
+
         // mouse
         this.mouseState = {
             isPressing: false,
@@ -174,6 +176,8 @@ export default class Canvas2D extends Canvas {
                                                           'u_geometry'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_maxIISIterations'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_isRenderingGenerator'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -193,6 +197,7 @@ export default class Canvas2D extends Canvas {
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
+        this.gl.uniform1i(this.uniLocations[i++], this.isRenderingGenerator);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
@@ -228,5 +233,12 @@ export default class Canvas2D extends Canvas {
     render() {
         this.renderToTexture(this.renderTextures, this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
+    }
+
+    saveCanvas() {
+        this.render();
+        this.saveImage(this.gl,
+                       this.canvas.width, this.canvas.height,
+                       'schottky.png');
     }
 }

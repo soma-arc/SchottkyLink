@@ -4,7 +4,12 @@
       <div class="canvasParent">
         <canvas id="canvas" tabIndex="1000"></canvas>
       </div>
-      <div class="renderPropertyPanel"></div>
+      <div class="renderPropertyPanel">
+        <ui-switch label="renderGen"
+                   v-model="canvasManager.canvas2d.isRenderingGenerator"
+                   @change="renderCanvas"
+                   checked="true"/>
+      </div>
     </div>
     <control-panel2d v-bind:scene="canvasManager.scene2d"
                      v-bind:canvas2d="canvasManager.canvas2d"/>
@@ -12,10 +17,18 @@
 </template>
 
 <script>
-import ControlPanel2d from './controlPanel2d.vue';
+    import ControlPanel2d from './controlPanel2d.vue';
+import UiSwitch from 'keen-ui/lib/UiSwitch';
+
 export default {
     props: ['canvasManager'],
-    components: { ControlPanel2d }
+    components: { ControlPanel2d,
+                  UiSwitch },
+    methods: {
+        renderCanvas: function() {
+            this.canvasManager.canvas2d.render();
+        }
+    }
 }
 </script>
 
