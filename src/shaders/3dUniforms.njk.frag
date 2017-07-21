@@ -42,6 +42,7 @@ struct HyperPlane {
 struct ParallelPlanes {
     vec3 p;
     vec3 normal;
+    mat3 torsion;
     vec3 up;
     vec2 dist; //[plane distance, planeDist * 2]
     vec2 ui; //[sizeX, sizeY]

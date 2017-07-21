@@ -31,9 +31,32 @@ export default class ParallelPlanes extends Shape3d {
         this.phi = normalPhi;
         this.planeDist = planeDist;
 
+        this.torsionAngle = 0;
+        this.torsionMat3 = [1, 0, 0,
+                            0, 1, 0,
+                            0, 0, 1];
+
         this.hp1 = new HyperPlane(this.p, this.theta, this.phi);
         this.hp2 = new HyperPlane(this.p, this.theta, this.phi);
         this.update();
+    }
+
+    computeTorsionMatrix(angle, axis) {
+        const a = axis.normalize();
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        const r = 1.0 - c;
+        return [
+            a.x * a.x * r + c,
+            a.y * a.x * r + a.z * s,
+            a.z * a.x * r - a.y * s,
+            a.x * a.y * r - a.z * s,
+            a.y * a.y * r + c,
+            a.z * a.y * r + a.x * s,
+            a.x * a.z * r + a.y * s,
+            a.y * a.z * r - a.x * s,
+            a.z * a.z * r + c
+        ];
     }
 
     update() {
@@ -53,6 +76,8 @@ export default class ParallelPlanes extends Shape3d {
         this.hp2.theta = this.theta;
         this.hp2.phi = this.phi;
         this.hp2.update();
+
+        this.torsionMat3 = this.computeTorsionMatrix(this.torsionAngle, this.normal);
     }
 
     setObjBasisUniformValues(gl, uniLocation, uniIndex) {
@@ -86,6 +111,8 @@ export default class ParallelPlanes extends Shape3d {
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_parallelPlanes${index}.normal`));
         uniLocation.push(gl.getUniformLocation(program,
+                                               `u_parallelPlanes${index}.torsion`));
+        uniLocation.push(gl.getUniformLocation(program,
                                                `u_parallelPlanes${index}.up`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_parallelPlanes${index}.dist`));
@@ -100,6 +127,7 @@ export default class ParallelPlanes extends Shape3d {
                      this.p.x, this.p.y, this.p.z);
         gl.uniform3f(uniLocation[uniIndex++],
                      this.normal.x, this.normal.y, this.normal.z);
+        gl.uniformMatrix3fv(uniLocation[uniIndex++], false, this.torsionMat3);
         gl.uniform3f(uniLocation[uniIndex++],
                      this.up.x, this.up.y, this.up.z);
         gl.uniform2f(uniLocation[uniIndex++],
