@@ -51,7 +51,7 @@ struct Loxodromic {
     vec4 c3;
     vec2 p;
     vec4 line; // [dirX, dirY, normalX, normalY]
-    vec2 ui; //[normal ring radius, point radius]
+    vec3 ui; //[normal ring radius, point radius, circumferenceThickness]
     bool selected;
 };
 
@@ -508,6 +508,19 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     if (distance(pos, u_loxodromic{{ n }}.c3.xy) < u_loxodromic{{ n }}.c3.z) {
         loxoCol{{ n }} = blendCol(vec4(YELLOW, 0.5), loxoCol{{ n }});
         loxoRender{{ n }} = true;
+    }
+    if(u_loxodromic{{ n }}.selected) {
+        dist = u_loxodromic{{ n }}.c1.z - distance(pos, u_loxodromic{{ n }}.c1.xy);
+        if(0. < dist && dist < u_loxodromic{{ n }}.ui.z){
+            loxoCol{{ n }} = blendCol(vec4(WHITE, 1.), loxoCol{{ n }});
+            loxoRender{{ n }} = true;
+        }
+
+        dist = u_loxodromic{{ n }}.c2.z - distance(pos, u_loxodromic{{ n }}.c2.xy);
+        if(0. < dist && dist < u_loxodromic{{ n }}.ui.z){
+            loxoCol{{ n }} = blendCol(vec4(WHITE, 1.), loxoCol{{ n }});
+            loxoRender{{ n }} = true;
+        }
     }
     if(distance(pos, u_loxodromic{{ n }}.c1.xy) < u_loxodromic{{ n }}.c1.z) {
         loxoCol{{ n }} = blendCol(vec4(RED, 1.), loxoCol{{ n }});

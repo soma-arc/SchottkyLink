@@ -162,8 +162,9 @@ export default class Loxodromic extends Shape {
                      this.p.x, this.p.y);
         gl.uniform4f(uniLocation[uniI++],
                      this.lineDir.x, this.lineDir.y, this.lineNormal.x, this.lineNormal.y);
-        gl.uniform2f(uniLocation[uniI++],
-                     this.pointRadius * sceneScale, this.lineWidth);
+        gl.uniform3f(uniLocation[uniI++],
+                     this.pointRadius * sceneScale, this.lineWidth,
+                     this.c1.circumferenceThickness * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;
