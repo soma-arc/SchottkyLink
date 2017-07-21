@@ -8,6 +8,7 @@ uniform vec2 u_resolution;
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 uniform sampler2D u_imageTextures[1];
+uniform bool u_isRenderingGenerator;
 
 struct Circle {
     vec4 centerAndRadius; // [x, y, r, r * r]
@@ -576,23 +577,25 @@ void main() {
         position += u_geometry.xy;
 
         vec3 col = vec3(0);
-        bool isRendered = renderUI(position, col);
-        if(isRendered) {
-            sum += col;
-            continue;
+        if (u_isRenderingGenerator) {
+            if(renderUI(position, col)) {
+                sum += col;
+                continue;
+            }
         }
 
         col = vec3(0);
-        isRendered = IIS(position, col);
+        bool isRendered = IIS(position, col);
         if(isRendered){
             sum += col;
             continue;
         }
 
-        isRendered = renderGenerator(position, col);
-        if(isRendered) {
-            sum += col;
-            continue;
+        if (u_isRenderingGenerator) {
+            if(renderGenerator(position, col)) {
+                sum += col;
+                    continue;
+            }
         }
     }
     vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
