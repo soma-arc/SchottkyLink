@@ -34,8 +34,6 @@ export default class Loxodromic extends Shape3d {
                                               this.pOutInv, this.q1.center);
         this.s4 = Sphere.makeSphereFromPoints(this.p.center, this.pInInv,
                                               this.pOutInv, this.q2.center);
-        console.log(this.s3);
-        console.log(this.s4);
     }
 
     setObjBasisUniformValues(gl, uniLocation, uniIndex) {
@@ -288,7 +286,7 @@ export default class Loxodromic extends Shape3d {
         this.intersectXZBasis(center, this.basisRadius, r,
                               rayOrg, rayDir, isectInfo); // Y-axis
     }
-    
+
     unselect() {
         this.selected = false;
         this.s1.selected = false;
@@ -311,6 +309,27 @@ export default class Loxodromic extends Shape3d {
         } else if (isectInfo.isectComponentId === Loxodromic.Q2) {
             this.q2.selected = true;
         }
+    }
+
+    operateScale(width, height, mouse, camera, isectInfo, scene) {
+        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.getAxisOrg(),
+                                                           width, height);
+        const distCenterPrevMouse = Vec2.distance(centerOnScreen, isectInfo.prevMouse);
+        const distCenterCurrentMouse = Vec2.distance(centerOnScreen, mouse);
+        const d = distCenterCurrentMouse - distCenterPrevMouse;
+        const scaleFactor = 3;
+        if (this.s1.selected) {
+            this.s1.r = Math.abs(isectInfo.prevShape.s1.r + d * scaleFactor);
+            this.s1.update();
+            this.update();
+        } else if (this.s2.selected) {
+            this.s2.r = Math.abs(isectInfo.prevShape.s2.r + d * scaleFactor);
+            this.s2.update();
+            this.update();
+        } else {
+            return false;
+        }
+        return true;
     }
 
     cloneDeeply() {
