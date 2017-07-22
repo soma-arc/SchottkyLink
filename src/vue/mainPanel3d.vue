@@ -16,6 +16,9 @@
         <ui-switch label="renderGen"
                    v-model="canvasManager.canvas3dOrb.renderGenerators"
                    @change="renderOrb"/>
+        <ui-switch label="sampling"
+                   v-model="canvasManager.canvas3dOrb.isKeepingSampling"
+                   @change="renderOrb"/>
       </div>
     </div>
     <control-panel3d v-bind:canvasManager="canvasManager"/>
@@ -32,6 +35,7 @@ export default {
                   UiSwitch },
     methods: {
         renderOrb: function() {
+            this.canvasManager.canvas3dOrb.numSamples = 0;
             this.canvasManager.canvas3dOrb.render();
         }
     }

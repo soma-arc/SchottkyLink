@@ -42,6 +42,7 @@ export class Canvas3D extends Canvas {
 
         this.lowResRatio = 0.5;
         this.numSamples = 0;
+        this.maxSamples = 10;
         this.compileRenderShader();
         this.initRenderTextures();
         this.texturesFrameBuffer = this.gl.createFramebuffer();
@@ -53,6 +54,7 @@ export class Canvas3D extends Canvas {
             prevPosition: new Vec2(0, 0),
         };
 
+        this.isKeepingSampling = false;
         this.isRenderingLowRes = false;
         this.renderTimer = undefined;
 
@@ -141,6 +143,7 @@ export class Canvas3D extends Canvas {
     }
 
     compileRenderShader() {
+        this.numSamples = 0;
         this.renderProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
         attachShader(this.gl,
@@ -242,6 +245,10 @@ export class Canvas3D extends Canvas {
         this.renderToTexture(this.renderTextures,
                              this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
+        if (this.isKeepingSampling &&
+            this.numSamples < this.maxSamples) {
+            this.numSamples++;
+        }
     }
 
     renderLowRes() {
@@ -250,7 +257,9 @@ export class Canvas3D extends Canvas {
                              this.canvas.width * this.lowResRatio,
                              this.canvas.height * this.lowResRatio);
         this.renderTexturesToCanvas(this.lowResTextures);
-        this.renderTimer = window.setTimeout(this.render.bind(this), 200);
+        if (this.isKeepingSampling === false) {
+            this.renderTimer = window.setTimeout(this.render.bind(this), 200);
+        }
     }
 }
 
@@ -284,7 +293,6 @@ export class GeneratorCanvas extends Canvas3D {
         event.preventDefault();
         const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
         if (!this.mouseState.isPressing) return;
-
         if (this.operateScale) {
             const operated = this.scene.operateScale(this.canvas.width, this.canvas.height,
                                                      mouse, this.camera);
@@ -344,8 +352,9 @@ export class OrbitCanvas extends Canvas3D {
             this.numSamples = 0;
             this.render();
         } else if (event.key === '-') {
-            if (this.maxIterations < 1) return;
-            this.maxIterations++;
+            console.log('min')
+            if (this.maxIterations < 0) return;
+            this.maxIterations--;
             this.numSamples = 0;
             this.render();
         }
