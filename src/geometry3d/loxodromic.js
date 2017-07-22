@@ -27,6 +27,8 @@ export default class Loxodromic extends Shape3d {
     }
 
     update() {
+        this.s1.update();
+        this.s2.update();
         this.s1d = this.s2.invertOnSphere(this.s1);
         this.pInInv = this.s1.invertOnPoint(this.p.center);
         this.pOutInv = this.s2.invertOnPoint(this.p.center);
@@ -363,7 +365,7 @@ export default class Loxodromic extends Shape3d {
         }
     }
 
-    static laodJson(obj, scene) {
+    static loadJson(obj, scene) {
         const ns = new Loxodromic(Sphere.loadJson(obj.s1, scene),
                                   Sphere.loadJson(obj.s2, scene),
                                   new Vec3(obj.p[0], obj.p[1], obj.p[2]),

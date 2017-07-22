@@ -48,6 +48,13 @@ export default class Sphere extends Shape3d {
         return uniI;
     }
 
+    static loadJson(obj, scene) {
+        const ns = new Sphere(obj.center[0], obj.center[1], obj.center[2],
+                              obj.radius);
+        ns.setId(obj.id);
+        return ns;
+    }
+
     exportJson() {
         return {
             id: this.id,
