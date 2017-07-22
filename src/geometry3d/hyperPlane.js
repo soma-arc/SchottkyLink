@@ -42,7 +42,8 @@ export default class HyperPlane extends Shape3d {
         gl.uniform1f(uniLocation[uniIndex++],
                      this.uiRectSize.x * 0.5);
         gl.uniform1i(uniLocation[uniIndex++], true);
-        gl.uniform2f(uniLocation[uniIndex++], this.uiRectSize.x * 0.5, this.basisCylinderRadius);
+        gl.uniform2f(uniLocation[uniIndex++],
+                     this.uiRectSize.x * 0.5, this.basisCylinderRadius);
         return uniIndex;
     }
 
@@ -110,7 +111,7 @@ export default class HyperPlane extends Shape3d {
 
     move(width, height, mouse, camera, isectInfo, scene) {
         const tmpInfo = new IsectInfo(Number.MAX_VALUE, Number.MAX_VALUE);
-        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.center,
+        const centerOnScreen = camera.computeCoordOnScreen(isectInfo.prevShape.getAxisOrg(),
                                                            width, height);
         const v = mouse.sub(isectInfo.prevMouse);
         const d = Vec2.dot(v, isectInfo.axisDirection);
@@ -153,6 +154,18 @@ export default class HyperPlane extends Shape3d {
     cloneDeeply() {
         return new HyperPlane(new Vec3(this.center.x, this.center.y, this.center.z),
                               this.theta, this.phi);
+    }
+
+    unselect() {
+        this.selected = false;
+    }
+
+    select(isectInfo) {
+        this.selected = true;
+    }
+
+    getAxisOrg() {
+        return this.center;
     }
 
     static loadJson(obj, scene) {
