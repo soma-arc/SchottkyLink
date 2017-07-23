@@ -2,6 +2,10 @@
   <ul id="headerRight">
     <li class="headerButton">
       <ui-button type="secondary" raised color="primary"
+                 @click="saveScene">
+        Export Scene
+      </ui-button>
+      <ui-button type="secondary" raised color="primary"
                  @click="clearScene">
         Clear
       </ui-button>
@@ -31,7 +35,7 @@ export default {
         UiMenu
     },
     methods: {
-        clearScene(preset) {
+        clearScene() {
             this.canvasManager.clearCurrentScene();
         },
         presetSelected2d(preset) {
@@ -45,6 +49,9 @@ export default {
             this.canvasManager.canvas3dGen.render();
             this.canvasManager.canvas3dOrb.compileRenderShader();
             this.canvasManager.canvas3dOrb.render();
+        },
+        saveScene() {
+            this.canvasManager.saveScene();
         }
     }
 }

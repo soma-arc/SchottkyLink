@@ -103,6 +103,14 @@ export default class canvasManager {
         this.canvas3dOrb.render();
     }
 
+    saveScene() {
+        if (this.mode === RENDER_2D) {
+            this.scene2d.saveSceneAsJson();
+        } else if (this.mode === RENDER_3D) {
+            this.scene3d.saveSceneAsJson();
+        }
+    }
+
     get isRendering2d() {
         return this.mode === RENDER_2D;
     }

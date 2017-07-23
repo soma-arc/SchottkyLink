@@ -37,9 +37,24 @@ export default class Scene {
     constructor() {
         this.objects = {};
         this.presets = PRESETS;
-
+        this.sortPresetByIndex();
         this.selectedObj = undefined;
         this.selectedState = new SelectionState();
+    }
+
+    sortPresetByIndex() {
+        this.presets.sort(function(a, b) {
+            const aIdx = a.index;
+            const bIdx = b.index;
+            if (aIdx === undefined && bIdx === undefined) {
+                return 0;
+            } else if (aIdx === undefined) {
+                return 1;
+            } else if (bIdx === undefined) {
+                return -1;
+            }
+            return aIdx - bIdx;
+        });
     }
 
     unselectAll () {
@@ -137,7 +152,8 @@ export default class Scene {
         if (this.objects['OrbitSeed'] === undefined) {
             Vue.set(this.objects, 'OrbitSeed', []);
         }
-        this.objects['OrbitSeed'].push(new OrbitSeed(position.x, position.y, 0.1 * sceneScale, 0.1 * sceneScale));
+        this.objects['OrbitSeed'].push(new OrbitSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
+                                                     0.1 * sceneScale, 0.1 * sceneScale));
     }
 
     move (mouse) {
@@ -253,5 +269,31 @@ export default class Scene {
     clear() {
         this.objects = {};
         this.selectedObj = undefined;
+    }
+
+    exportJson() {
+        const json = {};
+        json['label'] = 'scene';
+        json['mode'] = '2d';
+        const generators = {};
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            generators[objName] = [];
+            for (const obj of this.objects[objName]) {
+                generators[objName].push(obj.exportJson());
+            }
+        }
+        json['generators'] = generators;
+        return json;
+    }
+
+    saveSceneAsJson() {
+        const blob = new Blob([JSON.stringify(this.exportJson(), null, '    ')],
+                              { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'scene.json';
+        a.click();
     }
 }

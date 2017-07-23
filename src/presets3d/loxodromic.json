@@ -1,5 +1,6 @@
 {
     "label": "Loxodromic",
+    "index": 1,
     "generators": {
         "BaseSphere": [
             {

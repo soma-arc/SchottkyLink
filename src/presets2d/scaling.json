@@ -1,5 +1,6 @@
 {
     "label": "Scaling",
+    "index": 2,
     "generators": {
         "Scaling": [
             {

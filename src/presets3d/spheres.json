@@ -1,5 +1,6 @@
 {
     "label": "Spheres",
+    "index": 0,
     "generators": {
         "BaseSphere": [
             {

@@ -1,5 +1,6 @@
 {
     "label": "HalfPlane",
+    "index": 1,
     "generators": {
         "Circle": [
             {

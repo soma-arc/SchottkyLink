@@ -31,11 +31,27 @@ export default class Scene3D {
     constructor() {
         this.objects = {};
         this.presets = PRESETS;
+        this.sortPresetByIndex();
 
         this.selectedObj = undefined;
         this.selectionInfo = undefined;
 
         this.updated = false;
+    }
+
+    sortPresetByIndex() {
+        this.presets.sort(function(a, b) {
+            const aIdx = a.index;
+            const bIdx = b.index;
+            if (aIdx === undefined && bIdx === undefined) {
+                return 0;
+            } else if (aIdx === undefined) {
+                return 1;
+            } else if (bIdx === undefined) {
+                return -1;
+            }
+            return aIdx - bIdx;
+        });
     }
 
     setUniformLocation(gl, uniLocations, program) {
@@ -97,7 +113,6 @@ export default class Scene3D {
         this.objects = {};
         const generators = sceneObjects.generators;
         const objKeyNames = Object.keys(generators);
-
         for (const objName of objKeyNames) {
             if (this.objects[objName] === undefined) {
                 Vue.set(this.objects, objName, []);
@@ -233,5 +248,31 @@ export default class Scene3D {
                                                        new Vec3(0, 1111, -133),
                                                        new Vec3(100, -888, -133),
                                                        new Vec3(1000, 111, -143)));
+    }
+
+    exportJson() {
+        const json = {};
+        json['label'] = 'scene';
+        json['mode'] = '3d';
+        const generators = {};
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            generators[objName] = [];
+            for (const obj of this.objects[objName]) {
+                generators[objName].push(obj.exportJson());
+            }
+        }
+        json['generators'] = generators;
+        return json;
+    }
+
+    saveSceneAsJson() {
+        const blob = new Blob([JSON.stringify(this.exportJson(), null, '    ')],
+                              { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'scene.json';
+        a.click();
     }
 }

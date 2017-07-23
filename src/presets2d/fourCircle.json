@@ -1,5 +1,6 @@
 {
     "label": "FourCircles",
+    "index": 0,
     "generators": {
         "Circle": [
             {
