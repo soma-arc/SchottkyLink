@@ -111,6 +111,27 @@ export default class canvasManager {
         }
     }
 
+    loadSceneFromFile() {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            if (this.mode === RENDER_2D) {
+                this.scene2d.load(JSON.parse(reader.result));
+                this.canvas2d.compileRenderShader();
+                this.canvas2d.render();
+            } else if (this.mode === RENDER_3D) {
+                this.scene3d.load(JSON.parse(reader.result));
+                this.compile3dCanvases();
+            }
+        });
+        const a = document.createElement('input');
+        a.type = 'file';
+        a.addEventListener('change', function(event) {
+            const files = event.target.files;
+            reader.readAsText(files[0]);
+        });
+        a.click();
+    }
+
     get isRendering2d() {
         return this.mode === RENDER_2D;
     }

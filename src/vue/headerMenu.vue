@@ -2,6 +2,10 @@
   <ul id="headerRight">
     <li class="headerButton">
       <ui-button type="secondary" raised color="primary"
+                 @click="loadScene">
+        Load Scene
+      </ui-button>
+      <ui-button type="secondary" raised color="primary"
                  @click="saveScene">
         Export Scene
       </ui-button>
@@ -52,6 +56,9 @@ export default {
         },
         saveScene() {
             this.canvasManager.saveScene();
+        },
+        loadScene() {
+            this.canvasManager.loadSceneFromFile();
         }
     }
 }
