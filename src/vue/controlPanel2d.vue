@@ -7,6 +7,9 @@
       <ui-tab title="Scene" id="tab-2">
         <scene-obj-panel v-bind:scene="scene" v-bind:canvas2d="canvas2d" />
       </ui-tab>
+      <ui-tab title="Render" id="tab-3">
+        <render-prop-panel2d v-bind:canvas2d="canvas2d" />
+      </ui-tab>
     </ui-tabs>
   </div>
 </template>
@@ -17,13 +20,15 @@ import UiTabs from 'keen-ui/lib/UiTabs';
 import UiTab from 'keen-ui/lib/UiTab';
 import SceneObjPanel from './sceneObjPanel.vue';
 import GeneratorPanel2d from './generatorPanel2d.vue';
+import RenderPropPanel2d from './renderPropPanel2d.vue';
 export default {
     props: ['scene', 'canvas2d'],
     components: {
         UiTabs,
         UiTab,
         SceneObjPanel,
-        GeneratorPanel2d
+        GeneratorPanel2d,
+        RenderPropPanel2d
     }
 }
 </script>

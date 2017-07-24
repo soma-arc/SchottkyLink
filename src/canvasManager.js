@@ -1,3 +1,4 @@
+import Vec2 from './vector2d.js';
 import Scene2D from './geometry2d/scene.js';
 import Scene3D from './geometry3d/scene.js';
 import Canvas2D from './canvas2d.js';
@@ -9,7 +10,7 @@ const RENDER_3D = 1;
 export default class canvasManager {
     constructor() {
         this.scene2d = new Scene2D();
-        this.canvas2d = {};
+        this.canvas2d = { 'productRenderResolution': new Vec2(0, 0) };
 
         this.scene3d = new Scene3D();
         this.canvas3dGen = {};

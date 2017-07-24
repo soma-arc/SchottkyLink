@@ -6,6 +6,7 @@ import TextureHandler from './textureHandler.js';
 import Canvas from './canvas.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
+const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
 
 const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
@@ -32,10 +33,23 @@ export default class Canvas2D extends Canvas {
         this.renderCanvasVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
                                                              'a_vertex');
 
+        this.productRenderProgram = this.gl.createProgram();
+        attachShader(this.gl, RENDER_FLIPPED_VERTEX,
+                     this.productRenderProgram, this.gl.VERTEX_SHADER);
+        attachShader(this.gl, RENDER_FRAGMENT,
+                     this.productRenderProgram, this.gl.FRAGMENT_SHADER);
+        linkProgram(this.gl, this.productRenderProgram);
+        this.productRenderVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
+                                                              'a_vertex');
+
         // render to texture
         this.compileRenderShader();
         this.initRenderTextures();
         this.texturesFrameBuffer = this.gl.createFramebuffer();
+
+        this.productRenderFrameBuffer = this.gl.createFramebuffer();
+        this.productRenderResolution = new Vec2(512, 512);
+        this.initProductRenderTextures();
 
         // geometry
         this.scale = 1;
@@ -163,6 +177,15 @@ export default class Canvas2D extends Canvas {
                                                 this.canvas.height, 2);
     }
 
+    initProductRenderTextures() {
+        this.productRenderTextures = createRGBTextures(this.gl,
+                                                       this.productRenderResolution.x,
+                                                       this.productRenderResolution.y, 2);
+        this.productRenderResultTexture = createRGBTextures(this.gl,
+                                                            this.productRenderResolution.x,
+                                                            this.productRenderResolution.y, 1)[0];
+    }
+
     getRenderUniformLocations() {
         this.uniLocations = [];
         const textureIndex = 0;
@@ -228,6 +251,30 @@ export default class Canvas2D extends Canvas {
                                     this.gl.FLOAT, false, 0, 0);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         this.gl.flush();
+    }
+
+    renderProductAndSave() {
+        this.initProductRenderTextures();
+        this.renderToTexture(this.productRenderTextures,
+                             this.productRenderResolution.x,
+                             this.productRenderResolution.y);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.productRenderFrameBuffer);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D,
+                                     this.productRenderResultTexture, 0);
+        this.gl.viewport(0, 0, this.productRenderResolution.x, this.productRenderResolution.y);
+        this.gl.useProgram(this.productRenderProgram);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.productRenderTextures[0]);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+        this.gl.vertexAttribPointer(this.productRenderVAttrib, 2,
+                                    this.gl.FLOAT, false, 0, 0);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        this.gl.flush();
+
+        this.saveImage(this.gl,
+                       this.productRenderResolution.x,
+                       this.productRenderResolution.y,
+                       'schottky.png');
     }
 
     render() {
