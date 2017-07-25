@@ -281,9 +281,9 @@ function addMouseListeners(scene, renderCanvas){
     renderCanvas.canvas.addEventListener('mousewheel', function(event){
 	    event.preventDefault();
 	    if(event.wheelDelta > 0){
-            renderCanvas.scale *= 0.5;
+            renderCanvas.scale /= 1.2;
 	    }else{
-            renderCanvas.scale *= 2;
+            renderCanvas.scale *= 1.2;
 	    }
 	    renderCanvas.render();
     })
