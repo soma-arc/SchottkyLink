@@ -53,7 +53,7 @@ export default class Canvas2D extends Canvas {
 
         // geometry
         this.scale = 1;
-        this.scaleFactor = 1.5;
+        this.scaleFactor = 1.25;
         this.translate = new Vec2(0, 0);
 
         this.maxIterations = 40;
