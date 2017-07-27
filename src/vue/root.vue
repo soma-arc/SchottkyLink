@@ -13,10 +13,16 @@
     <main-panel-3d v-show="canvasManager.isRendering3d"
                    :canvasManager="canvasManager"/>
     <footer class="footer">
-      <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
-         target="_blank">
-        <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
-      </a>
+      <div id="left">
+        <a id="ghLink" href="https://github.com/soma-arc/SchottkyLink"
+           target="_blank">
+          <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
+        </a>
+        <a id="prevLink" href="./old/index.html"
+           target="_blank">
+          Previous Version
+        </a>
+      </div>
       <div>
         Created by soma_arc
       </div>
@@ -153,6 +159,34 @@ a:active {color:#000000;}
 
 #ghLink {
     height: 50px;
+}
+
+#prevLink {
+    align-items: center;
+    padding-top: 20px;
+    padding-right: 5px;
+    padding-left: 5px;
+    border-right-style: ridge;
+    border-left-style: ridge;
+    border-right-color: gray;
+    border-left-color: gray;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    cursor: default;
+}
+
+#prevLink:hover{
+    background-color: PaleTurquoise;
+}
+
+
+#left {
+    height: 50px;
+    display: flex;
 }
 
 </style>

@@ -8,7 +8,7 @@ In this system, any generator is given by the inversion of a circle (or a sphere
 ## Usage
 Access to the URL: [schottky.jp](http://schottky.jp) or download the source code and simply open the index.html. Currently, this system is tested on Chrome only.
 #### 2 Dimensional mode
-![2 Dimensional mode](img/2DimensionalMode.png)
+![2 Dimensional mode](docs/img/2DimensionalMode.png)
 - Left Click: Select a generator
 - Right Click: Move on screen
 - Wheel Click: Add a Circle
@@ -18,7 +18,7 @@ Access to the URL: [schottky.jp](http://schottky.jp) or download the source code
 
 
 #### 3 Dimensional mode
-![3 Dimensional mode](img/3DimensionalMode.png)
+![3 Dimensional mode](docs/img/3DimensionalMode.png)
 - Left Click: Select a generator
 - Right Click: Move on screen
 - Wheel Drag: Rotate camera
