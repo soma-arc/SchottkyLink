@@ -56,7 +56,7 @@ export default class Canvas2D extends Canvas {
         this.scaleFactor = 1.5;
         this.translate = new Vec2(0, 0);
 
-        this.maxIterations = 40;
+        this.maxIterations = 20;
 
         this.isRenderingGenerator = true;
 

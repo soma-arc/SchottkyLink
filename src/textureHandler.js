@@ -52,7 +52,7 @@ export default class TextureHandler {
         let i = 0;
         for (const img of Object.values(TextureData)) {
             uniLocation.push(gl.getUniformLocation(program,
-                                                   `u_imageTextures[${i}]`));
+                                                   `u_imageTextures`));
             i++;
         }
     }

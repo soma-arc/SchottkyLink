@@ -7,7 +7,7 @@ uniform vec2 u_resolution;
 // [translateX, translateY, scale]
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
-uniform sampler2D u_imageTextures[1];
+uniform sampler2D u_imageTextures;
 uniform bool u_isRenderingGenerator;
 
 struct Circle {
@@ -155,7 +155,7 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            c = texture(u_imageTextures[u_orbitSeed{{ no }}.imageTexIndex], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y));
+            c = textureLod(u_imageTextures, vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
@@ -598,6 +598,6 @@ void main() {
             }
         }
     }
-    vec3 texCol = texture(u_accTexture, gl_FragCoord.xy / u_resolution).rgb;
+    vec3 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0).rgb;
     outColor = vec4(sum / MAX_SAMPLES, 1);
 }
