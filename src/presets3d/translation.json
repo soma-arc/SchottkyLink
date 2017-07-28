@@ -44,10 +44,10 @@
         "ParallelPlanes": [
             {
                 "id": 7,
-                "p": [0, 0, -350],
+                "p": [0, 0, -400],
                 "normalTheta": 1.57,
                 "normalPhi": 0,
-                "planeDist": 700
+                "planeDist": 800
             }
         ]
     }

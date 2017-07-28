@@ -1,6 +1,6 @@
 {
     "label": "Elliptic",
-    "index": 3,
+    "index": 4,
     "mode": "3d",
     "generators": {
         "BaseSphere": [

@@ -137,8 +137,8 @@ export default class Scene {
         }
         this.objects['Loxodromic'].push(new Loxodromic(new Circle(position, 0.1 * sceneScale),
                                                        new Circle(position.add(new Vec2(0.01 * sceneScale, 0.0)),
-                                                                  0.11 * sceneScale),
-                                                       position.add(new Vec2(1, 1))));
+                                                                  0.15 * sceneScale),
+                                                       position.add(new Vec2(sceneScale, sceneScale))));
     }
 
     addScaling(position, sceneScale) {

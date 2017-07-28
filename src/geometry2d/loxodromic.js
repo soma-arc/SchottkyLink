@@ -185,7 +185,8 @@ export default class Loxodromic extends Shape {
         return {
             id: this.id,
             c1: this.c1.exportJson(),
-            c2: this.c2.exportJson()
+            c2: this.c2.exportJson(),
+            p: [this.p.x, this.p.y]
         };
     }
 
