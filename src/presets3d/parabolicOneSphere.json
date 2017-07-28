@@ -1,6 +1,6 @@
 {
     "label": "ParabolicOneSphere",
-    "index": 3,
+    "index": 5,
     "mode": "3d",
     "generators": {
         "BaseSphere": [

@@ -1,6 +1,6 @@
 {
     "label": "Loxodromic",
-    "index": 5,
+    "index": 9,
     "mode": "3d",
     "generators": {
         "BaseSphere": [

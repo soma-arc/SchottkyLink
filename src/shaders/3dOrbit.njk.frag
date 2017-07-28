@@ -151,7 +151,7 @@ void march(const vec3 rayOrg, const vec3 rayDir, inout IsectInfo isectInfo) {
             isectInfo.objComponentId = int(dist.w);
             isectInfo.matColor = (g_invNum == 0.) ?
                 hsv2rgb(0.33, 1., .77) :
-                hsv2rgb(0.0 + g_invNum * 0.21 , 1., 1.);
+                hsv2rgb(0.0 + g_invNum * 0.12 , 1., 1.);
             isectInfo.intersection = rayPos;
             isectInfo.normal = computeNormal(rayPos);
             isectInfo.hit = true;

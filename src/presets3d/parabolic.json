@@ -1,6 +1,6 @@
 {
     "label": "Parabolic",
-    "index": 3,
+    "index": 6,
     "mode": "3d",
     "generators": {
         "InversionSphere": [

@@ -1,6 +1,6 @@
 {
     "label": "LoxodromicOneSphere",
-    "index": 4,
+    "index": 8,
     "mode": "3d",
     "generators": {
         "BaseSphere": [
