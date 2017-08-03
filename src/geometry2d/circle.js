@@ -60,8 +60,30 @@ export default class Circle extends Shape {
         } else {
             this.center = mouse.sub(selectionState.diffObj);
             if (this.snapMode === Circle.SNAP_NEAREST) {
+                this.center = mouse.sub(selectionState.diffObj);
                 const d = scene.getNearObjectsDistance(this, this.center)[0].distance;
                 this.r = (d === Number.MAX_VALUE) ? this.r : d;
+            } else if (this.snapMode === Circle.SNAP_TWO_CIRCLES) {
+                for(let i = 0 ; i < 50; i++) {
+                    const objStates = scene.getNearObjectsDistance(this, this.center);
+                    const nearDistState1 = objStates[0];
+                    const nearDistState2 = objStates[1];
+                    const step = 0.1;
+                    if (0 < (nearDistState1.distance) &&
+                        (nearDistState1.distance) < 0.15) {
+                        const dr = step * (nearDistState1.distance - this.r);
+                        const dir = nearDistState1.obj.center.sub(this.center).normalize();
+                        this.r += dr;
+                        this.center = this.center.add(dir.scale(dr));
+                    }
+                    if(0 < (nearDistState2.distance) &&
+                       (nearDistState2.distance) < 0.15) {
+                        const dr = step * (nearDistState2.distance - this.r);
+                        const dir = nearDistState2.obj.center.sub(this.center).normalize();
+                        this.r += dr;
+                        this.center = this.center.add(dir.scale(dr));
+                    }
+                }
             }
         }
 
@@ -181,6 +203,10 @@ export default class Circle extends Shape {
 
     static get SNAP_NEAREST() {
         return 1;
+    }
+
+    static get SNAP_TWO_CIRCLES() {
+        return 2;
     }
 
     get name() {
