@@ -19,10 +19,13 @@ vec2 rand2n(const vec2 co, const float sampleIndex) {
 }
 
 // circle [x, y, radius, radius * radius]
-vec2 circleInvert(const vec2 pos, const vec4 circle){
+vec2 circleInvert(const vec2 pos, const vec4 circle, inout float dr){
     vec2 p = pos - circle.xy;
-    float d = length(p);
-    return (p * circle.w)/(d * d) + circle.xy;
+    float d = circle.w / dot(p, p);
+    //dr *= circle.w / d;
+    //return (p * circle.w) / d + circle.xy;
+    dr *= d;
+    return p * d + circle.xy;
 }
 
 vec3 computeColor(float loopNum) {
@@ -34,6 +37,11 @@ bool IIS(vec2 pos, out vec3 col) {
     float invNum = 0.;
     bool inFund = true;
     vec4 c = vec4(0);
+    vec2 prevPos;
+    Circle prevCircle;
+    float prevDr = 1.;
+    float dr = 1.;
+
     for (int i = 0; i < MAX_ITERATIONS; i++) {
         if(i > u_maxIISIterations) break;
         inFund = true;
@@ -52,7 +60,10 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
-            pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius);
+            prevCircle = u_circle{{ n }};
+            prevDr = dr;
+            prevPos = pos;
+            pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius, dr);
             inFund = false;
             invNum++;
             continue;
@@ -61,7 +72,10 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0,  numCircleFromPoints) %}
         if(distance(pos, u_circleFromPoints{{ n }}.centerAndRadius.xy) < u_circleFromPoints{{ n }}.centerAndRadius.z){
-            pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius);
+            prevCircle = u_circle{{ n }};
+            prevDr = dr;
+            prevPos = pos;
+            pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius, dr);
             inFund = false;
             invNum++;
         }
@@ -111,13 +125,19 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0, numTwoCircles) %}
         if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+            prevDr = dr;
+            prevPos = pos;
+
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1, dr);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2, dr);
 
             inFund = false;
        }else if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) >= u_hyperbolic{{ n }}.c1d.z){
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
-            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+            prevDr = dr;
+            prevPos = pos;
+
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2, dr);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1, dr);
 
             inFund = false;
         }
@@ -125,21 +145,27 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0, numLoxodromic) %}
         if(distance(pos, u_loxodromic{{ n }}.c1.xy) < u_loxodromic{{ n }}.c1.z){
+            prevDr = dr;
+            prevPos = pos;
+
             pos -= u_loxodromic{{ n }}.c1.xy;
             pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
             pos += u_loxodromic{{ n }}.c1.xy;
 
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3, dr);
 
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1, dr);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2, dr);
 
             inFund = false;
        }else if(distance(pos, u_loxodromic{{ n }}.c1d.xy) >= u_loxodromic{{ n }}.c1d.z){
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
+            prevDr = dr;
+            prevPos = pos;
 
-            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2, dr);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1, dr);
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3, dr);
             pos -= u_loxodromic{{ n }}.c1.xy;
             pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
             pos += u_loxodromic{{ n }}.c1.xy;
@@ -150,6 +176,9 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0, numScaling) %}
         if(distance(pos, u_scaling{{ n }}.c1.xy) < u_scaling{{ n }}.c1.z){
+            prevDr = dr;
+            prevPos = pos;
+
             pos -= u_scaling{{ n }}.line1.xy;
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
             pos += u_scaling{{ n }}.line1.xy;
@@ -158,13 +187,16 @@ bool IIS(vec2 pos, out vec3 col) {
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
             pos += u_scaling{{ n }}.c2.xy;
 
-            pos = circleInvert(pos, u_scaling{{ n }}.c1);
-            pos = circleInvert(pos, u_scaling{{ n }}.c2);
+            pos = circleInvert(pos, u_scaling{{ n }}.c1, dr);
+            pos = circleInvert(pos, u_scaling{{ n }}.c2, dr);
 
             inFund = false;
        }else if(distance(pos, u_scaling{{ n }}.c1d.xy) >= u_scaling{{ n }}.c1d.z){
-            pos = circleInvert(pos, u_scaling{{ n }}.c2);
-            pos = circleInvert(pos, u_scaling{{ n }}.c1);
+            prevDr = dr;
+            prevPos = pos;
+
+            pos = circleInvert(pos, u_scaling{{ n }}.c2, dr);
+            pos = circleInvert(pos, u_scaling{{ n }}.c1, dr);
 
             pos -= u_scaling{{ n }}.c2.xy;
             pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
@@ -181,7 +213,9 @@ bool IIS(vec2 pos, out vec3 col) {
         if (inFund) break;
     }
 
-    col = computeColor(invNum);
+    col = (invNum > 0. &&
+           abs(distance(prevPos, prevCircle.centerAndRadius.xy) - prevCircle.centerAndRadius.z)  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+    //    col = computeColor(invNum);
     return (invNum == 0.) ? false : true;
 }
 
