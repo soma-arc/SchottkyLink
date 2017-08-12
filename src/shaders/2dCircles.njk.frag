@@ -39,6 +39,8 @@ bool IIS(vec2 pos, out vec3 col) {
     vec4 c = vec4(0);
     vec2 prevPos;
     Circle prevCircle;
+    HalfPlane prevHalfPlane;
+    bool isPrevHalfPlane = false;
     float prevDr = 1.;
     float dr = 1.;
 
@@ -65,6 +67,7 @@ bool IIS(vec2 pos, out vec3 col) {
             prevPos = pos;
             pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius, dr);
             inFund = false;
+            isPrevHalfPlane = false;
             invNum++;
             continue;
         }
@@ -77,6 +80,7 @@ bool IIS(vec2 pos, out vec3 col) {
             prevPos = pos;
             pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius, dr);
             inFund = false;
+            isPrevHalfPlane = false;
             invNum++;
         }
         {% endfor %}
@@ -86,6 +90,11 @@ bool IIS(vec2 pos, out vec3 col) {
         float dHalfPlane{{ n }} = dot(pos, u_halfPlane{{ n }}.normal.xy);
         invNum += (dHalfPlane{{ n }} < 0.) ? 1. : 0.;
         inFund = (dHalfPlane{{ n }} < 0. ) ? false : inFund;
+        if(dHalfPlane{{ n }} < 0. ) {
+            isPrevHalfPlane = true;
+            prevHalfPlane = u_halfPlane{{ n }};
+            prevPos = pos + u_halfPlane{{ n }}.p;
+        }
         pos -= 2.0 * min(0., dHalfPlane{{ n }}) * u_halfPlane{{ n }}.normal.xy;
         pos += u_halfPlane{{ n }}.p;
         {% endfor %}
@@ -213,8 +222,13 @@ bool IIS(vec2 pos, out vec3 col) {
         if (inFund) break;
     }
 
-    col = (invNum > 0. &&
-           abs(distance(prevPos, prevCircle.centerAndRadius.xy) - prevCircle.centerAndRadius.z)  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+    if(isPrevHalfPlane) {
+        col = (invNum > 0. &&
+               abs(dot(prevPos - prevHalfPlane.p, prevHalfPlane.normal.xy))  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+    } else {
+        col = (invNum > 0. &&
+               abs(distance(prevPos, prevCircle.centerAndRadius.xy) - prevCircle.centerAndRadius.z)  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+    }
     //    col = computeColor(invNum);
     return (invNum == 0.) ? false : true;
 }
