@@ -64,7 +64,8 @@ export default class Canvas2D extends Canvas {
         this.mouseState = {
             isPressing: false,
             prevPosition: new Vec2(0, 0),
-            prevTranslate: new Vec2(0, 0)
+            prevTranslate: new Vec2(0, 0),
+            button: -1
         };
     }
 
@@ -107,6 +108,8 @@ export default class Canvas2D extends Canvas {
         event.preventDefault();
         this.canvas.focus();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        this.mouseState.button = event.button;
+        console.log(this.mouseState.button);
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             this.scene.select(mouse, this.scale);
             this.render();
@@ -137,10 +140,10 @@ export default class Canvas2D extends Canvas {
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        if (this.mouseState.button === Canvas.MOUSE_BUTTON_LEFT) {
             const moved = this.scene.move(mouse);
             if (moved) this.isRendering = true;
-        } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
+        } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
             this.isRendering = true;
         }
