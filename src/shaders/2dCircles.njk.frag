@@ -39,7 +39,9 @@ bool IIS(vec2 pos, out vec3 col) {
     vec4 c = vec4(0);
     vec2 prevPos;
     Circle prevCircle;
+    Circle currentCircle;
     HalfPlane prevHalfPlane;
+    HalfPlane currentHalfPlane;
     bool isPrevHalfPlane = false;
     float prevDr = 1.;
     float dr = 1.;
@@ -62,7 +64,8 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
-            prevCircle = u_circle{{ n }};
+            prevCircle = currentCircle;
+            currentCircle = u_circle{{ n }};
             prevDr = dr;
             prevPos = pos;
             pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius, dr);
@@ -75,7 +78,8 @@ bool IIS(vec2 pos, out vec3 col) {
 
         {% for n in range(0,  numCircleFromPoints) %}
         if(distance(pos, u_circleFromPoints{{ n }}.centerAndRadius.xy) < u_circleFromPoints{{ n }}.centerAndRadius.z){
-            prevCircle = u_circle{{ n }};
+            prevCircle = currentCircle;
+            currentCircle = u_circle{{ n }};
             prevDr = dr;
             prevPos = pos;
             pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius, dr);
@@ -92,7 +96,8 @@ bool IIS(vec2 pos, out vec3 col) {
         inFund = (dHalfPlane{{ n }} < 0. ) ? false : inFund;
         if(dHalfPlane{{ n }} < 0. ) {
             isPrevHalfPlane = true;
-            prevHalfPlane = u_halfPlane{{ n }};
+            prevHalfPlane = currentHalfPlane;
+            currentHalfPlane = u_halfPlane{{ n }};
             prevPos = pos + u_halfPlane{{ n }}.p;
         }
         pos -= 2.0 * min(0., dHalfPlane{{ n }}) * u_halfPlane{{ n }}.normal.xy;
@@ -224,10 +229,13 @@ bool IIS(vec2 pos, out vec3 col) {
 
     if(isPrevHalfPlane) {
         col = (invNum > 0. &&
-               abs(dot(prevPos - prevHalfPlane.p, prevHalfPlane.normal.xy))  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+               abs(dot(pos - currentHalfPlane.p, currentHalfPlane.normal.xy))  / dr < 0.003) ? computeColor(invNum) : vec3(0);
     } else {
+        // Use previous position to avoid artifacts.
+        // When pos is at the center of the circle,
+        // the jacobian of the inversion becomes infinity.
         col = (invNum > 0. &&
-               abs(distance(prevPos, prevCircle.centerAndRadius.xy) - prevCircle.centerAndRadius.z)  / prevDr < 0.002) ? computeColor(invNum) : vec3(0);
+               abs(distance(prevPos, currentCircle.centerAndRadius.xy) - currentCircle.centerAndRadius.z)  / prevDr < 0.003) ? computeColor(invNum) : vec3(0);
     }
     //    col = computeColor(invNum);
     return (invNum == 0.) ? false : true;
