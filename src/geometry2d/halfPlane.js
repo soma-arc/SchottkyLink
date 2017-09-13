@@ -56,15 +56,30 @@ export default class HalfPlane extends Shape {
         } else if (mouseState.componentId === HalfPlane.NORMAL_POINT) {
             this.normal = mouse.sub(this.p).normalize();
             let rad = Math.atan2(this.normal.y, this.normal.x);
-            rad = (Math.abs(rad) < 0.2) ? 0 : rad;
-            rad = (Math.abs(rad - Radians.PI_4) < 0.2) ? Radians.PI_4 : rad;
-            rad = (Math.abs(rad + Radians.PI_4) < 0.2) ? -Radians.PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI_2) < 0.2) ? Radians.PI_2 : rad;
-            rad = (Math.abs(rad + Radians.PI_2) < 0.2) ? -Radians.PI_2 : rad;
-            rad = (Math.abs(rad - Radians.THREE_PI_4) < 0.2) ? Radians.THREE_PI_4 : rad;
-            rad = (Math.abs(rad + Radians.THREE_PI_4) < 0.2) ? -Radians.THREE_PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI) < 0.2) ? Radians.PI : rad;
-            rad = (Math.abs(rad + Radians.PI) < 0.2) ? Radians.PI : rad;
+            if (Math.abs(rad) < 0.2) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_4) < 0.2) {
+                    rad = Radians.PI_4
+                } else if (Math.abs(rad - Radians.PI_2) < 0.2) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.2){
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.PI) < 0.2) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_4) < 0.2) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.2) {
+                    rad = -Radians.PI_2
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.2) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.PI) < 0.2) {
+                    rad = Radians.PI;
+                }
+            }
+
             this.normal = new Vec2(Math.cos(rad), Math.sin(rad));
         }
 
