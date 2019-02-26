@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 const src  = path.resolve(__dirname, 'src');
-const dist = path.resolve(__dirname, 'dist');
+const dist = path.resolve(__dirname, 'docs');
 
 module.exports = () => ({
     entry: `${src}/index.js`,
@@ -39,6 +39,10 @@ module.exports = () => ({
                 test: /\.png$/,
                 exclude: /node_modules/,
                 loader: 'url-loader',
+            },
+            {
+                test: /\.css$/,
+                loader: 'style-loader!css-loader'
             }
         ],
     },
@@ -50,7 +54,7 @@ module.exports = () => ({
     },
 
     devServer: {
-        contentBase: 'dist',
+        contentBase: dist,
         port: 3000,
     },
 
