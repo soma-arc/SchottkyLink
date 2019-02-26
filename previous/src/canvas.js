@@ -46,7 +46,9 @@ export default class Canvas {
 
     mouseMoveListener(event) {}
 
-    keydownListener(event) {}
+    keydownListener(event) {
+        console.log('paren')
+    }
 
     keyupListener(event) {}
 

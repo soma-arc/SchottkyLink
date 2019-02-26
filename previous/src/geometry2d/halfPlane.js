@@ -61,6 +61,10 @@ export default class HalfPlane extends Shape {
             rad = (Math.abs(rad + Radians.PI_4) < 0.2) ? -Radians.PI_4 : rad;
             rad = (Math.abs(rad - Radians.PI_2) < 0.2) ? Radians.PI_2 : rad;
             rad = (Math.abs(rad + Radians.PI_2) < 0.2) ? -Radians.PI_2 : rad;
+            rad = (Math.abs(rad - Radians.PI_3) < 0.2) ? Radians.PI_3 : rad;
+            rad = (Math.abs(rad + Radians.PI_3) < 0.2) ? -Radians.PI_3 : rad;
+            rad = (Math.abs(rad - Radians.PI_6) < 0.2) ? Radians.PI_6 : rad;
+            rad = (Math.abs(rad + Radians.PI_6) < 0.2) ? -Radians.PI_6 : rad;
             rad = (Math.abs(rad - Radians.THREE_PI_4) < 0.2) ? Radians.THREE_PI_4 : rad;
             rad = (Math.abs(rad + Radians.THREE_PI_4) < 0.2) ? -Radians.THREE_PI_4 : rad;
             rad = (Math.abs(rad - Radians.PI) < 0.2) ? Radians.PI : rad;

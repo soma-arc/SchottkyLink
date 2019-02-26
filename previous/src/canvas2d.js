@@ -10,6 +10,7 @@ const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
 
 const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
+const CIRCLE_EDGE_SHADER_TMPL = require('./shaders/2dCircles.njk.frag');
 
 /**
  * canvas class
@@ -156,7 +157,7 @@ export default class Canvas2D extends Canvas {
             this.maxIterations++;
             this.render();
         } else if (event.key === '-') {
-            if (this.maxIterations < 1) return;
+            if (this.maxIterations < 0) return;
             this.maxIterations--;
             this.render();
         }
@@ -168,6 +169,8 @@ export default class Canvas2D extends Canvas {
     compileRenderShader() {
         this.renderProgram = this.gl.createProgram();
         attachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
+        // attachShader(this.gl, CIRCLE_EDGE_SHADER_TMPL.render(this.scene.getContext()),
+        //              this.renderProgram, this.gl.FRAGMENT_SHADER);
         attachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         linkProgram(this.gl, this.renderProgram);
