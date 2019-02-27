@@ -2,18 +2,21 @@ import Vue from 'vue';
 import Buefy from 'buefy';
 import Root from './vue/root.vue';
 import 'buefy/dist/buefy.css';
-import Scene from './scene.js';
+import Scene2d from './scene2d.js';
+import Scene3d from './scene3d.js';
 import CanvasManager from './canvasManager.js';
 
 window.addEventListener('load', () => {
     Vue.use(Buefy);
     window.Vue = Vue;
 
-    const scene = new Scene();
-    const canvasManager = new CanvasManager(scene);
+    const scene2d = new Scene2d();
+    const scene3d = new Scene3d();
+    const canvasManager = new CanvasManager(scene2d, scene3d);
 
     const d = { 'currentRoute': window.location.pathname,
-                'scene': scene,
+                'scene2d': scene2d,
+                'scene3d': scene3d,
                 'canvasManager': canvasManager };
 
     /* eslint-disable no-unused-vars */
@@ -26,7 +29,7 @@ window.addEventListener('load', () => {
         components: { 'root': Root }
     });
 
-    canvasManager.init();
+    canvasManager.init(app);
     canvasManager.resize();
 
     let resizeTimer = setTimeout(canvasManager.resizeCallback, 500);
