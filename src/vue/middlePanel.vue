@@ -16,7 +16,7 @@ export default {
     props: ['scene', 'canvasManager', 'currentRoute'],
     methods: {
         render: function() {
-            this.canvasHandler.render();
+            this.canvasManager.render();
         },
     },
     components: {
@@ -43,6 +43,10 @@ export default {
 .component-fade-enter, .component-fade-leave-to
 /* .component-fade-leave-active for below version 2.1.8 */ {
   opacity: 0;
+}
+
+Panel2d {
+    width: 100%;
 }
 
 </style>

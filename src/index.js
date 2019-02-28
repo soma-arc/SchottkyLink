@@ -42,5 +42,11 @@ window.addEventListener('load', () => {
 
     window.addEventListener('popstate', () => {
         app.currentRoute = window.location.pathname;
-    })
+    });
+
+    function renderLoop() {
+        canvasManager.renderLoop();
+        requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
 });

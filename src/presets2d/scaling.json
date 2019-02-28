@@ -1,0 +1,13 @@
+{
+    "label": "Scaling",
+    "index": 2,
+    "generators": {
+        "Scaling": [
+            {
+                "id": 0,
+                "center": [0, 0],
+                "scalingFactor": [2, 0]
+            }
+        ]
+    }
+}

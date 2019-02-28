@@ -40,6 +40,14 @@ export default class CanvasManager {
         return CanvasManager.RENDER_NONE;
     }
 
+    renderLoop() {
+        if (this.mode() === CanvasManager.RENDER_2D) {
+            if (this.canvas2d.isRendering) {
+                this.canvas2d.render();
+            }
+        }
+    }
+
     static get RENDER_2D() {
         return 0;
     }
