@@ -12,6 +12,7 @@ export default class Canvas {
         this.boundMouseUpListener = this.mouseUpListener.bind(this);
         this.boundMouseWheelListener = this.mouseWheelListener.bind(this);
         this.boundMouseMoveListener = this.mouseMoveListener.bind(this);
+        this.boundMouseLeaveListener = this.mouseLeaveListener.bind(this);
         this.boundDblClickLisntener = this.mouseDblClickListener.bind(this);
         this.boundKeydown = this.keydownListener.bind(this);
         this.boundKeyup = this.keyupListener.bind(this);
@@ -19,6 +20,7 @@ export default class Canvas {
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
         this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
         this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
+        this.canvas.addEventListener('mouseleave', this.boundMouseLeaveListener);
         this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
         this.canvas.addEventListener('keydown', this.boundKeydown);
         this.canvas.addEventListener('keyup', this.boundKeyup);
@@ -45,6 +47,8 @@ export default class Canvas {
     mouseUpListener(event) {}
 
     mouseMoveListener(event) {}
+
+    mouseLeaveListener(event) {}
 
     keydownListener(event) {
         console.log('paren')

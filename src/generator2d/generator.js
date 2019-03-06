@@ -1,30 +1,15 @@
 import SelectionState from './selectionState.js';
 import DistanceState from './distanceState.js';
+import Vec2 from '../vector2d.js';
 
-let gId = 0;
-let gIdList = [];
-export default class Shape {
+export default class Generator {
     constructor() {
-        this.setId(gId);
         this.selected = false;
+        this.id = new Date().getTime();
     }
 
-    /**
-     * Set unique id
-     * @param {number} id
-     */
-    setId(id) {
-        const index = gIdList.indexOf(id);
-        if (index === -1) {
-            this.id = id;
-            gIdList.push(id);
-            gId = id + 1;
-        } else {
-            gIdList.splice(index, 1, id);
-            while (gIdList.indexOf(gId) !== -1) {
-                gId++;
-            }
-        }
+    getPosition() {
+        return new Vec2(0, 0);
     }
 
     /**
@@ -68,10 +53,10 @@ export default class Shape {
 
     /**
      *
-     * @returns {Shape}
+     * @returns {Generator}
      */
     cloneDeeply() {
-        return new Shape();
+        return new Generator();
     }
 
     /**
@@ -99,19 +84,25 @@ export default class Shape {
 
     /**
      *
+     * @param {Vec2} vec
+     */
+    translate(vec) {}
+
+    /**
+     *
      * @returns {Object.}
      */
     exportJson() {
-        return {}
+        return {};
     }
 
     /**
      *
      * @param {Object.} obj
-     * @returns {Shape}
+     * @returns {Generator}
      */
     static loadJson(obj, scene) {
-        return new Shape();
+        return new Generator();
     }
 
     /**
@@ -119,6 +110,6 @@ export default class Shape {
      * @returns {String}
      */
     get name() {
-        return 'Shape';
+        return 'generator';
     }
 }

@@ -60,6 +60,9 @@ export default class Canvas2d extends Canvas {
             prevTranslate: new Vec2(0, 0),
             button: -1
         };
+
+        this.scene.addSceneUpdateListener(this.compileRenderShader.bind(this));
+        this.scene.addReRenderListener(this.render.bind(this));
     }
 
     /**
@@ -102,12 +105,11 @@ export default class Canvas2d extends Canvas {
         this.canvas.focus();
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         this.mouseState.button = event.button;
-        console.log(this.mouseState.button);
+
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             this.scene.select(mouse, this.scale);
             this.render();
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
-            // TODO: add circle
             this.scene.addCircle(mouse, this.scale);
             this.compileRenderShader();
             this.render();
@@ -124,6 +126,12 @@ export default class Canvas2d extends Canvas {
     }
 
     mouseUpListener(event) {
+        this.mouseState.isPressing = false;
+        this.isRendering = false;
+        this.scene.mouseUp();
+    }
+
+    mouseLeaveListener(event) {
         this.mouseState.isPressing = false;
         this.isRendering = false;
     }
@@ -152,6 +160,12 @@ export default class Canvas2d extends Canvas {
             if (this.maxIterations < 0) return;
             this.maxIterations--;
             this.render();
+        } else if (event.ctrlKey && event.shiftKey && event.key === 'Z') {
+            console.log('redo');
+            this.scene.redo();
+        } else if (event.ctrlKey && event.key === 'z') {
+            console.log('undo');
+            this.scene.undo();
         }
     }
 

@@ -1,7 +1,10 @@
 import SelectionState from './generator2d/selectionState.js';
 import DistanceState from './generator2d/distanceState.js';
 import Circle from './generator2d/circle.js';
+import Scene from './scene.js';
 import Vue from 'vue';
+import AddGeneratorCommand from './command/AddGeneratorCommand.js';
+import MoveCommand from './command/moveCommand.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle };
@@ -12,13 +15,37 @@ for (const k of PRESETS_CONTEXT.keys()) {
     PRESETS.push(PRESETS_CONTEXT(k));
 }
 
-export default class Scene2d {
+export default class Scene2d extends Scene {
     constructor() {
+        super();
         this.objects = {};
         this.presets = PRESETS;
         this.sortPresetByIndex();
         this.selectedObj = undefined;
         this.selectedState = new SelectionState();
+
+        this.updateSceneListeners = [];
+        this.reRenderListeners = [];
+    }
+
+    addSceneUpdateListener(listener) {
+        this.updateSceneListeners.push(listener);
+    }
+
+    addReRenderListener(listener) {
+        this.reRenderListeners.push(listener);
+    }
+
+    updateScene() {
+        for(const listener of this.updateSceneListeners) {
+            listener();
+        }
+    }
+
+    reRender() {
+        for(const listener of this.reRenderListeners) {
+            listener();
+        }
     }
 
     sortPresetByIndex() {
@@ -59,6 +86,7 @@ export default class Scene2d {
                     this.selectedState = state;
                     this.selectedObj = this.selectedState.selectedObj;
                     this.selectedState.selectedObj.selected = true;
+                    this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
                     return true;
                 }
             }
@@ -75,10 +103,8 @@ export default class Scene2d {
     }
 
     addCircle(position, sceneScale) {
-        if (this.objects['Circle'] === undefined) {
-            Vue.set(this.objects, 'Circle', []);
-        }
-        this.objects['Circle'].push(new Circle(position, 0.1 * sceneScale));
+        const c = new Circle(position, 0.1 * sceneScale);
+        this.addCommand(new AddGeneratorCommand(this, c, c.name));
     }
 
     move (mouse) {
@@ -220,5 +246,19 @@ export default class Scene2d {
         a.href = URL.createObjectURL(blob);
         a.download = 'scene.json';
         a.click();
+    }
+
+    mouseUp() {
+        if (this.selectedState.isSelectingObj()) {
+            const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
+            console.log(d);
+            if(d.length() < 0.000000001)
+                return;
+            this.addCommand(new MoveCommand(this, this.selectedState.selectedObj, d));
+            console.log('add move');
+        }
+    }
+
+    mouseLeave() {
     }
 }

@@ -1,4 +1,4 @@
-import Shape from './shape.js';
+import Shape from './generator.js';
 import Vec2 from '../vector2d.js';
 
 export default class SelectionState {
@@ -14,6 +14,9 @@ export default class SelectionState {
         // distance between mouse and the selected component
         // (e.g. boundary of the circle)
         this.distToComponent = -1;
+        // Previous position
+        // (e.g. previous position of the generator)
+        this.prevPosition = new Vec2(0, 0);
     }
 
     /**
@@ -53,6 +56,16 @@ export default class SelectionState {
      */
     setDistToComponent (distToComponent) {
         this.distToComponent = distToComponent;
+        return this;
+    }
+
+    /**
+     *
+     * @param {Vec2} p
+     * @returns {SelectionState}
+     */
+    setPrevPosition(p) {
+        this.prevPosition = p;
         return this;
     }
 

@@ -1,8 +1,8 @@
 import assert from 'power-assert';
 import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
-import DistanceState from './distanceState.js'
-import Shape from './shape.js';
+import DistanceState from './distanceState.js';
+import Shape from './generator.js';
 
 export default class Circle extends Shape {
     constructor(center, r) {
@@ -13,6 +13,14 @@ export default class Circle extends Shape {
         this.circumferenceThickness = 0.01;
 
         this.snapMode = Circle.SNAP_NONE;
+    }
+
+    getPosition() {
+        return this.center;
+    }
+
+    setPosition(p) {
+        this.center = p;
     }
 
     update() {
@@ -33,12 +41,19 @@ export default class Circle extends Shape {
         if (distFromCircumference < this.circumferenceThickness * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Circle.CIRCUMFERENCE)
-                .setDistToComponent(distFromCircumference);
+                .setDistToComponent(distFromCircumference)
+                .setPrevPosition(this.center);
         }
 
         return new SelectionState().setObj(this)
             .setComponentId(Circle.BODY)
-            .setDiffObj(dp);
+            .setDiffObj(dp)
+            .setPrevPosition(this.center);
+    }
+
+    translate(vec) {
+        this.center.add(vec);
+        this.update();
     }
 
     /**
