@@ -5,9 +5,20 @@ import Scene from './scene.js';
 import Vue from 'vue';
 import AddGeneratorCommand from './command/AddGeneratorCommand.js';
 import MoveCommand from './command/moveCommand.js';
+import RadiusCommand from './command/radiusCommand.js';
+import AngleHalfPlaneCommand from './command/angleHalfPlaneCommand.js';
+import HalfPlane from './generator2d/halfPlane.js';
+import TwoCircles from './generator2d/twoCircles.js';
+import TwoCirclesCommand from './command/twoCirclesCommand.js';
+import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
+import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
+import TwoCirclesC2RCommand from './command/twoCirclesC2RCommand.js';
+import Vec2 from './vector2d.js';
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = { 'Circle': Circle };
+const STR_CLASS_MAP = { 'Circle': Circle,
+                        'HalfPlane': HalfPlane,
+                        'TwoCircles': TwoCircles };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
 const PRESETS = [];
@@ -105,6 +116,17 @@ export default class Scene2d extends Scene {
     addCircle(position, sceneScale) {
         const c = new Circle(position, 0.1 * sceneScale);
         this.addCommand(new AddGeneratorCommand(this, c, c.name));
+    }
+
+    addHalfPlane(position, sceneScale) {
+        const h = new HalfPlane(position, new Vec2(1, 0));
+        this.addCommand(new AddGeneratorCommand(this, h, h.name));
+    }
+
+    addTwoCircles(position, sceneScale) {
+        const h = new TwoCircles(new Circle(position, 0.1 * sceneScale),
+                                 new Circle(position, 0.2 * sceneScale));
+        this.addCommand(new AddGeneratorCommand(this, h, h.name));
     }
 
     move (mouse) {
@@ -250,12 +272,38 @@ export default class Scene2d extends Scene {
 
     mouseUp() {
         if (this.selectedState.isSelectingObj()) {
-            const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
-            console.log(d);
-            if(d.length() < 0.000000001)
-                return;
-            this.addCommand(new MoveCommand(this, this.selectedState.selectedObj, d));
-            console.log('add move');
+            if (this.selectedState.selectedObj.name === 'Circle' &&
+                this.selectedState.componentId === Circle.CIRCUMFERENCE) {
+                this.addCommand(new RadiusCommand(this, this.selectedState.selectedObj,
+                                                  this.selectedState.selectedObj.prevRadius,
+                                                  this.selectedState.selectedObj.r));
+            } else if (this.selectedState.selectedObj.name === 'HalfPlane' &&
+                       this.selectedState.componentId === HalfPlane.NORMAL_POINT) {
+                this.addCommand(new AngleHalfPlaneCommand(this, this.selectedState.selectedObj,
+                                                          this.selectedState.selectedObj.prevNormal,
+                                                          this.selectedState.selectedObj.normal));
+            } else if (this.selectedState.selectedObj.name === 'TwoCircles') {
+                if (this.selectedState.componentId === TwoCircles.C2_BODY) {
+                    const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
+                    this.addCommand(new TwoCirclesCommand(this, this.selectedState.selectedObj, d));
+                } else if (this.selectedState.componentId === TwoCircles.C1_BODY) {
+                    const d = (this.selectedState.selectedObj.c1.center).sub(this.selectedState.prevPosition);
+                    this.addCommand(new TwoCirclesC1Command(this, this.selectedState.selectedObj, d));
+                } else if (this.selectedState.componentId === TwoCircles.C2_CIRCUMFERENCE) {
+                    this.addCommand(new TwoCirclesC2RCommand(this, this.selectedState.selectedObj,
+                                                             this.selectedState.selectedObj.c2PrevRadius,
+                                                             this.selectedState.selectedObj.c2.r));
+                } else if (this.selectedState.componentId === TwoCircles.C1_CIRCUMFERENCE) {
+                    this.addCommand(new TwoCirclesC1RCommand(this, this.selectedState.selectedObj,
+                                                             this.selectedState.selectedObj.c1PrevRadius,
+                                                             this.selectedState.selectedObj.c1.r));
+                }
+            } else {
+                const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
+                if(d.length() < 0.0000001)
+                    return;
+                this.addCommand(new MoveCommand(this, this.selectedState.selectedObj, d));
+            }
         }
     }
 

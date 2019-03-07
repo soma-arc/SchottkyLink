@@ -2,14 +2,15 @@ import assert from 'power-assert';
 import Vec2 from '../vector2d.js';
 import SelectionState from './selectionState.js';
 import DistanceState from './distanceState.js';
-import Shape from './generator.js';
+import Generator from './generator.js';
 
-export default class Circle extends Shape {
+export default class Circle extends Generator {
     constructor(center, r) {
         super();
         this.center = center;
         this.r = r;
         this.rSq = r * r;
+        this.prevRadius = r;
         this.circumferenceThickness = 0.01;
 
         this.snapMode = Circle.SNAP_NONE;
@@ -39,6 +40,7 @@ export default class Circle extends Shape {
 
         const distFromCircumference = this.r - d;
         if (distFromCircumference < this.circumferenceThickness * sceneScale) {
+            this.prevRadius = this.r;
             return new SelectionState().setObj(this)
                 .setComponentId(Circle.CIRCUMFERENCE)
                 .setDistToComponent(distFromCircumference)
@@ -65,7 +67,7 @@ export default class Circle extends Shape {
     move(selectionState, mouse, scene) {
         if (selectionState.componentId === Circle.CIRCUMFERENCE) {
             const nr = Vec2.distance(this.center, mouse) + selectionState.distToComponent;
-            this.r = nr
+            this.r = nr;
             if (this.snapMode === Circle.SNAP_NEAREST) {
                 const nearObj = scene.getNearObjectsDistance(this, this.center)[0].obj;
                 if (Math.abs(nr + nearObj.r - nearObj.center.sub(this.center).length()) < 0.015) {

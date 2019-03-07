@@ -2,33 +2,32 @@ import Scene from '../scene.js';
 import Generator from '../generator2d/generator.js';
 import Vec2 from '../vector2d.js';
 
-export default class MoveCommand {
+export default class RadiusCommand {
     /**
      *
      * @param {Scene} scene
      * @param {Generator} generator
-     * @param {Vec2} translation
+     * @param {Number} prevRadius
+     * @param {Number} radius
      */
-    constructor(scene, generator, translation) {
+    constructor(scene, generator, prevRadius, radius) {
         this.scene = scene;
         this.generator = generator;
-        this.translation = translation;
-        this.revTranslation = translation.scale(-1);
+        this.prevRadius = prevRadius;
+        this.radius = radius;
 
         this.scene.reRender();
     }
 
     undo() {
-        console.log('undo move');
-        //this.generator.translate(this.revTranslation);
-        this.generator.setPosition(this.generator.getPosition().add(this.revTranslation));
+        this.generator.r = this.prevRadius;
         this.generator.update();
         this.scene.reRender();
     }
 
     redo() {
         console.log('redo move');
-        this.generator.setPosition(this.generator.getPosition().add(this.translation));
+        this.generator.r = this.radius;
         this.generator.update();
         this.scene.reRender();
     }

@@ -166,6 +166,10 @@ export default class Canvas2d extends Canvas {
         } else if (event.ctrlKey && event.key === 'z') {
             console.log('undo');
             this.scene.undo();
+        } else if (event.key === 'h') {
+            this.scene.addHalfPlane(new Vec2(0, 0), 1);
+        } else if (event.key === 'l') {
+            this.scene.addTwoCircles(new Vec2(0, 0), 1);
         }
     }
 
