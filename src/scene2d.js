@@ -9,16 +9,19 @@ import RadiusCommand from './command/radiusCommand.js';
 import AngleHalfPlaneCommand from './command/angleHalfPlaneCommand.js';
 import HalfPlane from './generator2d/halfPlane.js';
 import TwoCircles from './generator2d/twoCircles.js';
+import Loxodromic from './generator2d/loxodromic.js';
 import TwoCirclesCommand from './command/twoCirclesCommand.js';
 import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
 import TwoCirclesC2RCommand from './command/twoCirclesC2RCommand.js';
+import LoxodromicPointCommand from './command/LoxodromicPointCommand.js';
 import Vec2 from './vector2d.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'Circle': Circle,
                         'HalfPlane': HalfPlane,
-                        'TwoCircles': TwoCircles };
+                        'TwoCircles': TwoCircles,
+                        'Loxodromic': Loxodromic};
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
 const PRESETS = [];
@@ -127,6 +130,13 @@ export default class Scene2d extends Scene {
         const h = new TwoCircles(new Circle(position, 0.1 * sceneScale),
                                  new Circle(position, 0.2 * sceneScale));
         this.addCommand(new AddGeneratorCommand(this, h, h.name));
+    }
+
+    addLoxodromic(position, sceneScale) {
+        const l = new Loxodromic(new Circle(position, 0.1 * sceneScale),
+                                 new Circle(position.add(new Vec2(0.05, 0.0)), 0.2 * sceneScale),
+                                 position.add(new Vec2(0, 0.3)));
+        this.addCommand(new AddGeneratorCommand(this, l, l.name));
     }
 
     move (mouse) {
@@ -284,7 +294,7 @@ export default class Scene2d extends Scene {
                                                           this.selectedState.selectedObj.normal));
             } else if (this.selectedState.selectedObj.name === 'TwoCircles') {
                 if (this.selectedState.componentId === TwoCircles.C2_BODY) {
-                    const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
+                    const d = (this.selectedState.selectedObj.c2.center).sub(this.selectedState.prevPosition);
                     this.addCommand(new TwoCirclesCommand(this, this.selectedState.selectedObj, d));
                 } else if (this.selectedState.componentId === TwoCircles.C1_BODY) {
                     const d = (this.selectedState.selectedObj.c1.center).sub(this.selectedState.prevPosition);
@@ -297,6 +307,24 @@ export default class Scene2d extends Scene {
                     this.addCommand(new TwoCirclesC1RCommand(this, this.selectedState.selectedObj,
                                                              this.selectedState.selectedObj.c1PrevRadius,
                                                              this.selectedState.selectedObj.c1.r));
+                }
+            } else if (this.selectedState.selectedObj.name === 'Loxodromic') {
+                if (this.selectedState.componentId === Loxodromic.C2_BODY) {
+                    const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);
+                    this.addCommand(new TwoCirclesCommand(this, this.selectedState.selectedObj, d));
+                } else if (this.selectedState.componentId === Loxodromic.C1_BODY) {
+                    const d = (this.selectedState.selectedObj.c1.center).sub(this.selectedState.prevPosition);
+                    this.addCommand(new TwoCirclesC1Command(this, this.selectedState.selectedObj, d));
+                } else if (this.selectedState.componentId === Loxodromic.C2_CIRCUMFERENCE) {
+                    this.addCommand(new TwoCirclesC2RCommand(this, this.selectedState.selectedObj,
+                                                             this.selectedState.selectedObj.c2PrevRadius,
+                                                             this.selectedState.selectedObj.c2.r));
+                } else if (this.selectedState.componentId === Loxodromic.C1_CIRCUMFERENCE) {
+                    this.addCommand(new TwoCirclesC1RCommand(this, this.selectedState.selectedObj,
+                                                             this.selectedState.selectedObj.c1PrevRadius,
+                                                             this.selectedState.selectedObj.c1.r));
+                } else if (this.selectedState.componentId === Loxodromic.POINT) {
+                    this.addCommand(new LoxodromicPointCommand(this, this.selectedObj, this.selectedObj.p));
                 }
             } else {
                 const d = (this.selectedState.selectedObj.getPosition()).sub(this.selectedState.prevPosition);

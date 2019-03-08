@@ -20,7 +20,6 @@ export default class TwoCirclesCommand {
 
     undo() {
         console.log('undo move');
-        //this.generator.translate(this.revTranslation);
         this.twoCircles.c2.setPosition(this.twoCircles.c2.getPosition().add(this.revTranslation));
         this.twoCircles.c1.setPosition(this.twoCircles.c1.getPosition().add(this.revTranslation));
         this.twoCircles.update();

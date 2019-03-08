@@ -170,6 +170,8 @@ export default class Canvas2d extends Canvas {
             this.scene.addHalfPlane(new Vec2(0, 0), 1);
         } else if (event.key === 'l') {
             this.scene.addTwoCircles(new Vec2(0, 0), 1);
+        } else if (event.key === 'x') {
+            this.scene.addLoxodromic(new Vec2(0, 0), 1);
         }
     }
 

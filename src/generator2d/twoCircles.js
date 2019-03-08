@@ -39,7 +39,7 @@ export default class TwoCircles extends Generator {
                 return new SelectionState().setObj(this)
                     .setComponentId(TwoCircles.C1_BODY)
                     .setDiffObj(c1State.diffObj)
-                    .setPrevPosition(this.c2.center);
+                    .setPrevPosition(this.c1.center);
             } else if (c1State.componentId === Circle.CIRCUMFERENCE) {
                 this.c1PrevRadius = this.c1.r;
                 return new SelectionState().setObj(this)
