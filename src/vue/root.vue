@@ -114,8 +114,8 @@ a:active {color:#000000;}
     flex: 1;
     display: flex;
 }
-  
-.header {
+
+header {
     border-style: ridge;
     border-color: gray;
     
