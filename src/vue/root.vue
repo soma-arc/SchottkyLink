@@ -1,7 +1,7 @@
 <template>
   <div id="root">
-    <header-panel :scene="scene" :canvasHandler="canvasHandler"/>
-    <middle-panel :scene="scene" :canvasHandler="canvasHandler" :currentRoute="currentRoute" />
+    <header-panel :canvasHandler="canvasHandler"/>
+    <middle-panel :scene2d="scene2d" :scene3d="scene3d" :canvasManager="canvasManager" :currentRoute="currentRoute" />
     <footer-panel/>
   </div>
 </template>
@@ -12,7 +12,7 @@ import MiddlePanel from './middlePanel.vue';
 import FooterPanel from './footerPanel.vue';
 
 export default {
-    props: ['scene', 'canvasHandler', 'currentRoute'],
+    props: ['scene2d', 'scene3d', 'canvasManager', 'currentRoute'],
     components: {
         HeaderPanel, MiddlePanel, FooterPanel
     }

@@ -6,15 +6,15 @@
     <div class="canvasParent">
       <canvas id="canvas3dOrb" tabIndex="1002"/><br>
     </div>
-    <controlPanel :scene="scene" :canvasManager="canvasManager"/>
+    <controlPanel3d :scene="scene" :canvasManager="canvasManager"/>
   </div>
 </template>
 
 <script>
-import ControlPanel from './controlPanel.vue';
+import ControlPanel3d from './controlPanel3d.vue';
 
 export default {
-    components: { ControlPanel }
+    components: { ControlPanel3d }
 }
 </script>
 

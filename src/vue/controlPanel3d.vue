@@ -4,7 +4,6 @@
       <div id="ccc">
         <b-tab-item label="Component">
           <section id="component">
-            <label><b>Basic</b></label>
           </section>
         </b-tab-item>
       </div>

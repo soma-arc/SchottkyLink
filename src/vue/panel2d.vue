@@ -3,16 +3,16 @@
     <div class="canvasParent">
       <canvas id="canvas2d" tabIndex="1000"/><br>
     </div>
-    <controlPanel :scene="scene" :canvasManager="canvasManager"/>
+    <controlPanel2d :scene2d="scene2d" :canvasManager="canvasManager"/>
   </div>
 </template>
 
 <script>
-import ControlPanel from './controlPanel.vue';
+import ControlPanel2d from './controlPanel2d.vue';
 
 export default {
-    props: ['scene', 'canvasManager'],
-    components: { ControlPanel }
+    props: ['scene2d', 'canvasManager'],
+    components: { ControlPanel2d }
 }
 </script>
 

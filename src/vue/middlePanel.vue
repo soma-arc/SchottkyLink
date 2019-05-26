@@ -2,7 +2,7 @@
   <keep-alive>
     <transition name="component-fade" mode="out-in">
       <component v-bind:is="viewComponent"
-                 :scene="scene" :canvasManager="canvasManager"></component>
+                 :scene2d="scene2d" :scene3d="scene3d" :canvasManager="canvasManager"></component>
     </transition>
   </keep-alive>
 </template>
@@ -13,7 +13,7 @@ import Panel3d from './panel3d.vue';
 import Routes from './routes.js';
 
 export default {
-    props: ['scene', 'canvasManager', 'currentRoute'],
+    props: ['scene2d', 'scene3d', 'canvasManager', 'currentRoute'],
     methods: {
         render: function() {
             this.canvasManager.render();
