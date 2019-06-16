@@ -1,4 +1,3 @@
-require('babel-core/register');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -14,7 +13,7 @@ module.exports = () => ({
     },
 
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.vue$/, loader: 'vue-loader'
             },
@@ -31,9 +30,10 @@ module.exports = () => ({
                 },
             },
             {
-                test: /\.js$/,
-                exclude: /node_modules(?!(\/|\\)keen-ui)/,
                 loader: 'babel-loader',
+                options: {
+                    presets: [['@babel/preset-env', { modules: false }]]
+                }
             },
             {
                 test: /\.png$/,
@@ -55,7 +55,7 @@ module.exports = () => ({
 
     devServer: {
         contentBase: dist,
-        port: 3000,
+        port: 8080
     },
 
     plugins: [
