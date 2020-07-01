@@ -16,7 +16,7 @@
     "babel-preset-power-assert": "^1.0.0",
     "babel-register": "^6.24.0",
     "cross-env": "^3.2.4",
-    "css-loader": "^0.28.4",
+    "css-loader": "^0.28.11",
     "eslint": "^3.18.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-config-vue": "^2.0.2",
@@ -48,5 +48,9 @@
     "start": "webpack-dev-server",
     "lint": "eslint src/**/*.js",
     "test": "webpack --config=webpack.config-test.js && mocha --require source-map-support/register tmp/test-bundle.js"
+  },
+  "dependencies": {
+    "buefy": "^0.8.20",
+    "style-loader": "^1.2.1"
   }
 }

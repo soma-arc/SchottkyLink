@@ -1,5 +1,5 @@
 <template>
-  <div id="body">
+  <div id="root">
     <header class="header">
       <ul class="headerLeft">
         <li class="myBtn"><a class="btnLink">SchottkyLink</a></li>
@@ -59,12 +59,7 @@
 
 <style>
 
-html {
-    height: 100%;
-    font-family: "Times New Roman";
-}
-
-#body {
+#root {
     font-family: "Times New Roman";
     margin: 0;
     height: 100%;
@@ -80,7 +75,7 @@ html {
     align-items: center;
 
     list-style: none;
-    height: 100%;
+
 }
 
 .myBtn {
@@ -115,7 +110,7 @@ a:active {color:#000000;}
     display: flex;
 }
 
-header {
+.header {
     border-style: ridge;
     border-color: gray;
     
@@ -187,6 +182,10 @@ header {
 #left {
     height: 50px;
     display: flex;
+}
+
+main-panel-2d {
+   height: 100%;
 }
 
 </style>

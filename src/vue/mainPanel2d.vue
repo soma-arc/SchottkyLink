@@ -36,6 +36,8 @@ export default {
 .contentPanel {
     flex: 1;
     display: flex;
+    flex-direction: row;
+    overflow: hidden;
 }
 
 .canvasParent {

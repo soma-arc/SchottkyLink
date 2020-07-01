@@ -1,12 +1,15 @@
 import Vue from 'vue';
 import TextureHandler from './textureHandler.js';
 import Root from './vue/root.vue';
-import 'keen-ui/src/bootstrap';
-
+// import 'keen-ui/src/bootstrap';
+import KeenUI from 'keen-ui';
+import 'keen-ui/dist/keen-ui.css';
 import CanvasManager from './canvasManager.js';
 
 window.addEventListener('load', () => {
     // load default textures
+    Vue.use(KeenUI);
+
     const texLoad = TextureHandler.init();
     Promise.all(texLoad).then(function() {
         const canvasManager = new CanvasManager();
