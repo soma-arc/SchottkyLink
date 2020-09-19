@@ -1,4 +1,5 @@
 import Canvas from './canvas.js';
+import CanvasManager from './canvasManager.js';
 import Vec2 from './vector2d.js';
 import Vec3 from './vector3d.js';
 import TextureHandler from './textureHandler.js';
@@ -111,9 +112,6 @@ export class Canvas3D extends Canvas {
         } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.camera.prevTarget = this.camera.target;
         }
-    }
-
-    mouseDblClickListener(event) {
     }
 
     mouseUpListener(event) {
@@ -266,8 +264,9 @@ export class Canvas3D extends Canvas {
 }
 
 export class GeneratorCanvas extends Canvas3D {
-    constructor(canvasId, scene) {
+    constructor(canvasId, scene, canvasManager) {
         super(canvasId, scene, RENDER_GENERATOR_TMPL);
+        this.canvasManager = canvasManager;
         this.operateScale = false;
     }
 
@@ -288,6 +287,17 @@ export class GeneratorCanvas extends Canvas3D {
             this.camera.prevThetaPhi = new Vec2(this.camera.theta, this.camera.phi);
         } else if (event.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.camera.prevTarget = this.camera.target;
+        }
+    }
+
+    mouseDblClickListener(event) {
+        const mouse = this.calcCanvasCoord(event.clientX, event.clientY);
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            const removed = this.scene.remove(this.canvas.width, this.canvas.height,
+                                              mouse, this.camera);
+            if (removed) {
+                this.canvasManager.compile3dCanvases();
+            }
         }
     }
 

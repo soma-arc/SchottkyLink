@@ -26,7 +26,7 @@ export default class canvasManager {
         this.canvas2d = new Canvas2D('canvas', this.scene2d);
         this.canvas2d.render();
 
-        this.canvas3dGen = new GeneratorCanvas('canvas3dGen', this.scene3d);
+        this.canvas3dGen = new GeneratorCanvas('canvas3dGen', this.scene3d, this);
         this.canvas3dOrb = new OrbitCanvas('canvas3dOrb', this.scene3d);
     }
 

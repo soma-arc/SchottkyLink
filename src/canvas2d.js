@@ -126,8 +126,8 @@ export default class Canvas2D extends Canvas {
 
     mouseDblClickListener(event) {
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            const r = this.scene.remove(this.calcSceneCoord(event.clientX, event.clientY));
-            if(r) { 
+            const removed = this.scene.remove(this.calcSceneCoord(event.clientX, event.clientY));
+            if(removed) { 
                 this.compileRenderShader();
                 this.render();
             }

@@ -176,6 +176,34 @@ export default class Scene3D {
         }
     }
 
+    remove(width, height, mouse, camera) {
+        const ray = camera.computeRay(width, height, mouse.x, mouse.y);
+        const isectInfo = new IsectInfo(Number.MAX_VALUE, Number.MAX_VALUE);
+
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            for (const obj of this.objects[objName]) {
+                obj.castRay(camera.pos, ray, isectInfo);
+            }
+
+            this.selectedObj = isectInfo.hitObject;
+            this.selectionInfo = isectInfo;
+            if (this.selectedObj !== undefined &&
+                this.selectedObj.selected) {
+                this.selectedObj.select(isectInfo);
+                const found = this.objects[objName].findIndex(element =>
+                                                              element.id === this.selectedObj.id);
+                this.objects[objName][found].selected = false;
+                this.selectedObj = undefined;
+                this.objects[objName].splice(found, 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     move(width, height, mouse, camera) {
         if (this.selectedObj !== undefined &&
             this.selectionInfo.prevShape !== undefined) {
