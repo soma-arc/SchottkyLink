@@ -196,7 +196,21 @@ export default class Scene {
      * @param {Vec2} mouse
      */
     remove(mouse) {
-        // TODO: implement this
+        for(const key of Object.keys(STR_CLASS_MAP)) {
+            if(this.objects.hasOwnProperty(key)) {
+                for(const c of this.objects[key]) {
+                    if(c.removable(mouse)) {
+                        const found = this.objects[key].findIndex(element =>
+                                                                  element.id === c.id);
+                        this.objects[key].splice(found, 1);
+                        
+                        return true;
+                    }
+                }
+            }
+        }
+     
+        return false;
     }
 
     setUniformLocation(gl, uniLocations, program) {

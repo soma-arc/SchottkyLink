@@ -69,6 +69,11 @@ export default class Loxodromic extends Shape {
         return new SelectionState();
     }
 
+    removable(mouse) {
+        const d = Vec2.distance(mouse, this.c1d.center);
+        return d < this.c1d.r;
+    }
+
     /**
      * @param { SelectionState } selectionState
      * @param { Vec2 } mouse

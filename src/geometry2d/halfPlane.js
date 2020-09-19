@@ -126,6 +126,11 @@ export default class HalfPlane extends Shape {
         };
     }
 
+    removable(mouse) {
+        const d = Vec2.dot(mouse.sub(this.p), this.normal);
+        return d < 0;
+    }
+
     static loadJson(obj, scene) {
         const nh = new HalfPlane(new Vec2(obj.p[0], obj.p[1]),
                                  new Vec2(obj.normal[0], obj.normal[1]));

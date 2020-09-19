@@ -35,6 +35,11 @@ export default class Scaling extends Shape {
         this.line2Normal = new Vec2(-this.line2Dir.y, this.line2Dir.x).normalize();
     }
 
+    removable(mouse) {
+        const d = Vec2.distance(mouse, this.c1d.center);
+        return d < this.c1d.r;
+    }
+
     select(mouse, sceneScale) {
         const dpl1 = mouse.sub(this.line1P);
         if (dpl1.length() < this.pointRadius * sceneScale) {

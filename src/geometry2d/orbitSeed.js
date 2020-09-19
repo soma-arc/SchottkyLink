@@ -121,6 +121,14 @@ export default class OrbitSeed extends Shape {
         return new SelectionState();
     }
 
+    removable(mouse) {
+        if (this.corner.x < mouse.x && mouse.x < this.corner.x + this.size.x &&
+            this.corner.y < mouse.y && mouse.y < this.corner.y + this.size.y) {
+            return true;
+        }
+        return false;
+    }
+
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
         case OrbitSeed.BODY: {

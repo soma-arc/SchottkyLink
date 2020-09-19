@@ -70,6 +70,16 @@ export default class ParallelTranslation extends Shape {
             .setDiffObj(dp);
     }
 
+    removable(mouse) {
+        const dp = mouse.sub(this.p);
+        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)));
+        if (Vec2.dot(dp, this.normal) < 0 ||
+            Vec2.dot(dp2, this.normal.scale(-1)) < 0) {
+            return true;
+        }
+        return false;
+    }
+
     move(mouseState, mouse) {
         switch (mouseState.componentId) {
         case ParallelTranslation.BODY: {

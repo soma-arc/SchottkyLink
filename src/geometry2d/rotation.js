@@ -68,6 +68,15 @@ export default class Rotation extends Shape {
             .setDiffObj(mouse.sub(this.p));
     }
 
+    removable(mouse) {
+        const dp = mouse.sub(this.p);
+        if (Vec2.dot(dp, this.normal1) < 0 ||
+            Vec2.dot(dp, this.normal2) < 0) {
+            return true;
+        }
+        return false;
+    }
+
     move(mouseState, mouse) {
         switch (mouseState.componentId) {
         case Rotation.BODY: {
