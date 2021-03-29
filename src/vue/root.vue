@@ -22,6 +22,7 @@
            target="_blank">
           Previous Version
         </a>
+        <a id="prevLink" target="_blank" href="https://youtu.be/s1rtGw-WM_8">Introductory video on YouTube</a>
       </div>
       <div>
         Created by soma_arc
