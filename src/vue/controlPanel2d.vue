@@ -2,7 +2,7 @@
   <div class="controlPanel">
     <ui-tabs fullwidth id="tabs">
       <ui-tab title="Generator" id="tab-1">
-        <generator-panel2d v-bind:scene="scene" v-bind:canvas2d="canvas2d"/>
+        <generator-panel2d v-bind:scene="scene" v-bind:canvas2d="canvas2d" v-bind:cameraManager="cameraManager"/>
       </ui-tab>
       <ui-tab title="Scene" id="tab-2">
         <scene-obj-panel v-bind:scene="scene" v-bind:canvas2d="canvas2d" />
@@ -22,7 +22,7 @@ import SceneObjPanel from './sceneObjPanel.vue';
 import GeneratorPanel2d from './generatorPanel2d.vue';
 import RenderPropPanel2d from './renderPropPanel2d.vue';
 export default {
-    props: ['scene', 'canvas2d'],
+    props: ['scene', 'canvas2d', "cameraManager"],
     components: {
         UiTabs,
         UiTab,

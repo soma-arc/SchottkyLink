@@ -23,7 +23,7 @@ export default class TextureHandler {
     }
 
     static getTextureIndex(name) {
-        return TextureData[name].index;
+        return TextureData[name].index + 2; // 0 for acc, 1 for video
     }
 
     static get textureCatFishRun() {
@@ -52,7 +52,7 @@ export default class TextureHandler {
         let i = 0;
         for (const img of Object.values(TextureData)) {
             uniLocation.push(gl.getUniformLocation(program,
-                                                   `u_imageTextures`));
+                                                   `u_imageTextures[${i}]`));
             i++;
         }
     }

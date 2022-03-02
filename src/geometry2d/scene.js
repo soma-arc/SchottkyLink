@@ -15,10 +15,13 @@ import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
 import Scaling from './scaling.js';
 import OrbitSeed from './orbitSeed.js';
+import CameraOrbit from './cameraOrbit.js';
 import Vue from 'vue';
+import TextureHandler from '../textureHandler.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
+                        'CameraOrbit': CameraOrbit,
                         'Circle': Circle,
                         'Point': Point,
                         'CircleFromPoints': CircleFromPoints,
@@ -171,7 +174,15 @@ export default class Scene {
             Vue.set(this.objects, 'OrbitSeed', []);
         }
         this.objects['OrbitSeed'].push(new OrbitSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
-                                                     0.1 * sceneScale, 0.1 * sceneScale));
+                                                     0.1 * sceneScale, 0.1 * sceneScale, TextureHandler.getTextureIndex('cat_fish_run')));
+    }
+
+    addCameraOrbit(position, sceneScale, tex) {
+        if (this.objects['CameraOrbit'] === undefined) {
+            Vue.set(this.objects, 'CameraOrbit', []);
+        }
+        this.objects['CameraOrbit'].push(new CameraOrbit(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
+                                                         0.1 * sceneScale, 0.1 * sceneScale, 1, tex));
     }
 
     move (mouse) {

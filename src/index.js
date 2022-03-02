@@ -5,6 +5,7 @@ import Root from './vue/root.vue';
 import KeenUI from 'keen-ui';
 import 'keen-ui/dist/keen-ui.css';
 import CanvasManager from './canvasManager.js';
+import CameraManager from './cameraManager.js';
 
 window.addEventListener('load', () => {
     // load default textures
@@ -12,9 +13,10 @@ window.addEventListener('load', () => {
 
     const texLoad = TextureHandler.init();
     Promise.all(texLoad).then(function() {
-        const canvasManager = new CanvasManager();
-
-        const d = { 'canvasManager': canvasManager };
+        const cameraManager = new CameraManager();
+        const canvasManager = new CanvasManager(cameraManager);
+        const d = { 'canvasManager': canvasManager,
+                    'cameraManager': cameraManager };
 
         /* eslint-disable no-new */
         const app = new Vue({

@@ -3,7 +3,12 @@ uniform vec2 u_resolution;
 // [translateX, translateY, scale]
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
-uniform sampler2D u_imageTextures;
+{% if numOrbitSeed > 0 %}
+uniform sampler2D u_imageTextures[{{ numOrbitSeed }}];
+{% endif %}
+{% if numCameraOrbit > 0 %}
+uniform sampler2D u_cameraTexture;
+{% endif %}
 uniform bool u_isRenderingGenerator;
 
 struct Circle {
@@ -115,6 +120,10 @@ uniform Loxodromic u_loxodromic{{ n }};
 
 {% for n in range(0, numOrbitSeed) %}
 uniform OrbitSeed u_orbitSeed{{ n }};
+{% endfor %}
+
+{% for n in range(0, numCameraOrbit) %}
+uniform OrbitSeed u_cameraOrbit{{ n }};
 {% endfor %}
 
 {% for n in range(0, numScaling) %}

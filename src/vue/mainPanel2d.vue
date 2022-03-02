@@ -12,7 +12,8 @@
       </div>
     </div>
     <control-panel2d v-bind:scene="canvasManager.scene2d"
-                     v-bind:canvas2d="canvasManager.canvas2d"/>
+                     v-bind:canvas2d="canvasManager.canvas2d"
+                     v-bind:cameraManager="cameraManager"/>
   </div>
 </template>
 
@@ -21,7 +22,7 @@
 import UiSwitch from 'keen-ui/lib/UiSwitch';
 
 export default {
-    props: ['canvasManager'],
+    props: ['canvasManager', 'cameraManager'],
     components: { ControlPanel2d,
                   UiSwitch },
     methods: {

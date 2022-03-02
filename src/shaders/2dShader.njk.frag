@@ -42,7 +42,19 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            c = textureLod(u_imageTextures, vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
+            c = textureLod(u_imageTextures[{{ no }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
+            if(c.w == 1.) {
+                col = c.rgb;
+                return true;
+            }
+        }
+        {% endfor %}
+
+        {% for no in range(0, numCameraOrbit) %}
+        vec2 uv{{ n }}{{ no }}cam = (pos - u_cameraOrbit{{ no }}.corner) / u_cameraOrbit{{ no }}.size;
+        if(0. < uv{{ n }}{{ no }}cam.x && uv{{ n }}{{ no }}cam.x < 1. &&
+           0. < uv{{ n }}{{ no }}cam.y && uv{{ n }}{{ no }}cam.y < 1.) {
+            c = textureLod(u_cameraTexture, vec2(uv{{ n }}{{ no }}cam.x, 1. - uv{{ n }}{{ no }}cam.y), 0.0);
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
@@ -447,6 +459,19 @@ bool renderUI(vec2 pos, out vec3 color) {
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1. &&
            (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
+    }
+    {% endfor %}
+
+    {% for no in range(0, numCameraOrbit) %}
+    if(u_cameraOrbit{{ no }}.selected) {
+        vec2 uv{{ no }} = (pos - u_cameraOrbit{{ no }}.corner) / u_cameraOrbit{{ no }}.size;
+        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
+           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1. &&
+           (pos.x < u_cameraOrbit{{ no }}.ui.x || u_cameraOrbit{{ no }}.ui.z < pos.x ||
+            pos.y < u_cameraOrbit{{ no }}.ui.y || u_cameraOrbit{{ no }}.ui.w < pos.y)) {
             color = WHITE;
             return true;
         }

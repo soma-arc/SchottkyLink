@@ -9,7 +9,8 @@
       <header-menu :canvasManager="canvasManager"/>
     </header>
     <main-panel-2d v-show="canvasManager.isRendering2d"
-                   :canvasManager="canvasManager"/>
+                   :canvasManager="canvasManager"
+                   :cameraManager="cameraManager"/>
     <main-panel-3d v-show="canvasManager.isRendering3d"
                    :canvasManager="canvasManager"/>
     <footer class="footer">
@@ -37,7 +38,7 @@
      import HeaderMenu from './headerMenu.vue';
 
      export default {
-         props: ['canvasManager'],
+         props: ['canvasManager', 'cameraManager'],
          data: function() {
              return {
                  currentRoute: window.location.pathname

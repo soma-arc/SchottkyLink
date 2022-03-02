@@ -6,6 +6,8 @@
                 width="128px" height="128px" @click.native="addHalfPlane"/>
     <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
                 width="128px" height="128px"/>
+    <img-button label="Camera Input" :src="orbitSeedUrl" @click.native="addCameraOrbit"
+                width="128px" height="128px"/>
     <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                 width="128px" height="128px" @click.native="addParallelTranslation"/>
     <img-button label="Parallel Inversions" :src="parallelTranslationUrl"
@@ -37,7 +39,7 @@ const LOXODROMIC_IMG = require('../img/2dGenerators/loxodromic.png');
 const ORBIT_SEED_IMG = require('../img/2dGenerators/orbitSeed.png');
 
 export default {
-    props: ['scene', 'canvas2d'],
+    props: ['scene', 'canvas2d', 'cameraManager'],
     components: { ImgButton },
     data: function() {
         return { 'circleUrl': CIRCLE_IMG,
@@ -99,6 +101,25 @@ export default {
             this.scene.addOrbitSeed(new Vec2(0, 0), this.canvas2d.scale);
             this.canvas2d.compileRenderShader();
             this.canvas2d.render();
+        },
+        addCameraOrbit: function() {
+            if (this.cameraManager.streaming === false) {
+                this.cameraManager.connect(this.canvas2d.gl,
+                                           () => {
+                                               this.cameraManager.streaming = true;
+                                               this.scene.addCameraOrbit(new Vec2(0, 0),
+                                                                         this.canvas2d.scale,
+                                                                         this.cameraManager.cameraTexture);
+                                               this.canvas2d.compileRenderShader();
+                                               this.canvas2d.render();
+                                           },
+                                           () => {
+                                           });
+            } else {
+                this.scene.addCameraOrbit(new Vec2(0, 0), this.canvas2d.scale, this.cameraManager.cameraTexture);
+                this.canvas2d.compileRenderShader();
+                this.canvas2d.render();
+            }
         }
     }
 }

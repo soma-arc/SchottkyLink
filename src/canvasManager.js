@@ -8,7 +8,7 @@ const RENDER_2D = 0;
 const RENDER_3D = 1;
 
 export default class canvasManager {
-    constructor() {
+    constructor(cameraManager) {
         this.scene2d = new Scene2D();
         this.canvas2d = { 'productRenderResolution': new Vec2(0, 0) };
 
@@ -17,7 +17,8 @@ export default class canvasManager {
         this.canvas3dOrb = {};
 
         this.mode = RENDER_2D;
-
+        this.cameraManager = cameraManager;
+        
         this.resizeCallback = this.resize.bind(this);
     }
 
@@ -59,7 +60,13 @@ export default class canvasManager {
 
     renderLoop() {
         if (this.mode === RENDER_2D) {
-            if (this.canvas2d.isRendering) {
+            if (this.cameraManager.streaming) {
+                this.canvas2d.gl.bindTexture(this.canvas2d.gl.TEXTURE_2D, this.cameraManager.cameraTexture);
+                this.canvas2d.gl.texImage2D(this.canvas2d.gl.TEXTURE_2D, 0, this.canvas2d.gl.RGBA,
+                                            this.canvas2d.gl.RGBA,
+                                            this.canvas2d.gl.UNSIGNED_BYTE, this.cameraManager.video);
+                this.canvas2d.render();
+            } else if (this.canvas2d.isRendering) {
                 this.canvas2d.render();
             }
         } else if (this.mode === RENDER_3D) {
