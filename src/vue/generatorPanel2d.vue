@@ -12,6 +12,8 @@
                 width="128px" height="128px" @click.native="addParallelInversions"/>
     <img-button label="Rotation" :src="rotationUrl"
                 width="128px" height="128px" @click.native="addRotation"/>
+    <img-button label="Crossing Inversions" :src="rotationUrl"
+                width="128px" height="128px" @click.native="addCrossingInversions"/>
     <img-button label="Scaling" :src="scalingUrl"
                 width="128px" height="128px" @click.native="addScaling"/>
     <img-button label="Two Circles" :src="twoCirclesUrl"
@@ -70,6 +72,11 @@ export default {
         },
         addRotation: function() {
             this.scene.addRotation(new Vec2(0, 0), this.canvas2d.scale);
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        },
+        addCrossingInversions: function() {
+            this.scene.addCrossingInversions(new Vec2(0, 0), this.canvas2d.scale);
             this.canvas2d.compileRenderShader();
             this.canvas2d.render();
         },

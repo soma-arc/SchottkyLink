@@ -10,6 +10,7 @@ import HalfPlane from './halfPlane.js';
 import ParallelTranslation from './parallelTranslation.js'
 import ParallelInversions from './parallelInversions.js';
 import Rotation from './rotation.js';
+import CrossingInversions from './crossingInversions.js';
 import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
 import Scaling from './scaling.js';
@@ -25,6 +26,7 @@ const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
                         'ParallelTranslation': ParallelTranslation,
                         'ParallelInversions': ParallelInversions,
                         'Rotation': Rotation,
+                        'CrossingInversions': CrossingInversions,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
                         'Scaling': Scaling };
@@ -130,6 +132,13 @@ export default class Scene {
             Vue.set(this.objects, 'Rotation', []);
         }
         this.objects['Rotation'].push(new Rotation(position, new Vec2(1, 0), Math.PI / 4));
+    }
+
+    addCrossingInversions(position, sceneScale) {
+        if (this.objects['CrossingInversions'] === undefined) {
+            Vue.set(this.objects, 'CrossingInversions', []);
+        }
+        this.objects['CrossingInversions'].push(new CrossingInversions(position, new Vec2(1, 0), Math.PI / 4));
     }
 
     addTwoCircles(position, sceneScale) {

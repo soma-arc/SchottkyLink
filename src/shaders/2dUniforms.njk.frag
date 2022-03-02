@@ -101,6 +101,10 @@ uniform ParallelTranslation u_parallelInversions{{ n }};
 uniform Rotation u_rotation{{ n }};
 {% endfor %}
 
+{% for n in range(0, numCrossingInversions) %}
+uniform Rotation u_crossingInversions{{ n }};
+{% endfor %}
+
 {% for n in range(0, numTwoCircles) %}
 uniform TwoCircles u_hyperbolic{{ n }};
 {% endfor %}
