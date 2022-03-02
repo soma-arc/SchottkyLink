@@ -81,32 +81,56 @@ bool IIS(vec2 pos, out vec3 col) {
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
         if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
             invNum += abs(floor(hpd{{ n }} / u_translate{{ n }}.normal.z));
-            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w));
-
-            pos -= u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
-            hpd{{ n }} = dot(pos, u_translate{{ n }}.normal.xy);
-            pos -= 2.0 * max(0., hpd{{ n }}) * u_translate{{ n }}.normal.xy;
-            pos += u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
+            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w/2.));
 
             inFund = false;
         }
         pos += u_translate{{ n }}.p;
         {% endfor %}
 
+        {% for n in range(0, numParallelInversions) %}
+        pos -= u_parallelInversions{{ n }}.p;
+        float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
+        if(hpdInv{{ n }} < 0. || u_parallelInversions{{ n }}.normal.z < hpdInv{{ n }}) {
+            invNum += abs(floor(hpdInv{{ n }} / u_parallelInversions{{ n }}.normal.z));
+            pos -= u_parallelInversions{{ n }}.normal.xy * (hpdInv{{ n }} - mod(hpdInv{{ n }}, u_parallelInversions{{ n }}.normal.w));
+            pos -= u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+            hpdInv{{ n }} = dot(pos, u_parallelInversions{{ n }}.normal.xy);
+            pos -= 2.0 * max(0., hpdInv{{ n }}) * u_parallelInversions{{ n }}.normal.xy;
+            pos += u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+
+            inFund = false;
+        }
+        pos += u_parallelInversions{{ n }}.p;
+        {% endfor %}
+
         {% for n in range(0, numRotation) %}
         pos -= u_rotation{{ n }}.p;
-        float dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
-        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
-        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
-        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.xy;
+        float dRot1{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
+        float dRot2{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
+        invNum += (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? false : inFund;
+        vec2 rot1{{ n }} = abs(vec2(-u_rotation{{ n }}.normal.y, u_rotation{{ n }}.normal.x));
+        vec2 rot2{{ n }} = abs(vec2(u_rotation{{ n }}.normal.w, -u_rotation{{ n }}.normal.z));
+        float angle{{ n }} = (atan(-rot1{{ n }}.y, rot1{{ n }}.x) -  atan(rot2{{ n }}.y, rot2{{n}}.x));
+        mat2 m = mat2(cos(angle{{n}}), -sin(angle{{n}}),
+                       sin(angle{{n}}), cos(angle{{n}}));
+        pos = m * pos;
         pos += u_rotation{{ n }}.p;
+        
+        // pos -= u_rotation{{ n }}.p;
+        // float dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
+        // invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
+        // inFund = (dRot{{ n }} < 0. ) ? false : inFund;
+        // pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.xy;
+        // pos += u_rotation{{ n }}.p;
 
-        pos -= u_rotation{{ n }}.p;
-        dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
-        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
-        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
-        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.zw;
-        pos += u_rotation{{ n }}.p;
+        // pos -= u_rotation{{ n }}.p;
+        // dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
+        // invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
+        // inFund = (dRot{{ n }} < 0. ) ? false : inFund;
+        // pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.zw;
+        // pos += u_rotation{{ n }}.p;
         {% endfor %}
 
         {% for n in range(0, numTwoCircles) %}
@@ -276,6 +300,55 @@ bool renderUI(vec2 pos, out vec3 color) {
             return true;
         }
         pos += u_translate{{ n }}.p;
+    }
+    {% endfor %}
+
+    {% for n in range(0, numParallelInversions) %}
+    if(u_parallelInversions{{ n }}.selected){
+      
+        // normal point
+        if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_parallelInversions{{ n }}.p) - u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        // point p
+        if(distance(pos, u_parallelInversions{{ n }}.p) < u_parallelInversions{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        // point on hp2
+        if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z) < u_parallelInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // boundary
+        dist = dot(pos - u_parallelInversions{{ n }}.p, - u_parallelInversions{{ n }}.normal.xy);
+        if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        dist = dot(pos - (u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z),
+                   - u_parallelInversions{{ n }}.normal.xy);
+        if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        // line
+        pos -= u_parallelInversions{{ n }}.p;
+        float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
+        if(hpdInv{{ n }} > 0. && u_parallelInversions{{ n }}.normal.z > hpdInv{{ n }} &&
+           abs(dot(pos, vec2(-u_parallelInversions{{ n }}.normal.y, u_parallelInversions{{ n }}.normal.x))) < u_parallelInversions{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_parallelInversions{{ n }}.p;
     }
     {% endfor %}
 

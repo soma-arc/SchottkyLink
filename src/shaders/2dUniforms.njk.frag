@@ -93,6 +93,10 @@ uniform vec3 u_point{{ n }};
 uniform ParallelTranslation u_translate{{ n }};
 {% endfor %}
 
+{% for n in range(0, numParallelInversions) %}
+uniform ParallelTranslation u_parallelInversions{{ n }};
+{% endfor %}
+
 {% for n in range(0, numRotation) %}
 uniform Rotation u_rotation{{ n }};
 {% endfor %}

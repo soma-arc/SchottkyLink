@@ -8,6 +8,7 @@ import Point from './point.js';
 import CircleFromPoints from './circleFromPoints.js';
 import HalfPlane from './halfPlane.js';
 import ParallelTranslation from './parallelTranslation.js'
+import ParallelInversions from './parallelInversions.js';
 import Rotation from './rotation.js';
 import TwoCircles from './twoCircles.js';
 import Loxodromic from './loxodromic.js';
@@ -22,6 +23,7 @@ const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
                         'CircleFromPoints': CircleFromPoints,
                         'HalfPlane': HalfPlane,
                         'ParallelTranslation': ParallelTranslation,
+                        'ParallelInversions': ParallelInversions,
                         'Rotation': Rotation,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
@@ -116,6 +118,13 @@ export default class Scene {
         this.objects['ParallelTranslation'].push(new ParallelTranslation(position, new Vec2(1, 0), 2));
     }
 
+    addParallelInversions(position, sceneScale) {
+        if (this.objects['ParallelInversions'] === undefined) {
+            Vue.set(this.objects, 'ParallelInversions', []);
+        }
+        this.objects['ParallelInversions'].push(new ParallelInversions(position, new Vec2(1, 0), 2));
+    }
+
     addRotation(position, sceneScale) {
         if (this.objects['Rotation'] === undefined) {
             Vue.set(this.objects, 'Rotation', []);
@@ -196,10 +205,10 @@ export default class Scene {
      * @param {Vec2} mouse
      */
     remove(mouse) {
-        for(const key of Object.keys(STR_CLASS_MAP)) {
-            if(this.objects.hasOwnProperty(key)) {
-                for(const c of this.objects[key]) {
-                    if(c.removable(mouse)) {
+        for (const key of Object.keys(STR_CLASS_MAP)) {
+            if (this.objects.hasOwnProperty(key)) {
+                for (const c of this.objects[key]) {
+                    if (c.removable(mouse)) {
                         const found = this.objects[key].findIndex(element =>
                                                                   element.id === c.id);
                         this.objects[key].splice(found, 1);
