@@ -6,7 +6,7 @@
                 width="128px" height="128px" @click.native="addHalfPlane"/>
     <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
                 width="128px" height="128px"/>
-    <img-button label="Camera Input" :src="orbitSeedUrl" @click.native="addCameraOrbit"
+    <img-button label="Camera Input" :src="videoUrl" @click.native="addCameraOrbit"
                 width="128px" height="128px"/>
     <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                 width="128px" height="128px" @click.native="addParallelTranslation"/>
@@ -37,6 +37,7 @@ const SCALING_IMG = require('../img/2dGenerators/scaling.png');
 const TWO_CIRCLES_IMG = require('../img/2dGenerators/twoCircles.png');
 const LOXODROMIC_IMG = require('../img/2dGenerators/loxodromic.png');
 const ORBIT_SEED_IMG = require('../img/2dGenerators/orbitSeed.png');
+const VIDEO_IMG = require('../img/2dGenerators/video_camera.png');
 
 export default {
     props: ['scene', 'canvas2d', 'cameraManager'],
@@ -49,7 +50,8 @@ export default {
                  'scalingUrl': SCALING_IMG,
                  'twoCirclesUrl': TWO_CIRCLES_IMG,
                  'loxodromicUrl': LOXODROMIC_IMG,
-                 'orbitSeedUrl': ORBIT_SEED_IMG }
+                 'orbitSeedUrl': ORBIT_SEED_IMG,
+                 'videoUrl': VIDEO_IMG }
     },
     methods: {
         addCircle: function() {
