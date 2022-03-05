@@ -86,15 +86,61 @@ export default class Rotation extends Shape {
         case Rotation.BOUNDARY_POINT: {
             this.boundaryDir1 = mouse.sub(this.p).normalize();
             let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
-            rad = (Math.abs(rad) < 0.2) ? 0 : rad;
-            rad = (Math.abs(rad - Radians.PI_4) < 0.2) ? Radians.PI_4 : rad;
-            rad = (Math.abs(rad + Radians.PI_4) < 0.2) ? -Radians.PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI_2) < 0.2) ? Radians.PI_2 : rad;
-            rad = (Math.abs(rad + Radians.PI_2) < 0.2) ? -Radians.PI_2 : rad;
-            rad = (Math.abs(rad - Radians.THREE_PI_4) < 0.2) ? Radians.THREE_PI_4 : rad;
-            rad = (Math.abs(rad + Radians.THREE_PI_4) < 0.2) ? -Radians.THREE_PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI) < 0.2) ? Radians.PI : rad;
-            rad = (Math.abs(rad + Radians.PI) < 0.2) ? Radians.PI : rad;
+            if (Math.abs(rad) < 0.1) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_12) < 0.1) {
+                    rad = Radians.PI_12;
+                } else if (Math.abs(rad - Radians.PI_6) < 0.1) {
+                    rad = Radians.PI_6;
+                } else if (Math.abs(rad - Radians.PI_4) < 0.1) {
+                    rad = Radians.PI_4;
+                } else if (Math.abs(rad - Radians.PI_3) < 0.1) {
+                    rad = Radians.PI_3;
+                } else if (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) {
+                    rad = Radians.FIVE_PI_12;
+                } else if (Math.abs(rad - Radians.PI_2) < 0.1) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.SEVEN_PI_12) < 0.1) {
+                    rad = Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.TWO_PI_3) < 0.1) {
+                    rad = Radians.TWO_PI_3;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.1) {
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.FIVE_PI_6) < 0.1) {
+                    rad = Radians.FIVE_PI_6;
+                } else if (Math.abs(rad - Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_12) < 0.1) {
+                    rad = -Radians.PI_12;
+                } else if (Math.abs(rad + Radians.PI_6) < 0.1) {
+                    rad = -Radians.PI_6;
+                } else if (Math.abs(rad + Radians.PI_4) < 0.1) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_3) < 0.1) {
+                    rad = -Radians.PI_3;
+                } else if (Math.abs(rad + Radians.FIVE_PI_12) < 0.1) {
+                    rad = -Radians.FIVE_PI_12;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.1) {
+                    rad = -Radians.PI_2;
+                } else if (Math.abs(rad + Radians.SEVEN_PI_12) < 0.1) {
+                    rad = -Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.TWO_PI_3) < 0.1) {
+                    rad = -Radians.TWO_PI_3;
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.1) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.FIVE_PI_6) < 0.1) {
+                    rad = -Radians.FIVE_PI_6;
+                } else if (Math.abs(rad + Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = -Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            }
             this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
             break;
         }
@@ -105,9 +151,11 @@ export default class Rotation extends Shape {
             let rad = theta1 - theta2;
             rad = (rad > Radians.PI_2) ? Radians.PI_2 : rad;
             rad = (rad < 0) ? 0 : rad;
-            rad = (Math.abs(rad - Radians.PI_4) < 0.15) ? Radians.PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI_3) < 0.15) ? Radians.PI_3 : rad;
-            rad = (Math.abs(rad - Radians.PI_6) < 0.15) ? Radians.PI_6 : rad;
+            rad = (Math.abs(rad - Radians.PI_12) < 0.1) ? Radians.PI_12 : rad;
+            rad = (Math.abs(rad - Radians.PI_6) < 0.1) ? Radians.PI_6 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.1) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_3) < 0.1) ? Radians.PI_3 : rad;
+            rad = (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) ? Radians.FIVE_PI_12 : rad;
             this.radians = rad;
             break;
         }
