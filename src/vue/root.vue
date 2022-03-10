@@ -24,6 +24,7 @@
           Previous Version
         </a>
         <a id="prevLink" target="_blank" href="https://youtu.be/s1rtGw-WM_8">Introductory video on YouTube</a>
+        <a id="version">Version 2.0.0 </a>
       </div>
       <div>
         Created by soma_arc
@@ -159,6 +160,24 @@ a:active {color:#000000;}
 }
 
 #prevLink {
+    align-items: center;
+    padding-top: 20px;
+    padding-right: 5px;
+    padding-left: 5px;
+    border-right-style: ridge;
+    border-left-style: ridge;
+    border-right-color: gray;
+    border-left-color: gray;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    cursor: default;
+}
+
+#version {
     align-items: center;
     padding-top: 20px;
     padding-right: 5px;
