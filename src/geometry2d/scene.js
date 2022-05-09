@@ -18,6 +18,7 @@ import OrbitSeed from './orbitSeed.js';
 import CameraOrbit from './cameraOrbit.js';
 import Vue from 'vue';
 import TextureHandler from '../textureHandler.js';
+import GlideReflection from './glideReflection.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
@@ -32,7 +33,8 @@ const STR_CLASS_MAP = { 'OrbitSeed': OrbitSeed,
                         'CrossingInversions': CrossingInversions,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
-                        'Scaling': Scaling };
+                        'Scaling': Scaling,
+                        'GlideReflection': GlideReflection };
 
 const PRESETS_CONTEXT = require.context('../presets2d', true, /.json$/);
 const PRESETS = [];
@@ -121,6 +123,13 @@ export default class Scene {
             Vue.set(this.objects, 'ParallelTranslation', []);
         }
         this.objects['ParallelTranslation'].push(new ParallelTranslation(position, new Vec2(1, 0), 2));
+    }
+
+    addGlideReflection(position, sceneScale) {
+        if (this.objects['GlideReflection'] === undefined) {
+            Vue.set(this.objects, 'GlideReflection', []);
+        }
+        this.objects['GlideReflection'].push(new GlideReflection(position, new Vec2(1, 0), 2));
     }
 
     addParallelInversions(position, sceneScale) {

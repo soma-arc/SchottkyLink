@@ -116,6 +116,19 @@ bool IIS(vec2 pos, out vec3 col) {
         pos += u_parallelInversions{{ n }}.p;
         {% endfor %}
 
+        {% for n in range(0, numGlideReflection) %}
+        pos -= u_glideReflection{{ n }}.p;
+        float glideInv{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
+        if(glideInv{{ n }} < 0. || u_glideReflection{{ n }}.normal.z < glideInv{{ n }}) {
+          float ref = abs(floor(glideInv{{ n }} / u_glideReflection{{ n }}.normal.z));
+          invNum += ref;
+          pos -= u_glideReflection{{ n }}.normal.xy * (glideInv{{ n }} - mod(glideInv{{ n }}, u_glideReflection{{ n }}.normal.w/2.));
+          pos = mod(ref, 2.0) == 0. ? pos : vec2(pos.x, -pos.y);
+          inFund = false;
+        }
+        pos += u_glideReflection{{ n }}.p;
+        {% endfor %}
+
         {% for n in range(0, numRotation) %}
         pos -= u_rotation{{ n }}.p;
         float dRot1{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
@@ -363,6 +376,55 @@ bool renderUI(vec2 pos, out vec3 color) {
             return true;
         }
         pos += u_parallelInversions{{ n }}.p;
+    }
+    {% endfor %}
+
+    {% for n in range(0, numGlideReflection) %}
+    if(u_glideReflection{{ n }}.selected){
+      
+        // normal point
+        if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_glideReflection{{ n }}.p) - u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        // point p
+        if(distance(pos, u_glideReflection{{ n }}.p) < u_glideReflection{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        // point on hp2
+        if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z) < u_glideReflection{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // boundary
+        dist = dot(pos - u_glideReflection{{ n }}.p, - u_glideReflection{{ n }}.normal.xy);
+        if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        dist = dot(pos - (u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z),
+                   - u_glideReflection{{ n }}.normal.xy);
+        if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        // line
+        pos -= u_glideReflection{{ n }}.p;
+        float hpdGlide{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
+        if(hpdGlide{{ n }} > 0. && u_glideReflection{{ n }}.normal.z > hpdGlide{{ n }} &&
+           abs(dot(pos, vec2(-u_glideReflection{{ n }}.normal.y, u_glideReflection{{ n }}.normal.x))) < u_glideReflection{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_glideReflection{{ n }}.p;
     }
     {% endfor %}
 

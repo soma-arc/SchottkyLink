@@ -127,7 +127,7 @@ export default class Canvas2D extends Canvas {
     mouseDblClickListener(event) {
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
             const removed = this.scene.remove(this.calcSceneCoord(event.clientX, event.clientY));
-            if(removed) { 
+            if(removed) {
                 this.compileRenderShader();
                 this.render();
             }
@@ -220,6 +220,7 @@ export default class Canvas2D extends Canvas {
             this.gl.uniform1i(this.uniLocations[i++], textureIndex);
             textureIndex++;
         }
+        textureIndex++;
         this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
         this.gl.uniform1i(this.uniLocations[i++], textureIndex);

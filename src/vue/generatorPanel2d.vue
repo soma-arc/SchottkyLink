@@ -12,6 +12,8 @@
                 width="128px" height="128px" @click.native="addParallelTranslation"/>
     <img-button label="Parallel Inversions" :src="parallelTranslationUrl"
                 width="128px" height="128px" @click.native="addParallelInversions"/>
+    <img-button label="GlideReflection" :src="parallelTranslationUrl"
+                width="128px" height="128px" @click.native="addGlideReflection"/>
     <img-button label="Rotation" :src="rotationUrl"
                 width="128px" height="128px" @click.native="addRotation"/>
     <img-button label="Crossing Inversions" :src="rotationUrl"
@@ -71,6 +73,11 @@ export default {
         },
         addParallelInversions: function() {
             this.scene.addParallelInversions(new Vec2(0, 0), this.canvas2d.scale);
+            this.canvas2d.compileRenderShader();
+            this.canvas2d.render();
+        },
+        addGlideReflection: function() {
+            this.scene.addGlideReflection(new Vec2(0, 0), this.canvas2d.scale);
             this.canvas2d.compileRenderShader();
             this.canvas2d.render();
         },

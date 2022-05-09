@@ -102,6 +102,10 @@ uniform ParallelTranslation u_translate{{ n }};
 uniform ParallelTranslation u_parallelInversions{{ n }};
 {% endfor %}
 
+{% for n in range(0, numGlideReflection) %}
+uniform ParallelTranslation u_glideReflection{{ n }};
+{% endfor %}
+
 {% for n in range(0, numRotation) %}
 uniform Rotation u_rotation{{ n }};
 {% endfor %}

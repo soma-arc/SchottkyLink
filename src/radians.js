@@ -1,6 +1,6 @@
 const PI_2 = Math.PI / 2;
 const PI_3 = Math.PI / 3;
-const TWO_PI_3 = Math.PI / 3;
+const TWO_PI_3 = 2 * Math.PI / 3;
 const PI_4 = Math.PI / 4;
 const THREE_PI_4 = 3 * Math.PI / 4;
 const PI_6 = Math.PI / 6;

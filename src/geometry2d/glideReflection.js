@@ -1,77 +1,80 @@
 import Vec2 from '../vector2d.js';
+import HalfPlane from './halfPlane.js';
 import SelectionState from './selectionState.js';
 import DistanceState from './distanceState.js';
 import Shape from './shape.js';
 import Radians from '../radians.js';
 
-export default class CrossingInversions extends Shape {
-     /**
-     * //////+ bondaryDirPoint2 - control rotation angle
-     * //////|
-     * //////|
-     * //////|
-     * //////|
-     * ------+------+ boundaryDirPoint1 control generator's rotation
-     * //// p|///////
-     * ////  |///////
-     * //////|///////
+export default class GlideReflection extends Shape {
+    /**
+     * Translation is 2 * (distance between hp1 and hp2)
+     * //// hp2 /////
+     * //////////////
+     * ------+-------
+     *       ^ normal
+     *       |
+     *       |
+     * ------+-------
+     * ///// p //////
+     * //////////////
+     * //// hp1 /////
      * @param {Vec2} p
-     * @param {Vec2} boundaryDir
-     * @param {number} radians
+     * @param {Vec2} normal
+     * @param {number} planeDist
      */
-    constructor(p, boundaryDir, radians) {
+    constructor(p, normal, planeDist) {
         super();
         this.p = p;
-        this.radians = radians;
-        this.boundaryDir1 = boundaryDir;
+        this.normal = normal.normalize();
+        this.planeDist = planeDist;
+
         this.normalUIRingRadius = 0.1;
         this.UIPointRadius = 0.01;
+
         this.update();
     }
 
     update() {
-        const cosTheta = Math.cos(this.radians);
-        const sinTheta = Math.sin(this.radians);
-        this.normal1 = new Vec2(-this.boundaryDir1.y, this.boundaryDir1.x);
-        this.normal2 = new Vec2(this.normal1.x * cosTheta - this.normal1.y * sinTheta,
-                                this.normal1.x * sinTheta + this.normal1.y * cosTheta).scale(-1);
-        this.boundaryDir2 = new Vec2(-this.normal2.y, this.normal2.x);
+        this.boundaryDir = new Vec2(-this.normal.y,
+                                    this.normal.x);
+        this.hp1 = new HalfPlane(this.p, this.normal);
+        this.hp2 = new HalfPlane(this.p.add(this.normal.scale(this.planeDist)),
+                                 this.normal.scale(-1));
     }
 
     select(mouse, sceneScale) {
-        const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius * sceneScale));
-        const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius * sceneScale));
-
+        const dp = mouse.sub(this.p);
         // normal control point
-        const dp = mouse.sub(boundaryDirPoint1);
-        if (dp.length() < this.UIPointRadius * sceneScale) {
+        const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIRingRadius * sceneScale)));
+        if (dpNormal.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
-                .setComponentId(CrossingInversions.BOUNDARY_POINT)
-                .setDiffObj(dp);
+                .setComponentId(GlideReflection.NORMAL_POINT)
+                .setDiffObj(dpNormal);
         }
 
         // point of hp2
-        const dp2 = mouse.sub(boundaryDirPoint2)
+        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)))
         if (dp2.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
-                .setComponentId(CrossingInversions.ROTATION_POINT)
+                .setComponentId(GlideReflection.POINT_HP2)
                 .setDiffObj(dp2);
         }
 
-        if (Vec2.dot(dp, this.normal1) > 0 &&
-            Vec2.dot(dp2, this.normal2) > 0) {
+        if (Vec2.dot(dp, this.normal) > 0 &&
+            Vec2.dot(dp2, this.normal.scale(-1)) > 0) {
             return new SelectionState();
         }
 
         return new SelectionState().setObj(this)
-            .setComponentId(CrossingInversions.BODY)
-            .setDiffObj(mouse.sub(this.p));
+            .setComponentId(GlideReflection.BODY)
+            .setDiffObj(dp);
     }
 
     removable(mouse) {
         const dp = mouse.sub(this.p);
-        if (Vec2.dot(dp, this.normal1) < 0 ||
-            Vec2.dot(dp, this.normal2) < 0) {
+        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)));
+        if (Vec2.dot(dp, this.normal) < 0 ||
+            Vec2.dot(dp2, this.normal.scale(-1)) < 0) {
             return true;
         }
         return false;
@@ -79,13 +82,13 @@ export default class CrossingInversions extends Shape {
 
     move(mouseState, mouse) {
         switch (mouseState.componentId) {
-        case CrossingInversions.BODY: {
+        case GlideReflection.BODY: {
             this.p = mouse.sub(mouseState.diffObj);
             break;
         }
-        case CrossingInversions.BOUNDARY_POINT: {
-            this.boundaryDir1 = mouse.sub(this.p).normalize();
-            let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+        case GlideReflection.NORMAL_POINT: {
+            this.normal = mouse.sub(this.p).normalize();
+            let rad = Math.atan2(this.normal.y, this.normal.x);
             if (Math.abs(rad) < 0.1) {
                 rad = 0;
             } else if (rad > 0) {
@@ -141,23 +144,13 @@ export default class CrossingInversions extends Shape {
                     rad = Radians.PI;
                 }
             }
-            this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
+            this.normal = new Vec2(Math.cos(rad), Math.sin(rad));
             break;
         }
-        case CrossingInversions.ROTATION_POINT: {
-            const mp = mouse.sub(this.p);
-            const theta1 = Math.atan2(mp.y, mp.x);
-            const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
-            let rad = theta1 - theta2;
-            rad = (rad > Radians.TWO_PI_3) ? Radians.TWO_PI_3 : rad;
-            rad = (rad < 0) ? 0 : rad;
-            rad = (Math.abs(rad - Radians.PI_12) < 0.1) ? Radians.PI_12 : rad;
-            rad = (Math.abs(rad - Radians.PI_6) < 0.1) ? Radians.PI_6 : rad;
-            rad = (Math.abs(rad - Radians.PI_4) < 0.1) ? Radians.PI_4 : rad;
-            rad = (Math.abs(rad - Radians.PI_3) < 0.1) ? Radians.PI_3 : rad;
-            rad = (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) ? Radians.FIVE_PI_12 : rad;
-            rad = (Math.abs(rad - Radians.PI_2) < 0.1) ? Radians.PI_2 : rad;
-            this.radians = rad;
+        case GlideReflection.POINT_HP2: {
+            const len = Vec2.dot(this.normal, mouse.sub(this.p));
+            if (len < 0) return;
+            this.planeDist = len;
             break;
         }
         }
@@ -170,31 +163,23 @@ export default class CrossingInversions extends Shape {
      * @param {Vec2} p
      */
     getDistances(p) {
-        const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius));
-        const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius));
-        const d1 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint1), this.normal1));
-        const d2 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint2), this.normal2));
+        const d1 = Math.abs(Vec2.dot(p.sub(this.p), this.normal));
+        const d2 = Math.abs(Vec2.dot(p.sub(this.hp2.p), this.hp2.normal));
         if (d1 < d2) {
-            return [new DistanceState(d1, this, CrossingInversions.BODY),
-                    new DistanceState(d2, this, CrossingInversions.BODY)]
+            return [new DistanceState(d1, this.hp1, HalfPlane.BODY),
+                    new DistanceState(d2, this.hp2, HalfPlane.BODY)]
         } else {
-            return [new DistanceState(d2, this, CrossingInversions.BODY),
-                    new DistanceState(d1, this, CrossingInversions.BODY)]
+            return [new DistanceState(d2, this.hp2, HalfPlane.BODY),
+                    new DistanceState(d1, this.hp1, HalfPlane.BODY)]
         }
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
-        const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius * sceneScale));
-        const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius * sceneScale));
         let uniI = uniIndex;
         gl.uniform2f(uniLocation[uniI++],
                      this.p.x, this.p.y);
         gl.uniform4f(uniLocation[uniI++],
-                     this.normal1.x, this.normal1.y,
-                     this.normal2.x, this.normal2.y);
-        gl.uniform4f(uniLocation[uniI++],
-                     boundaryDirPoint1.x, boundaryDirPoint1.y,
-                     boundaryDirPoint2.x, boundaryDirPoint2.y);
+                     this.normal.x, this.normal.y, this.planeDist, this.planeDist * 2);
         gl.uniform2f(uniLocation[uniI++],
                      this.normalUIRingRadius * sceneScale,
                      this.UIPointRadius * sceneScale);
@@ -205,30 +190,28 @@ export default class CrossingInversions extends Shape {
 
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_crossingInversions${index}.p`));
+                                               `u_glideReflection${index}.p`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_crossingInversions${index}.normal`));
+                                               `u_glideReflection${index}.normal`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_crossingInversions${index}.boundaryPoint`));
+                                               `u_glideReflection${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_crossingInversions${index}.ui`));
-        uniLocation.push(gl.getUniformLocation(program,
-                                               `u_crossingInversions${index}.selected`));
+                                               `u_glideReflection${index}.selected`));
     }
 
     exportJson() {
         return {
             id: this.id,
             p: [this.p.x, this.p.y],
-            boundaryDir: [this.boundaryDir1.x, this.boundaryDir2.y],
-            degrees: this.radians * 180 / Math.PI
+            normal: [this.normal.x, this.normal.y],
+            planeDist: this.planeDist
         };
     }
 
     static loadJson(obj, scene) {
-        const nh = new CrossingInversions(new Vec2(obj.p[0], obj.p[1]),
-                                new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),
-                                obj.degrees * Math.PI / 180);
+        const nh = new GlideReflection(new Vec2(obj.p[0], obj.p[1]),
+                                       new Vec2(obj.normal[0], obj.normal[1]),
+                                       obj.planeDist);
         nh.setId(obj.id);
         return nh;
     }
@@ -237,15 +220,15 @@ export default class CrossingInversions extends Shape {
         return 0;
     }
 
-    static get BOUNDARY_POINT() {
+    static get NORMAL_POINT() {
         return 1;
     }
 
-    static get ROTATION_POINT() {
+    static get POINT_HP2() {
         return 2;
     }
 
     get name() {
-        return 'CrossingInversions';
+        return 'GlideReflection';
     }
 }
