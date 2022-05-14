@@ -1,0 +1,35 @@
+{
+    "label": "HalfPlane",
+    "index": 1,
+    "generators": {
+        "Circle": [
+            {
+                "id": 0,
+                "center": [1, -1],
+                "radius": 1
+            },
+            {
+                "id": 1,
+                "center": [1, 1],
+                "radius": 1
+            },
+            {
+                "id": 2,
+                "center": [-1, -1],
+                "radius": 1
+            },
+            {
+                "id": 3,
+                "center": [-1, 1],
+                "radius": 1
+            }
+        ],
+        "HalfPlane": [
+            {
+                "id": 4,
+                "p": [-3, 0],
+                "normal": [1, 0]
+            }
+        ]
+    }
+}
