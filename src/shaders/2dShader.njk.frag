@@ -56,12 +56,13 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 uvnno = (pos - corner) / size;
         if(0. < uvnno.x && uvnno.x < 1. &&
            0. < uvnno.y && uvnno.y < 1.) {
-            c = texture(u_videoTexture, vec2(uvnno.x, 1. - uvnno.y), 0.0);
+            c = texture(u_imageTextures[0], vec2(uvnno.x, 1. - uvnno.y), 0.0);
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
             }
-        }*/
+        }
+        */
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){

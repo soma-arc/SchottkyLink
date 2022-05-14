@@ -1,5 +1,6 @@
 import Canvas2d from './canvas2d.js';
 import VideoManager from './videoManager.js';
+import TextureManager from './textureManager.js';
 
 export default class CanvasManager {
     /**
@@ -11,15 +12,18 @@ export default class CanvasManager {
         this.scene2d = scene2d;
         this.scene3d = scene3d;
         this.videoManager = new VideoManager();
+        this.textureManager = new TextureManager();
         this.resizeCallback = this.resize.bind(this);
 
-        this.canvas2d = new Canvas2d('canvas2d', this.scene2d, this.videoManager);
+        this.canvas2d = new Canvas2d('canvas2d', this.scene2d, this.videoManager, this.textureManager);
     }
 
     init(app) {
         this.app = app;
         this.canvas2d.init();
         this.videoManager.init(this.canvas2d.gl);
+        this.textureManager.init(this.canvas2d.gl);
+        this.textureManager.loadDefaultImages(this.canvas2d.gl);
     }
 
     render() {

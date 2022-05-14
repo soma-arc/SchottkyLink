@@ -1,7 +1,7 @@
 import { GetWebGL2Context, CreateSquareVbo, AttachShader,
          LinkProgram, CreateRGBATextures } from './glUtils';
 import Canvas from './canvas.js';
-
+import TextureManager from './textureManager.js';
 import Vec2 from './vector2d.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
@@ -11,9 +11,10 @@ const RENDER_FRAGMENT = require('./shaders/render.frag');
 const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
 
 export default class Canvas2d extends Canvas {
-    constructor(canvasId, scene, videoManager) {
+    constructor(canvasId, scene, videoManager, textureManager) {
         super(canvasId, scene);
         this.videoManager = videoManager;
+        this.textureManager = textureManager;
 
         // geometry
         this.scale = 1;
@@ -226,6 +227,10 @@ export default class Canvas2d extends Canvas {
                                                           'u_accTexture'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_videoTexture'));
+        for(let i = 0; i < this.textureManager.textures.length; i++) {
+            this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                              `u_imageTextures[${i}]`));
+        }
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_resolution'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
@@ -251,7 +256,18 @@ export default class Canvas2d extends Canvas {
             this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
                                this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.videoManager.video);
         }
-        this.gl.uniform1i(this.uniLocations[i++], textureIndex++)
+        this.gl.uniform1i(this.uniLocations[i++], textureIndex++);
+        // image textures for orbit seed
+        for(const tex of this.textureManager.textures) {
+            this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, tex.textureObj);
+            if(tex.isLoaded && tex.isCopiedToGLTexture === false) {
+                this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
+                                   this.gl.RGBA, this.gl.UNSIGNED_BYTE, tex.img);
+                tex.isCopiedToGLTexture = true;
+            }
+            this.gl.uniform1i(this.uniLocations[i++], textureIndex++);
+        }
         
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform3f(this.uniLocations[i++],
