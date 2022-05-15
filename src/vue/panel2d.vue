@@ -31,22 +31,25 @@ export default {
 .canvasParent {
     flex: 1;
     display: flex;
-    width:100%;
     border-style: ridge;
     border-color: gray;
-    overflow: hidden;
+}
+
+#canvas2d {
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
 }
 
 .canvasPanel {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-.underControlPanel {
+underControlPanel2d {
     flex-basis: 50px;
-    border-style: ridge;
-    border-color: gray;
     display: flex;
     flex-direction: row;
 }

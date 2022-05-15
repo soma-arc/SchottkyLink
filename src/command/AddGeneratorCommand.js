@@ -13,7 +13,8 @@ export default class AddGeneratorCommand {
         this.generator = generator;
         this.type = type;
 
-        if (!this.scene.objects.hasOwnProperty(type)) {
+        const objList = this.scene.objects[type];
+        if (objList === undefined) {
             Vue.set(this.scene.objects, type, []);
         }
 

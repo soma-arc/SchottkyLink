@@ -80,7 +80,7 @@ export default class Circle extends Generator {
                 const d = scene.getNearObjectsDistance(this, this.center)[0].distance;
                 this.r = (d === Number.MAX_VALUE) ? this.r : d;
             } else if (this.snapMode === Circle.SNAP_TWO_CIRCLES) {
-                for(let i = 0 ; i < 50; i++) {
+                for(let i = 0; i < 50; i++) {
                     const objStates = scene.getNearObjectsDistance(this, this.center);
                     const nearDistState1 = objStates[0];
                     const nearDistState2 = objStates[1];

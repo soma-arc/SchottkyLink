@@ -1,7 +1,6 @@
 import { GetWebGL2Context, CreateSquareVbo, AttachShader,
          LinkProgram, CreateRGBATextures } from './glUtils';
 import Canvas from './canvas.js';
-import TextureManager from './textureManager.js';
 import Vec2 from './vector2d.js';
 
 const RENDER_VERTEX = require('./shaders/render.vert');

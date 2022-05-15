@@ -40,7 +40,6 @@ export default class Canvas {
     mouseLeaveListener(event) {}
 
     keydownListener(event) {
-        console.log('paren')
     }
 
     keyupListener(event) {}

@@ -27,10 +27,10 @@ export default class VideoManager {
                 this.texture = CreateRGBTextures(gl,
                                                  this.width, this.height, 1)[0];
                 canplayCallback(this.width, this.height);
-            }
+            };
             this.video.addEventListener('canplay', canplayListener);
             this.video.play();
-        }
+        };
 
         const failureCallback = (err) => {
             failure();
@@ -41,7 +41,7 @@ export default class VideoManager {
                 console.log(err);
                 console.log('can not be used webcam');
             }
-        }
+        };
 
         if (navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(media).then(successCallback,

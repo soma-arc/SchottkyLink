@@ -97,7 +97,6 @@ export default {
             this.canvasManager.canvas2d.compileRenderShader();
         },
         addVideoOrbit: function(){
-            console.log('addVideo');
              if (this.canvasManager.videoManager.streaming === false) {
                  this.canvasManager.videoManager.connect(this.canvasManager.canvas2d.gl,
                                            () => {
