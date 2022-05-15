@@ -98,22 +98,19 @@ export default {
         },
         addVideoOrbit: function(){
              if (this.canvasManager.videoManager.streaming === false) {
-                 this.canvasManager.videoManager.connect(this.canvasManager.canvas2d.gl,
-                                           () => {
-                                               //this.cameraManager.streaming = true;
-                                               //this.scene.addCameraOrbit(new Vec2(0, 0),
-                                               //                          this.canvas2d.scale,
-                                               //                          this.cameraManager.cameraTexture);
-                                               //this.canvas2d.compileRenderShader();
-                                               this.canvasManager.canvas2d.render();
-                                           },
-                                           () => {
-                                           });
-            } else {
-                //this.scene2d.addCameraOrbit(new Vec2(0, 0), this.canvas2d.scale, this.cameraManager.cameraTexture);
-                //this.canvas2d.compileRenderShader();
-                //this.canvas2d.render();
-            }
+                 this.canvasManager.videoManager.connect(
+                     this.canvasManager.canvas2d.gl,
+                     () => {
+                         this.scene2d.addVideoOrbit(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+                         this.canvasManager.canvas2d.compileRenderShader();
+                         this.canvasManager.videoManager.streaming = true;
+                     },
+                     () => {
+                     });
+             } else {
+                 this.scene2d.addVideoOrbit(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+                 this.canvasManager.canvas2d.compileRenderShader();
+             }
         },
         changeMouseMode: function() {
             this.scene2d.deselectAll();

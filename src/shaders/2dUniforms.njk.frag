@@ -110,6 +110,10 @@ uniform Loxodromic u_loxodromic{{ n }};
 uniform OrbitSeed u_orbitSeed{{ n }};
 {% endfor %}
 
+{% for n in range(0, numVideoOrbit) %}
+uniform OrbitSeed u_videoOrbit{{ n }};
+{% endfor %}
+
 {% for n in range(0, numScaling) %}
 uniform Scaling u_scaling{{ n }};
 {% endfor %}

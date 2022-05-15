@@ -11,6 +11,7 @@ import HalfPlane from './generator2d/halfPlane.js';
 import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
+import VideoOrbit from './generator2d/videoOrbit.js';
 import TwoCirclesCommand from './command/twoCirclesCommand.js';
 import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
@@ -23,7 +24,8 @@ const STR_CLASS_MAP = { 'Circle': Circle,
                         'HalfPlane': HalfPlane,
                         'TwoCircles': TwoCircles,
                         'Loxodromic': Loxodromic,
-                        'OrbitSeed': OrbitSeed};
+                        'OrbitSeed': OrbitSeed,
+                        'VideoOrbit': VideoOrbit };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
 const PRESETS = [];
@@ -144,6 +146,12 @@ export default class Scene2d extends Scene {
     addOrbitSeed(position, sceneScale) {
         const o = new OrbitSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
                                 0.1 * sceneScale, 0.1 * sceneScale);
+        this.addCommand(new AddGeneratorCommand(this, o, o.name));
+    }
+
+    addVideoOrbit(position, sceneScale) {
+        const o = new VideoOrbit(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
+                                 0.1 * sceneScale, 0.1 * sceneScale);
         this.addCommand(new AddGeneratorCommand(this, o, o.name));
     }
 

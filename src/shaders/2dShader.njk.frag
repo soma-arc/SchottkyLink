@@ -50,19 +50,17 @@ bool IIS(vec2 pos, out vec3 col) {
         }
         {% endfor %}
 
-        /*
-        vec2 corner = vec2(0, 0);
-        vec2 size = vec2(1, 1);
-        vec2 uvnno = (pos - corner) / size;
-        if(0. < uvnno.x && uvnno.x < 1. &&
-           0. < uvnno.y && uvnno.y < 1.) {
-            c = texture(u_imageTextures[0], vec2(uvnno.x, 1. - uvnno.y), 0.0);
+        {% for no in range(0, numVideoOrbit) %}
+        vec2 videoUV{{ n }}{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
+        if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
+           0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1.) {
+            c = textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0);
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
             }
         }
-        */
+        {% endfor %}
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
@@ -347,6 +345,19 @@ bool renderUI(vec2 pos, out vec3 color) {
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1. &&
            (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
+    }
+    {% endfor %}
+
+    {% for no in range(0, numVideoOrbit) %}
+    if(u_videoOrbit{{ no }}.selected) {
+        vec2 videoUV{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
+        if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
+           0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1. &&
+           (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
+            pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
             color = WHITE;
             return true;
         }
