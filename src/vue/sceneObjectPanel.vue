@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 export default {
     props: ['scene', 'canvas2d'],
     components: {
@@ -37,9 +38,9 @@ export default {
             const index = this.scene.objects[name].findIndex((elem) => {
                 return elem.id === this.scene.selectedObj.id;
             });
-            this.scene.objects[name].splice(index, 1);
-            this.canvas2d.compileRenderShader();
-            this.canvas2d.render();
+            this.scene.addCommand(new RemoveGeneratorCommand(this.scene, this.scene.selectedObj,
+                                                             this.scene.selectedObj.name,
+                                                             index));
             this.scene.selectedObj = undefined;
         }
     }
