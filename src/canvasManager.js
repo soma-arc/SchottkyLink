@@ -31,11 +31,10 @@ export default class CanvasManager {
     }
 
     resize() {
-        // console.log(this.app.currentRoute);
         if (this.mode() === CanvasManager.RENDER_2D) {
             this.canvas2d.resizeCanvas();
+            this.canvas2d.initRenderTextures();
             this.canvas2d.render();
-        } else if (this.mode() === CanvasManager.RENDER_3D) {
         }
     }
 
