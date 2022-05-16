@@ -10,14 +10,19 @@
     <b-button type="is-primary" @click="deleteSelectedObj">
       Remove
     </b-button>
+    <circle-controller v-if="selectedObjName === 'Circle'"
+                       :circle="scene.selectedObj"
+                       :scene="scene"/>
   </div>
 </template>
 
 <script>
 import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
+import CircleController from './controller2d/circleController.vue';
 export default {
     props: ['scene', 'canvas2d'],
     components: {
+        CircleController
     },
     computed: {
         selectedObjName: function() {
