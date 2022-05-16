@@ -1,19 +1,16 @@
-import Vue from 'vue';
-
 export default class RemoveGeneratorCommand {
     /**
      * @param {Scene} scene
      * @param {Generator} generator
-     * @param {String} type
      * @param {Number} index
      */
-    constructor(scene, generator, type, index) {
+    constructor(scene, generator, index) {
         this.scene = scene;
         this.generator = generator;
-        this.type = type;
+        this.type = generator.name;
         this.index = index;
 
-        this.scene.objects[type].splice(index, 1);
+        this.scene.objects[this.type].splice(index, 1);
         this.generator.selected = false;
         this.scene.updateScene();
         this.scene.reRender();

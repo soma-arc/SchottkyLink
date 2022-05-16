@@ -17,6 +17,7 @@ import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
 import TwoCirclesC2RCommand from './command/twoCirclesC2RCommand.js';
 import LoxodromicPointCommand from './command/LoxodromicPointCommand.js';
+import RemoveGeneratorCommand from './command/removeGeneratorCommand.js';
 import Vec2 from './vector2d.js';
 
 // TODO: generate this object automatically
@@ -195,7 +196,22 @@ export default class Scene2d extends Scene {
      * @param {Vec2} mouse
      */
     remove(mouse) {
-        // TODO: implement this
+        for (const key of Object.keys(STR_CLASS_MAP)) {
+            if (this.objects[key] !== undefined) {
+                for (const obj of this.objects[key]) {
+                    if (obj.removable(mouse)) {
+                        const index = this.objects[key].findIndex((elem) => {
+                            return elem.id === obj.id;
+                        });
+                        this.addCommand(new RemoveGeneratorCommand(this, obj, index));
+                        this.selectedObj = undefined;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     setUniformLocation(gl, uniLocations, program) {

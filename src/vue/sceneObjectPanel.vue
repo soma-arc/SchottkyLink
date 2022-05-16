@@ -39,7 +39,6 @@ export default {
                 return elem.id === this.scene.selectedObj.id;
             });
             this.scene.addCommand(new RemoveGeneratorCommand(this.scene, this.scene.selectedObj,
-                                                             this.scene.selectedObj.name,
                                                              index));
             this.scene.selectedObj = undefined;
         }

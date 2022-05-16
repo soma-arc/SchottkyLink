@@ -34,7 +34,7 @@ export default class HalfPlane extends Generator {
         this.p = p;
     }
 
-     update() {
+    update() {
         this.normalAngle = Math.atan2(this.normal.y, this.normal.x);
         this.normalAngle += this.normalAngle < 0 ? 2 * Math.PI : 0;
         this.normalAngle *= 100 / (2 * Math.PI);
@@ -93,6 +93,11 @@ export default class HalfPlane extends Generator {
         return [new DistanceState(Math.abs(Vec2.dot(p.sub(this.p), this.normal)),
                                   this,
                                   HalfPlane.BODY)];
+    }
+
+    removable(mouse) {
+        const d = Vec2.dot(mouse.sub(this.p), this.normal);
+        return d < 0;
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
