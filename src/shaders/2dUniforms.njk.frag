@@ -54,7 +54,6 @@ struct Loxodromic {
 };
 
 struct OrbitSeed {
-    int imageTexIndex;
     vec2 corner;
     vec2 size;
     vec4 ui; // [bodyCorner, bodySize]

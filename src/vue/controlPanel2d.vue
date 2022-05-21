@@ -25,7 +25,8 @@
         </b-tab-item>
         <b-tab-item label="Scene">
           <section>
-            <scene-object-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"></scene-object-panel>
+            <scene-object-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"
+                                :textureManager="canvasManager.textureManager"></scene-object-panel>
           </section>
         </b-tab-item>
         <b-tab-item label="Render">

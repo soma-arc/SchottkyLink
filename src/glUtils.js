@@ -25,7 +25,8 @@ export function CreateSquareVbo(gl) {
 export function LinkProgram(gl, program) {
     gl.linkProgram(program);
     if(gl.getProgramParameter(program, gl.LINK_STATUS) === false) {
-        console.log('Link Program Error');
+        const info = gl.getProgramInfoLog(program);
+        console.log(`Link Program Error\n${info}`);
     }
     gl.useProgram(program);
 }

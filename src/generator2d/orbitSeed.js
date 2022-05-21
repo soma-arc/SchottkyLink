@@ -27,7 +27,6 @@ export default class OrbitSeed extends Generator {
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
         let uniI = uniIndex;
-        gl.uniform1i(uniLocation[uniI++], this.textureIndex);
         gl.uniform2f(uniLocation[uniI++],
                      this.corner.x, this.corner.y);
         gl.uniform2f(uniLocation[uniI++],
@@ -45,8 +44,6 @@ export default class OrbitSeed extends Generator {
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
-        uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.imageTexIndex`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_orbitSeed${index}.corner`));
         uniLocation.push(gl.getUniformLocation(program,

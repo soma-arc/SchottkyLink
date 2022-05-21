@@ -198,6 +198,7 @@ export default class Canvas2d extends Canvas {
         AttachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
         // attachShader(this.gl, CIRCLE_EDGE_SHADER_TMPL.render(this.scene.getContext()),
         //              this.renderProgram, this.gl.FRAGMENT_SHADER);
+        //console.log(CIRCLES_SHADER_TMPL.render(this.scene.getContext()));
         AttachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
         LinkProgram(this.gl, this.renderProgram);

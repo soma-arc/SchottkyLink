@@ -16,6 +16,10 @@
     <half-plane-controller v-if="selectedObjName === 'HalfPlane'"
                            :half-plane="scene.selectedObj"
                            :scene="scene"/>
+    <orbit-seed-controller v-if="selectedObjName === 'OrbitSeed'"
+                           :orbitSeed="scene.selectedObj"
+                           :scene="scene"
+                           :textureManager="textureManager"/>
   </div>
 </template>
 
@@ -23,11 +27,13 @@
 import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
+import OrbitSeedController from './controller2d/orbitSeedController.vue';
 export default {
-    props: ['scene', 'canvas2d'],
+    props: ['scene', 'canvas2d', 'textureManager'],
     components: {
         CircleController,
-        HalfPlaneController
+        HalfPlaneController,
+        OrbitSeedController
     },
     computed: {
         selectedObjName: function() {

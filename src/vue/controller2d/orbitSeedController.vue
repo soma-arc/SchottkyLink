@@ -1,0 +1,64 @@
+<template>
+  <div>
+    posX
+    <b-input 
+      v-model.number="orbitSeed.corner.x"
+      @input="valueChanged"
+      placeholder="Number"
+      type="number"
+      step="0.01">
+    </b-input>
+    posY
+    <b-input 
+      v-model.number="orbitSeed.corner.y"
+      @input="valueChanged"
+      placeholder="Number"
+      type="number"
+      step="0.01">
+    </b-input>
+    Texture
+    <select size="3" v-model="orbitSeed.textureIndex" id="texturePanel"
+             @change="updateSelection" >
+      <option v-for="(texture, index) in textureManager.textures" :value="index">
+        {{ texture.filename }}
+      </option>
+    </select>
+    <img
+         :src="orbitTexture"
+         width="256px" height="256px"></img>
+  </div>
+</template>
+
+<script>
+export default {
+    props: ['orbitSeed', 'scene', 'textureManager'],
+    data() {
+        return {selectedTextureIndex: 0}
+    },
+    methods: {
+        valueChanged: function(event) {
+            this.scene.reRender();
+        },
+        updateSelection: function(event) {
+            this.scene.updateScene();
+            this.scene.reRender();
+        }
+    },
+    computed: {
+        orbitTexture: function() {
+            return this.textureManager.textures[this.orbitSeed.textureIndex].imgUrl;
+        }
+    }
+}
+</script>
+
+<style>
+#texturePanel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+    height: 100px;
+}
+</style>

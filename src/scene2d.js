@@ -21,12 +21,13 @@ import RemoveGeneratorCommand from './command/removeGeneratorCommand.js';
 import Vec2 from './vector2d.js';
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = { 'Circle': Circle,
-                        'HalfPlane': HalfPlane,
-                        'TwoCircles': TwoCircles,
-                        'Loxodromic': Loxodromic,
-                        'OrbitSeed': OrbitSeed,
-                        'VideoOrbit': VideoOrbit };
+const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
+                       'VideoOrbit': VideoOrbit,
+                       'Circle': Circle,
+                       'HalfPlane': HalfPlane,
+                       'TwoCircles': TwoCircles,
+                       'Loxodromic': Loxodromic
+                        };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
 const PRESETS = [];
@@ -242,6 +243,16 @@ export default class Scene2d extends Scene {
         for (const objName of objKeyNames) {
             context[`num${objName}`] = this.objects[objName].length;
         }
+
+        const textureIndexes = [];
+        if(this.objects['OrbitSeed'] !== undefined &&
+           this.objects['OrbitSeed'].length > 0) {
+            for(const orbitSeed of this.objects['OrbitSeed']) {
+                textureIndexes.push(orbitSeed.textureIndex);
+            }
+        }
+        context['OrbitSeedTexIndexes'] = textureIndexes;
+
         return context;
     }
 

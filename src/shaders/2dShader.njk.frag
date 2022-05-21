@@ -42,7 +42,7 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            c = textureLod(u_imageTextures[0], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
+            c = textureLod(u_imageTextures[{{ OrbitSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
@@ -198,6 +198,8 @@ bool IIS(vec2 pos, out vec3 col) {
 }
 
 bool renderUI(vec2 pos, out vec3 color) {
+    color = vec3(0);
+
     {% for n  in range(0,  numPoint ) %}
     if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
         color = BLUE;
@@ -216,6 +218,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         }
     }
     {% endfor %}
+
 
     {% for n in range(0, numHalfPlane) %}
     if(u_halfPlane{{ n }}.selected) {
@@ -338,11 +341,12 @@ bool renderUI(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
+
     {% for no in range(0, numOrbitSeed) %}
     if(u_orbitSeed{{ no }}.selected) {
-        vec2 uv{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
-        if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
-           0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1. &&
+        vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
+        if(0. < uvOrbitSeed{{ no }}.x && uvOrbitSeed{{ no }}.x < 1. &&
+           0. < uvOrbitSeed{{ no }}.y && uvOrbitSeed{{ no }}.y < 1. &&
            (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
             color = WHITE;
@@ -354,8 +358,8 @@ bool renderUI(vec2 pos, out vec3 color) {
     {% for no in range(0, numVideoOrbit) %}
     if(u_videoOrbit{{ no }}.selected) {
         vec2 videoUV{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
-        if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
-           0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1. &&
+        if(0. < videoUV{{ no }}.x && videoUV{{ no }}.x < 1. &&
+           0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
            (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
             pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
             color = WHITE;
@@ -489,11 +493,9 @@ void main() {
         position += u_geometry.xy;
 
         vec3 col = vec3(0);
-        if (u_isRenderingGenerator) {
-            if(renderUI(position, col)) {
-                sum += col;
-                continue;
-            }
+        if(u_isRenderingGenerator && renderUI(position, col)) {
+            sum += col;
+            continue;
         }
 
         col = vec3(0);

@@ -7,8 +7,6 @@ export default class VideoOrbit extends OrbitSeed {
 
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_videoOrbit${index}.imageTexIndex`));
-        uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoOrbit${index}.corner`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoOrbit${index}.size`));
