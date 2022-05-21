@@ -13,16 +13,21 @@
     <circle-controller v-if="selectedObjName === 'Circle'"
                        :circle="scene.selectedObj"
                        :scene="scene"/>
+    <half-plane-controller v-if="selectedObjName === 'HalfPlane'"
+                           :half-plane="scene.selectedObj"
+                           :scene="scene"/>
   </div>
 </template>
 
 <script>
 import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
+import HalfPlaneController from './controller2d/halfPlaneController.vue';
 export default {
     props: ['scene', 'canvas2d'],
     components: {
-        CircleController
+        CircleController,
+        HalfPlaneController
     },
     computed: {
         selectedObjName: function() {
