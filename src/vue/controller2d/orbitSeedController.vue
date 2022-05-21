@@ -23,6 +23,9 @@
         {{ texture.filename }}
       </option>
     </select>
+    <b-button type="is-primary" @click="loadTexture">
+      Load Texture
+    </b-button>
     <img
          :src="orbitTexture"
          width="256px" height="256px"></img>
@@ -31,9 +34,9 @@
 
 <script>
 export default {
-    props: ['orbitSeed', 'scene', 'textureManager'],
+    props: ['orbitSeed', 'scene', 'canvas', 'textureManager'],
     data() {
-        return {selectedTextureIndex: 0}
+        return {}
     },
     methods: {
         valueChanged: function(event) {
@@ -42,6 +45,11 @@ export default {
         updateSelection: function(event) {
             this.scene.updateScene();
             this.scene.reRender();
+        },
+        loadTexture: function(event) {
+            this.textureManager.loadTextureFromDialogue(this.canvas.gl,
+                                                        this.scene,
+                                                        this.orbitSeed);
         }
     },
     computed: {

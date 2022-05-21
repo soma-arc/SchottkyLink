@@ -1,6 +1,7 @@
 import { CreateRGBATextures } from './glUtils.js';
 import Texture from './texture.js';
-const DEFAULT_IMAGE_URLS = { 'cat_fish_run': require('./img/cat_fish_run.png')};
+const DEFAULT_IMAGE_URLS = { 'cat_fish_run': require('./img/cat_fish_run.png')
+                             };
 
 export default class TextureManager {
     constructor() {
@@ -17,6 +18,28 @@ export default class TextureManager {
             promises.push(promise);
         }
         return promises;
+    }
+
+    loadTextureFromDialogue(gl, scene, orbitSeed){
+        const a = document.createElement('input');
+        a.type = 'file';
+        a.addEventListener('change', (event) => {
+            const files = event.target.files;
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                const t = new Texture(files[0].name, reader.result);
+                const p =t.load(gl);
+                this.textures.push(t);
+                p.then(() => {
+                    orbitSeed.textureIndex = this.textures.length - 1;
+                    scene.updateScene();
+                    scene.reRender();
+                });
+            });
+            
+            reader.readAsDataURL(files[0]);
+        });
+        a.click();
     }
 
     init(gl) {

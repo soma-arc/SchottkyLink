@@ -19,6 +19,7 @@
     <orbit-seed-controller v-if="selectedObjName === 'OrbitSeed'"
                            :orbitSeed="scene.selectedObj"
                            :scene="scene"
+                           :canvas="canvas2d"
                            :textureManager="textureManager"/>
   </div>
 </template>

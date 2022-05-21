@@ -42,7 +42,7 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            c = textureLod(u_imageTextures[{{ OrbitSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0);
+            c = deGamma(textureLod(u_imageTextures[{{ OrbitSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
@@ -54,7 +54,7 @@ bool IIS(vec2 pos, out vec3 col) {
         vec2 videoUV{{ n }}{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
         if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
            0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1.) {
-            c = textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0);
+            c = deGamma(textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
                 col = c.rgb;
                 return true;
