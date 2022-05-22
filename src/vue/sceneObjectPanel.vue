@@ -21,6 +21,9 @@
                            :scene="scene"
                            :canvas="canvas2d"
                            :textureManager="textureManager"/>
+    <video-orbit-controller v-if="selectedObjName === 'VideoOrbit'"
+                           :videoOrbit="scene.selectedObj"
+                           :scene="scene"/>
   </div>
 </template>
 
@@ -29,12 +32,14 @@ import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
 import OrbitSeedController from './controller2d/orbitSeedController.vue';
+import videoOrbitController from './controller2d/videoOrbitController.vue';
 export default {
     props: ['scene', 'canvas2d', 'textureManager'],
     components: {
         CircleController,
         HalfPlaneController,
-        OrbitSeedController
+        OrbitSeedController,
+        videoOrbitController
     },
     computed: {
         selectedObjName: function() {
