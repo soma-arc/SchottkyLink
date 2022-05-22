@@ -1,7 +1,7 @@
 <template>
   <div>
     posX
-    <b-input 
+    <b-input
       v-model.number="orbitSeed.corner.x"
       @input="valueChanged"
       placeholder="Number"
@@ -9,9 +9,25 @@
       step="0.01">
     </b-input>
     posY
-    <b-input 
+    <b-input
       v-model.number="orbitSeed.corner.y"
       @input="valueChanged"
+      placeholder="Number"
+      type="number"
+      step="0.01">
+    </b-input>
+    width
+    <b-input
+      v-model.number="orbitSeed.size.x"
+      @input="changeWidth"
+      placeholder="Number"
+      type="number"
+      step="0.01">
+    </b-input>
+    height
+    <b-input
+      v-model.number="orbitSeed.size.y"
+      @input="changeHeight"
       placeholder="Number"
       type="number"
       step="0.01">
@@ -47,9 +63,22 @@ export default {
             this.scene.reRender();
         },
         loadTexture: function(event) {
+            if(this.textureManager.textures.length === this.textureManager.MAX_TEXTURES) {
+                alert('読み込めるテクスチャは10個までです.');
+                return;
+            }
+
             this.textureManager.loadTextureFromDialogue(this.canvas.gl,
                                                         this.scene,
                                                         this.orbitSeed);
+        },
+        changeWidth: function() {
+            this.orbitSeed.size.y = this.orbitSeed.aspect * this.orbitSeed.size.x;
+            this.scene.reRender();
+        },
+        changeHeight: function(){
+            this.orbitSeed.size.x = this.orbitSeed.size.y / this.orbitSeed.aspect;
+            this.scene.reRender();
         }
     },
     computed: {

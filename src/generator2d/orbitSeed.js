@@ -20,7 +20,7 @@ export default class OrbitSeed extends Generator {
         super();
         this.corner = new Vec2(cornerX, cornerY);
         this.size = new Vec2(width, height);
-
+        this.aspect = height / width;
         this.cornerSelectionWidth = 0.01;
         this.textureIndex = 0;
     }
