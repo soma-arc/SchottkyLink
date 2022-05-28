@@ -19,6 +19,7 @@ import TwoCirclesC2RCommand from './command/twoCirclesC2RCommand.js';
 import LoxodromicPointCommand from './command/LoxodromicPointCommand.js';
 import RemoveGeneratorCommand from './command/removeGeneratorCommand.js';
 import Vec2 from './vector2d.js';
+import RemoveAllGeneratorsCommand from './command/removeAllGeneratorsCommand.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
@@ -205,7 +206,6 @@ export default class Scene2d extends Scene {
                             return elem.id === obj.id;
                         });
                         this.addCommand(new RemoveGeneratorCommand(this, obj, index));
-                        this.selectedObj = undefined;
                         return true;
                     }
                 }
@@ -213,6 +213,10 @@ export default class Scene2d extends Scene {
         }
 
         return false;
+    }
+
+    removeAllGenerators() {
+        this.addCommand(new RemoveAllGeneratorsCommand(this));
     }
 
     setUniformLocation(gl, uniLocations, program) {

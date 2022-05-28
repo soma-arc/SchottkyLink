@@ -12,6 +12,7 @@ export default class RemoveGeneratorCommand {
 
         this.scene.objects[this.type].splice(index, 1);
         this.generator.selected = false;
+        this.scene.selectedObj = undefined;
         this.scene.updateScene();
         this.scene.reRender();
     }

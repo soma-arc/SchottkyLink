@@ -35,6 +35,11 @@
       save
     </b-button>
   </div>
+  <div class="inputContainer">
+    <b-button type="is-primary" @click="clearGenerators">
+      Clear
+    </b-button>
+  </div>
 </div>
 </template>
 
@@ -47,6 +52,9 @@ export default {
         },
         saveImage: function(event) {
             this.canvasManager.canvas2d.renderProductAndSave();
+        },
+        clearGenerators: function() {
+            this.scene2d.removeAllGenerators();
         }
     }
 }
