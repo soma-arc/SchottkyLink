@@ -23,7 +23,10 @@
                            :textureManager="textureManager"/>
     <video-orbit-controller v-if="selectedObjName === 'VideoOrbit'"
                            :videoOrbit="scene.selectedObj"
-                           :scene="scene"/>
+                            :scene="scene"/>
+    <loxodromic-controller v-if="selectedObjName === 'Loxodromic'"
+                            :loxodromic="scene.selectedObj"
+                            :scene="scene"/>
   </div>
 </template>
 
@@ -33,13 +36,15 @@ import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
 import OrbitSeedController from './controller2d/orbitSeedController.vue';
 import videoOrbitController from './controller2d/videoOrbitController.vue';
+import LoxodromicController from './controller2d/loxodromicController.vue';
 export default {
     props: ['scene', 'canvas2d', 'textureManager'],
     components: {
         CircleController,
         HalfPlaneController,
         OrbitSeedController,
-        videoOrbitController
+        videoOrbitController,
+        LoxodromicController
     },
     computed: {
         selectedObjName: function() {
