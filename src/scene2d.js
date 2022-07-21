@@ -12,6 +12,7 @@ import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
 import VideoOrbit from './generator2d/videoOrbit.js';
+import Rotation from './generator2d/rotation.js';
 import TwoCirclesCommand from './command/twoCirclesCommand.js';
 import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
@@ -27,7 +28,8 @@ const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
                        'Circle': Circle,
                        'HalfPlane': HalfPlane,
                        'TwoCircles': TwoCircles,
-                       'Loxodromic': Loxodromic
+                       'Loxodromic': Loxodromic,
+                       'Rotation': Rotation
                         };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
@@ -125,37 +127,42 @@ export default class Scene2d extends Scene {
 
     addCircle(position, sceneScale) {
         const c = new Circle(position, 0.1 * sceneScale);
-        this.addCommand(new AddGeneratorCommand(this, c, c.name));
+        this.addCommand(new AddGeneratorCommand(this, c));
     }
 
     addHalfPlane(position, sceneScale) {
         const h = new HalfPlane(position, new Vec2(1, 0));
-        this.addCommand(new AddGeneratorCommand(this, h, h.name));
+        this.addCommand(new AddGeneratorCommand(this, h));
     }
 
     addTwoCircles(position, sceneScale) {
         const h = new TwoCircles(new Circle(position, 0.1 * sceneScale),
                                  new Circle(position, 0.2 * sceneScale));
-        this.addCommand(new AddGeneratorCommand(this, h, h.name));
+        this.addCommand(new AddGeneratorCommand(this, h));
     }
 
     addLoxodromic(position, sceneScale) {
         const l = new Loxodromic(new Circle(position, 0.1 * sceneScale),
                                  new Circle(position.add(new Vec2(0.05, 0.0)), 0.2 * sceneScale),
                                  position.add(new Vec2(0, 0.3)));
-        this.addCommand(new AddGeneratorCommand(this, l, l.name));
+        this.addCommand(new AddGeneratorCommand(this, l));
     }
 
     addOrbitSeed(position, sceneScale) {
         const o = new OrbitSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
                                 0.1 * sceneScale, 0.1 * sceneScale);
-        this.addCommand(new AddGeneratorCommand(this, o, o.name));
+        this.addCommand(new AddGeneratorCommand(this, o));
     }
 
     addVideoOrbit(position, sceneScale) {
         const o = new VideoOrbit(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
                                  0.1 * sceneScale, 0.1 * sceneScale);
-        this.addCommand(new AddGeneratorCommand(this, o, o.name));
+        this.addCommand(new AddGeneratorCommand(this, o));
+    }
+
+    addRotation(position, sceneScale) {
+        const r = new Rotation(position, new Vec2(1, 0), 0.5 * Math.PI);
+        this.addCommand(new AddGeneratorCommand(this, r));
     }
 
     move (mouse) {

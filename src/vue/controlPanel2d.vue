@@ -115,6 +115,10 @@ export default {
                  this.canvasManager.canvas2d.compileRenderShader();
              }
         },
+        addRotation: function() {
+            this.scene2d.addRotation(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
         changeMouseMode: function() {
             this.scene2d.deselectAll();
             this.canvasManager.canvas2d.render();

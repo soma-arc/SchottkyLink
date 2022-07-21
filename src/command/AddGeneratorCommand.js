@@ -6,19 +6,18 @@ export default class AddGeneratorCommand {
     /**
      * @param {Scene} scene
      * @param {Generator} generator
-     * @param {String} type
      */
-    constructor(scene, generator, type) {
+    constructor(scene, generator) {
         this.scene = scene;
         this.generator = generator;
-        this.type = type;
+        this.type = generator.name;
 
-        const objList = this.scene.objects[type];
+        const objList = this.scene.objects[this.type];
         if (objList === undefined) {
-            Vue.set(this.scene.objects, type, []);
+            Vue.set(this.scene.objects, this.type, []);
         }
 
-        this.scene.objects[type].push(this.generator);
+        this.scene.objects[this.type].push(this.generator);
         this.scene.updateScene();
         this.scene.reRender();
     }

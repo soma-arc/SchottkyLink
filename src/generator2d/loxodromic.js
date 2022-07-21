@@ -44,6 +44,11 @@ export default class Loxodromic extends Generator {
         this.lineNormal = new Vec2(-this.lineDir.y, this.lineDir.x);
     }
 
+    removable(mouse) {
+        const d = Vec2.distance(mouse, this.c2.center);
+        return d < this.c2.r;
+    }
+
     select(mouse, sceneScale) {
         const dp = mouse.sub(this.p);
         if (dp.length() < this.pointRadius * sceneScale) {
