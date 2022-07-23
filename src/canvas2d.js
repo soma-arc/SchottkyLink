@@ -268,7 +268,7 @@ export default class Canvas2d extends Canvas {
             }
             this.gl.uniform1i(this.uniLocations[i++], textureIndex++);
         }
-        
+
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
@@ -307,6 +307,9 @@ export default class Canvas2d extends Canvas {
     }
 
     renderProductAndSave() {
+        this.productRenderResolution.x = this.canvas.width;
+        this.productRenderResolution.y = this.canvas.height;
+
         this.initProductRenderTextures();
         this.renderToTexture(this.productRenderTextures,
                              this.productRenderResolution.x,
