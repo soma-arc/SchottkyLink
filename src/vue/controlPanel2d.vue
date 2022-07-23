@@ -13,6 +13,10 @@
                       width="128px" height="128px"/>
           <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                       width="128px" height="128px" @click.native="addParallelTranslation"/>
+          <img-button label="Parallel Inversions" :src="parallelTranslationUrl"
+                      width="128px" height="128px" @click.native="addParallelInversions"/>
+          <img-button label="Glide Reflection" :src="parallelTranslationUrl"
+                      width="128px" height="128px" @click.native="addGlideReflection"/>
           <img-button label="Rotation" :src="rotationUrl"
                       width="128px" height="128px" @click.native="addRotation"/>
           <img-button label="Scaling" :src="scalingUrl"
@@ -21,7 +25,7 @@
                       width="128px" height="128px" @click.native="addTwoCircles"/>
           <img-button label="Loxodromic" :src="loxodromicUrl" @click.native="addLoxodromic"
                       width="128px" height="128px"/>
-          </section>
+        </section>
         </b-tab-item>
         <b-tab-item label="Scene">
           <section>
@@ -117,6 +121,18 @@ export default {
         },
         addRotation: function() {
             this.scene2d.addRotation(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
+        addParallelTranslation: function() {
+            this.scene2d.addParallelTranslation(new Vec2(-0.5, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
+        addParallelInversions: function() {
+            this.scene2d.addParallelInversions(new Vec2(-0.5, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
+        addGlideReflection: function() {
+            this.scene2d.addGlideReflection(new Vec2(-0.5, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
         changeMouseMode: function() {

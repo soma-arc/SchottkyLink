@@ -93,16 +93,40 @@ bool IIS(vec2 pos, out vec3 col) {
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
         if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
             invNum += abs(floor(hpd{{ n }} / u_translate{{ n }}.normal.z));
-            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w));
-
-            pos -= u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
-            hpd{{ n }} = dot(pos, u_translate{{ n }}.normal.xy);
-            pos -= 2.0 * max(0., hpd{{ n }}) * u_translate{{ n }}.normal.xy;
-            pos += u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z;
+            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w/2.));
 
             inFund = false;
         }
         pos += u_translate{{ n }}.p;
+        {% endfor %}
+
+        {% for n in range(0, numParallelInversions) %}
+        pos -= u_parallelInversions{{ n }}.p;
+        float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
+        if(hpdInv{{ n }} < 0. || u_parallelInversions{{ n }}.normal.z < hpdInv{{ n }}) {
+            invNum += abs(floor(hpdInv{{ n }} / u_parallelInversions{{ n }}.normal.z));
+            pos -= u_parallelInversions{{ n }}.normal.xy * (hpdInv{{ n }} - mod(hpdInv{{ n }}, u_parallelInversions{{ n }}.normal.w));
+            pos -= u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+            hpdInv{{ n }} = dot(pos, u_parallelInversions{{ n }}.normal.xy);
+            pos -= 2.0 * max(0., hpdInv{{ n }}) * u_parallelInversions{{ n }}.normal.xy;
+            pos += u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+
+            inFund = false;
+        }
+        pos += u_parallelInversions{{ n }}.p;
+        {% endfor %}
+
+        {% for n in range(0, numGlideReflection) %}
+        pos -= u_glideReflection{{ n }}.p;
+        float glideInv{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
+        if(glideInv{{ n }} < 0. || u_glideReflection{{ n }}.normal.z < glideInv{{ n }}) {
+          float ref = abs(floor(glideInv{{ n }} / u_glideReflection{{ n }}.normal.z));
+          invNum += ref;
+          pos -= u_glideReflection{{ n }}.normal.xy * (glideInv{{ n }} - mod(glideInv{{ n }}, u_glideReflection{{ n }}.normal.w/2.));
+          pos = mod(ref, 2.0) == 0. ? pos : vec2(pos.x, -pos.y);
+          inFund = false;
+        }
+        pos += u_glideReflection{{ n }}.p;
         {% endfor %}
 
         {% for n in range(0, numRotation) %}
@@ -291,6 +315,104 @@ bool renderUI(vec2 pos, out vec3 color) {
             return true;
         }
         pos += u_translate{{ n }}.p;
+    }
+    {% endfor %}
+
+    {% for n in range(0, numParallelInversions) %}
+    if(u_parallelInversions{{ n }}.selected){
+
+        // normal point
+        if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_parallelInversions{{ n }}.p) - u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        // point p
+        if(distance(pos, u_parallelInversions{{ n }}.p) < u_parallelInversions{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        // point on hp2
+        if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z) < u_parallelInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // boundary
+        dist = dot(pos - u_parallelInversions{{ n }}.p, - u_parallelInversions{{ n }}.normal.xy);
+        if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        dist = dot(pos - (u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z),
+                   - u_parallelInversions{{ n }}.normal.xy);
+        if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        // line
+        pos -= u_parallelInversions{{ n }}.p;
+        float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
+        if(hpdInv{{ n }} > 0. && u_parallelInversions{{ n }}.normal.z > hpdInv{{ n }} &&
+           abs(dot(pos, vec2(-u_parallelInversions{{ n }}.normal.y, u_parallelInversions{{ n }}.normal.x))) < u_parallelInversions{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_parallelInversions{{ n }}.p;
+    }
+    {% endfor %}
+
+    {% for n in range(0, numGlideReflection) %}
+    if(u_glideReflection{{ n }}.selected){
+
+        // normal point
+        if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_glideReflection{{ n }}.p) - u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        // point p
+        if(distance(pos, u_glideReflection{{ n }}.p) < u_glideReflection{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        // point on hp2
+        if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z) < u_glideReflection{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // boundary
+        dist = dot(pos - u_glideReflection{{ n }}.p, - u_glideReflection{{ n }}.normal.xy);
+        if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        dist = dot(pos - (u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z),
+                   - u_glideReflection{{ n }}.normal.xy);
+        if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        // line
+        pos -= u_glideReflection{{ n }}.p;
+        float hpdGlide{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
+        if(hpdGlide{{ n }} > 0. && u_glideReflection{{ n }}.normal.z > hpdGlide{{ n }} &&
+           abs(dot(pos, vec2(-u_glideReflection{{ n }}.normal.y, u_glideReflection{{ n }}.normal.x))) < u_glideReflection{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_glideReflection{{ n }}.p;
     }
     {% endfor %}
 

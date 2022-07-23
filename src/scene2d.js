@@ -13,6 +13,9 @@ import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
 import VideoOrbit from './generator2d/videoOrbit.js';
 import Rotation from './generator2d/rotation.js';
+import ParallelTranslation from './generator2d/parallelTranslation.js';
+import ParallelInversions from './generator2d/parallelInversions.js';
+import GlideReflection from './generator2d/glideReflection.js';
 import TwoCirclesCommand from './command/twoCirclesCommand.js';
 import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
@@ -29,7 +32,10 @@ const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
                        'HalfPlane': HalfPlane,
                        'TwoCircles': TwoCircles,
                        'Loxodromic': Loxodromic,
-                       'Rotation': Rotation
+                       'Rotation': Rotation,
+                       'ParallelTranslation': ParallelTranslation,
+                       'ParallelInversions': ParallelInversions,
+                       'GlideReflection': GlideReflection
                         };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
@@ -163,6 +169,21 @@ export default class Scene2d extends Scene {
     addRotation(position, sceneScale) {
         const r = new Rotation(position, new Vec2(1, 0), 0.5 * Math.PI);
         this.addCommand(new AddGeneratorCommand(this, r));
+    }
+
+    addParallelTranslation(position, sceneScale) {
+        const t = new ParallelTranslation(position, new Vec2(1, 0), 1);
+        this.addCommand(new AddGeneratorCommand(this, t));
+    }
+
+    addParallelInversions(position, sceneScale) {
+        const t = new ParallelInversions(position, new Vec2(1, 0), 1);
+        this.addCommand(new AddGeneratorCommand(this, t));
+    }
+
+    addGlideReflection(position, sceneScale) {
+        const t = new GlideReflection(position, new Vec2(1, 0), 1);
+        this.addCommand(new AddGeneratorCommand(this, t));
     }
 
     move (mouse) {

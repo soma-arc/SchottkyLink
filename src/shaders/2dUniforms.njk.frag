@@ -26,6 +26,13 @@ struct ParallelTranslation {
     bool selected;
 };
 
+struct ParallelInversions {
+    vec2 p;
+    vec4 normal; //[x, y, halfplane distance, translation length]
+    vec2 ui; //[normal ring radius, point radius]
+    bool selected;
+};
+
 struct Rotation {
     vec2 p;
     vec4 normal; // [normal1, normal2]
@@ -91,6 +98,14 @@ uniform vec3 u_point{{ n }};
 
 {% for n in range(0, numParallelTranslation) %}
 uniform ParallelTranslation u_translate{{ n }};
+{% endfor %}
+
+{% for n in range(0, numParallelInversions) %}
+uniform ParallelInversions u_parallelInversions{{ n }};
+{% endfor %}
+
+{% for n in range(0, numGlideReflection) %}
+uniform ParallelTranslation u_glideReflection{{ n }};
 {% endfor %}
 
 {% for n in range(0, numRotation) %}
