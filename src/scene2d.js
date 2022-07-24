@@ -12,10 +12,12 @@ import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
 import VideoOrbit from './generator2d/videoOrbit.js';
+import CrossingInversions from './generator2d/crossingInversions.js';
 import Rotation from './generator2d/rotation.js';
 import ParallelTranslation from './generator2d/parallelTranslation.js';
 import ParallelInversions from './generator2d/parallelInversions.js';
 import GlideReflection from './generator2d/glideReflection.js';
+import Scaling from './generator2d/scaling.js';
 import TwoCirclesCommand from './command/twoCirclesCommand.js';
 import TwoCirclesC1Command from './command/twoCirclesC1Command.js';
 import TwoCirclesC1RCommand from './command/twoCirclesC1RCommand.js';
@@ -28,15 +30,17 @@ import RemoveAllGeneratorsCommand from './command/removeAllGeneratorsCommand.js'
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
                        'VideoOrbit': VideoOrbit,
+                       'Scaling': Scaling,
                        'Circle': Circle,
                        'HalfPlane': HalfPlane,
                        'TwoCircles': TwoCircles,
                        'Loxodromic': Loxodromic,
-                       'Rotation': Rotation,
+                       'CrossingInversions': CrossingInversions,
                        'ParallelTranslation': ParallelTranslation,
                        'ParallelInversions': ParallelInversions,
-                       'GlideReflection': GlideReflection
-                        };
+                       'GlideReflection': GlideReflection,
+                       'Rotation': Rotation
+                      };
 
 const PRESETS_CONTEXT = require.context('./presets2d', true, /.json$/);
 const PRESETS = [];
@@ -166,6 +170,11 @@ export default class Scene2d extends Scene {
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
+    addCrossingInversions(position, sceneScale) {
+        const r = new CrossingInversions(position, new Vec2(1, 0), 0.5 * Math.PI);
+        this.addCommand(new AddGeneratorCommand(this, r));
+    }
+
     addRotation(position, sceneScale) {
         const r = new Rotation(position, new Vec2(1, 0), 0.5 * Math.PI);
         this.addCommand(new AddGeneratorCommand(this, r));
@@ -184,6 +193,11 @@ export default class Scene2d extends Scene {
     addGlideReflection(position, sceneScale) {
         const t = new GlideReflection(position, new Vec2(1, 0), 1);
         this.addCommand(new AddGeneratorCommand(this, t));
+    }
+
+    addScaling(position, sceneScale) {
+        const s = new Scaling(position, 1);
+        this.addCommand(new AddGeneratorCommand(this, s));
     }
 
     move (mouse) {

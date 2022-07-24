@@ -32,6 +32,11 @@ export default class TwoCircles extends Generator {
         this.c1d = this.c2.invertOnCircle(this.c1);
     }
 
+    removable(mouse) {
+        const d = Vec2.distance(mouse, this.c2.center);
+        return d < this.c2.r;
+    }
+
     select(mouse, sceneScale) {
         const c1State = this.c1.select(mouse, sceneScale);
         if (c1State.isSelectingObj()) {

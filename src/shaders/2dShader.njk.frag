@@ -129,19 +129,33 @@ bool IIS(vec2 pos, out vec3 col) {
         pos += u_glideReflection{{ n }}.p;
         {% endfor %}
 
+        {% for n in range(0, numCrossingInversions) %}
+        pos -= u_crossingInversions{{ n }}.p;
+        float dCI{{ n }} = dot(pos, u_crossingInversions{{ n }}.normal.xy);
+        invNum += (dCI{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dCI{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dCI{{ n }}) * u_crossingInversions{{ n }}.normal.xy;
+        pos += u_crossingInversions{{ n }}.p;
+
+        pos -= u_crossingInversions{{ n }}.p;
+        dCI{{ n }} = dot(pos, u_crossingInversions{{ n }}.normal.zw);
+        invNum += (dCI{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dCI{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dCI{{ n }}) * u_crossingInversions{{ n }}.normal.zw;
+        pos += u_crossingInversions{{ n }}.p;
+        {% endfor %}
+
         {% for n in range(0, numRotation) %}
         pos -= u_rotation{{ n }}.p;
-        float dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
-        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
-        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
-        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.xy;
-        pos += u_rotation{{ n }}.p;
-
-        pos -= u_rotation{{ n }}.p;
-        dRot{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
-        invNum += (dRot{{ n }} < 0.) ? 1. : 0.;
-        inFund = (dRot{{ n }} < 0. ) ? false : inFund;
-        pos -= 2.0 * min(0., dRot{{ n }}) * u_rotation{{ n }}.normal.zw;
+        float dRot1{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
+        float dRot2{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
+        invNum += (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? false : inFund;
+        mat2 rotateM = mat2(cos(u_rotation{{ n }}.rotationRad),
+                            -sin(u_rotation{{ n }}.rotationRad),
+                            sin(u_rotation{{ n }}.rotationRad),
+                            cos(u_rotation{{ n }}.rotationRad));
+        pos = rotateM * pos;
         pos += u_rotation{{ n }}.p;
         {% endfor %}
 
@@ -416,6 +430,45 @@ bool renderUI(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
+    {% for n in range(0, numCrossingInversions) %}
+    if(u_crossingInversions{{ n }}.selected) {
+        // point p
+        if(distance(pos, u_crossingInversions{{ n }}.p) < u_crossingInversions{{ n }}.ui.y) {
+            color = LIGHT_BLUE;
+            return true;
+        }
+        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.zw) < u_crossingInversions{{ n }}.ui.y) {
+            color = PINK;
+            return true;
+        }
+        // line
+        pos -= u_crossingInversions{{ n }}.p;
+        dist = dot(-u_crossingInversions{{ n }}.normal.xy, pos);
+        if(0. < dist && dist < u_crossingInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+        dist = dot(-u_crossingInversions{{ n }}.normal.zw, pos);
+        if(0. < dist && dist < u_crossingInversions{{ n }}.ui.y) {
+            color = WHITE;
+            return true;
+        }
+
+        // ring
+        if(dot(pos, u_crossingInversions{{ n }}.normal.xy) > 0. &&
+           dot(pos, u_crossingInversions{{ n }}.normal.zw) > 0. &&
+           abs(distance(pos, u_crossingInversions{{ n }}.p - u_crossingInversions{{ n }}.p) - u_crossingInversions{{ n }}.ui.x) < u_crossingInversions{{ n }}.ui.y *.5) {
+            color = WHITE;
+            return true;
+        }
+        pos += u_crossingInversions{{ n }}.p;
+    }
+    {% endfor %}
+
     {% for n in range(0, numRotation) %}
     if(u_rotation{{ n }}.selected) {
         // point p
@@ -578,6 +631,19 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     {% endfor %}
 
     {% for n in range(0, numScaling) %}
+    if(u_scaling{{ n }}.selected) {
+        dist = u_scaling{{ n }}.c1.z - distance(pos, u_scaling{{ n }}.c1.xy);
+        if(0. < dist && dist < u_scaling{{ n }}.ui.y){
+            color = WHITE;
+            return true;
+        }
+
+        dist = u_scaling{{ n }}.c2.z - distance(pos, u_scaling{{ n }}.c2.xy);
+        if(0. < dist && dist < u_scaling{{ n }}.ui.y){
+            color = WHITE;
+            return true;
+        }
+    }
     if(abs(dot(pos - u_scaling{{ n }}.line1.xy,
                u_scaling{{ n }}.line1.zw)) < u_scaling{{ n }}.ui.y) {
         color = YELLOW;

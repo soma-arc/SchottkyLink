@@ -33,12 +33,21 @@ struct ParallelInversions {
     bool selected;
 };
 
+struct CrossingInversions {
+    vec2 p;
+    vec4 normal; // [normal1, normal2]
+    vec4 boundaryPoint; // [p1, p2]
+    vec2 ui; //[normal ring radius, point radius]
+    bool selected;
+};
+
 struct Rotation {
     vec2 p;
     vec4 normal; // [normal1, normal2]
     vec4 boundaryPoint; // [p1, p2]
     vec2 ui; //[normal ring radius, point radius]
     bool selected;
+    float rotationRad;
 };
 
 struct TwoCircles {
@@ -106,6 +115,10 @@ uniform ParallelInversions u_parallelInversions{{ n }};
 
 {% for n in range(0, numGlideReflection) %}
 uniform ParallelTranslation u_glideReflection{{ n }};
+{% endfor %}
+
+{% for n in range(0, numCrossingInversions) %}
+uniform CrossingInversions u_crossingInversions{{ n }};
 {% endfor %}
 
 {% for n in range(0, numRotation) %}

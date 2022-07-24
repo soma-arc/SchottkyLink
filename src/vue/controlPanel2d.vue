@@ -17,6 +17,8 @@
                       width="128px" height="128px" @click.native="addParallelInversions"/>
           <img-button label="Glide Reflection" :src="parallelTranslationUrl"
                       width="128px" height="128px" @click.native="addGlideReflection"/>
+          <img-button label="Crossing Inversions" :src="rotationUrl"
+                      width="128px" height="128px" @click.native="addCrossingInversions"/>
           <img-button label="Rotation" :src="rotationUrl"
                       width="128px" height="128px" @click.native="addRotation"/>
           <img-button label="Scaling" :src="scalingUrl"
@@ -83,10 +85,6 @@ export default {
             this.scene2d.addParallelTranslation(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
-        addRotation: function() {
-            this.scene2d.addRotation(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
-            this.canvasManager.canvas2d.compileRenderShader();
-        },
         addScaling: function() {
             this.scene2d.addScaling(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
@@ -119,6 +117,10 @@ export default {
                  this.canvasManager.canvas2d.compileRenderShader();
              }
         },
+        addCrossingInversions: function() {
+            this.scene2d.addCrossingInversions(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
         addRotation: function() {
             this.scene2d.addRotation(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
@@ -133,6 +135,10 @@ export default {
         },
         addGlideReflection: function() {
             this.scene2d.addGlideReflection(new Vec2(-0.5, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
+        },
+        addScaling: function() {
+            this.scene2d.addScaling(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
         changeMouseMode: function() {

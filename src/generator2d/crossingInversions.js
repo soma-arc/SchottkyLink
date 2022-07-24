@@ -4,14 +4,14 @@ import DistanceState from './distanceState.js';
 import Generator from './generator.js';
 import Radians from '../radians.js';
 
-export default class Rotation extends Generator {
+export default class CrossingInversions extends Generator {
      /**
      * //////+ bondaryDirPoint2 - control rotation angle
      * //////|
      * //////|
      * //////|
      * //////|
-     * ------+------+ boundaryDirPoint1 control generator's rotation
+     * ------+------+ boundaryDirPoint1 control generator's crossingInversions
      * //// p|///////
      * ////  |///////
      * //////|///////
@@ -36,9 +36,6 @@ export default class Rotation extends Generator {
         this.normal2 = new Vec2(this.normal1.x * cosTheta - this.normal1.y * sinTheta,
                                 this.normal1.x * sinTheta + this.normal1.y * cosTheta).scale(-1);
         this.boundaryDir2 = new Vec2(-this.normal2.y, this.normal2.x);
-        this.rotationRad =
-            Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x)
-            - Math.atan2(this.boundaryDir2.y, this.boundaryDir2.x);
     }
 
     select(mouse, sceneScale) {
@@ -49,7 +46,7 @@ export default class Rotation extends Generator {
         const dp = mouse.sub(boundaryDirPoint1);
         if (dp.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
-                .setComponentId(Rotation.BOUNDARY_POINT)
+                .setComponentId(CrossingInversions.BOUNDARY_POINT)
                 .setDiffObj(dp);
         }
 
@@ -57,7 +54,7 @@ export default class Rotation extends Generator {
         const dp2 = mouse.sub(boundaryDirPoint2);
         if (dp2.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
-                .setComponentId(Rotation.ROTATION_POINT)
+                .setComponentId(CrossingInversions.ROTATION_POINT)
                 .setDiffObj(dp2);
         }
 
@@ -67,7 +64,7 @@ export default class Rotation extends Generator {
         }
 
         return new SelectionState().setObj(this)
-            .setComponentId(Rotation.BODY)
+            .setComponentId(CrossingInversions.BODY)
             .setDiffObj(mouse.sub(this.p));
     }
 
@@ -82,11 +79,11 @@ export default class Rotation extends Generator {
 
     move(mouseState, mouse) {
         switch (mouseState.componentId) {
-        case Rotation.BODY: {
+        case CrossingInversions.BODY: {
             this.p = mouse.sub(mouseState.diffObj);
             break;
         }
-        case Rotation.BOUNDARY_POINT: {
+        case CrossingInversions.BOUNDARY_POINT: {
             this.boundaryDir1 = mouse.sub(this.p).normalize();
             let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             if (Math.abs(rad) < 0.1) {
@@ -147,18 +144,17 @@ export default class Rotation extends Generator {
             this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
             break;
         }
-        case Rotation.ROTATION_POINT: {
+        case CrossingInversions.ROTATION_POINT: {
             const mp = mouse.sub(this.p);
             const theta1 = Math.atan2(mp.y, mp.x);
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             let rad = theta1 - theta2;
-            rad = (rad >= Radians.PI) ? Radians.PI : rad;
+            rad = (rad > Radians.PI_2) ? Radians.PI_2 : rad;
             rad = (rad < 0) ? 0 : rad;
             rad = (Math.abs(rad - Radians.PI_12) < 0.1) ? Radians.PI_12 : rad;
             rad = (Math.abs(rad - Radians.PI_6) < 0.1) ? Radians.PI_6 : rad;
             rad = (Math.abs(rad - Radians.PI_4) < 0.1) ? Radians.PI_4 : rad;
             rad = (Math.abs(rad - Radians.PI_3) < 0.1) ? Radians.PI_3 : rad;
-            rad = (Math.abs(rad - Radians.TWO_PI_3) < 0.1) ? Radians.TWO_PI_3 : rad;
             rad = (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) ? Radians.FIVE_PI_12 : rad;
             this.radians = rad;
             break;
@@ -178,11 +174,11 @@ export default class Rotation extends Generator {
         const d1 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint1), this.normal1));
         const d2 = Math.abs(Vec2.dot(p.sub(boundaryDirPoint2), this.normal2));
         if (d1 < d2) {
-            return [new DistanceState(d1, this, Rotation.BODY),
-                    new DistanceState(d2, this, Rotation.BODY)];
+            return [new DistanceState(d1, this, CrossingInversions.BODY),
+                    new DistanceState(d2, this, CrossingInversions.BODY)];
         } else {
-            return [new DistanceState(d2, this, Rotation.BODY),
-                    new DistanceState(d1, this, Rotation.BODY)];
+            return [new DistanceState(d2, this, CrossingInversions.BODY),
+                    new DistanceState(d1, this, CrossingInversions.BODY)];
         }
     }
 
@@ -203,24 +199,20 @@ export default class Rotation extends Generator {
                      this.UIPointRadius * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
-        gl.uniform1f(uniLocation[uniI++],
-                     this.rotationRad);
         return uniI;
     }
 
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.p`));
+                                               `u_crossingInversions${index}.p`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.normal`));
+                                               `u_crossingInversions${index}.normal`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.boundaryPoint`));
+                                               `u_crossingInversions${index}.boundaryPoint`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.ui`));
+                                               `u_crossingInversions${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.selected`));
-        uniLocation.push(gl.getUniformLocation(program,
-                                               `u_rotation${index}.rotationRad`));
+                                               `u_crossingInversions${index}.selected`));
     }
 
     exportJson() {
@@ -233,7 +225,7 @@ export default class Rotation extends Generator {
     }
 
     static loadJson(obj, scene) {
-        const nh = new Rotation(new Vec2(obj.p[0], obj.p[1]),
+        const nh = new CrossingInversions(new Vec2(obj.p[0], obj.p[1]),
                                 new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),
                                 obj.degrees * Math.PI / 180);
         nh.setId(obj.id);
@@ -253,6 +245,6 @@ export default class Rotation extends Generator {
     }
 
     get name() {
-        return 'Rotation';
+        return 'CrossingInversions';
     }
 }
