@@ -123,7 +123,11 @@ bool IIS(vec2 pos, out vec3 col) {
           float ref = abs(floor(glideInv{{ n }} / u_glideReflection{{ n }}.normal.z));
           invNum += ref;
           pos -= u_glideReflection{{ n }}.normal.xy * (glideInv{{ n }} - mod(glideInv{{ n }}, u_glideReflection{{ n }}.normal.w/2.));
-          pos = mod(ref, 2.0) == 0. ? pos : vec2(pos.x, -pos.y);
+          if(mod(ref, 2.0) == 1.) {
+              vec2 nGlide{{ n }} = vec2(-u_glideReflection{{ n }}.normal.y, u_glideReflection{{ n }}.normal.x);
+              float dGlide{{ n }} = dot(pos, nGlide{{ n }});
+              pos -= 2.0 *  dGlide{{ n }} * nGlide{{ n }};
+          }
           inFund = false;
         }
         pos += u_glideReflection{{ n }}.p;
