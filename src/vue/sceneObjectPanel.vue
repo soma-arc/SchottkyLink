@@ -27,6 +27,18 @@
     <loxodromic-controller v-if="selectedObjName === 'Loxodromic'"
                             :loxodromic="scene.selectedObj"
                             :scene="scene"/>
+    <parallel-translation-controller v-if="selectedObjName === 'ParallelTranslation'"
+                                     :parallelTranslation="scene.selectedObj"
+                                     :scene="scene"/>
+    <parallel-inversions-controller v-if="selectedObjName === 'ParallelInversions'"
+                                    :parallelInversions="scene.selectedObj"
+                                    :scene="scene"/>
+    <glide-reflection-controller v-if="selectedObjName === 'GlideReflection'"
+                                 :glideReflection="scene.selectedObj"
+                                 :scene="scene"/>
+    <crossing-inversions-controller v-if="selectedObjName === 'CrossingInversions'"
+                                    :crossingInversions="scene.selectedObj"
+                                    :scene="scene"/>
   </div>
 </template>
 
@@ -37,6 +49,10 @@ import HalfPlaneController from './controller2d/halfPlaneController.vue';
 import OrbitSeedController from './controller2d/orbitSeedController.vue';
 import videoOrbitController from './controller2d/videoOrbitController.vue';
 import LoxodromicController from './controller2d/loxodromicController.vue';
+import ParallelTranslationController from './controller2d/parallelTranslationController.vue';
+import ParallelInversionsController from './controller2d/parallelInversionsController.vue';
+import GlideReflectionController from './controller2d/glideReflectionController.vue';
+import CrossingInversionsController from './controller2d/crossingInversionsController.vue';
 export default {
     props: ['scene', 'canvas2d', 'textureManager'],
     components: {
@@ -44,7 +60,11 @@ export default {
         HalfPlaneController,
         OrbitSeedController,
         videoOrbitController,
-        LoxodromicController
+        LoxodromicController,
+        ParallelTranslationController,
+        ParallelInversionsController,
+        GlideReflectionController,
+        CrossingInversionsController
     },
     computed: {
         selectedObjName: function() {

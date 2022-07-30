@@ -35,6 +35,18 @@ export default class ParallelTranslation extends Generator {
     }
 
     update() {
+        this.normalAngleRad = Math.atan2(this.normal.y, this.normal.x);
+        this.normalAngleRad += this.normalAngleRad < 0 ? 2 * Math.PI : 0;
+        this.normalAngleDeg = Radians.RadToDeg(this.normalAngleRad);
+        this.normalAngleDeg = this.normalAngleDeg % 360;
+        this.boundaryDir = new Vec2(-this.normal.y,
+                                    this.normal.x);
+        this.hp1 = new HalfPlane(this.p, this.normal);
+        this.hp2 = new HalfPlane(this.p.add(this.normal.scale(this.planeDist)),
+                                 this.normal.scale(-1));
+    }
+
+    updateFromNormal() {
         this.boundaryDir = new Vec2(-this.normal.y,
                                     this.normal.x);
         this.hp1 = new HalfPlane(this.p, this.normal);
@@ -53,7 +65,7 @@ export default class ParallelTranslation extends Generator {
         }
 
         // point of hp2
-        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)))
+        const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)));
         if (dp2.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(ParallelTranslation.POINT_HP2)
