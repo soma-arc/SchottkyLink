@@ -228,6 +228,12 @@ export default class GlideReflection extends Generator {
         return nh;
     }
 
+    static loadFromArray(array) {
+        return new GlideReflection(new Vec2(array[0], array[1]), // p
+                                   new Vec2(array[2], array[3]), // normal
+                                   array[4]); // plane dist
+    }
+
     static get BODY() {
         return 0;
     }

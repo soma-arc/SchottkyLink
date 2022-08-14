@@ -132,6 +132,11 @@ export default class OrbitSeed extends Generator {
         }
     }
 
+    static loadFromArray(array) {
+        return new OrbitSeed(array[0], array[1], // cornerX, cornerY
+                             array[2], array[3]);// width, height
+    }
+
     exportJson() {
         return {
             id: this.id,

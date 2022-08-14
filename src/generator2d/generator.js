@@ -96,6 +96,10 @@ export default class Generator {
         return {};
     }
 
+    static loadFromArray(array) {
+        return new Generator();
+    }
+
     /**
      *
      * @param {Object.} obj

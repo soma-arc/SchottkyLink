@@ -220,6 +220,12 @@ export default class ParallelInversions extends Generator {
         };
     }
 
+    static loadFromArray(array) {
+        return new ParallelInversions(new Vec2(array[0], array[1]), // p
+                                      new Vec2(array[2], array[3]), // normal
+                                      array[4]); // plane dist
+    }
+
     static loadJson(obj, scene) {
         const nh = new ParallelInversions(new Vec2(obj.p[0], obj.p[1]),
                                            new Vec2(obj.normal[0], obj.normal[1]),

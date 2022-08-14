@@ -240,6 +240,12 @@ export default class Rotation extends Generator {
         return nh;
     }
 
+    static loadFromArray(array) {
+        return new Rotation(new Vec2(array[0], array[1]), // p
+                            new Vec2(array[2], array[3]), // boundaryDir
+                            Radians.DegToRad(array[4]));  // radian
+    }
+
     static get BODY() {
         return 0;
     }

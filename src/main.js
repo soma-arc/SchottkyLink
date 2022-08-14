@@ -5,6 +5,7 @@ import 'buefy/dist/buefy.css';
 import Scene2d from './scene2d.js';
 import Scene3d from './scene3d.js';
 import CanvasManager from './canvasManager.js';
+const QueryString = require('query-string');
 
 window.addEventListener('load', () => {
     Vue.use(Buefy);
@@ -38,8 +39,6 @@ window.addEventListener('load', () => {
         resizeTimer = window.setTimeout(canvasManager.resizeCallback, 500);
     });
 
-    canvasManager.render();
-
     window.addEventListener('popstate', () => {
         app.currentRoute = window.location.pathname;
     });
@@ -49,4 +48,28 @@ window.addEventListener('load', () => {
         requestAnimationFrame(renderLoop);
     }
     renderLoop();
+
+    const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
+    const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
+    scene2d.loadFromQueryString(parsed);
+    canvasManager.canvas2d.compileRenderShader();
+    if (scene2d.objects['VideoOrbit'] !== undefined &&
+        canvasManager.videoManager.streaming === false) {
+        canvasManager.videoManager.connect(
+            canvasManager.canvas2d.gl,
+            () => {
+                canvasManager.videoManager.streaming = true;
+                if(downloadImage) {
+                    canvasManager.canvas2d.renderProductAndSave();
+                }
+            },
+            () => {
+            });
+    } else {
+        if(downloadImage) {
+            canvasManager.canvas2d.renderProductAndSave();
+        }
+    }
+
+    canvasManager.render();
 });

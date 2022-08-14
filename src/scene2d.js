@@ -302,6 +302,22 @@ export default class Scene2d extends Scene {
         return context;
     }
 
+    loadFromQueryString(parsedObject) {
+        this.objects = {};
+        const objKeyNames = Object.keys(parsedObject);
+        const generators = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if(!generators.includes(objName)) continue;
+            if (this.objects[objName] === undefined) {
+                Vue.set(this.objects, objName, []);
+            }
+            for (const objParam of parsedObject[objName]) {
+                const paramArray = objParam.split(',').map(Number.parseFloat);
+                this.objects[objName].push(STR_CLASS_MAP[objName].loadFromArray(paramArray));
+            }
+        }
+    }
+
     load(sceneObjects) {
         this.objects = {};
         const generators = sceneObjects.generators;

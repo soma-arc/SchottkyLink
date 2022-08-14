@@ -166,6 +166,11 @@ export default class TwoCircles extends Generator {
         return nc;
     }
 
+    static loadFromArray(array) {
+        return new TwoCircles(new Circle(new Vec2(array[0], array[1]), array[2]),
+                              new Circle(new Vec2(array[3], array[4]), array[5]));
+    }
+
     static get C1_BODY() {
         return 0;
     }

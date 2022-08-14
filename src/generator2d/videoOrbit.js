@@ -15,7 +15,12 @@ export default class VideoOrbit extends OrbitSeed {
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoOrbit${index}.selected`));
     }
-    
+
+    static loadFromArray(array) {
+        return new VideoOrbit(array[0], array[1], // cornerX, cornerY
+                              array[2], array[3]);// width, height
+    }
+
     get name() {
         return 'VideoOrbit';
     }

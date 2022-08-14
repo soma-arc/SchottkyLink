@@ -160,6 +160,10 @@ export default class Circle extends Generator {
         return nc;
     }
 
+    static loadFromArray(array) {
+        return new Circle(new Vec2(array[0], array[1]), array[2]);
+    }
+
     /**
      * Apply inversion to a given point
      * @param {Vec2} p

@@ -218,6 +218,12 @@ export default class Loxodromic extends Generator {
         return nc;
     }
 
+    static loadFromArray(array) {
+        return new Loxodromic(new Circle(new Vec2(array[0], array[1]), array[2]),
+                              new Circle(new Vec2(array[3], array[4]), array[5]),
+                              new Vec2(array[6], array[7]));
+    }
+
     static get C1_BODY() {
         return 0;
     }

@@ -217,6 +217,12 @@ export default class Scaling extends Generator {
         return no;
     }
 
+    static loadFromArray(array) {
+        return new Scaling(new Vec2(array[0], array[1]), // center
+                           new Vec2(array[2], array[3]) // scalingFactor
+                          );
+    }
+
     get name() {
         return 'Scaling';
     }
