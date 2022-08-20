@@ -16,6 +16,57 @@ Access to the URL: [schottky.jp](http://schottky.jp) or download the source code
 - Double Left Click: Remove a generator
 - \+ / - : Increase / Decrease maximum iterations
 
+#### QueryString
+- scale=float
+set scene scale.
+
+- translateX=float
+set translate x.
+
+- translateY=float
+set tramslate y.
+
+- download=boolean
+if download == true, save and download canvas image.
+
+- Circle[]=float,float,float
+add Circle to the scene (x, y, radius)
+
+- HalfPlane[]=float,float,float,float
+add HalfPlane to the scene (pointX, pointY, normalX, normalY)
+
+- CrossingInversions[]=float,float,float,float,float
+Add CrossingInversions to the scene (pointX, pointY, directionX, directionY, Degrees)
+
+- GlideReflection[]=float,float,float,float,float
+Add GlideReflection to the scene (pointX, pointY, directionX, directionY, planeDistance)
+
+- ParallelInversions[]=float,float,float,float,float
+Add ParallelInversions to the scene (pointX, pointY, directionX, directionY, planeDistance)
+
+- ParallelTranslation[]=float,float,float,float,float
+Add ParallelTranslation to the scene (pointX, pointY, directionX, directionY, planeDistance)
+
+- OrbitSeed[]=float,float,float,float
+Add OrbitSeed to the scene (cornerX, cornerY, width, height)
+
+- VideoOrbit[]=float,float,float,float
+Add VideoOrbit to the scene (cornerX, cornerY, width, height)
+
+- Rotation[]=float,float,float,float,float
+Add Rotation to the scene (pointX, pointY, directionX, directionY, degrees)
+
+- Scaling[]=float,float,float,float
+Add Scaling to the scene (centerX, centerY, scalingFactorX, scalingFactorY)
+
+- TwoCircles[]=float,float,float,float,float,float
+Add TwoCircles to the scene (c1CenterX, c1CenterY, c1Radius, c2CenterX, c2CenterY, c2Radius)
+
+- Loxofromic[]=float,float,float,float,float,float,float,float
+Add Loxodromic to the scene (c1CenterX, c1CenterY, c1Radius, c2CenterX, c2CenterY, c2Radius, pointX, pointY)
+
+##### Examples
+?scale=10&Circle[]=1,1,1&Circle[]=1,-1,1&Circle[]=-1,1,1&Circle[]=-1,-1,1
 
 #### 3 Dimensional mode
 ![3 Dimensional mode](docs/img/3DimensionalMode.png)
