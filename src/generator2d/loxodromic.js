@@ -210,6 +210,12 @@ export default class Loxodromic extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new Loxodromic(this.c1.cloneDeeply(),
+                              this.c2.cloneDeeply(),
+                              this.p.cloneDeeply());
+    }
+
     static loadJson(obj, scene) {
         const nc = new Loxodromic(Circle.loadJson(obj.c1, scene),
                                   Circle.loadJson(obj.c2, scene),

@@ -159,6 +159,11 @@ export default class TwoCircles extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new TwoCircles(this.c1.cloneDeeply(),
+                              this.c2.cloneDeeply());
+    }
+
     static loadJson(obj, scene) {
         const nc = new TwoCircles(Circle.loadJson(obj.c1, scene),
                                   Circle.loadJson(obj.c2, scene));

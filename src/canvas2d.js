@@ -187,6 +187,14 @@ export default class Canvas2d extends Canvas {
             this.scene.addTwoCircles(new Vec2(0, 0), 1);
         } else if (event.key === 'x') {
             this.scene.addLoxodromic(new Vec2(0, 0), 1);
+        } else if(event.ctrlKey && event.key === 'c') {
+            this.scene.copy();
+        } else if(event.crtlKey && event.key === 'v') {
+            if(this.scene.copiedGenerater !== undefined) {
+                this.scene.paste();
+                this.compileRenderShader();
+                this.render();
+            }
         }
     }
 

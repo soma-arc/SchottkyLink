@@ -174,6 +174,10 @@ export default class HalfPlane extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new HalfPlane(this.p.cloneDeeply(), this.normal.cloneDeeply());
+    }
+
     static loadJson(obj, scene) {
         const nh = new HalfPlane(new Vec2(obj.p[0], obj.p[1]),
                                  new Vec2(obj.normal[0], obj.normal[1]));

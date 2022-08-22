@@ -146,6 +146,13 @@ export default class OrbitSeed extends Generator {
         };
     }
 
+    cloneDeeply() {
+        const orbitSeed = new OrbitSeed(this.corner.x, this.corner.y,
+                                        this.size.x, this.size.y);
+        orbitSeed.textureIndex = this.textureIndex;
+        return orbitSeed;
+    }
+
     static loadJson(obj, scene) {
         const nh = new OrbitSeed(obj.corner[0], obj.corner[1],
                                  obj.width, obj.height);

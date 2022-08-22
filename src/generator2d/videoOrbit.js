@@ -16,6 +16,11 @@ export default class VideoOrbit extends OrbitSeed {
                                                `u_videoOrbit${index}.selected`));
     }
 
+    cloneDeeply() {
+        return new VideoOrbit(this.corner.x, this.corner.y,
+                              this.size.x, this.size.y);
+    }
+
     static loadFromArray(array) {
         return new VideoOrbit(array[0], array[1], // cornerX, cornerY
                               array[2], array[3]);// width, height

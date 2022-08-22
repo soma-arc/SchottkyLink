@@ -224,6 +224,12 @@ export default class CrossingInversions extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new CrossingInversions(this.p.cloneDeeply(),
+                                      this.boundaryDir.cloneDeeply,
+                                      this.radians);
+    }
+
     static loadJson(obj, scene) {
         const nh = new CrossingInversions(new Vec2(obj.p[0], obj.p[1]),
                                 new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),

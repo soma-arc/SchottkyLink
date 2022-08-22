@@ -220,6 +220,12 @@ export default class ParallelInversions extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new ParallelInversions(this.p.cloneDeeply(),
+                                      this.normal.cloneDeeply(),
+                                      this.planeDist);
+    }
+
     static loadFromArray(array) {
         return new ParallelInversions(new Vec2(array[0], array[1]), // p
                                       new Vec2(array[2], array[3]), // normal

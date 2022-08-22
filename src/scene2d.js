@@ -59,6 +59,8 @@ export default class Scene2d extends Scene {
 
         this.updateSceneListeners = [];
         this.reRenderListeners = [];
+
+        this.copiedGenerater = undefined;
     }
 
     addSceneUpdateListener(listener) {
@@ -438,6 +440,14 @@ export default class Scene2d extends Scene {
                 this.addCommand(new MoveCommand(this, this.selectedState.selectedObj, d));
             }
         }
+    }
+
+    copy() {
+        this.copiedGenerater = this.selectedObj;
+    }
+
+    paste() {
+        this.addCommand(new AddGeneratorCommand(this, this.copiedGenerater.cloneDeeply()));
     }
 
     mouseLeave() {

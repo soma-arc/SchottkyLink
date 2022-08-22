@@ -210,6 +210,11 @@ export default class Scaling extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new Scaling(this.center.cloneDeeply(),
+                           this.scaleFactor.cloneDeeply());
+    }
+
     static loadJson(obj, scene) {
         const no = new Scaling(new Vec2(obj.center[0], obj.center[1]),
                                new Vec2(obj.scalingFactor[0], obj.scalingFactor[1]));

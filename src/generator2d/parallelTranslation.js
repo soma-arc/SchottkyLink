@@ -220,6 +220,12 @@ export default class ParallelTranslation extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new ParallelTranslation(this.p.cloneDeeply(),
+                                       this.normal.cloneDeeply(),
+                                       this.planeDist);
+    }
+
     static loadFromArray(array) {
         return new ParallelTranslation(new Vec2(array[0], array[1]), // p
                                        new Vec2(array[2], array[3]), // normal

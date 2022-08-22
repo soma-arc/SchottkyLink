@@ -220,6 +220,12 @@ export default class GlideReflection extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new GlideReflection(this.p.cloneDeeply(),
+                                   this.normal.cloneDeeply(),
+                                   this.planeDist);
+    }
+
     static loadJson(obj, scene) {
         const nh = new GlideReflection(new Vec2(obj.p[0], obj.p[1]),
                                        new Vec2(obj.normal[0], obj.normal[1]),

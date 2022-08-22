@@ -232,6 +232,12 @@ export default class Rotation extends Generator {
         };
     }
 
+    cloneDeeply() {
+        return new Rotation(this.p.cloneDeeply(),
+                            this.boundaryDir.cloneDeeply(),
+                            this.radians);
+    }
+
     static loadJson(obj, scene) {
         const nh = new Rotation(new Vec2(obj.p[0], obj.p[1]),
                                 new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),
