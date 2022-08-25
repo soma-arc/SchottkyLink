@@ -39,6 +39,15 @@
     <crossing-inversions-controller v-if="selectedObjName === 'CrossingInversions'"
                                     :crossingInversions="scene.selectedObj"
                                     :scene="scene"/>
+    <rotation-controller v-if="selectedObjName === 'Rotation'"
+                         :rotation="scene.selectedObj"
+                         :scene="scene"/>
+    <two-circles-controller v-if="selectedObjName === 'TwoCircles'"
+                            :twoCircles="scene.selectedObj"
+                            :scene="scene"/>
+    <scaling-controller v-if="selectedObjName === 'Scaling'"
+                        :scaling="scene.selectedObj"
+                        :scene="scene"/>
   </div>
 </template>
 
@@ -53,6 +62,10 @@ import ParallelTranslationController from './controller2d/parallelTranslationCon
 import ParallelInversionsController from './controller2d/parallelInversionsController.vue';
 import GlideReflectionController from './controller2d/glideReflectionController.vue';
 import CrossingInversionsController from './controller2d/crossingInversionsController.vue';
+import RotationController from './controller2d/rotationController.vue';
+import TwoCirclesController from './controller2d/twoCirclesController.vue';
+import ScalingController from './controller2d/scalingController.vue';
+
 export default {
     props: ['scene', 'canvas2d', 'textureManager'],
     components: {
@@ -64,7 +77,10 @@ export default {
         ParallelTranslationController,
         ParallelInversionsController,
         GlideReflectionController,
-        CrossingInversionsController
+        CrossingInversionsController,
+        RotationController,
+        TwoCirclesController,
+        ScalingController
     },
     computed: {
         selectedObjName: function() {
