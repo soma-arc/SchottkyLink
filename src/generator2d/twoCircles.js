@@ -151,6 +151,10 @@ export default class TwoCircles extends Generator {
         uniLocation.push(gl.getUniformLocation(program, `u_hyperbolic${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `TwoCircles[]=${this.c1.center.x},${this.c1.center.y},${this.c1.r},${this.c2.center.x},${this.c2.center.y},${this.c2.center.r}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

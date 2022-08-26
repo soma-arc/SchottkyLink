@@ -211,6 +211,10 @@ export default class GlideReflection extends Generator {
                                                `u_glideReflection${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `GlideReflection[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y},${this.planeDist}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

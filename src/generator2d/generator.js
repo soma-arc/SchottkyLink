@@ -90,6 +90,14 @@ export default class Generator {
 
     /**
      *
+     * @returns {String.}
+     */
+    exportAsQueryString() {
+        return '';
+    }
+
+    /**
+     *
      * @returns {Object.}
      */
     exportJson() {

@@ -223,6 +223,10 @@ export default class Rotation extends Generator {
                                                `u_rotation${index}.rotationRad`));
     }
 
+    exportAsQueryString() {
+        return `Rotation[]=${this.p.x},${this.p.y},${this.boundaryDir.x},${this.boundaryDir.y},${this.degrees}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

@@ -166,6 +166,10 @@ export default class HalfPlane extends Generator {
                                                `u_halfPlane${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `HalfPlane[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

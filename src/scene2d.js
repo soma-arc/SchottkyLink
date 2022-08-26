@@ -361,6 +361,28 @@ export default class Scene2d extends Scene {
         this.selectedObj = undefined;
     }
 
+    exportAsQueryString() {
+        let queryString = '?';
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            for (const obj of this.objects[objName]) {
+                queryString += obj.exportAsQueryString() +'&';
+            }
+        }
+
+        return queryString.substring(0, queryString.length - 1);
+    }
+
+    copyToClipboard() {
+        const url = location.hostname + location.pathname + this.exportAsQueryString();
+        navigator.clipboard.writeText(url).then(() => {
+            console.log('Text copied to clipboard...');
+        }).catch(err => {
+            console.log('Something went wrong', err);
+        });
+    }
+
     exportJson() {
         const json = {};
         json['label'] = 'scene';

@@ -211,6 +211,10 @@ export default class ParallelInversions extends Generator {
                                                `u_parallelInversions${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `ParallelInversions[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y},${this.planeDist}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

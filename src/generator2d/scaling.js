@@ -202,6 +202,10 @@ export default class Scaling extends Generator {
                                                `u_scaling${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `Scaling[]=${this.center.x},${this.center.y},${this.scalingFactor.x},${this.scalingFactor.y}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

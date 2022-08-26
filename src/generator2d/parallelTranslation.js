@@ -211,6 +211,10 @@ export default class ParallelTranslation extends Generator {
                                                `u_translate${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `ParallelTranslation[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y},${this.planeDist}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

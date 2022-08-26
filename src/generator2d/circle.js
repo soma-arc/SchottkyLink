@@ -145,6 +145,10 @@ export default class Circle extends Generator {
         uniLocation.push(gl.getUniformLocation(program, `u_circle${index}.selected`));
     }
 
+    exportAsQueryString() {
+        return `Circle[]=${this.center.x},${this.center.y},${this.r}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

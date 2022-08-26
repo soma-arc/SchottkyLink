@@ -137,6 +137,10 @@ export default class OrbitSeed extends Generator {
                              array[2], array[3]);// width, height
     }
 
+    exportAsQueryString() {
+        return `OrbitSeed[]=${this.corner.x},${this.corner.y},${this.size.x},${this.size.y}`;
+    }
+
     exportJson() {
         return {
             id: this.id,

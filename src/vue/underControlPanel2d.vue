@@ -40,10 +40,17 @@
       Clear
     </b-button>
   </div>
+  <div class="inputContainer">
+    <b-button type="is-primary" @click="saveSceneAsURL">
+      Save URL
+    </b-button>
+  </div>
 </div>
 </template>
 
 <script>
+import { ToastProgrammatic as Toast } from 'buefy'
+
 export default {
     props: ['scene2d', 'canvasManager'],
     methods: {
@@ -55,6 +62,11 @@ export default {
         },
         clearGenerators: function() {
             this.scene2d.removeAllGenerators();
+        },
+        saveSceneAsURL: function() {
+            this.scene2d.copyToClipboard();
+            Toast.open({message: 'URL of the scene is copied to clipboard.',
+                        position: 'is-bottom'});
         }
     }
 }
@@ -71,6 +83,8 @@ export default {
 
 .inputContainer {
     padding-top: 3px;
+    margin-right: 5px;
+    margin-left: 0px;
     width: 70px;
 }
 </style>
