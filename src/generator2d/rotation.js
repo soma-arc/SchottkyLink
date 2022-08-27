@@ -23,6 +23,7 @@ export default class Rotation extends Generator {
         super();
         this.p = p;
         this.radians = radians;
+        this.degrees = Radians.RadToDeg(radians);
         this.boundaryDir1 = boundaryDir;
         this.normalUIRingRadius = 0.1;
         this.UIPointRadius = 0.01;

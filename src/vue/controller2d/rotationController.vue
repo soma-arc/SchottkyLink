@@ -16,22 +16,16 @@
     type="number"
     step="0.01">
   </b-input>
-  Normal Degree
+  Degrees
   <b-input 
-    v-model.number="rotation.normalAngleDeg"
-    @input="computeNormal"
+    v-model.number="rotation.degrees"
+    @input="updateRotation"
     placeholder="Number"
     type="number"
+    max="180"
+    min="0"
     step="1">
   </b-input>
-  Plane Distance
-  <b-input 
-    v-model.number="rotation.planeDist"
-    @input="updateTranslation"
-    placeholder="Number"
-    type="number"
-    step="0.01">
-    </b-input>
   </div>
 </template>
 
@@ -46,16 +40,11 @@ export default {
             valueChanged: function(event) {
                 this.scene.reRender();
             },
-            updateTranslation: function(event) {
+            updateRotation: function(event) {
+                this.rotation.radians = Radians.DegToRad(this.rotation.degrees);
                 this.rotation.update();
                 this.scene.reRender();
             },
-            computeNormal: function(event) {
-                const rad = Radians.DegToRad(this.rotation.normalAngleDeg);
-                this.rotation.normal = new Vec2(Math.cos(rad), Math.sin(rad));
-                this.rotation.updateFromNormal();
-                this.scene.reRender();
-            }
         }
     }
 </script>
