@@ -144,3 +144,5 @@ uniform OrbitSeed u_videoOrbit{{ n }};
 {% for n in range(0, numScaling) %}
 uniform Scaling u_scaling{{ n }};
 {% endfor %}
+
+uniform vec2 u_orbitOrigin;

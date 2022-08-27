@@ -34,6 +34,9 @@ export default class Canvas2d extends Canvas {
 
         this.scene.addSceneUpdateListener(this.compileRenderShader.bind(this));
         this.scene.addReRenderListener(this.render.bind(this));
+
+        this.orbitOrigin = new Vec2(0, 0);
+        this.draggingOrbitOrigin = false;
     }
 
     init() {
@@ -122,8 +125,12 @@ export default class Canvas2d extends Canvas {
         this.mouseState.button = event.button;
 
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            this.scene.select(mouse, this.scale);
-            this.render();
+            if (Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+                this.draggingOrbitOrigin = true;
+            } else {
+                this.scene.select(mouse, this.scale);
+                this.render();
+            }
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             this.scene.addCircle(mouse, this.scale);
             this.compileRenderShader();
@@ -144,6 +151,7 @@ export default class Canvas2d extends Canvas {
         this.mouseState.isPressing = false;
         this.isRendering = false;
         this.scene.mouseUp();
+        this.draggingOrbitOrigin = false;
     }
 
     mouseLeaveListener(event) {
@@ -156,9 +164,20 @@ export default class Canvas2d extends Canvas {
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        this.mouseState.position = mouse;
         if (this.mouseState.button === Canvas.MOUSE_BUTTON_LEFT) {
-            const moved = this.scene.move(mouse);
-            if (moved) this.isRendering = true;
+            if(this.draggingOrbitOrigin) {
+                this.orbitOrigin = mouse;
+                this.isRendering = true;
+            } else {
+                let moved;
+                if(event.shiftKey) {
+                    moved = this.scene.moveAlongAxis(this.mouseState);
+                } else {
+                    moved = this.scene.move(mouse);
+                }
+                if (moved) this.isRendering = true;
+            }
         } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
             this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
             this.isRendering = true;
@@ -247,6 +266,8 @@ export default class Canvas2d extends Canvas {
                                                           'u_maxIISIterations'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_isRenderingGenerator'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_orbitOrigin'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -282,6 +303,9 @@ export default class Canvas2d extends Canvas {
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
         this.gl.uniform1i(this.uniLocations[i++], this.isRenderingGenerator);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.orbitOrigin.x,
+                          this.orbitOrigin.y);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 

@@ -9,6 +9,9 @@ out vec4 outColor;
 // include Color constants, hsv2rgb, and blendCol
 {% include "./color.njk.frag" %}
 
+const int NUM_ORBIT_POINTS = 10;
+vec2 g_orbitPoints[NUM_ORBIT_POINTS];
+
 // from Syntopia http://blog.hvidtfeldts.net/index.php/2015/01/path-tracing-3d-fractals/
 vec2 rand2n(const vec2 co, const float sampleIndex) {
     vec2 seed = co * (sampleIndex + 1.0);
@@ -237,6 +240,255 @@ bool IIS(vec2 pos, out vec3 col) {
 
     col = computeColor(invNum);
     return (invNum == 0.) ? false : true;
+}
+
+bool renderOrbit(vec2 pos, out vec3 col, int numOrbit){
+    col = vec3(0);
+    for(int i = 0; i < numOrbit; i++) {
+        if(distance(pos, g_orbitPoints[i]) < .01) {
+            col = vec3(0, 0, 1);
+            return true;
+        }
+        if(i > 0) {
+            vec2 p1 = g_orbitPoints[i - 1];
+            vec2 p2 = g_orbitPoints[i];
+            vec2 v = p2 - p1;
+            vec2 n = normalize(vec2(-v.y, v.x));
+            vec2 posP1 = pos - p1;
+            vec2 posP2 = pos - p2;
+            if(dot(posP1, posP2) < 0. &&
+               abs(dot(n, posP1)) < .001) {
+                col = vec3(0, 1, 1);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int computeOrbit(vec2 pos) {
+    bool inFund = true;
+    vec4 c = vec4(0);
+    int orbitNum = 0;
+    g_orbitPoints[orbitNum] = pos;
+    orbitNum++;
+    for (int i = 1; i < NUM_ORBIT_POINTS; i++) {
+        inFund = true;
+
+        {% for n in range(0,  numCircle ) %}
+        if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
+            pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius);
+            g_orbitPoints[orbitNum] = pos;
+            inFund = false;
+            orbitNum++;
+            continue;
+        }
+        {% endfor %}
+
+        {% for n in range(0,  numCircleFromPoints) %}
+        if(distance(pos, u_circleFromPoints{{ n }}.centerAndRadius.xy) < u_circleFromPoints{{ n }}.centerAndRadius.z){
+            pos = circleInvert(pos, u_circleFromPoints{{ n }}.centerAndRadius);
+            g_orbitPoints[orbitNum] = pos;
+            inFund = false;
+            orbitNum++;
+            continue;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numHalfPlane ) %}
+        pos -= u_halfPlane{{ n }}.p;
+        float dHalfPlane{{ n }} = dot(pos, u_halfPlane{{ n }}.normal.xy);
+        //orbitNum += (dHalfPlane{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dHalfPlane{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dHalfPlane{{ n }}) * u_halfPlane{{ n }}.normal.xy;
+        pos += u_halfPlane{{ n }}.p;
+        if (dHalfPlane{{ n }} < 0.){
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numParallelTranslation) %}
+        pos -= u_translate{{ n }}.p;
+        float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
+        if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
+            //orbitNum += abs(floor(hpd{{ n }} / u_translate{{ n }}.normal.z));
+            pos -= u_translate{{ n }}.normal.xy * (hpd{{ n }} - mod(hpd{{ n }}, u_translate{{ n }}.normal.w/2.));
+
+            inFund = false;
+        }
+        pos += u_translate{{ n }}.p;
+        if(hpd{{ n }} < 0. || u_translate{{ n }}.normal.z < hpd{{ n }}) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numParallelInversions) %}
+        pos -= u_parallelInversions{{ n }}.p;
+        float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
+        if(hpdInv{{ n }} < 0. || u_parallelInversions{{ n }}.normal.z < hpdInv{{ n }}) {
+            //orbitNum += abs(floor(hpdInv{{ n }} / u_parallelInversions{{ n }}.normal.z));
+            pos -= u_parallelInversions{{ n }}.normal.xy * (hpdInv{{ n }} - mod(hpdInv{{ n }}, u_parallelInversions{{ n }}.normal.w));
+            pos -= u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+            hpdInv{{ n }} = dot(pos, u_parallelInversions{{ n }}.normal.xy);
+            pos -= 2.0 * max(0., hpdInv{{ n }}) * u_parallelInversions{{ n }}.normal.xy;
+            pos += u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z;
+
+            inFund = false;
+        }
+        pos += u_parallelInversions{{ n }}.p;
+        if(hpdInv{{ n }} < 0. || u_parallelInversions{{ n }}.normal.z < hpdInv{{ n }}) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numGlideReflection) %}
+        pos -= u_glideReflection{{ n }}.p;
+        float glideInv{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
+        if(glideInv{{ n }} < 0. || u_glideReflection{{ n }}.normal.z < glideInv{{ n }}) {
+          float ref = abs(floor(glideInv{{ n }} / u_glideReflection{{ n }}.normal.z));
+          //orbitNum += ref;
+          pos -= u_glideReflection{{ n }}.normal.xy * (glideInv{{ n }} - mod(glideInv{{ n }}, u_glideReflection{{ n }}.normal.w/2.));
+          if(mod(ref, 2.0) == 1.) {
+              vec2 nGlide{{ n }} = vec2(-u_glideReflection{{ n }}.normal.y, u_glideReflection{{ n }}.normal.x);
+              float dGlide{{ n }} = dot(pos, nGlide{{ n }});
+              pos -= 2.0 *  dGlide{{ n }} * nGlide{{ n }};
+          }
+          inFund = false;
+        }
+        pos += u_glideReflection{{ n }}.p;
+        if(glideInv{{ n }} < 0. || u_glideReflection{{ n }}.normal.z < glideInv{{ n }}) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numCrossingInversions) %}
+        pos -= u_crossingInversions{{ n }}.p;
+        float dCI{{ n }} = dot(pos, u_crossingInversions{{ n }}.normal.xy);
+        //orbitNum += (dCI{{ n }} < 0.) ? 1 : 0;
+        inFund = (dCI{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dCI{{ n }}) * u_crossingInversions{{ n }}.normal.xy;
+        pos += u_crossingInversions{{ n }}.p;
+        if (dCI{{ n }} < 0.) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+
+        pos -= u_crossingInversions{{ n }}.p;
+        dCI{{ n }} = dot(pos, u_crossingInversions{{ n }}.normal.zw);
+        //orbitNum += (dCI{{ n }} < 0.) ? 1 : 0;
+        inFund = (dCI{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dCI{{ n }}) * u_crossingInversions{{ n }}.normal.zw;
+        pos += u_crossingInversions{{ n }}.p;
+        if (dCI{{ n }} < 0.) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numRotation) %}
+        pos -= u_rotation{{ n }}.p;
+        float dRot1{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
+        float dRot2{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
+        //orbitNum += (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? 1 : 0;
+        if(dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) {
+            inFund = false;
+            mat2 rotateM{{ n }} = mat2(cos(u_rotation{{ n }}.rotationRad),
+                                       -sin(u_rotation{{ n }}.rotationRad),
+                                       sin(u_rotation{{ n }}.rotationRad),
+                                       cos(u_rotation{{ n }}.rotationRad));
+            pos = rotateM{{ n }} * pos;
+        }
+        pos += u_rotation{{ n }}.p;
+        if(dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) {
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numTwoCircles) %}
+        if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+       }else if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) >= u_hyperbolic{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c2);
+            pos = circleInvert(pos, u_hyperbolic{{ n }}.c1);
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numLoxodromic) %}
+        if(distance(pos, u_loxodromic{{ n }}.c1.xy) < u_loxodromic{{ n }}.c1.z){
+            pos -= u_loxodromic{{ n }}.c1.xy;
+            pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
+            pos += u_loxodromic{{ n }}.c1.xy;
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
+
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+       }else if(distance(pos, u_loxodromic{{ n }}.c1d.xy) >= u_loxodromic{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c2);
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c1);
+
+            pos = circleInvert(pos, u_loxodromic{{ n }}.c3);
+            pos -= u_loxodromic{{ n }}.c1.xy;
+            pos -= 2.0 * dot(pos, u_loxodromic{{ n }}.line.zw) * u_loxodromic{{ n }}.line.zw;
+            pos += u_loxodromic{{ n }}.c1.xy;
+
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+        }
+        {% endfor %}
+
+        {% for n in range(0, numScaling) %}
+        if(distance(pos, u_scaling{{ n }}.c1.xy) < u_scaling{{ n }}.c1.z){
+            pos -= u_scaling{{ n }}.line1.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
+            pos += u_scaling{{ n }}.line1.xy;
+
+            pos -= u_scaling{{ n }}.c2.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
+            pos += u_scaling{{ n }}.c2.xy;
+
+            pos = circleInvert(pos, u_scaling{{ n }}.c1);
+            pos = circleInvert(pos, u_scaling{{ n }}.c2);
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+       }else if(distance(pos, u_scaling{{ n }}.c1d.xy) >= u_scaling{{ n }}.c1d.z){
+            pos = circleInvert(pos, u_scaling{{ n }}.c2);
+            pos = circleInvert(pos, u_scaling{{ n }}.c1);
+
+            pos -= u_scaling{{ n }}.c2.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line2.zw) * u_scaling{{ n }}.line2.zw;
+            pos += u_scaling{{ n }}.c2.xy;
+
+            pos -= u_scaling{{ n }}.line1.xy;
+            pos -= 2.0 * dot(pos, u_scaling{{ n }}.line1.zw) * u_scaling{{ n }}.line1.zw;
+            pos += u_scaling{{ n }}.line1.xy;
+            g_orbitPoints[orbitNum] = pos;
+            orbitNum++;
+            inFund = false;
+        }
+        {% endfor %}
+
+        if (inFund) break;
+    }
+    return orbitNum;
 }
 
 bool renderUI(vec2 pos, out vec3 color) {
@@ -685,6 +937,14 @@ void main() {
         position += u_geometry.xy;
 
         vec3 col = vec3(0);
+        // int n = computeOrbit(u_orbitOrigin);
+        // bool line = renderOrbit(position, col, n);
+        // if(line){
+        //     sum += col;
+        //     continue;
+        // }
+
+        col = vec3(0);
         if(u_isRenderingGenerator && renderUI(position, col)) {
             sum += col;
             continue;
