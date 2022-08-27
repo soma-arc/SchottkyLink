@@ -210,6 +210,14 @@ export default class Scene2d extends Scene {
         return false;
     }
 
+    moveAlongAxis(mouseState) {
+        if (this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.moveAlongAxis(this.selectedState, mouseState, this);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @param {Shape} selectedObj
      * @param {Vec2} p

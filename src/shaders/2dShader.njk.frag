@@ -512,6 +512,13 @@ bool renderUI(vec2 pos, out vec3 color) {
             color = WHITE;
             return true;
         }
+        // if(u_isPressingShift) {
+        //     if(abs(pos.x - u_circle{{ n }}.centerAndRadius.x) < u_circle{{ n }}.centerAndRadius.z/2.||
+        //        abs(pos.y - u_circle{{ n }}.centerAndRadius.y) < u_circle{{ n }}.centerAndRadius.z/2.) {
+        //         color = WHITE;
+        //         return true;
+        //     }
+        // }
     }
     {% endfor %}
 
@@ -962,7 +969,7 @@ void main() {
         if (u_isRenderingGenerator) {
             if(renderGenerator(position, col)) {
                 sum += col;
-                    continue;
+                continue;
             }
         }
     }

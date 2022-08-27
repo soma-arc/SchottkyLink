@@ -23,10 +23,12 @@ export default class Canvas2d extends Canvas {
         this.maxIterations = 20;
 
         this.isRenderingGenerator = true;
+        this.isPressingShift = false;
 
         // mouse
         this.mouseState = {
             isPressing: false,
+            position: new Vec2(0, 0),
             prevPosition: new Vec2(0, 0),
             prevTranslate: new Vec2(0, 0),
             button: -1
@@ -206,6 +208,9 @@ export default class Canvas2d extends Canvas {
             this.scene.addTwoCircles(new Vec2(0, 0), 1);
         } else if (event.key === 'x') {
             this.scene.addLoxodromic(new Vec2(0, 0), 1);
+        } else if (event.shiftKey) {
+            this.isPressingShift = true;
+            this.isRendering = true;
         } else if(event.ctrlKey && event.key === 'c') {
             this.scene.copy();
         } else if(event.crtlKey && event.key === 'v') {
@@ -218,6 +223,9 @@ export default class Canvas2d extends Canvas {
     }
 
     keyupListener(event) {
+        this.isPressingShift = false;
+        this.isRendering = false;
+        this.render();
     }
 
     compileRenderShader() {
@@ -267,6 +275,8 @@ export default class Canvas2d extends Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_isRenderingGenerator'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_isPressingShift'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_orbitOrigin'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
@@ -303,6 +313,7 @@ export default class Canvas2d extends Canvas {
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
         this.gl.uniform1i(this.uniLocations[i++], this.isRenderingGenerator);
+        this.gl.uniform1i(this.uniLocations[i++], this.isPressingShift);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.orbitOrigin.x,
                           this.orbitOrigin.y);

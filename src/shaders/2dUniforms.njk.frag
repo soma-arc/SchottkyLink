@@ -6,6 +6,7 @@ uniform int u_maxIISIterations;
 uniform sampler2D u_videoTexture;
 uniform sampler2D u_imageTextures[10];
 uniform bool u_isRenderingGenerator;
+uniform bool u_isPressingShift;
 
 struct Circle {
     vec4 centerAndRadius; // [x, y, r, r * r]
