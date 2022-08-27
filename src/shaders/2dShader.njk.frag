@@ -156,13 +156,15 @@ bool IIS(vec2 pos, out vec3 col) {
         pos -= u_rotation{{ n }}.p;
         float dRot1{{ n }} = dot(pos, u_rotation{{ n }}.normal.xy);
         float dRot2{{ n }} = dot(pos, u_rotation{{ n }}.normal.zw);
-        invNum += (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? 1. : 0.;
-        inFund = (dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) ? false : inFund;
-        mat2 rotateM{{ n }} = mat2(cos(u_rotation{{ n }}.rotationRad),
-                            -sin(u_rotation{{ n }}.rotationRad),
-                            sin(u_rotation{{ n }}.rotationRad),
-                            cos(u_rotation{{ n }}.rotationRad));
-        pos = rotateM{{ n }} * pos;
+        if(dRot1{{ n }} < 0. || dRot2{{ n }} < 0.) {
+            invNum++;
+            inFund = false;
+            mat2 rotateM{{ n }} = mat2(cos(u_rotation{{ n }}.rotationRad),
+                                       -sin(u_rotation{{ n }}.rotationRad),
+                                       sin(u_rotation{{ n }}.rotationRad),
+                                       cos(u_rotation{{ n }}.rotationRad));
+            pos = rotateM{{ n }} * pos;
+        }
         pos += u_rotation{{ n }}.p;
         {% endfor %}
 
