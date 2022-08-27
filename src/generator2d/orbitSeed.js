@@ -94,12 +94,16 @@ export default class OrbitSeed extends Generator {
         return new SelectionState();
     }
 
-    removable(mouse) {
-        if (this.corner.x < mouse.x && mouse.x < this.corner.x + this.size.x &&
-            this.corner.y < mouse.y && mouse.y < this.corner.y + this.size.y) {
+    outside(position) {
+        if (position.x < this.corner.x || this.corner.x + this.size.x < position.x ||
+            position.y < this.corner.y || this.corner.y + this.size.y < position.y) {
             return true;
         }
         return false;
+    }
+
+    removable(mouse) {
+        return !this.outside(mouse);
     }
 
     move(selectionState, mouse) {

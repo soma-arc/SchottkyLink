@@ -27,9 +27,25 @@ export default class Circle extends Generator {
         this.rSq = this.r * this.r;
     }
 
+    /**
+     *
+     * @param {Vec2} position
+     */
+    outside(position) {
+        const d = Vec2.distance(position, this.center);
+        return d > this.r;
+    }
+
     removable(mouse) {
-        const d = Vec2.distance(mouse, this.center);
-        return d < this.r;
+        return !this.outside(mouse);
+    }
+
+    generateNeighborGenerator() {
+        const rad = Math.random() * Math.PI * 2;
+        const dir = new Vec2(Math.cos(rad), Math.sin(rad));
+        const r = this.r;
+        const c = this.center.add(dir.scale(this.r + r));
+        return new Circle(c, r);
     }
 
     select(mouse, sceneScale) {
@@ -77,6 +93,65 @@ export default class Circle extends Generator {
             this.center = mouse.sub(selectionState.diffObj);
             if (this.snapMode === Circle.SNAP_NEAREST) {
                 this.center = mouse.sub(selectionState.diffObj);
+                const d = scene.getNearObjectsDistance(this, this.center)[0].distance;
+                this.r = (d === Number.MAX_VALUE) ? this.r : d;
+            } else if (this.snapMode === Circle.SNAP_TWO_CIRCLES) {
+                for(let i = 0; i < 50; i++) {
+                    const objStates = scene.getNearObjectsDistance(this, this.center);
+                    const nearDistState1 = objStates[0];
+                    const nearDistState2 = objStates[1];
+                    const step = 0.1;
+                    if (0 < (nearDistState1.distance) &&
+                        (nearDistState1.distance) < 0.15) {
+                        const dr = step * (nearDistState1.distance - this.r);
+                        const dir = nearDistState1.obj.center.sub(this.center).normalize();
+                        this.r += dr;
+                        this.center = this.center.add(dir.scale(dr));
+                    }
+                    if(0 < (nearDistState2.distance) &&
+                       (nearDistState2.distance) < 0.15) {
+                        const dr = step * (nearDistState2.distance - this.r);
+                        const dir = nearDistState2.obj.center.sub(this.center).normalize();
+                        this.r += dr;
+                        this.center = this.center.add(dir.scale(dr));
+                    }
+                }
+            }
+        }
+
+        this.update();
+    }
+
+    /**
+     * Move circle
+     * @param { SelectionState } selectionState
+     * @param { Object } mouseState
+     * @param { Scene } scene
+     */
+    moveAlongAxis(selectionState, mouseState, scene) {
+        if (selectionState.componentId === Circle.CIRCUMFERENCE) {
+            const nr = Vec2.distance(this.center, mouseState.position) + selectionState.distToComponent;
+            this.r = nr;
+            if (this.snapMode === Circle.SNAP_NEAREST) {
+                const nearObj = scene.getNearObjectsDistance(this, this.center)[0].obj;
+                if (Math.abs(nr + nearObj.r - nearObj.center.sub(this.center).length()) < 0.015) {
+                    this.r = -nearObj.r + nearObj.center.sub(this.center).length();
+                }
+            }
+        } else {
+            const prevCenterX = mouseState.prevPosition.x - selectionState.diffObj.x;
+            const prevCenterY = mouseState.prevPosition.y - selectionState.diffObj.y;
+            console.log(`*(${prevCenterX}, ${prevCenterY})`);
+            console.log(`${Math.abs(prevCenterX - mouseState.position.x)}, ${Math.abs(prevCenterY - mouseState.position.y)}`);
+            if(Math.abs(prevCenterY - mouseState.position.y) < this.r) {
+                this.center.x = prevCenterX + mouseState.position.x - mouseState.prevPosition.x;
+            }
+            else if (Math.abs(prevCenterX - mouseState.position.x) < this.r) {
+                this.center.y = prevCenterY + mouseState.position.y - mouseState.prevPosition.y;
+            }
+            //this.center = mouseState.position.sub(selectionState.diffObj);
+            if (this.snapMode === Circle.SNAP_NEAREST) {
+              //  this.center = mouseState.position.sub(selectionState.diffObj);
                 const d = scene.getNearObjectsDistance(this, this.center)[0].distance;
                 this.r = (d === Number.MAX_VALUE) ? this.r : d;
             } else if (this.snapMode === Circle.SNAP_TWO_CIRCLES) {

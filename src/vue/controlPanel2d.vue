@@ -45,6 +45,7 @@
 import ImgButton from './imgButton.vue';
 import Vec2 from '../vector2d.js';
 import SceneObjectPanel from './sceneObjectPanel.vue';
+import Circle from '../generator2d/circle.js';
 
 const CIRCLE_IMG = require('../img/2dGenerators/circle.png');
 const HALF_PLANE_IMG = require('../img/2dGenerators/halfPlane.png');
@@ -74,7 +75,8 @@ export default {
     },
     methods: {
         addCircle: function() {
-            this.scene2d.addCircle(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            //this.scene2d.addCircle(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            this.scene2d.addGenWithoutDuplicate(new Circle(new Vec2(0, 0), 0.1 * this.canvasManager.canvas2d.scale));
             this.canvasManager.canvas2d.compileRenderShader();
         },
         addHalfPlane: function() {

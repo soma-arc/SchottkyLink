@@ -129,6 +129,11 @@ export default class HalfPlane extends Generator {
         this.update();
     }
 
+    outside(position) {
+        const d = Vec2.dot(position.sub(this.p), this.normal);
+        return d > 0;
+    }
+
     /**
      *
      * @param {Vec2} p
@@ -140,8 +145,7 @@ export default class HalfPlane extends Generator {
     }
 
     removable(mouse) {
-        const d = Vec2.dot(mouse.sub(this.p), this.normal);
-        return d < 0;
+        return !this.outside(mouse);
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {

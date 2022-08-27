@@ -40,8 +40,17 @@ export default class Generator {
      *
      * @param {SelectionState} mouseState
      * @param {Vec2} mouse
+     * @param { Scene } scene
      */
-    move(mouseState, mouse) {}
+    move(mouseState, mouse, scene) {}
+
+    /**
+     *
+     * @param {SelectionState} mouseState
+     * @param {Object} mouse
+     * @param { Scene } scene
+     */
+    moveAlongAxis(mouseState, mouse, scene) {}
 
     /**
      * compute distance between p and object's components
@@ -81,6 +90,14 @@ export default class Generator {
     setUniformLocation(gl, uniLocation, program, index) {}
 
     toggleSnapMode() {}
+
+    /**
+     *
+     * @param {Vec2} position
+     */
+    outside(position) {
+        return true;
+    }
 
     /**
      *

@@ -131,10 +131,40 @@ export default class Scene2d extends Scene {
         return false;
     }
 
+    inOutsideOfGenerators(position) {
+        const objKeyNames = Object.keys(this.objects);
+        for (const objName of objKeyNames) {
+            for (const obj of this.objects[objName]) {
+                if(!obj.outside(position)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    gen(generator) {
+        for(let i = 0; i < 10; i++) {
+            if(this.inOutsideOfGenerators(generator.getPosition())) {
+                return generator;
+            }
+            generator = generator.generateNeighborGenerator();
+        }
+        return generator;
+    }
+
     toggleSnapMode() {
         if (this.selectedObj !== undefined) {
             this.selectedObj.toggleSnapMode();
         }
+    }
+
+    addGenWithoutDuplicate(generator) {
+        this.addGenerator(this.gen(generator));
+    }
+
+    addGenerator(generator) {
+        this.addCommand(new AddGeneratorCommand(this, generator));
     }
 
     addCircle(position, sceneScale) {
