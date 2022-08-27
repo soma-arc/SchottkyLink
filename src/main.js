@@ -14,8 +14,8 @@ window.addEventListener('load', () => {
     const scene2d = new Scene2d();
     const scene3d = new Scene3d();
     const canvasManager = new CanvasManager(scene2d, scene3d);
-
-    const d = { 'currentRoute': window.location.pathname,
+    const route = '/'; //window.location.pathname;
+    const d = { 'currentRoute': route,
                 'scene2d': scene2d,
                 'scene3d': scene3d,
                 'canvasManager': canvasManager };
@@ -52,6 +52,7 @@ window.addEventListener('load', () => {
     const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
     const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
     scene2d.loadFromQueryString(parsed);
+    canvasManager.canvas2d.loadParameterFromQueryString(parsed);
     canvasManager.canvas2d.compileRenderShader();
     if (scene2d.objects['VideoOrbit'] !== undefined &&
         canvasManager.videoManager.streaming === false) {

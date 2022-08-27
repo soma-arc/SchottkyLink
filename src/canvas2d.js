@@ -376,4 +376,16 @@ export default class Canvas2d extends Canvas {
                        this.canvas.width, this.canvas.height,
                        'schottky.png');
     }
+
+    loadParameterFromQueryString(parsedQuery) {
+        if (parsedQuery['scale'] !== undefined) {
+            this.scale = parseFloat(parsedQuery['scale']);
+        }
+        if (parsedQuery['translateX'] !== undefined) {
+            this.translate.x = parseFloat(parsedQuery['translateX']);
+        }
+        if (parsedQuery['translateY'] !== undefined) {
+            this.translate.y = parseFloat(parsedQuery['translateY']);
+        }
+    }
 }
