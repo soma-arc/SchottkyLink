@@ -30,8 +30,33 @@ window.addEventListener('load', () => {
         components: { 'root': Root }
     });
 
-    canvasManager.init(app);
+    const promises = canvasManager.init(app);
     canvasManager.resize();
+
+    Promise.all(promises, () => {
+        const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
+        const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
+        scene2d.loadFromQueryString(parsed);
+        canvasManager.canvas2d.loadParameterFromQueryString(parsed);
+        canvasManager.canvas2d.compileRenderShader();
+        if (scene2d.objects['VideoOrbit'] !== undefined &&
+            canvasManager.videoManager.streaming === false) {
+            canvasManager.videoManager.connect(
+                canvasManager.canvas2d.gl,
+                () => {
+                    canvasManager.videoManager.streaming = true;
+                    if(downloadImage) {
+                        canvasManager.canvas2d.renderProductAndSave();
+                    }
+                },
+                () => {
+                });
+        } else {
+            if(downloadImage) {
+                canvasManager.canvas2d.renderProductAndSave();
+            }
+        }
+    });
 
     let resizeTimer = setTimeout(canvasManager.resizeCallback, 500);
     window.addEventListener('resize', () => {
@@ -48,29 +73,6 @@ window.addEventListener('load', () => {
         requestAnimationFrame(renderLoop);
     }
     renderLoop();
-
-    const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
-    const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
-    scene2d.loadFromQueryString(parsed);
-    canvasManager.canvas2d.loadParameterFromQueryString(parsed);
-    canvasManager.canvas2d.compileRenderShader();
-    if (scene2d.objects['VideoOrbit'] !== undefined &&
-        canvasManager.videoManager.streaming === false) {
-        canvasManager.videoManager.connect(
-            canvasManager.canvas2d.gl,
-            () => {
-                canvasManager.videoManager.streaming = true;
-                if(downloadImage) {
-                    canvasManager.canvas2d.renderProductAndSave();
-                }
-            },
-            () => {
-            });
-    } else {
-        if(downloadImage) {
-            canvasManager.canvas2d.renderProductAndSave();
-        }
-    }
 
     canvasManager.render();
 });

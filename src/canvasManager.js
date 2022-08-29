@@ -23,7 +23,7 @@ export default class CanvasManager {
         this.canvas2d.init();
         this.videoManager.init(this.canvas2d.gl);
         this.textureManager.init(this.canvas2d.gl);
-        this.textureManager.loadDefaultImages(this.canvas2d.gl);
+        return this.textureManager.loadDefaultImages(this.canvas2d.gl);
     }
 
     render() {
