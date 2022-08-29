@@ -33,7 +33,7 @@ window.addEventListener('load', () => {
     const promises = canvasManager.init(app);
     canvasManager.resize();
 
-    Promise.all(promises, () => {
+    Promise.all(promises).then(() => {
         const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
         const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
         scene2d.loadFromQueryString(parsed);
