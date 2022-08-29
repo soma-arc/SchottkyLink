@@ -59,6 +59,10 @@ export default {
             this.scene.reRender();
         },
         updateSelection: function(event) {
+            const tex = this.textureManager.textures[this.orbitSeed.textureIndex];
+            this.orbitSeed.originalSize.x = tex.width;
+            this.orbitSeed.originalSize.y = tex.height;
+            this.orbitSeed.update();
             this.scene.updateScene();
             this.scene.reRender();
         },
@@ -73,11 +77,13 @@ export default {
                                                         this.orbitSeed);
         },
         changeWidth: function() {
-            this.orbitSeed.size.y = this.orbitSeed.aspect * this.orbitSeed.size.x;
+            this.orbitSeed.renderWidth = this.orbitSeed.size.x;
+            this.orbitSeed.update();
             this.scene.reRender();
         },
         changeHeight: function(){
-            this.orbitSeed.size.x = this.orbitSeed.size.y / this.orbitSeed.aspect;
+            this.orbitSeed.renderWidth = this.orbitSeed.size.y / this.orbitSeed.aspect;
+            this.orbitSeed.update();
             this.scene.reRender();
         }
     },

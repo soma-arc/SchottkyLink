@@ -28,10 +28,13 @@ export default class TextureManager {
             const reader = new FileReader();
             reader.addEventListener('load', () => {
                 const t = new Texture(files[0].name, reader.result);
-                const p =t.load(gl);
+                const p = t.load(gl);
                 this.textures.push(t);
                 p.then(() => {
                     orbitSeed.textureIndex = this.textures.length - 1;
+                    orbitSeed.originalSize.x = t.width;
+                    orbitSeed.originalSize.y = t.height;
+                    orbitSeed.update();
                     scene.updateScene();
                     scene.reRender();
                 });
