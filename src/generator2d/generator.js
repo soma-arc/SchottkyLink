@@ -5,7 +5,7 @@ import Vec2 from '../vector2d.js';
 export default class Generator {
     constructor() {
         this.selected = false;
-        this.id = new Date().getTime();
+        this.id = new Date().getTime().toString(16) + Math.floor(1000 * Math.random()).toString(16);
     }
 
     getPosition() {
