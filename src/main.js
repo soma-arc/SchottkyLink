@@ -35,7 +35,7 @@ window.addEventListener('load', () => {
 
     Promise.all(promises).then(() => {
         const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
-        const downloadImage = parsed['download'] !== undefined && Boolean(parsed['download']);
+        const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
         scene2d.loadFromQueryString(parsed);
         canvasManager.canvas2d.loadParameterFromQueryString(parsed);
         canvasManager.canvas2d.compileRenderShader();
