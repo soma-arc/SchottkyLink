@@ -415,7 +415,7 @@ export default class Scene2d extends Scene {
     }
 
     copyToClipboard() {
-        const url = location.hostname + location.pathname + this.exportAsQueryString();
+        const url = location.protocol +'//'+ location.hostname + location.pathname + this.exportAsQueryString();
         navigator.clipboard.writeText(url).then(() => {
             console.log('Text copied to clipboard...');
         }).catch(err => {
