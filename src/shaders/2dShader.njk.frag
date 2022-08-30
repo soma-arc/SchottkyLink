@@ -240,7 +240,7 @@ bool IIS(vec2 pos, out vec3 col) {
         if (inFund) break;
     }
 
-    col = computeColor(invNum);
+    col = computeColor(invNum) * u_isRenderingGenerator;
     return (invNum == 0.) ? false : true;
 }
 
@@ -954,7 +954,7 @@ void main() {
         // }
 
         col = vec3(0);
-        if(u_isRenderingGenerator && renderUI(position, col)) {
+        if(u_isRenderingGenerator == 1.0 && renderUI(position, col)) {
             sum += col;
             continue;
         }
@@ -966,7 +966,7 @@ void main() {
             continue;
         }
 
-        if (u_isRenderingGenerator) {
+        if (u_isRenderingGenerator == 1.0) {
             if(renderGenerator(position, col)) {
                 sum += col;
                 continue;

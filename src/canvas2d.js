@@ -312,7 +312,7 @@ export default class Canvas2d extends Canvas {
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
-        this.gl.uniform1i(this.uniLocations[i++], this.isRenderingGenerator);
+        this.gl.uniform1f(this.uniLocations[i++], this.isRenderingGenerator);
         this.gl.uniform1i(this.uniLocations[i++], this.isPressingShift);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.orbitOrigin.x,
@@ -397,6 +397,9 @@ export default class Canvas2d extends Canvas {
         }
         if (parsedQuery['translateY'] !== undefined) {
             this.translate.y = parseFloat(parsedQuery['translateY']);
+        }
+        if (parsedQuery['renderGenerator'] !== undefined) {
+            this.isRenderingGenerator = parsedQuery['renderGenerator'] === 'true';
         }
     }
 }

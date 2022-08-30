@@ -5,7 +5,7 @@ uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 uniform sampler2D u_videoTexture;
 uniform sampler2D u_imageTextures[10];
-uniform bool u_isRenderingGenerator;
+uniform float u_isRenderingGenerator;
 uniform bool u_isPressingShift;
 
 struct Circle {

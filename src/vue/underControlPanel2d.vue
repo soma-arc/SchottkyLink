@@ -31,6 +31,12 @@
     </b-input>
   </div>
   <div class="inputContainer">
+    <b-switch v-model="canvasManager.canvas2d.isRenderingGenerator"
+              @input="valueChanged">
+      Render Generator
+    </b-switch>
+  </div>
+  <div class="inputContainer">
     <b-button type="is-primary" @click="saveImage">
       save
     </b-button>
