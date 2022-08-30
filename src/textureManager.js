@@ -22,6 +22,7 @@ export default class TextureManager {
 
     loadTextureFromDialogue(gl, scene, orbitSeed){
         const a = document.createElement('input');
+        a.accept = '.png,.jpg,.jpeg,.gif';
         a.type = 'file';
         a.addEventListener('change', (event) => {
             const files = event.target.files;
