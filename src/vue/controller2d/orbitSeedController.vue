@@ -60,8 +60,7 @@ export default {
         },
         updateSelection: function(event) {
             const tex = this.textureManager.textures[this.orbitSeed.textureIndex];
-            this.orbitSeed.originalSize.x = tex.width;
-            this.orbitSeed.originalSize.y = tex.height;
+            this.orbitSeed.aspect = tex.height / tex.width;
             this.orbitSeed.update();
             this.scene.updateScene();
             this.scene.reRender();

@@ -32,8 +32,7 @@ export default class TextureManager {
                 this.textures.push(t);
                 p.then(() => {
                     orbitSeed.textureIndex = this.textures.length - 1;
-                    orbitSeed.originalSize.x = t.width;
-                    orbitSeed.originalSize.y = t.height;
+                    orbitSeed.aspect = t.height / t.width;
                     orbitSeed.update();
                     scene.updateScene();
                     scene.reRender();

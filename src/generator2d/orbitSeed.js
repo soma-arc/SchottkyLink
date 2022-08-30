@@ -19,8 +19,8 @@ export default class OrbitSeed extends Generator {
     constructor(cornerX, cornerY, width, height) {
         super();
         this.corner = new Vec2(cornerX, cornerY);
-        this.originalSize = new Vec2(width, height);
-        this.renderWidth = 0.1;
+        this.aspect = height / width;
+        this.renderWidth = width;
         this.cornerSelectionWidth = 0.01;
         this.textureIndex = 0;
 
@@ -28,7 +28,6 @@ export default class OrbitSeed extends Generator {
     }
 
     update() {
-        this.aspect = this.originalSize.y / this.originalSize.x;
         this.size = new Vec2(this.renderWidth, this.aspect * this.renderWidth);
     }
 

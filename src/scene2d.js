@@ -191,8 +191,10 @@ export default class Scene2d extends Scene {
     }
 
     addOrbitSeed(position, sceneScale) {
-        const o = new OrbitSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
-                                0.1 * sceneScale, 0.1 * sceneScale);
+        const o = new OrbitSeed(position.x - 0.05 * sceneScale,
+                                position.y - 0.05 * sceneScale,
+                                0.1 * sceneScale,
+                                0.1 * sceneScale);
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
