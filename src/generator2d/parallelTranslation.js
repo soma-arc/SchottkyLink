@@ -179,10 +179,10 @@ export default class ParallelTranslation extends Generator {
         const d2 = Math.abs(Vec2.dot(p.sub(this.hp2.p), this.hp2.normal));
         if (d1 < d2) {
             return [new DistanceState(d1, this.hp1, HalfPlane.BODY),
-                    new DistanceState(d2, this.hp2, HalfPlane.BODY)]
+                    new DistanceState(d2, this.hp2, HalfPlane.BODY)];
         } else {
             return [new DistanceState(d2, this.hp2, HalfPlane.BODY),
-                    new DistanceState(d1, this.hp1, HalfPlane.BODY)]
+                    new DistanceState(d1, this.hp1, HalfPlane.BODY)];
         }
     }
 
@@ -231,9 +231,26 @@ export default class ParallelTranslation extends Generator {
     }
 
     static loadFromArray(array) {
+        if(array.length === 5) {
+            return ParallelTranslation.createFromNormal(array);
+        } else if(array.length === 4) {
+            return ParallelTranslation.createFromAngleDegree(array);
+        }
+        return undefined;
+    }
+
+    static createFromNormal(array) {
         return new ParallelTranslation(new Vec2(array[0], array[1]), // p
                                        new Vec2(array[2], array[3]), // normal
                                        array[4]); // plane dist
+    }
+
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new ParallelTranslation(new Vec2(array[0], array[1]), // p
+                                       new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)),
+                                       array[3]);
     }
 
     static loadJson(obj, scene) {
