@@ -22,7 +22,6 @@ export default class Canvas2d extends Canvas {
 
         this.maxIterations = 20;
 
-        this.isRenderingGenerator = true;
         this.isPressingShift = false;
 
         // mouse
@@ -39,6 +38,8 @@ export default class Canvas2d extends Canvas {
 
         this.orbitOrigin = new Vec2(0, 0);
         this.draggingOrbitOrigin = false;
+
+        this.isRenderingOrbitOrigin = false;
     }
 
     init() {
@@ -127,7 +128,8 @@ export default class Canvas2d extends Canvas {
         this.mouseState.button = event.button;
 
         if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
-            if (Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+            if (this.isRenderingOrbitOrigin &&
+                Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
                 this.draggingOrbitOrigin = true;
             } else {
                 this.scene.select(mouse, this.scale);
@@ -273,8 +275,6 @@ export default class Canvas2d extends Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_maxIISIterations'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
-                                                          'u_isRenderingGenerator'));
-        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_isPressingShift'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_orbitOrigin'));
@@ -312,7 +312,6 @@ export default class Canvas2d extends Canvas {
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
-        this.gl.uniform1f(this.uniLocations[i++], this.isRenderingGenerator);
         this.gl.uniform1i(this.uniLocations[i++], this.isPressingShift);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.orbitOrigin.x,
@@ -397,9 +396,6 @@ export default class Canvas2d extends Canvas {
         }
         if (parsedQuery['translateY'] !== undefined) {
             this.translate.y = parseFloat(parsedQuery['translateY']);
-        }
-        if (parsedQuery['renderGenerator'] !== undefined) {
-            this.isRenderingGenerator = parsedQuery['renderGenerator'] === 'true';
         }
     }
 }

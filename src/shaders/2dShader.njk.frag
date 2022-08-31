@@ -954,7 +954,7 @@ void main() {
         // }
 
         col = vec3(0);
-        if(u_isRenderingGenerator == 1.0 && renderUI(position, col)) {
+        if(renderUI(position, col)) {
             sum += col;
             continue;
         }

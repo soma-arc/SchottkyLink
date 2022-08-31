@@ -61,6 +61,8 @@ export default class Scene2d extends Scene {
         this.reRenderListeners = [];
 
         this.copiedGenerater = undefined;
+
+        this.isRenderingGenerator = true;
     }
 
     addSceneUpdateListener(listener) {
@@ -114,6 +116,8 @@ export default class Scene2d extends Scene {
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
+            if(this.isRenderingGenerator === false &&
+               (objName !== 'OrbitSeed' && objName !== 'VideoOrbit')) continue;
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
                 const state = obj.select(mouse, sceneScale);
@@ -311,17 +315,20 @@ export default class Scene2d extends Scene {
                 objArray[i].setUniformLocation(gl, uniLocations, program, i);
             }
         }
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_isRenderingGenerator'));
     }
 
-    setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
+    setUniformValues(gl, uniLocations, uniIndex, sceneScale) {
         let uniI = uniIndex;
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {
             const objArray = this.objects[objName];
             for (let i = 0; i < objArray.length; i++) {
-                uniI = objArray[i].setUniformValues(gl, uniLocation, uniI, sceneScale);
+                uniI = objArray[i].setUniformValues(gl, uniLocations, uniI, sceneScale);
             }
         }
+        gl.uniform1f(uniLocations[uniI++], this.isRenderingGenerator);
         return uniI;
     }
 
@@ -357,6 +364,10 @@ export default class Scene2d extends Scene {
                 const paramArray = objParam.split(',').map(Number.parseFloat);
                 this.objects[objName].push(STR_CLASS_MAP[objName].loadFromArray(paramArray));
             }
+        }
+
+        if (parsedObject['renderGenerator'] !== undefined) {
+            this.isRenderingGenerator = parsedObject['renderGenerator'] === 'true';
         }
     }
 

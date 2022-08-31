@@ -31,12 +31,6 @@
     </b-input>
   </div>
   <div class="inputContainer">
-    <b-switch v-model="canvasManager.canvas2d.isRenderingGenerator"
-              @input="valueChanged">
-      Render Generator
-    </b-switch>
-  </div>
-  <div class="inputContainer">
     <b-button type="is-primary" @click="saveImage">
       save
     </b-button>
@@ -51,11 +45,19 @@
       Save URL
     </b-button>
   </div>
+    <div class="inputContainer">
+    <b-switch v-model="scene2d.isRenderingGenerator"
+              @input="toggleRenderGenerator"
+              id="renderGenSwitch">
+      Render Generator
+    </b-switch>
+  </div>
 </div>
 </template>
 
 <script>
 import { ToastProgrammatic as Toast } from 'buefy'
+import SelectionState from '../generator2d/selectionState.js';
 
 export default {
     props: ['scene2d', 'canvasManager'],
@@ -73,6 +75,16 @@ export default {
             this.scene2d.copyToClipboard();
             Toast.open({message: 'URL of the scene is copied to clipboard.',
                         position: 'is-bottom'});
+        },
+        toggleRenderGenerator: function() {
+            if(this.scene2d.selectedObj !== undefined &&
+               this.scene2d.selectedObj.name !== 'OrbitSeed' &&
+               this.scene2d.selectedObj.name !== 'VideoOrbit') {
+                this.scene2d.selectedObj.selected = false;
+                this.scene2d.selectedState = new SelectionState();
+                this.scene2d.selectedObj = undefined;
+            }
+            this.canvasManager.canvas2d.render();
         }
     }
 }
@@ -92,5 +104,9 @@ export default {
     margin-right: 5px;
     margin-left: 0px;
     width: 70px;
+}
+
+#renderGenSwitch {
+    margin-left: 40px;
 }
 </style>
