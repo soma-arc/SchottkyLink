@@ -194,8 +194,24 @@ export default class HalfPlane extends Generator {
     }
 
     static loadFromArray(array) {
+        if(array.length === 4) {
+            return HalfPlane.createFromNormal(array);
+        } else if(array.length === 3) {
+            return HalfPlane.createFromAngleDegree(array);
+        }
+        return undefined;
+    }
+
+    static createFromNormal(array) {
         return new HalfPlane(new Vec2(array[0], array[1]), // p
                              new Vec2(array[2], array[3]));// normal
+    }
+
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new HalfPlane(new Vec2(array[0], array[1]), // p
+                             new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)));
     }
 
     static get BODY() {
