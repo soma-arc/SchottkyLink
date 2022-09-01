@@ -231,15 +231,32 @@ export default class ParallelInversions extends Generator {
     }
 
     static loadFromArray(array) {
+        if(array.length === 5) {
+            return ParallelInversions.createFromNormal(array);
+        } else if(array.length === 4) {
+            return ParallelInversions.createFromAngleDegree(array);
+        }
+        return undefined;
+    }
+
+    static createFromNormal(array) {
         return new ParallelInversions(new Vec2(array[0], array[1]), // p
                                       new Vec2(array[2], array[3]), // normal
                                       array[4]); // plane dist
     }
 
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new ParallelInversions(new Vec2(array[0], array[1]), // p
+                                      new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)),
+                                      array[3]);
+    }
+
     static loadJson(obj, scene) {
         const nh = new ParallelInversions(new Vec2(obj.p[0], obj.p[1]),
-                                           new Vec2(obj.normal[0], obj.normal[1]),
-                                           obj.planeDist);
+                                          new Vec2(obj.normal[0], obj.normal[1]),
+                                          obj.planeDist);
         nh.setId(obj.id);
         return nh;
     }

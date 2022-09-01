@@ -239,9 +239,26 @@ export default class GlideReflection extends Generator {
     }
 
     static loadFromArray(array) {
+        if(array.length === 5) {
+            return GlideReflection.createFromNormal(array);
+        } else if(array.length === 4) {
+            return GlideReflection.createFromAngleDegree(array);
+        }
+        return undefined;
+    }
+
+    static createFromNormal(array) {
         return new GlideReflection(new Vec2(array[0], array[1]), // p
                                    new Vec2(array[2], array[3]), // normal
                                    array[4]); // plane dist
+    }
+
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new GlideReflection(new Vec2(array[0], array[1]), // p
+                                   new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)),
+                                   array[3]);
     }
 
     static get BODY() {

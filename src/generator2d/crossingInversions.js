@@ -30,6 +30,20 @@ export default class CrossingInversions extends Generator {
     }
 
     update() {
+        this.degrees = Radians.RadToDeg(this.radians);
+        this.boundaryAngleRad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+        this.boundaryAngleRad += this.boundaryAngleRad < 0 ? 2 * Math.PI : 0;
+        this.boundaryAngleDeg = Radians.RadToDeg(this.boundaryAngleRad);
+        this.boundaryAngleDeg = this.boundaryAngleDeg % 360;
+        const cosTheta = Math.cos(this.radians);
+        const sinTheta = Math.sin(this.radians);
+        this.normal1 = new Vec2(-this.boundaryDir1.y, this.boundaryDir1.x);
+        this.normal2 = new Vec2(this.normal1.x * cosTheta - this.normal1.y * sinTheta,
+                                this.normal1.x * sinTheta + this.normal1.y * cosTheta).scale(-1);
+        this.boundaryDir2 = new Vec2(-this.normal2.y, this.normal2.x);
+    }
+
+    updateFromBoundary() {
         const cosTheta = Math.cos(this.radians);
         const sinTheta = Math.sin(this.radians);
         this.normal1 = new Vec2(-this.boundaryDir1.y, this.boundaryDir1.x);
@@ -232,18 +246,35 @@ export default class CrossingInversions extends Generator {
 
     static loadJson(obj, scene) {
         const nh = new CrossingInversions(new Vec2(obj.p[0], obj.p[1]),
-                                new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),
-                                obj.degrees * Math.PI / 180);
+                                          new Vec2(obj.boundaryDir[0], obj.boundaryDir[1]),
+                                          obj.degrees * Math.PI / 180);
         nh.setId(obj.id);
         return nh;
     }
 
-
     static loadFromArray(array) {
-        return new CrossingInversions(new Vec2(array[0], array[1]), // p
-                                      new Vec2(array[2], array[3]), // boundaryDir
-                                      Radians.DegToRad(array[4]));  // radian
+        if(array.length === 5) {
+            return CrossingInversions.createFromNormal(array);
+        } else if(array.length === 4) {
+            return CrossingInversions.createFromAngleDegree(array);
+        }
+        return undefined;
     }
+
+    static createFromNormal(array) {
+        return new CrossingInversions(new Vec2(array[0], array[1]), // p
+                                      new Vec2(array[2], array[3]), // normal
+                                      Radians.DegToRad(array[4])); // radians
+    }
+
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new CrossingInversions(new Vec2(array[0], array[1]), // p
+                                      new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)),
+                                      Radians.DegToRad(array[3]));
+    }
+
 
     static get BODY() {
         return 0;

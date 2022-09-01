@@ -16,21 +16,21 @@
     type="number"
     step="0.01">
   </b-input>
-  Normal Degree
+  Boundary Degrees
   <b-input 
-    v-model.number="crossingInversions.normalAngleDeg"
-    @input="computeNormal"
+    v-model.number="crossingInversions.boundaryAngleDeg"
+    @input="computeBoundary"
     placeholder="Number"
     type="number"
     step="1">
   </b-input>
-  Plane Distance
+  Degrees
   <b-input 
-    v-model.number="crossingInversions.planeDist"
-    @input="updateTranslation"
+    v-model.number="crossingInversions.degrees"
+    @input="updateCrossingInversions"
     placeholder="Number"
     type="number"
-    step="0.01">
+    step="1">
     </b-input>
   </div>
 </template>
@@ -39,23 +39,24 @@
 import Radians from '../../radians.js';
 import Vec2 from '../../vector2d.js';
 export default {
-        props: ['crossingInversions', 'scene'],
-        components: {
+    props: ['crossingInversions', 'scene'],
+    components: {
+    },
+    methods: {
+        valueChanged: function(event) {
+            this.scene.reRender();
         },
-        methods: {
-            valueChanged: function(event) {
-                this.scene.reRender();
-            },
-            updateTranslation: function(event) {
-                this.crossingInversions.update();
-                this.scene.reRender();
-            },
-            computeNormal: function(event) {
-                const rad = Radians.DegToRad(this.crossingInversions.normalAngleDeg);
-                this.crossingInversions.normal = new Vec2(Math.cos(rad), Math.sin(rad));
-                this.crossingInversions.updateFromNormal();
-                this.scene.reRender();
-            }
-        }
+        computeBoundary: function(event) {
+            const rad = Radians.DegToRad(this.crossingInversions.boundaryAngleDeg);
+            this.crossingInversions.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
+            this.crossingInversions.updateFromBoundary();
+            this.scene.reRender();
+        },
+        updateCrossingInversions: function(event) {
+            this.crossingInversions.radians = Radians.DegToRad(this.crossingInversions.degrees);
+            this.crossingInversions.update();
+            this.scene.reRender();
+        },
     }
+}
 </script>

@@ -1,7 +1,7 @@
 <template>
 <div>
   posX
-  <b-input 
+  <b-input
     v-model.number="rotation.p.x"
     @input="valueChanged"
     placeholder="Number"
@@ -9,15 +9,23 @@
     step="0.01">
   </b-input>
   posY
-  <b-input 
+  <b-input
     v-model.number="rotation.p.y"
     @input="valueChanged"
     placeholder="Number"
     type="number"
     step="0.01">
   </b-input>
+  Boundary Degrees
+  <b-input
+    v-model.number="rotation.boundaryAngleDeg"
+    @input="computeBoundary"
+    placeholder="Number"
+    type="number"
+    step="1">
+  </b-input>
   Degrees
-  <b-input 
+  <b-input
     v-model.number="rotation.degrees"
     @input="updateRotation"
     placeholder="Number"
@@ -33,18 +41,24 @@
 import Radians from '../../radians.js';
 import Vec2 from '../../vector2d.js';
 export default {
-        props: ['rotation', 'scene'],
-        components: {
+    props: ['rotation', 'scene'],
+    components: {
+    },
+    methods: {
+        valueChanged: function(event) {
+            this.scene.reRender();
         },
-        methods: {
-            valueChanged: function(event) {
-                this.scene.reRender();
-            },
-            updateRotation: function(event) {
-                this.rotation.radians = Radians.DegToRad(this.rotation.degrees);
-                this.rotation.update();
-                this.scene.reRender();
-            },
-        }
+        computeBoundary: function(event) {
+            const rad = Radians.DegToRad(this.rotation.boundaryAngleDeg);
+            this.rotation.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
+            this.rotation.updateFromBoundary();
+            this.scene.reRender();
+        },
+        updateRotation: function(event) {
+            this.rotation.radians = Radians.DegToRad(this.rotation.degrees);
+            this.rotation.update();
+            this.scene.reRender();
+        },
     }
+}
 </script>

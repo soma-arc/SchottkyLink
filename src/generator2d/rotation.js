@@ -23,7 +23,6 @@ export default class Rotation extends Generator {
         super();
         this.p = p;
         this.radians = radians;
-        this.degrees = Radians.RadToDeg(radians);
         this.boundaryDir1 = boundaryDir;
         this.normalUIRingRadius = 0.1;
         this.UIPointRadius = 0.01;
@@ -31,6 +30,23 @@ export default class Rotation extends Generator {
     }
 
     update() {
+        this.degrees = Radians.RadToDeg(this.radians);
+        this.boundaryAngleRad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+        this.boundaryAngleRad += this.boundaryAngleRad < 0 ? 2 * Math.PI : 0;
+        this.boundaryAngleDeg = Radians.RadToDeg(this.boundaryAngleRad);
+        this.boundaryAngleDeg = this.boundaryAngleDeg % 360;
+        const cosTheta = Math.cos(this.radians);
+        const sinTheta = Math.sin(this.radians);
+        this.normal1 = new Vec2(-this.boundaryDir1.y, this.boundaryDir1.x);
+        this.normal2 = new Vec2(this.normal1.x * cosTheta - this.normal1.y * sinTheta,
+                                this.normal1.x * sinTheta + this.normal1.y * cosTheta).scale(-1);
+        this.boundaryDir2 = new Vec2(-this.normal2.y, this.normal2.x);
+        this.rotationRad =
+            Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x)
+            - Math.atan2(this.boundaryDir2.y, this.boundaryDir2.x);
+    }
+
+    updateFromBoundary() {
         const cosTheta = Math.cos(this.radians);
         const sinTheta = Math.sin(this.radians);
         this.normal1 = new Vec2(-this.boundaryDir1.y, this.boundaryDir1.x);
@@ -252,9 +268,26 @@ export default class Rotation extends Generator {
     }
 
     static loadFromArray(array) {
+        if(array.length === 5) {
+            return Rotation.createFromNormal(array);
+        } else if(array.length === 4) {
+            return Rotation.createFromAngleDegree(array);
+        }
+        return undefined;
+    }
+
+    static createFromNormal(array) {
         return new Rotation(new Vec2(array[0], array[1]), // p
-                            new Vec2(array[2], array[3]), // boundaryDir
-                            Radians.DegToRad(array[4]));  // radian
+                            new Vec2(array[2], array[3]), // normal
+                            Radians.DegToRad(array[4])); // plane dist
+    }
+
+    static createFromAngleDegree(array) {
+        const angleDegree = array[2];
+        const angleRadian = Radians.DegToRad(angleDegree);
+        return new Rotation(new Vec2(array[0], array[1]), // p
+                            new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)),
+                            Radians.DegToRad(array[3]));
     }
 
     static get BODY() {
