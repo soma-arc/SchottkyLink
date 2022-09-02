@@ -1,13 +1,13 @@
 <template>
   <div>
-    posX
+    Center X
     <b-input
       @input="valueChanged"
       placeholder="Number"
       type="number"
       step="0.01">
     </b-input>
-    posY
+    Center Y
     <b-input
       @input="valueChanged"
       placeholder="Number"

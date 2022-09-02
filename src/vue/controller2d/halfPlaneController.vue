@@ -1,6 +1,6 @@
 <template>
   <div>
-    posX
+    Origin X
     <b-input 
       v-model.number="halfPlane.p.x"
       @input="valueChanged"
@@ -8,7 +8,7 @@
       type="number"
       step="0.01">
     </b-input>
-    posY
+    Origin Y
     <b-input 
       v-model.number="halfPlane.p.y"
       @input="valueChanged"
@@ -16,7 +16,7 @@
       type="number"
       step="0.01">
     </b-input>
-    Degree
+    Normal Angle
     <b-input 
       v-model.number="halfPlane.normalAngleDeg"
       @input="computeNormal"

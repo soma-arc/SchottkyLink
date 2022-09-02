@@ -1,6 +1,6 @@
 <template>
 <div>
-  posX
+  Origin X
   <b-input 
     v-model.number="crossingInversions.p.x"
     @input="valueChanged"
@@ -8,7 +8,7 @@
     type="number"
     step="0.01">
   </b-input>
-  posY
+  Origin Y
   <b-input 
     v-model.number="crossingInversions.p.y"
     @input="valueChanged"
@@ -16,7 +16,7 @@
     type="number"
     step="0.01">
   </b-input>
-  Boundary Degrees
+  Boundary Angle
   <b-input 
     v-model.number="crossingInversions.boundaryAngleDeg"
     @input="computeBoundary"
@@ -24,13 +24,15 @@
     type="number"
     step="1">
   </b-input>
-  Degrees
+  Crossing Angle
   <b-input 
     v-model.number="crossingInversions.degrees"
     @input="updateCrossingInversions"
     placeholder="Number"
     type="number"
-    step="1">
+    step="1"
+    max="90"
+    min="0">
     </b-input>
   </div>
 </template>

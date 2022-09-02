@@ -1,6 +1,6 @@
 <template>
 <div>
-  posX
+  Origin X
   <b-input
     v-model.number="rotation.p.x"
     @input="valueChanged"
@@ -8,7 +8,7 @@
     type="number"
     step="0.01">
   </b-input>
-  posY
+  Origin Y
   <b-input
     v-model.number="rotation.p.y"
     @input="valueChanged"
@@ -16,7 +16,7 @@
     type="number"
     step="0.01">
   </b-input>
-  Boundary Degrees
+  Boundary Angle
   <b-input
     v-model.number="rotation.boundaryAngleDeg"
     @input="computeBoundary"
@@ -24,7 +24,7 @@
     type="number"
     step="1">
   </b-input>
-  Degrees
+  Rotation Angle
   <b-input
     v-model.number="rotation.degrees"
     @input="updateRotation"

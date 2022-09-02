@@ -1,6 +1,6 @@
 <template>
 <div>
-  posX
+  Origin X
   <b-input 
     v-model.number="parallelInversions.p.x"
     @input="valueChanged"
@@ -8,7 +8,7 @@
     type="number"
     step="0.01">
   </b-input>
-  posY
+  Origin Y
   <b-input 
     v-model.number="parallelInversions.p.y"
     @input="valueChanged"
@@ -16,7 +16,7 @@
     type="number"
     step="0.01">
   </b-input>
-  Normal Degree
+  Normal Angle
   <b-input 
     v-model.number="parallelInversions.normalAngleDeg"
     @input="computeNormal"
@@ -24,7 +24,7 @@
     type="number"
     step="1">
   </b-input>
-  Plane Distance
+  Distance
   <b-input 
     v-model.number="parallelInversions.planeDist"
     @input="updateTranslation"

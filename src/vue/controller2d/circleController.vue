@@ -1,6 +1,6 @@
 <template>
   <div>
-    posX
+    Center X
     <b-input
       v-model.number="circle.center.x"
       @input="valueChanged"
@@ -8,7 +8,7 @@
       type="number"
       step="0.01">
     </b-input>
-    posY
+    Center Y
     <b-input
       v-model.number="circle.center.y"
       @input="valueChanged"
@@ -16,7 +16,7 @@
       type="number"
       step="0.01">
     </b-input>
-    radius
+    Radius
     <b-input
       v-model.number="circle.r"
       @input="valueChanged"

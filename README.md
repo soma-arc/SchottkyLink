@@ -17,53 +17,78 @@ Access to the URL: [schottky.jp](http://schottky.jp) or download the source code
 - \+ / - : Increase / Decrease maximum iterations
 
 #### QueryString
+All Angle parameters are in degrees.
+
 - scale=float
-set scene scale.
+Set scene scale.
 
 - translateX=float
-set translate x.
+Set translate x.
 
 - translateY=float
-set tramslate y.
+Set tramslate y.
 
 - download=boolean
 if download == true, save and download canvas image.
 
+- renderGenerator=boolean
+if renderGenerator == true, render generator (only render OrbitSeed and VideoOrbit.)
+
 - Circle[]=float,float,float
-add Circle to the scene (x, y, radius)
+Add Circle to the scene (Center X, Center Y, Radius)
 
 - HalfPlane[]=float,float,float,float
-add HalfPlane to the scene (pointX, pointY, normalX, normalY)
+Add HalfPlane to the scene (Origin X, Origin Y, Normal X, Normal Y)
 
-- CrossingInversions[]=float,float,float,float,float
-Add CrossingInversions to the scene (pointX, pointY, directionX, directionY, Degrees)
-
-- GlideReflection[]=float,float,float,float,float
-Add GlideReflection to the scene (pointX, pointY, directionX, directionY, planeDistance)
-
-- ParallelInversions[]=float,float,float,float,float
-Add ParallelInversions to the scene (pointX, pointY, directionX, directionY, planeDistance)
-
-- ParallelTranslation[]=float,float,float,float,float
-Add ParallelTranslation to the scene (pointX, pointY, directionX, directionY, planeDistance)
-
-- OrbitSeed[]=float,float,float,float
-Add OrbitSeed to the scene (cornerX, cornerY, width, height)
-
-- VideoOrbit[]=float,float,float,float
-Add VideoOrbit to the scene (cornerX, cornerY, width, height)
+- HalfPlane[]=float,float,float
+Add HalfPlane to the scene (Origin X, Origin Y, Normal Angle)
 
 - Rotation[]=float,float,float,float,float
-Add Rotation to the scene (pointX, pointY, directionX, directionY, degrees)
+Add Rotation to the scene (Origin X, Origin Y, Direction X, Direction Y, Rotation Angle)
+
+- Rotation[]=float,float,float,float
+Add Rotation to the scene (Origin X, Origin Y, Boundary Angle, Rotation Angle)
+
+- CrossingInversions[]=float,float,float,float,float
+Add CrossingInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Crossing Angle)
+
+- CrossingInversions[]=float,float,float,float
+Add CrossingInversions to the scene (Origin X, Origin Y, Boundary Angle, Crossing Angle)
+
+- GlideReflection[]=float,float,float,float,float
+Add GlideReflection to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
+
+- GlideReflection[]=float,float,float,float
+Add GlideReflection to the scene (Origin X, Origin Y, Normal Angle, Distance)
+
+- ParallelInversions[]=float,float,float,float,float
+Add ParallelInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
+
+- ParallelInversions[]=float,float,float,float
+Add ParallelInversions to the scene (Origin X, Origin Y, Normal Angle, Distance)
+
+- ParallelTranslation[]=float,float,float,float,float
+Add ParallelTranslation to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
+
+- ParallelTranslation[]=float,float,float,float
+Add ParallelTranslation to the scene (Origin X, Origin Y, Normal Angle, Distance)
+
+- OrbitSeed[]=float,float,float
+Add OrbitSeed to the scene (Origin X, Origin Y, Width, Height)
+OrbitSeed automatically keeps the aspect ratio of the texture.
+The Size parameter determines the width of the rendered OrbitSeed, and the height is computed by the width and the aspect ratio.
+
+- VideoOrbit[]=float,float,float,float
+Add VideoOrbit to the scene (Origin X, Origin Y, Width, Height)
 
 - Scaling[]=float,float,float,float
-Add Scaling to the scene (centerX, centerY, scalingFactorX, scalingFactorY)
+Add Scaling to the scene (Center X, Center Y, Scaling Comple Re, Scaling Complex Im)
 
 - TwoCircles[]=float,float,float,float,float,float
-Add TwoCircles to the scene (c1CenterX, c1CenterY, c1Radius, c2CenterX, c2CenterY, c2Radius)
+Add TwoCircles to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 Center X, C2 Center Y, C2 Radius)
 
-- Loxofromic[]=float,float,float,float,float,float,float,float
-Add Loxodromic to the scene (c1CenterX, c1CenterY, c1Radius, c2CenterX, c2CenterY, c2Radius, pointX, pointY)
+- Loxodromic[]=float,float,float,float,float,float,float,float
+Add Loxodromic to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 CenterX, C2 CenterY, C2 Radius, Point X, Point Y)
 
 ##### Examples
 ?scale=10&Circle[]=1,1,1&Circle[]=1,-1,1&Circle[]=-1,1,1&Circle[]=-1,-1,1

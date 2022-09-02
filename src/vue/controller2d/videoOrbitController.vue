@@ -1,6 +1,6 @@
 <template>
   <div>
-    posX
+    Origin X
     <b-input
       v-model.number="videoOrbit.corner.x"
       @input="valueChanged"
@@ -8,7 +8,7 @@
       type="number"
       step="0.01">
     </b-input>
-    posY
+    Origin Y
     <b-input
       v-model.number="videoOrbit.corner.y"
       @input="valueChanged"
@@ -16,7 +16,7 @@
       type="number"
       step="0.01">
     </b-input>
-    width
+    Width
     <b-input
       v-model.number="videoOrbit.size.x"
       @input="changeWidth"
@@ -24,7 +24,7 @@
       type="number"
       step="0.01">
     </b-input>
-    height
+    Height
     <b-input
       v-model.number="videoOrbit.size.y"
       @input="changeHeight"
