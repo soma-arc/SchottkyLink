@@ -182,8 +182,8 @@ export default class Scene2d extends Scene {
     }
 
     addTwoCircles(position, sceneScale) {
-        const h = new TwoCircles(new Circle(position, 0.1 * sceneScale),
-                                 new Circle(position, 0.2 * sceneScale));
+        const h = new TwoCircles(new Circle(position.cloneDeeply(), 0.1 * sceneScale),
+                                 new Circle(position.cloneDeeply(), 0.2 * sceneScale));
         this.addCommand(new AddGeneratorCommand(this, h));
     }
 

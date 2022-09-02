@@ -29,6 +29,8 @@ export default class TwoCircles extends Generator {
     }
 
     update() {
+        this.c1.update();
+        this.c2.update();
         this.c1d = this.c2.invertOnCircle(this.c1);
     }
 
