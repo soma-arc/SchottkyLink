@@ -215,11 +215,9 @@ export default class Canvas2d extends Canvas {
             this.isRendering = true;
         } else if(event.ctrlKey && event.key === 'c') {
             this.scene.copy();
-        } else if(event.crtlKey && event.key === 'v') {
-            if(this.scene.copiedGenerater !== undefined) {
+        } else if(event.ctrlKey && event.key === 'v') {
+            if(this.scene.copiedGenerator !== undefined) {
                 this.scene.paste();
-                this.compileRenderShader();
-                this.render();
             }
         }
     }

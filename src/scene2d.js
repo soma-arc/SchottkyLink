@@ -26,6 +26,7 @@ import LoxodromicPointCommand from './command/LoxodromicPointCommand.js';
 import RemoveGeneratorCommand from './command/removeGeneratorCommand.js';
 import Vec2 from './vector2d.js';
 import RemoveAllGeneratorsCommand from './command/removeAllGeneratorsCommand.js';
+import { ToastProgrammatic as Toast } from 'buefy';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
@@ -60,7 +61,7 @@ export default class Scene2d extends Scene {
         this.updateSceneListeners = [];
         this.reRenderListeners = [];
 
-        this.copiedGenerater = undefined;
+        this.copiedGenerator = undefined;
 
         this.isRenderingGenerator = true;
     }
@@ -516,11 +517,23 @@ export default class Scene2d extends Scene {
     }
 
     copy() {
-        this.copiedGenerater = this.selectedObj;
+        if(this.selectedObj !== undefined) {
+            this.copiedGenerator = this.selectedObj;
+            Toast.open({message: 'Copied.',
+                        position: 'is-bottom'});
+        }
     }
 
     paste() {
-        this.addCommand(new AddGeneratorCommand(this, this.copiedGenerater.cloneDeeply()));
+        if(this.copiedGenerator !== undefined) {
+            Toast.open({message: 'Pasted.',
+                        position: 'is-bottom'});
+            if(this.copiedGenerator.name === 'Circle') {
+                this.addGenWithoutDuplicate(new Circle(this.copiedGenerator.center.cloneDeeply(), this.copiedGenerator.r));
+            } else {
+                this.addCommand(new AddGeneratorCommand(this, this.copiedGenerator.cloneDeeply()));
+            }
+        }
     }
 
     mouseLeave() {
