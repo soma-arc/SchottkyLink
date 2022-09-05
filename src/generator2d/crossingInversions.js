@@ -275,6 +275,9 @@ export default class CrossingInversions extends Generator {
                                       Radians.DegToRad(array[3]));
     }
 
+    exportAsQueryString() {
+        return `CrossingInversions[]=${this.p.x},${this.p.y},${this.boundaryDir.x},${this.boundaryDir.y},${this.degrees}`;
+    }
 
     static get BODY() {
         return 0;

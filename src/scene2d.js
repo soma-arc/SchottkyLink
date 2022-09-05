@@ -188,7 +188,7 @@ export default class Scene2d extends Scene {
     }
 
     addLoxodromic(position, sceneScale) {
-        const l = new Loxodromic(new Circle(position, 0.1 * sceneScale),
+        const l = new Loxodromic(new Circle(position.cloneDeeply(), 0.1 * sceneScale),
                                  new Circle(position.add(new Vec2(0.05, 0.0)), 0.2 * sceneScale),
                                  position.add(new Vec2(0, 0.3)));
         this.addCommand(new AddGeneratorCommand(this, l));
@@ -234,7 +234,7 @@ export default class Scene2d extends Scene {
     }
 
     addScaling(position, sceneScale) {
-        const s = new Scaling(position, 1);
+        const s = new Scaling(position, 0.5, 1, 0.5 * Math.PI);
         this.addCommand(new AddGeneratorCommand(this, s));
     }
 

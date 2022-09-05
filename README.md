@@ -81,14 +81,14 @@ The Size parameter determines the width of the rendered OrbitSeed, and the heigh
 - VideoOrbit[]=float,float,float,float
 Add VideoOrbit to the scene (Origin X, Origin Y, Width, Height)
 
-- Scaling[]=float,float,float,float
-Add Scaling to the scene (Center X, Center Y, Scaling Comple Re, Scaling Complex Im)
+- Scaling[]=float,float,float,float,float
+Add Scaling to the scene (Center X, Center Y, C1 Radius, C2 Radois, Rotation Angle)
 
 - TwoCircles[]=float,float,float,float,float,float
 Add TwoCircles to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 Center X, C2 Center Y, C2 Radius)
 
 - Loxodromic[]=float,float,float,float,float,float,float,float
-Add Loxodromic to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 CenterX, C2 CenterY, C2 Radius, Point X, Point Y)
+Add Loxodromic to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 Center X, C2 Center Y, C2 Radius, Point X, Point Y)
 
 ##### Examples
 ?scale=10&Circle[]=1,1,1&Circle[]=1,-1,1&Circle[]=-1,1,1&Circle[]=-1,-1,1

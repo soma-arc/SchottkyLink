@@ -3,22 +3,35 @@ import Generator from './generator.js';
 import Circle from './circle.js';
 import SelectionState from './selectionState.js';
 import DistanceState from './distanceState.js';
+import Radians from '../radians.js';
 
 export default class Scaling extends Generator {
     /**
      *
      * @param {Vec2} center
-     * @param {Vec2} scalingFactor
+     * @param {Number} c1r
+     * @param {Number} c2r
+     * @param {Number} scalingFactor
      */
-    constructor(center, scalingFactor) {
+    constructor(center, c1r, c2r, rotationAngleRad) {
         super();
         this.center = center;
-        this.scalingFactor = scalingFactor;
-        this.c1 = new Circle(this.center, 0.1);
-        this.c2 = new Circle(this.center, 0.2);
+        this.c1 = new Circle(this.center, c1r);
+        this.c2 = new Circle(this.center, c2r);
+        this.rotationAngleRad = rotationAngleRad;
+        this.rotationAngleDeg = Radians.RadToDeg(this.rotationAngleRad);
 
-        this.line1P = this.c1.center.add(new Vec2(1, 0).scale(this.c1.r));
-        this.line2P = this.c2.center.add(new Vec2(1, 1).normalize().scale(this.c2.r));
+        this.line1Dir = new Vec2(1, 0);
+        const cosTheta = Math.cos(this.rotationAngleRad);
+        const sinTheta = Math.sin(this.rotationAngleRad);
+        this.line2Dir = new Vec2(this.line1Dir.x * cosTheta - this.line1Dir.y * sinTheta,
+                                 this.line1Dir.x * sinTheta + this.line1Dir.y * cosTheta);
+        this.line1P = this.c1.center.add(this.line1Dir.scale(this.c1.r));
+        this.line2P = this.c2.center.add(this.line2Dir.normalize().scale(this.c2.r));
+
+        this.line1Normal = new Vec2(-this.line1Dir.y, this.line1Dir.x).normalize();
+        this.line2Normal = new Vec2(-this.line2Dir.y, this.line2Dir.x).normalize();
+
 
         this.pointRadius = 0.01;
         this.lineWidth = 0.01;
@@ -28,6 +41,32 @@ export default class Scaling extends Generator {
 
     update() {
         this.c1d = this.c2.invertOnCircle(this.c1);
+
+        this.rotationAngleRad = Math.atan2(this.line2P.y - this.center.y, this.line2P.x - this.center.x);
+        this.rotationAngleDeg = Radians.RadToDeg(this.rotationAngleRad);
+    }
+
+    updateFromCenter() {
+        this.c1.center = this.center.cloneDeeply();
+        this.c2.center = this.center.cloneDeeply();
+
+        this.c1d = this.c2.invertOnCircle(this.c1);
+
+        this.line1P = this.c1.center.add(this.line1Dir.scale(this.c1.r));
+        this.line2P = this.c2.center.add(this.line2Dir.normalize().scale(this.c2.r));
+    }
+
+    updateFromRotationAngle() {
+        this.rotationAngleRad = Radians.DegToRad(this.rotationAngleDeg);
+        this.c1d = this.c2.invertOnCircle(this.c1);
+
+        this.line1Dir = new Vec2(1, 0);
+        const cosTheta = Math.cos(this.rotationAngleRad);
+        const sinTheta = Math.sin(this.rotationAngleRad);
+        this.line2Dir = new Vec2(this.line1Dir.x * cosTheta - this.line1Dir.y * sinTheta,
+                                 this.line1Dir.x * sinTheta + this.line1Dir.y * cosTheta);
+        this.line1P = this.c1.center.add(this.line1Dir.scale(this.c1.r));
+        this.line2P = this.c2.center.add(this.line2Dir.normalize().scale(this.c2.r));
 
         this.line1Dir = this.line1P.sub(this.c1.center);
         this.line1Normal = new Vec2(-this.line1Dir.y, this.line1Dir.x).normalize();
@@ -41,13 +80,6 @@ export default class Scaling extends Generator {
     }
 
     select(mouse, sceneScale) {
-        const dpl1 = mouse.sub(this.line1P);
-        if (dpl1.length() < this.pointRadius * sceneScale) {
-            return new SelectionState().setObj(this)
-                .setComponentId(Scaling.LINE1_POINT)
-                .setDiffObj(dpl1);
-        }
-
         const dpl2 = mouse.sub(this.line2P);
         if (dpl2.length() < this.pointRadius * sceneScale) {
             return new SelectionState().setObj(this)
@@ -93,7 +125,8 @@ export default class Scaling extends Generator {
         case Scaling.BODY: {
             const diffLine1P = this.line1P.sub(this.c1.center);
             const diffLine2P = this.line2P.sub(this.c2.center);
-            this.c2.center = mouse.sub(selectionState.diffObj);
+            this.center = mouse.sub(selectionState.diffObj);
+            this.c2.center = this.center;
             this.c1.center = this.c2.center;
             this.line1P = this.c1.center.add(diffLine1P);
             this.line2P = this.c1.center.add(diffLine2P);
@@ -131,18 +164,12 @@ export default class Scaling extends Generator {
             this.line2P = this.c2.center.add(this.line2Dir.normalize().scale(this.c2.r));
             break;
         }
-        case Scaling.LINE1_POINT: {
-            const np = mouse.sub(selectionState.diffObj);
-            this.line1Dir = np.sub(this.c1.center).normalize();
-            this.line1P = this.c1.center.add(this.line1Dir.scale(this.c1.r));
-            this.line1Normal = new Vec2(-this.line1Dir.y, this.line1Dir.x).normalize();
-            break;
-        }
         case Scaling.LINE2_POINT: {
             const np = mouse.sub(selectionState.diffObj);
             this.line2Dir = np.sub(this.c1.center).normalize();
             this.line2P = this.c1.center.add(this.line2Dir.scale(this.c2.r));
             this.line2Normal = new Vec2(-this.line2Dir.y, this.line2Dir.x).normalize();
+            this.update();
             break;
         }
         }
@@ -203,33 +230,37 @@ export default class Scaling extends Generator {
     }
 
     exportAsQueryString() {
-        return `Scaling[]=${this.center.x},${this.center.y},${this.scalingFactor.x},${this.scalingFactor.y}`;
+        return `Scaling[]=${this.center.x},${this.center.y},${this.c1.r},${this.c2.r},${this.rotationAngleDeg}`;
     }
 
     exportJson() {
         return {
             id: this.id,
             center: [this.center.x, this.center.y],
-            scalingFactor: [this.scalingFactor.x, this.scalingFactor.y]
+            c1r: this.c1r,
+            c2r: this.c2r,
+            rotationAngleRad: this.rotationAngleRad
         };
     }
 
     cloneDeeply() {
         return new Scaling(this.center.cloneDeeply(),
-                           this.scaleFactor.cloneDeeply());
+                           this.c1.r,
+                           this.c2.r,
+                           this.rotationAngleRad);
     }
 
     static loadJson(obj, scene) {
         const no = new Scaling(new Vec2(obj.center[0], obj.center[1]),
-                               new Vec2(obj.scalingFactor[0], obj.scalingFactor[1]));
+                               obj.c1r, obj.c2r, obj.rotationAngleRad);
         no.setId(obj.id);
         return no;
     }
 
     static loadFromArray(array) {
         return new Scaling(new Vec2(array[0], array[1]), // center
-                           new Vec2(array[2], array[3]) // scalingFactor
-                          );
+                           new Vec2(array[2], array[3]), // c1r, c2r
+                           Radians.RadtoDeg(array[4])); // rotation angle degrees
     }
 
     get name() {

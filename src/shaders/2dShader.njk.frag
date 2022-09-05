@@ -493,6 +493,37 @@ int computeOrbit(vec2 pos) {
     return orbitNum;
 }
 
+bool renderOrbitSeed(vec2 pos, out vec3 color) {
+    color = vec3(0);
+    {% for no in range(0, numOrbitSeed) %}
+    if(u_orbitSeed{{ no }}.selected) {
+        vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
+        if(0. < uvOrbitSeed{{ no }}.x && uvOrbitSeed{{ no }}.x < 1. &&
+           0. < uvOrbitSeed{{ no }}.y && uvOrbitSeed{{ no }}.y < 1. &&
+           (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
+    }
+    {% endfor %}
+
+    {% for no in range(0, numVideoOrbit) %}
+    if(u_videoOrbit{{ no }}.selected) {
+        vec2 videoUV{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
+        if(0. < videoUV{{ no }}.x && videoUV{{ no }}.x < 1. &&
+           0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
+           (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
+            pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
+    }
+    {% endfor %}
+
+    return false;
+}
+
 bool renderUI(vec2 pos, out vec3 color) {
     color = vec3(0);
 
@@ -781,38 +812,7 @@ bool renderUI(vec2 pos, out vec3 color) {
     }
     {% endfor %}
 
-
-    {% for no in range(0, numOrbitSeed) %}
-    if(u_orbitSeed{{ no }}.selected) {
-        vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
-        if(0. < uvOrbitSeed{{ no }}.x && uvOrbitSeed{{ no }}.x < 1. &&
-           0. < uvOrbitSeed{{ no }}.y && uvOrbitSeed{{ no }}.y < 1. &&
-           (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
-            pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
-            color = WHITE;
-            return true;
-        }
-    }
-    {% endfor %}
-
-    {% for no in range(0, numVideoOrbit) %}
-    if(u_videoOrbit{{ no }}.selected) {
-        vec2 videoUV{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
-        if(0. < videoUV{{ no }}.x && videoUV{{ no }}.x < 1. &&
-           0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
-           (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
-            pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
-            color = WHITE;
-            return true;
-        }
-    }
-    {% endfor %}
-
     {% for n in range(0, numScaling) %}
-    if(distance(pos, u_scaling{{ n }}.line1.xy) < u_scaling{{ n }}.ui.x) {
-        color = PINK;
-        return true;
-    }
     if(distance(pos, u_scaling{{ n }}.line2.xy) < u_scaling{{ n }}.ui.x) {
         color = PINK;
         return true;
@@ -954,8 +954,14 @@ void main() {
         // }
 
         col = vec3(0);
-        if(renderUI(position, col)) {
+        if(renderOrbitSeed(position, col)) {
             sum += col;
+            continue;
+        }
+
+        col = vec3(0);
+        if(renderUI(position, col)) {
+            sum += col * u_isRenderingGenerator;
             continue;
         }
 
@@ -966,11 +972,9 @@ void main() {
             continue;
         }
 
-        if (u_isRenderingGenerator == 1.0) {
-            if(renderGenerator(position, col)) {
-                sum += col;
-                continue;
-            }
+        if(renderGenerator(position, col)) {
+            sum += col * u_isRenderingGenerator;
+            continue;
         }
     }
     vec3 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0).rgb;

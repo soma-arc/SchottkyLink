@@ -35,6 +35,8 @@ export default class Loxodromic extends Generator {
     }
 
     update() {
+        this.c1.update();
+        this.c2.update();
         this.c1d = this.c2.invertOnCircle(this.c1);
         this.pC1Inv = this.c1.invertOnPoint(this.p);
         this.pC2Inv = this.c2.invertOnPoint(this.p);
