@@ -22,15 +22,18 @@ export default class Canvas2d extends Canvas {
 
         this.maxIterations = 20;
 
-        this.isPressingShift = false;
-
         // mouse
         this.mouseState = {
             isPressing: false,
             position: new Vec2(0, 0),
             prevPosition: new Vec2(0, 0),
             prevTranslate: new Vec2(0, 0),
-            button: -1
+            button: -1,
+        };
+
+        this.keyState = {
+            isPressingShift: false,
+            isPressingCtrl: false
         };
 
         this.scene.addSceneUpdateListener(this.compileRenderShader.bind(this));
@@ -175,8 +178,8 @@ export default class Canvas2d extends Canvas {
                 this.isRendering = true;
             } else {
                 let moved;
-                if(event.shiftKey) {
-                    moved = this.scene.moveAlongAxis(this.mouseState);
+                if(event.shiftKey || event.ctrlKey) {
+                    moved = this.scene.moveAlongAxis(this.mouseState, this.keyState);
                 } else {
                     moved = this.scene.move(mouse);
                 }
@@ -211,19 +214,24 @@ export default class Canvas2d extends Canvas {
         } else if (event.key === 'x') {
             this.scene.addLoxodromic(new Vec2(0, 0), 1);
         } else if (event.shiftKey) {
-            this.isPressingShift = true;
+            this.keyState.isPressingShift = true;
             this.isRendering = true;
-        } else if(event.ctrlKey && event.key === 'c') {
-            this.scene.copy();
-        } else if(event.ctrlKey && event.key === 'v') {
-            if(this.scene.copiedGenerator !== undefined) {
-                this.scene.paste();
+        } else if(event.ctrlKey) {
+            this.keyState.isPressingCtrl = true;
+            this.isRendering = true;
+            if(event.key === 'c') {
+                this.scene.copy();
+            } else if(event.key === 'v') {
+                if(this.scene.copiedGenerator !== undefined) {
+                    this.scene.paste();
+                }
             }
         }
     }
 
     keyupListener(event) {
-        this.isPressingShift = false;
+        this.keyState.isPressingShift = false;
+        this.keyState.isPressingCtrl = false;
         this.isRendering = false;
         this.render();
     }
@@ -275,6 +283,8 @@ export default class Canvas2d extends Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_isPressingShift'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_isPressingCtrl'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_orbitOrigin'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
@@ -310,7 +320,8 @@ export default class Canvas2d extends Canvas {
         this.gl.uniform3f(this.uniLocations[i++],
                           this.translate.x, this.translate.y, this.scale);
         this.gl.uniform1i(this.uniLocations[i++], this.maxIterations);
-        this.gl.uniform1i(this.uniLocations[i++], this.isPressingShift);
+        this.gl.uniform1i(this.uniLocations[i++], this.keyState.isPressingShift);
+        this.gl.uniform1i(this.uniLocations[i++], this.keyState.isPressingCtrl);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.orbitOrigin.x,
                           this.orbitOrigin.y);

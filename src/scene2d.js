@@ -247,9 +247,9 @@ export default class Scene2d extends Scene {
         return false;
     }
 
-    moveAlongAxis(mouseState) {
+    moveAlongAxis(mouseState, keyState) {
         if (this.selectedState.isSelectingObj()) {
-            this.selectedState.selectedObj.moveAlongAxis(this.selectedState, mouseState, this);
+            this.selectedState.selectedObj.moveAlongAxis(this.selectedState, mouseState, keyState, this);
             return true;
         }
         return false;

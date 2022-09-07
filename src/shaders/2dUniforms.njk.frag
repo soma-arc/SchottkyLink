@@ -7,6 +7,7 @@ uniform sampler2D u_videoTexture;
 uniform sampler2D u_imageTextures[10];
 uniform float u_isRenderingGenerator;
 uniform bool u_isPressingShift;
+uniform bool u_isPressingCtrl;
 
 struct Circle {
     vec4 centerAndRadius; // [x, y, r, r * r]

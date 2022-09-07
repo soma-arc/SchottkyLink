@@ -61,11 +61,90 @@ export default class HalfPlane extends Generator {
             .setDiffObj(dp);
     }
 
-    move(mouseState, mouse) {
-        if (mouseState.componentId === HalfPlane.BODY) {
-            this.p = mouse.sub(mouseState.diffObj);
-        } else if (mouseState.componentId === HalfPlane.NORMAL_POINT) {
+    move(selectionState, mouse) {
+        if (selectionState.componentId === HalfPlane.BODY) {
+            this.p = mouse.sub(selectionState.diffObj);
+        } else if (selectionState.componentId === HalfPlane.NORMAL_POINT) {
             this.normal = mouse.sub(this.p).normalize();
+            let rad = Math.atan2(this.normal.y, this.normal.x);
+            if (Math.abs(rad) < 0.1) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_12) < 0.1) {
+                    rad = Radians.PI_12;
+                } else if (Math.abs(rad - Radians.PI_6) < 0.1) {
+                    rad = Radians.PI_6;
+                } else if (Math.abs(rad - Radians.PI_4) < 0.1) {
+                    rad = Radians.PI_4;
+                } else if (Math.abs(rad - Radians.PI_3) < 0.1) {
+                    rad = Radians.PI_3;
+                } else if (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) {
+                    rad = Radians.FIVE_PI_12;
+                } else if (Math.abs(rad - Radians.PI_2) < 0.1) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.SEVEN_PI_12) < 0.1) {
+                    rad = Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.TWO_PI_3) < 0.1) {
+                    rad = Radians.TWO_PI_3;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.1) {
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.FIVE_PI_6) < 0.1) {
+                    rad = Radians.FIVE_PI_6;
+                } else if (Math.abs(rad - Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_12) < 0.1) {
+                    rad = -Radians.PI_12;
+                } else if (Math.abs(rad + Radians.PI_6) < 0.1) {
+                    rad = -Radians.PI_6;
+                } else if (Math.abs(rad + Radians.PI_4) < 0.1) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_3) < 0.1) {
+                    rad = -Radians.PI_3;
+                } else if (Math.abs(rad + Radians.FIVE_PI_12) < 0.1) {
+                    rad = -Radians.FIVE_PI_12;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.1) {
+                    rad = -Radians.PI_2;
+                } else if (Math.abs(rad + Radians.SEVEN_PI_12) < 0.1) {
+                    rad = -Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.TWO_PI_3) < 0.1) {
+                    rad = -Radians.TWO_PI_3;
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.1) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.FIVE_PI_6) < 0.1) {
+                    rad = -Radians.FIVE_PI_6;
+                } else if (Math.abs(rad + Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = -Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            }
+
+            this.normal = new Vec2(Math.cos(rad), Math.sin(rad));
+        }
+
+        this.update();
+    }
+
+    /**
+     * Move circle
+     * @param { SelectionState } selectionState
+     * @param { Object } mouseState
+     * @param { Object } keyState
+     * @param { Scene } scene
+     */
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        if (selectionState.componentId === HalfPlane.BODY) {
+            if (keyState.isPressingShift) {
+                this.p.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.p.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+        } else if (selectionState.componentId === HalfPlane.NORMAL_POINT) {
+            this.normal = selectionState.position.sub(this.p).normalize();
             let rad = Math.atan2(this.normal.y, this.normal.x);
             if (Math.abs(rad) < 0.1) {
                 rad = 0;

@@ -46,11 +46,12 @@ export default class Generator {
 
     /**
      *
-     * @param {SelectionState} mouseState
-     * @param {Object} mouse
+     * @param {SelectionState} SelectionState
+     * @param {Object} mouseState
+     * @param {Object} keyState
      * @param { Scene } scene
      */
-    moveAlongAxis(mouseState, mouse, scene) {}
+    moveAlongAxis(SelectionState, mouseState, keyState, scene) {}
 
     /**
      * compute distance between p and object's components
