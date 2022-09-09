@@ -97,14 +97,106 @@ export default class Rotation extends Generator {
         return false;
     }
 
-    move(mouseState, mouse) {
-        switch (mouseState.componentId) {
+    move(selectionState, mouse) {
+        switch (selectionState.componentId) {
         case Rotation.BODY: {
-            this.p = mouse.sub(mouseState.diffObj);
+            this.p = mouse.sub(selectionState.diffObj);
             break;
         }
         case Rotation.BOUNDARY_POINT: {
             this.boundaryDir1 = mouse.sub(this.p).normalize();
+            let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+            if (Math.abs(rad) < 0.1) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_12) < 0.1) {
+                    rad = Radians.PI_12;
+                } else if (Math.abs(rad - Radians.PI_6) < 0.1) {
+                    rad = Radians.PI_6;
+                } else if (Math.abs(rad - Radians.PI_4) < 0.1) {
+                    rad = Radians.PI_4;
+                } else if (Math.abs(rad - Radians.PI_3) < 0.1) {
+                    rad = Radians.PI_3;
+                } else if (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) {
+                    rad = Radians.FIVE_PI_12;
+                } else if (Math.abs(rad - Radians.PI_2) < 0.1) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.SEVEN_PI_12) < 0.1) {
+                    rad = Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.TWO_PI_3) < 0.1) {
+                    rad = Radians.TWO_PI_3;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.1) {
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.FIVE_PI_6) < 0.1) {
+                    rad = Radians.FIVE_PI_6;
+                } else if (Math.abs(rad - Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_12) < 0.1) {
+                    rad = -Radians.PI_12;
+                } else if (Math.abs(rad + Radians.PI_6) < 0.1) {
+                    rad = -Radians.PI_6;
+                } else if (Math.abs(rad + Radians.PI_4) < 0.1) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_3) < 0.1) {
+                    rad = -Radians.PI_3;
+                } else if (Math.abs(rad + Radians.FIVE_PI_12) < 0.1) {
+                    rad = -Radians.FIVE_PI_12;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.1) {
+                    rad = -Radians.PI_2;
+                } else if (Math.abs(rad + Radians.SEVEN_PI_12) < 0.1) {
+                    rad = -Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.TWO_PI_3) < 0.1) {
+                    rad = -Radians.TWO_PI_3;
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.1) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.FIVE_PI_6) < 0.1) {
+                    rad = -Radians.FIVE_PI_6;
+                } else if (Math.abs(rad + Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = -Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            }
+            this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
+            break;
+        }
+        case Rotation.ROTATION_POINT: {
+            const mp = mouse.sub(this.p);
+            let theta1 = Math.atan2(mp.y, mp.x);
+            if(theta1 < 0) theta1 += Radians.TWO_PI;
+            const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+            let rad = theta1 - theta2;
+            rad = (Math.abs(rad - Radians.PI) < 0.1 || isNaN(rad)) ? Radians.PI : rad;
+            rad = (Math.abs(rad - Radians.PI_12) < 0.1) ? Radians.PI_12 : rad;
+            rad = (Math.abs(rad - Radians.PI_6) < 0.1) ? Radians.PI_6 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.1) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_3) < 0.1) ? Radians.PI_3 : rad;
+            rad = (Math.abs(rad - Radians.TWO_PI_3) < 0.1) ? Radians.TWO_PI_3 : rad;
+            rad = (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) ? Radians.FIVE_PI_12 : rad;
+            this.radians = rad;
+            break;
+        }
+        }
+
+        this.update();
+    }
+
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case Rotation.BODY: {
+            if (keyState.isPressingShift) {
+                this.p.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.p.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            break;
+        }
+        case Rotation.BOUNDARY_POINT: {
+            this.boundaryDir1 = mouseState.position.sub(this.p).normalize();
             let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             if (Math.abs(rad) < 0.1) {
                 rad = 0;

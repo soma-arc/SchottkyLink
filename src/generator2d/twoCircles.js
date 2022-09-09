@@ -84,12 +84,9 @@ export default class TwoCircles extends Generator {
             if (Math.abs(this.c2.r - this.c1.r - npc2Len) < 0.02) {
                 const mv = np.sub(this.c2.center).normalize();
                 this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
-//                selectionState.setDiffObj(mouse.sub(this.c1.center));
-                this.c1.update();
                 break;
             }
             this.c1.center = np;
-            this.c1.update();
             break;
         }
         case TwoCircles.C1_CIRCUMFERENCE: {
@@ -101,12 +98,59 @@ export default class TwoCircles extends Generator {
             const d = this.c2.center;
             this.c2.center = mouse.sub(selectionState.diffObj);
             this.c1.center = this.c1.center.add(this.c2.center.sub(d));
-            this.c2.update();
             break;
         }
         case TwoCircles.C2_CIRCUMFERENCE: {
             this.c2.r = Vec2.distance(this.c2.center, mouse) + selectionState.distToComponent;
-            this.c2.update();
+            break;
+        }
+        }
+
+        this.update();
+    }
+
+    /**
+     * Move circle
+     * @param { SelectionState } selectionState
+     * @param { Object } mouseState
+     * @param { Object } keyState
+     * @param { Scene } scene
+     */
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case TwoCircles.C1_BODY: {
+            const np = this.c1.center;
+            if (keyState.isPressingShift) {
+                np.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                np.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            const npc2Len = this.c2.center.sub(np).length();
+            if (Math.abs(this.c2.r - this.c1.r - npc2Len) < 0.02) {
+                const mv = np.sub(this.c2.center).normalize();
+                this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
+                break;
+            }
+            this.c1.center = np;
+            break;
+        }
+        case TwoCircles.C1_CIRCUMFERENCE: {
+            this.c1.r = Vec2.distance(this.c1.center, mouseState.position) + selectionState.distToComponent;
+            break;
+        }
+        case TwoCircles.C2_BODY: {
+            const d = this.c2.center.cloneDeeply();
+            if (keyState.isPressingShift) {
+                this.c2.center.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.c2.center.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            this.c1.center = this.c1.center.add(this.c2.center.sub(d));
+
+            break;
+        }
+        case TwoCircles.C2_CIRCUMFERENCE: {
+            this.c2.r = Vec2.distance(this.c2.center, mouseState.position) + selectionState.distToComponent;
             break;
         }
         }

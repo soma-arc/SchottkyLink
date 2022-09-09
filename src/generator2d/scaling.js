@@ -178,6 +178,74 @@ export default class Scaling extends Generator {
     }
 
     /**
+     * @param { SelectionState } selectionState
+     * @param { Object } mouseState
+     * @param { Object } keyState
+     * @param { Scene2d } scene
+     */
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case Scaling.BODY: {
+            const diffLine1P = this.line1P.sub(this.c1.center);
+            const diffLine2P = this.line2P.sub(this.c2.center);
+
+            if (keyState.isPressingShift) {
+                this.center.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.center.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            this.c2.center = this.center;
+            this.c1.center = this.c2.center;
+            this.line1P = this.c1.center.add(diffLine1P);
+            this.line2P = this.c1.center.add(diffLine2P);
+            this.update();
+            break;
+        }
+        case Scaling.C1_CIRCUMFERENCE: {
+            const nr = Vec2.distance(this.c1.center, mouseState.position) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            if (this.c2.r - nr < max) {
+                this.c1.r = -max + this.c2.r;
+                this.c1.update();
+                break;
+            }
+            this.c1.r = nr;
+            this.c1.update();
+            this.c1d = this.c2.invertOnCircle(this.c1);
+
+            this.line1P = this.c1.center.add(this.line1Dir.normalize().scale(this.c1.r));
+            break;
+        }
+        case Scaling.C2_CIRCUMFERENCE: {
+            const nr = Vec2.distance(this.c2.center, mouseState.position) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            if (nr - this.c1.r < max) {
+                this.c2.r = max + this.c1.r;
+                this.c2.update();
+                break;
+            }
+            this.c2.r = nr;
+
+            this.c2.update();
+            this.c1d = this.c2.invertOnCircle(this.c1);
+
+            this.line2P = this.c2.center.add(this.line2Dir.normalize().scale(this.c2.r));
+            break;
+        }
+        case Scaling.LINE2_POINT: {
+            const np = mouseState.position.sub(selectionState.diffObj);
+            this.line2Dir = np.sub(this.c1.center).normalize();
+            this.line2P = this.c1.center.add(this.line2Dir.scale(this.c2.r));
+            this.line2Normal = new Vec2(-this.line2Dir.y, this.line2Dir.x).normalize();
+            this.update();
+            break;
+        }
+        }
+
+//        this.update();
+    }
+
+    /**
      *
      * @param {Vec2} p
      */

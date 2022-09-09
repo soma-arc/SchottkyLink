@@ -4,12 +4,13 @@ import Vec2 from '../vector2d.js';
 
 export default class Generator {
     constructor() {
+        this.p;
         this.selected = false;
         this.id = new Date().getTime().toString(16) + Math.floor(1000 * Math.random()).toString(16);
     }
 
     getPosition() {
-        return new Vec2(0, 0);
+        return this.p;
     }
 
     /**

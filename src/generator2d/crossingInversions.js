@@ -91,10 +91,10 @@ export default class CrossingInversions extends Generator {
         return false;
     }
 
-    move(mouseState, mouse) {
-        switch (mouseState.componentId) {
+    move(selectionState, mouse) {
+        switch (selectionState.componentId) {
         case CrossingInversions.BODY: {
-            this.p = mouse.sub(mouseState.diffObj);
+            this.p = mouse.sub(selectionState.diffObj);
             break;
         }
         case CrossingInversions.BOUNDARY_POINT: {
@@ -160,6 +160,97 @@ export default class CrossingInversions extends Generator {
         }
         case CrossingInversions.ROTATION_POINT: {
             const mp = mouse.sub(this.p);
+            const theta1 = Math.atan2(mp.y, mp.x);
+            const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+            let rad = theta1 - theta2;
+            rad = (rad > Radians.PI_2) ? Radians.PI_2 : rad;
+            rad = (rad < 0) ? 0 : rad;
+            rad = (Math.abs(rad - Radians.PI_12) < 0.1) ? Radians.PI_12 : rad;
+            rad = (Math.abs(rad - Radians.PI_6) < 0.1) ? Radians.PI_6 : rad;
+            rad = (Math.abs(rad - Radians.PI_4) < 0.1) ? Radians.PI_4 : rad;
+            rad = (Math.abs(rad - Radians.PI_3) < 0.1) ? Radians.PI_3 : rad;
+            rad = (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) ? Radians.FIVE_PI_12 : rad;
+            this.radians = rad;
+            break;
+        }
+        }
+
+        this.update();
+    }
+
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case CrossingInversions.BODY: {
+            if (keyState.isPressingShift) {
+                this.p.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.p.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            break;
+        }
+        case CrossingInversions.BOUNDARY_POINT: {
+            this.boundaryDir1 = mouseState.position.sub(this.p).normalize();
+            let rad = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
+            if (Math.abs(rad) < 0.1) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_12) < 0.1) {
+                    rad = Radians.PI_12;
+                } else if (Math.abs(rad - Radians.PI_6) < 0.1) {
+                    rad = Radians.PI_6;
+                } else if (Math.abs(rad - Radians.PI_4) < 0.1) {
+                    rad = Radians.PI_4;
+                } else if (Math.abs(rad - Radians.PI_3) < 0.1) {
+                    rad = Radians.PI_3;
+                } else if (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) {
+                    rad = Radians.FIVE_PI_12;
+                } else if (Math.abs(rad - Radians.PI_2) < 0.1) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.SEVEN_PI_12) < 0.1) {
+                    rad = Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.TWO_PI_3) < 0.1) {
+                    rad = Radians.TWO_PI_3;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.1) {
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.FIVE_PI_6) < 0.1) {
+                    rad = Radians.FIVE_PI_6;
+                } else if (Math.abs(rad - Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_12) < 0.1) {
+                    rad = -Radians.PI_12;
+                } else if (Math.abs(rad + Radians.PI_6) < 0.1) {
+                    rad = -Radians.PI_6;
+                } else if (Math.abs(rad + Radians.PI_4) < 0.1) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_3) < 0.1) {
+                    rad = -Radians.PI_3;
+                } else if (Math.abs(rad + Radians.FIVE_PI_12) < 0.1) {
+                    rad = -Radians.FIVE_PI_12;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.1) {
+                    rad = -Radians.PI_2;
+                } else if (Math.abs(rad + Radians.SEVEN_PI_12) < 0.1) {
+                    rad = -Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.TWO_PI_3) < 0.1) {
+                    rad = -Radians.TWO_PI_3;
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.1) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.FIVE_PI_6) < 0.1) {
+                    rad = -Radians.FIVE_PI_6;
+                } else if (Math.abs(rad + Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = -Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            }
+            this.boundaryDir1 = new Vec2(Math.cos(rad), Math.sin(rad));
+            break;
+        }
+        case CrossingInversions.ROTATION_POINT: {
+            const mp = mouseState.position.sub(this.p);
             const theta1 = Math.atan2(mp.y, mp.x);
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             let rad = theta1 - theta2;

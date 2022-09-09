@@ -27,6 +27,10 @@ export default class OrbitSeed extends Generator {
         this.update();
     }
 
+    getPosition() {
+        return this.corner;
+    }
+
     update() {
         this.size = new Vec2(this.renderWidth, this.aspect * this.renderWidth);
     }
@@ -137,6 +141,45 @@ export default class OrbitSeed extends Generator {
         }
         case OrbitSeed.CORNER_RIGHT_ABOVE: {
             const nc = mouse.sub(selectionState.diffObj);
+            const sizeDiff = nc.sub(this.corner.add(this.size));
+            this.renderWidth = this.size.x + sizeDiff.x;
+            this.update();
+            //const d = Math.max(sizeDiff.x, sizeDiff.y);
+            //this.size = this.size.add(new Vec2(d, d));
+            break;
+        }
+        }
+    }
+
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case OrbitSeed.BODY: {
+            if (keyState.isPressingShift) {
+                this.corner.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.corner.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            break;
+        }
+        case OrbitSeed.CORNER_LEFT_BELOW: {
+            const nc = mouseState.position.sub(selectionState.diffObj);
+            const sizeDiff = this.corner.sub(nc);
+            this.renderWidth = this.size.x + sizeDiff.x;
+            this.corner.x = this.corner.x - sizeDiff.x;
+            this.update();
+            //const d = Math.max(sizeDiff.x, sizeDiff.y);
+            //this.corner = this.corner.sub(new Vec2(d, d));
+            //this.size = this.size.add(new Vec2(d, d));
+            break;
+        }
+        case OrbitSeed.CORNER_LEFT_ABOVE: {
+            break;
+        }
+        case OrbitSeed.CORNER_RIGHT_BELOW: {
+            break;
+        }
+        case OrbitSeed.CORNER_RIGHT_ABOVE: {
+            const nc = mouseState.position.sub(selectionState.diffObj);
             const sizeDiff = nc.sub(this.corner.add(this.size));
             this.renderWidth = this.size.x + sizeDiff.x;
             this.update();

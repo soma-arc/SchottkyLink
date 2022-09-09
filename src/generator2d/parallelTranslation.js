@@ -92,10 +92,10 @@ export default class ParallelTranslation extends Generator {
         return false;
     }
 
-    move(mouseState, mouse) {
-        switch (mouseState.componentId) {
+    move(selectionState, mouse) {
+        switch (selectionState.componentId) {
         case ParallelTranslation.BODY: {
-            this.p = mouse.sub(mouseState.diffObj);
+            this.p = mouse.sub(selectionState.diffObj);
             break;
         }
         case ParallelTranslation.NORMAL_POINT: {
@@ -161,6 +161,88 @@ export default class ParallelTranslation extends Generator {
         }
         case ParallelTranslation.POINT_HP2: {
             const len = Vec2.dot(this.normal, mouse.sub(this.p));
+            if (len < 0) return;
+            this.planeDist = len;
+            break;
+        }
+        }
+
+        this.update();
+    }
+
+    moveAlongAxis(selectionState, mouseState, keyState, scene) {
+        switch (selectionState.componentId) {
+        case ParallelTranslation.BODY: {
+            if (keyState.isPressingShift) {
+                this.p.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.p.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            break;
+        }
+        case ParallelTranslation.NORMAL_POINT: {
+            this.normal = mouseState.position.sub(this.p).normalize();
+            let rad = Math.atan2(this.normal.y, this.normal.x);
+            if (Math.abs(rad) < 0.1) {
+                rad = 0;
+            } else if (rad > 0) {
+                if (Math.abs(rad - Radians.PI_12) < 0.1) {
+                    rad = Radians.PI_12;
+                } else if (Math.abs(rad - Radians.PI_6) < 0.1) {
+                    rad = Radians.PI_6;
+                } else if (Math.abs(rad - Radians.PI_4) < 0.1) {
+                    rad = Radians.PI_4;
+                } else if (Math.abs(rad - Radians.PI_3) < 0.1) {
+                    rad = Radians.PI_3;
+                } else if (Math.abs(rad - Radians.FIVE_PI_12) < 0.1) {
+                    rad = Radians.FIVE_PI_12;
+                } else if (Math.abs(rad - Radians.PI_2) < 0.1) {
+                    rad = Radians.PI_2;
+                } else if (Math.abs(rad - Radians.SEVEN_PI_12) < 0.1) {
+                    rad = Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.TWO_PI_3) < 0.1) {
+                    rad = Radians.TWO_PI_3;
+                } else if (Math.abs(rad - Radians.THREE_PI_4) < 0.1) {
+                    rad = Radians.THREE_PI_4;
+                } else if (Math.abs(rad - Radians.FIVE_PI_6) < 0.1) {
+                    rad = Radians.FIVE_PI_6;
+                } else if (Math.abs(rad - Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad - Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            } else {
+                if (Math.abs(rad + Radians.PI_12) < 0.1) {
+                    rad = -Radians.PI_12;
+                } else if (Math.abs(rad + Radians.PI_6) < 0.1) {
+                    rad = -Radians.PI_6;
+                } else if (Math.abs(rad + Radians.PI_4) < 0.1) {
+                    rad = -Radians.PI_4;
+                } else if (Math.abs(rad + Radians.PI_3) < 0.1) {
+                    rad = -Radians.PI_3;
+                } else if (Math.abs(rad + Radians.FIVE_PI_12) < 0.1) {
+                    rad = -Radians.FIVE_PI_12;
+                } else if (Math.abs(rad + Radians.PI_2) < 0.1) {
+                    rad = -Radians.PI_2;
+                } else if (Math.abs(rad + Radians.SEVEN_PI_12) < 0.1) {
+                    rad = -Radians.SEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.TWO_PI_3) < 0.1) {
+                    rad = -Radians.TWO_PI_3;
+                } else if (Math.abs(rad + Radians.THREE_PI_4) < 0.1) {
+                    rad = -Radians.THREE_PI_4;
+                } else if (Math.abs(rad + Radians.FIVE_PI_6) < 0.1) {
+                    rad = -Radians.FIVE_PI_6;
+                } else if (Math.abs(rad + Radians.ELEVEN_PI_12) < 0.1) {
+                    rad = -Radians.ELEVEN_PI_12;
+                } else if (Math.abs(rad + Radians.PI) < 0.1) {
+                    rad = Radians.PI;
+                }
+            }
+            this.normal = new Vec2(Math.cos(rad), Math.sin(rad));
+            break;
+        }
+        case ParallelTranslation.POINT_HP2: {
+            const len = Vec2.dot(this.normal, mouseState.position.sub(this.p));
             if (len < 0) return;
             this.planeDist = len;
             break;
