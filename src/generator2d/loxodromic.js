@@ -155,6 +155,75 @@ export default class Loxodromic extends Generator {
     }
 
     /**
+     * @param { SelectionState } selectionState
+     * @param { Vec2 } mouse
+     */
+    moveAlongAxis(selectionState, mouseState, keyState, mouse) {
+        switch (selectionState.componentId) {
+        case Loxodromic.C1_BODY: {
+            const np = this.c1.center.cloneDeeply();
+            if (keyState.isPressingShift) {
+                np.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                np.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            const npc2Len = this.c2.center.sub(np).length();
+            if (npc2Len > this.c2.r - this.c1.r) {
+                const mv = np.sub(this.c2.center).normalize();
+                this.c1.center = this.c2.center.add(mv.scale(this.c2.r - this.c1.r));
+                selectionState.setDiffObj(mouseState.position.sub(this.c1.center));
+                break;
+            }
+            this.c1.center = np;
+            break;
+        }
+        case Loxodromic.C1_CIRCUMFERENCE: {
+            const nr = Vec2.distance(this.c1.center, mouseState.position) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            if (this.c2.r - nr < max) {
+                this.c1.r = -max + this.c2.r;
+                break;
+            }
+            this.c1.r = nr;
+            break;
+        }
+        case Loxodromic.C2_BODY: {
+            const prevC2Center = this.c2.center.cloneDeeply();
+            if (keyState.isPressingShift) {
+                this.c2.center.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.c2.center.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            const diff = this.c2.center.sub(prevC2Center);
+            this.c1.center = this.c1.center.add(diff);
+            this.p = this.p.add(diff);
+            break;
+        }
+        case Loxodromic.C2_CIRCUMFERENCE: {
+            const nr = Vec2.distance(this.c2.center, mouseState.position) + selectionState.distToComponent;
+            const max = this.c2.center.sub(this.c1.center).length();
+            if (nr - this.c1.r < max) {
+                this.c2.r = max + this.c1.r;
+                this.c2.update();
+                break;
+            }
+            this.c2.r = nr;
+            break;
+        }
+        case Loxodromic.POINT: {
+            if (keyState.isPressingShift) {
+                this.p.x = mouseState.position.sub(selectionState.diffObj).x;
+            } else if (keyState.isPressingCtrl) {
+                this.p.y = mouseState.position.sub(selectionState.diffObj).y;
+            }
+            break;
+        }
+        }
+
+        this.update();
+    }
+
+    /**
      *
      * @param {Vec2} p
      */

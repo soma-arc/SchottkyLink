@@ -543,13 +543,14 @@ bool renderUI(vec2 pos, out vec3 color) {
             color = WHITE;
             return true;
         }
-        if(u_isPressingShift && abs(pos.y - u_circle{{ n }}.centerAndRadius.y) < u_circle{{ n }}.ui/4.) {
-            color = WHITE;
-            return true;
-        } else if(u_isPressingCtrl && abs(pos.x - u_circle{{ n }}.centerAndRadius.x) < u_circle{{ n }}.ui/4.) {
-            color = WHITE;
-            return true;
-        }
+        // Render the axis
+        // if(u_isPressingShift && abs(pos.y - u_circle{{ n }}.centerAndRadius.y) < u_circle{{ n }}.ui/4.) {
+        //     color = WHITE;
+        //     return true;
+        // } else if(u_isPressingCtrl && abs(pos.x - u_circle{{ n }}.centerAndRadius.x) < u_circle{{ n }}.ui/4.) {
+        //     color = WHITE;
+        //     return true;
+        // }
     }
     {% endfor %}
 

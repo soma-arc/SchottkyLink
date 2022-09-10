@@ -119,7 +119,7 @@ export default class TwoCircles extends Generator {
     moveAlongAxis(selectionState, mouseState, keyState, scene) {
         switch (selectionState.componentId) {
         case TwoCircles.C1_BODY: {
-            const np = this.c1.center;
+            const np = this.c1.center.cloneDeeply();
             if (keyState.isPressingShift) {
                 np.x = mouseState.position.sub(selectionState.diffObj).x;
             } else if (keyState.isPressingCtrl) {
