@@ -34,60 +34,60 @@ if download == true, save and download canvas image.
 - renderGenerator=boolean
 if renderGenerator == true, render generator (only render OrbitSeed and VideoOrbit.)
 
-- Circle[]=float,float,float
+- Circle[]=float,float,float  
 Add Circle to the scene (Center X, Center Y, Radius)
 
-- HalfPlane[]=float,float,float,float
+- HalfPlane[]=float,float,float,float  
 Add HalfPlane to the scene (Origin X, Origin Y, Normal X, Normal Y)
 
-- HalfPlane[]=float,float,float
+- HalfPlane[]=float,float,float  
 Add HalfPlane to the scene (Origin X, Origin Y, Normal Angle)
 
-- Rotation[]=float,float,float,float,float
+- Rotation[]=float,float,float,float,float  
 Add Rotation to the scene (Origin X, Origin Y, Direction X, Direction Y, Rotation Angle)
 
-- Rotation[]=float,float,float,float
+- Rotation[]=float,float,float,float  
 Add Rotation to the scene (Origin X, Origin Y, Boundary Angle, Rotation Angle)
 
-- CrossingInversions[]=float,float,float,float,float
+- CrossingInversions[]=float,float,float,float,float  
 Add CrossingInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Crossing Angle)
 
-- CrossingInversions[]=float,float,float,float
+- CrossingInversions[]=float,float,float,float  
 Add CrossingInversions to the scene (Origin X, Origin Y, Boundary Angle, Crossing Angle)
 
-- GlideReflection[]=float,float,float,float,float
+- GlideReflection[]=float,float,float,float,float  
 Add GlideReflection to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
 
-- GlideReflection[]=float,float,float,float
+- GlideReflection[]=float,float,float,float  
 Add GlideReflection to the scene (Origin X, Origin Y, Normal Angle, Distance)
 
-- ParallelInversions[]=float,float,float,float,float
+- ParallelInversions[]=float,float,float,float,float  
 Add ParallelInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
 
-- ParallelInversions[]=float,float,float,float
+- ParallelInversions[]=float,float,float,float  
 Add ParallelInversions to the scene (Origin X, Origin Y, Normal Angle, Distance)
 
-- ParallelTranslation[]=float,float,float,float,float
+- ParallelTranslation[]=float,float,float,float,float  
 Add ParallelTranslation to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
 
-- ParallelTranslation[]=float,float,float,float
+- ParallelTranslation[]=float,float,float,float  
 Add ParallelTranslation to the scene (Origin X, Origin Y, Normal Angle, Distance)
 
-- OrbitSeed[]=float,float,float
-Add OrbitSeed to the scene (Origin X, Origin Y, Width, Height)
+- OrbitSeed[]=float,float,float  
+Add OrbitSeed to the scene (Origin X, Origin Y, Width, Height)  
 OrbitSeed automatically keeps the aspect ratio of the texture.
 The Size parameter determines the width of the rendered OrbitSeed, and the height is computed by the width and the aspect ratio.
 
-- VideoOrbit[]=float,float,float,float
+- VideoOrbit[]=float,float,float,float  
 Add VideoOrbit to the scene (Origin X, Origin Y, Width, Height)
 
-- Scaling[]=float,float,float,float,float
+- Scaling[]=float,float,float,float,float  
 Add Scaling to the scene (Center X, Center Y, C1 Radius, C2 Radois, Rotation Angle)
 
-- TwoCircles[]=float,float,float,float,float,float
+- TwoCircles[]=float,float,float,float,float,float  
 Add TwoCircles to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 Center X, C2 Center Y, C2 Radius)
 
-- Loxodromic[]=float,float,float,float,float,float,float,float
+- Loxodromic[]=float,float,float,float,float,float,float,float  
 Add Loxodromic to the scene (C1 Center X, C1 Center Y, C1 Radius, C2 Center X, C2 Center Y, C2 Radius, Point X, Point Y)
 
 ##### Examples
