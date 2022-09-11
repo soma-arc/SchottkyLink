@@ -51,6 +51,20 @@ export default class TextureManager {
         }
     }
 
+    async loadTextureFromQueryString(parsedObject, gl) {
+        if(parsedObject['Texture'] === undefined) return;
+        for(const textureParam of parsedObject['Texture']) {
+            const commaIndex = textureParam.indexOf(',');
+            const name = textureParam.substring(0, commaIndex);
+            const base64 = decodeURIComponent(textureParam.substring(commaIndex + 1));
+            const type = 'data:image/png;base64,';
+            const tex = new Texture(name, base64);
+            await tex.load(gl);
+            this.textures.push(tex);
+            console.log(this.textures);
+        }
+    }
+
     static get MAX_TEXTURES() {
         return 10;
     }

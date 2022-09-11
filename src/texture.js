@@ -17,11 +17,11 @@ export default class Texture {
     load(gl) {
         const p = new Promise((resolve, reject) => {
             this.img.addEventListener('load', () => {
-                resolve();
                 this.isLoaded = true;
                 this.width = this.img.width;
                 this.height = this.img.height;
                 this.textureObj = CreateRGBATextures(gl, 1, 1, 1)[0];
+                resolve();
             });
         });
         this.img.src = this.imgUrl;

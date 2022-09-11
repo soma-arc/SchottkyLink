@@ -38,6 +38,7 @@ window.addEventListener('load', () => {
         const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
         scene2d.loadFromQueryString(parsed);
         canvasManager.canvas2d.loadParameterFromQueryString(parsed);
+        canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
         canvasManager.canvas2d.compileRenderShader();
         if (scene2d.objects['VideoOrbit'] !== undefined &&
             canvasManager.videoManager.streaming === false) {

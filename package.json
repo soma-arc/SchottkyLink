@@ -7,8 +7,8 @@
   "author": "soma_arc",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@babel/core": "^7.17.10",
-    "@babel/preset-env": "^7.17.10",
+    "@babel/core": "^7.19.0",
+    "@babel/preset-env": "^7.19.0",
     "@vue/compiler-sfc": "^3.2.33",
     "babel-loader": "^8.2.5",
     "buefy": "^0.9.20",
