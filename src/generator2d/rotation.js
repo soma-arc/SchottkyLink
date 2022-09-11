@@ -333,7 +333,7 @@ export default class Rotation extends Generator {
     }
 
     exportAsQueryString() {
-        return `Rotation[]=${this.p.x},${this.p.y},${this.boundaryDir.x},${this.boundaryDir.y},${this.degrees}`;
+        return `Rotation[]=${this.p.x},${this.p.y},${this.boundaryDir1.x},${this.boundaryDir1.y},${this.degrees}`;
     }
 
     exportJson() {

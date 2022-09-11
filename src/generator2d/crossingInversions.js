@@ -367,7 +367,7 @@ export default class CrossingInversions extends Generator {
     }
 
     exportAsQueryString() {
-        return `CrossingInversions[]=${this.p.x},${this.p.y},${this.boundaryDir.x},${this.boundaryDir.y},${this.degrees}`;
+        return `CrossingInversions[]=${this.p.x},${this.p.y},${this.boundaryDir1.x},${this.boundaryDir1.y},${this.degrees}`;
     }
 
     static get BODY() {
