@@ -81,6 +81,22 @@ export default class Canvas {
         a.click();
     }
 
+    getCanvasDataURL(gl, width, height) {
+        const data = new Uint8Array(width * height * 4);
+        const type = gl.UNSIGNED_BYTE;
+        gl.readPixels(0, 0, width, height, gl.RGBA, type, data);
+
+        const saveCanvas = document.createElement('canvas');
+        saveCanvas.width = width;
+        saveCanvas.height = height;
+        const context = saveCanvas.getContext('2d');
+
+        const imageData = context.createImageData(width, height);
+        imageData.data.set(data);
+        context.putImageData(imageData, 0, 0);
+        return saveCanvas.toDataURL();
+    }
+
     static get MOUSE_BUTTON_LEFT() {
         return 0;
     }

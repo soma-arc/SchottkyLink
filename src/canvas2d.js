@@ -384,6 +384,32 @@ export default class Canvas2d extends Canvas {
                        'schottky.png');
     }
 
+    renderAndGetCanvasURL() {
+        this.productRenderResolution.x = this.canvas.width;
+        this.productRenderResolution.y = this.canvas.height;
+
+        this.initProductRenderTextures();
+        this.renderToTexture(this.productRenderTextures,
+                             this.productRenderResolution.x,
+                             this.productRenderResolution.y);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.productRenderFrameBuffer);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D,
+                                     this.productRenderResultTexture, 0);
+        this.gl.viewport(0, 0, this.productRenderResolution.x, this.productRenderResolution.y);
+        this.gl.useProgram(this.productRenderProgram);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.productRenderTextures[0]);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+        this.gl.vertexAttribPointer(this.productRenderVAttrib, 2,
+                                    this.gl.FLOAT, false, 0, 0);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        this.gl.flush();
+
+        return this.getCanvasDataURL(this.gl,
+                                     this.productRenderResolution.x,
+                                     this.productRenderResolution.y);
+    }
+
     render() {
         this.renderToTexture(this.renderTextures, this.canvas.width, this.canvas.height);
         this.renderTexturesToCanvas(this.renderTextures);
