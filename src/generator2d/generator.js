@@ -143,4 +143,8 @@ export default class Generator {
     get name() {
         return 'generator';
     }
+
+    get digits() {
+        return 4;
+    }
 }

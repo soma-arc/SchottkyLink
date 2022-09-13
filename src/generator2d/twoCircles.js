@@ -198,7 +198,7 @@ export default class TwoCircles extends Generator {
     }
 
     exportAsQueryString() {
-        return `TwoCircles[]=${this.c1.center.x},${this.c1.center.y},${this.c1.r},${this.c2.center.x},${this.c2.center.y},${this.c2.center.r}`;
+        return `TwoCircles[]=${this.c1.center.x.toFixed(this.digits)},${this.c1.center.y.toFixed(this.digits)},${this.c1.r.toFixed(this.digits)},${this.c2.center.x.toFixed(this.digits)},${this.c2.center.y.toFixed(this.digits)},${this.c2.center.r.toFixed(this.digits)}`;
     }
 
     exportJson() {

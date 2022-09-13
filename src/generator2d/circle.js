@@ -224,7 +224,7 @@ export default class Circle extends Generator {
     }
 
     exportAsQueryString() {
-        return `Circle[]=${this.center.x},${this.center.y},${this.r}`;
+        return `Circle[]=${this.center.x.toFixed(this.digits)},${this.center.y.toFixed(this.digits)},${this.r.toFixed(this.digits)}`;
     }
 
     exportJson() {

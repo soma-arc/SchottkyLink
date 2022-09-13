@@ -273,7 +273,7 @@ export default class Loxodromic extends Generator {
     }
 
     exportAsQueryString() {
-        return `Loxodromic[]=${this.c1.center.x},${this.c1.center.y},${this.c1.r},${this.c2.center.x},${this.c2.center.y},${this.c2.center.r},${this.p.x},${this.p.y}`;
+        return `Loxodromic[]=${this.c1.center.x.toFixed(this.digits)},${this.c1.center.y.toFixed(this.digits)},${this.c1.r.toFixed(this.digits)},${this.c2.center.x.toFixed(this.digits)},${this.c2.center.y.toFixed(this.digits)},${this.c2.center.r.toFixed(this.digits)},${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)}`;
     }
 
     exportJson() {

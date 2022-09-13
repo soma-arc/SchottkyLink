@@ -250,7 +250,7 @@ export default class HalfPlane extends Generator {
     }
 
     exportAsQueryString() {
-        return `HalfPlane[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y}`;
+        return `HalfPlane[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.normal.x.toFixed(this.digits)},${this.normal.y.toFixed(this.digits)}`;
     }
 
     exportJson() {

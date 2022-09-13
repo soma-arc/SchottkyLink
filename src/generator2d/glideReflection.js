@@ -294,7 +294,7 @@ export default class GlideReflection extends Generator {
     }
 
     exportAsQueryString() {
-        return `GlideReflection[]=${this.p.x},${this.p.y},${this.normal.x},${this.normal.y},${this.planeDist}`;
+        return `GlideReflection[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.normal.x.toFixed(this.digits)},${this.normal.y.toFixed(this.digits)},${this.planeDist.toFixed(this.digits)}`;
     }
 
     exportJson() {

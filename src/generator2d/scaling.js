@@ -298,7 +298,7 @@ export default class Scaling extends Generator {
     }
 
     exportAsQueryString() {
-        return `Scaling[]=${this.center.x},${this.center.y},${this.c1.r},${this.c2.r},${this.rotationAngleDeg}`;
+        return `Scaling[]=${this.center.x.toFixed(this.digits)},${this.center.y.toFixed(this.digits)},${this.c1.r.toFixed(this.digits)},${this.c2.r.toFixed(this.digits)},${this.rotationAngleDeg.toFixed(this.digits)}`;
     }
 
     exportJson() {
