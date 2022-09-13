@@ -50,7 +50,7 @@
   </div>
   <div class="inputContainer">
     <b-button type="is-primary" @click="saveSceneAsURL">
-      Save URL
+      Copy URL
     </b-button>
   </div>
   <div class="inputContainer">
