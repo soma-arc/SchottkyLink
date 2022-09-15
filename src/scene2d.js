@@ -64,6 +64,7 @@ export default class Scene2d extends Scene {
         this.copiedGenerator = undefined;
 
         this.isRenderingGenerator = true;
+        this.queryParameter = undefined;
     }
 
     addSceneUpdateListener(listener) {
@@ -353,6 +354,9 @@ export default class Scene2d extends Scene {
     }
 
     loadFromQueryString(parsedObject) {
+        if(this.queryParameter === undefined) {
+            this.queryParameter = parsedObject;
+        }
         this.objects = {};
         const objKeyNames = Object.keys(parsedObject);
         const generators = Object.keys(STR_CLASS_MAP);
@@ -370,6 +374,10 @@ export default class Scene2d extends Scene {
         if (parsedObject['renderGenerator'] !== undefined) {
             this.isRenderingGenerator = parsedObject['renderGenerator'] === 'true';
         }
+    }
+
+    reloadParameter() {
+        this.loadFromQueryString(this.queryParameter);
     }
 
     load(sceneObjects) {

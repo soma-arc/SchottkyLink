@@ -43,6 +43,8 @@ export default class Canvas2d extends Canvas {
         this.draggingOrbitOrigin = false;
 
         this.isRenderingOrbitOrigin = false;
+
+        this.queryParameter = undefined;
     }
 
     init() {
@@ -423,6 +425,9 @@ export default class Canvas2d extends Canvas {
     }
 
     loadParameterFromQueryString(parsedQuery) {
+        if(this.queryParameter === undefined) {
+            this.queryParameter = parsedQuery;
+        }
         if (parsedQuery['scale'] !== undefined) {
             this.scale = Math.max(0, parseFloat(parsedQuery['scale']));
         }
@@ -432,6 +437,13 @@ export default class Canvas2d extends Canvas {
         if (parsedQuery['translateY'] !== undefined) {
             this.translate.y = parseFloat(parsedQuery['translateY']);
         }
+        if (parsedQuery['maxIterations'] !== undefined) {
+            this.maxIterations = Math.min(100, Math.max(0, parseInt(parsedQuery['maxIterations'])));
+        }
+    }
+
+    reloadParameter() {
+        this.loadParameterFromQueryString(this.queryParameter);
     }
 
     exportAsQueryString() {

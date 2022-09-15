@@ -60,6 +60,11 @@
       Clear
     </b-button>
   </div>
+    <div class="inputContainer">
+    <b-button type="is-primary" @click="resetGenerators">
+      Reset
+    </b-button>
+  </div>
   <div class="inputContainer">
     <b-button type="is-primary" @click="saveSceneAsURL">
       Copy URL
@@ -138,6 +143,12 @@ export default {
             }).catch(err => {
                 console.log('Something went wrong', err);
             });
+        },
+        resetGenerators: function() {
+            this.canvasManager.canvas2d.reloadParameter();
+            this.scene2d.reloadParameter();
+            this.canvasManager.canvas2d.compileRenderShader();
+            this.canvasManager.canvas2d.render();
         },
         toggleRenderGenerator: function() {
             if(this.scene2d.selectedObj !== undefined &&
