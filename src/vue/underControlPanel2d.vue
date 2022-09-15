@@ -109,7 +109,7 @@ export default {
         tweet: function(event) {
             const UPLOAD_URL = 'https://script.google.com/a/tessellation.jp/macros/s/AKfycbxvOHV4YIuHy8mzDx0cCNnxG_g24I1WaL11aV-0nEAgkO_WDjGS2iN5nf_HWl3DxxNOHQ/exec';
             const formData = new FormData();
-            const canvasDataURL = this.canvasManager.canvas2d.renderAndGetCanvasURL();
+            const canvasDataURL = this.canvasManager.canvas2d.renderAndGetCanvasURL(600);
             formData.append('filename', (new Date()).getTime()+'.png');
             formData.append('type', 'image/png');
             formData.append('content', canvasDataURL.replace(/^data:image\/png;base64,/,''));

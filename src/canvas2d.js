@@ -253,16 +253,16 @@ export default class Canvas2d extends Canvas {
 
     initRenderTextures() {
         this.renderTextures = CreateRGBATextures(this.gl, this.canvas.width,
-                                                this.canvas.height, 2);
+                                                 this.canvas.height, 2);
     }
 
     initProductRenderTextures() {
         this.productRenderTextures = CreateRGBATextures(this.gl,
-                                                       this.productRenderResolution.x,
-                                                       this.productRenderResolution.y, 2);
+                                                        this.productRenderResolution.x,
+                                                        this.productRenderResolution.y, 2);
         this.productRenderResultTexture = CreateRGBATextures(this.gl,
-                                                            this.productRenderResolution.x,
-                                                            this.productRenderResolution.y, 1)[0];
+                                                             this.productRenderResolution.x,
+                                                             this.productRenderResolution.y, 1)[0];
     }
 
     getRenderUniformLocations() {
@@ -367,6 +367,7 @@ export default class Canvas2d extends Canvas {
         this.renderToTexture(this.productRenderTextures,
                              this.productRenderResolution.x,
                              this.productRenderResolution.y);
+
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.productRenderFrameBuffer);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D,
                                      this.productRenderResultTexture, 0);
@@ -386,26 +387,39 @@ export default class Canvas2d extends Canvas {
                        'schottky.png');
     }
 
-    renderAndGetCanvasURL() {
-        this.productRenderResolution.x = this.canvas.width;
-        this.productRenderResolution.y = this.canvas.height;
+    renderFlippedTex(textures, width, height) {
+        this.gl.viewport(0, 0, width, height);
+        this.gl.useProgram(this.productRenderProgram);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, textures[0]);
+        const tex = this.gl.getUniformLocation(this.productRenderProgram, 'u_texture');
+        this.gl.uniform1i(tex, textures[0]);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+        this.gl.vertexAttribPointer(this.renderVAttrib, 2,
+                                    this.gl.FLOAT, false, 0, 0);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        this.gl.flush();
+    }
+
+    renderAndGetCanvasURL(width) {
+        const ratio = this.canvas.height / this.canvas.width;
+        this.productRenderResolution.x = width;
+        this.productRenderResolution.y = parseInt(ratio * width);
+
+        console.log(this.productRenderResolution);
+        console.log(width);
 
         this.initProductRenderTextures();
         this.renderToTexture(this.productRenderTextures,
                              this.productRenderResolution.x,
                              this.productRenderResolution.y);
+
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.productRenderFrameBuffer);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D,
                                      this.productRenderResultTexture, 0);
-        this.gl.viewport(0, 0, this.productRenderResolution.x, this.productRenderResolution.y);
-        this.gl.useProgram(this.productRenderProgram);
-        this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.productRenderTextures[0]);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-        this.gl.vertexAttribPointer(this.productRenderVAttrib, 2,
-                                    this.gl.FLOAT, false, 0, 0);
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-        this.gl.flush();
+        this.renderFlippedTex(this.productRenderTextures,
+                              this.productRenderResolution.x,
+                              this.productRenderResolution.y);
 
         return this.getCanvasDataURL(this.gl,
                                      this.productRenderResolution.x,
