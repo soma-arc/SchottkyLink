@@ -433,4 +433,13 @@ export default class Canvas2d extends Canvas {
             this.translate.y = parseFloat(parsedQuery['translateY']);
         }
     }
+
+    exportAsQueryString() {
+        let queryString = location.protocol +'//'+ location.hostname + location.pathname +'?';
+        queryString += `scale=${this.scale.toFixed(4)}&`;
+        queryString += `translateX=${this.translate.x.toFixed(4)}&`;
+        queryString += `translateY=${this.translate.y.toFixed(4)}&`;
+        queryString += this.scene.exportAsQueryString();
+        return queryString;
+    }
 }

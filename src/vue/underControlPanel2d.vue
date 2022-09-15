@@ -119,9 +119,13 @@ export default {
             this.scene2d.removeAllGenerators();
         },
         saveSceneAsURL: function() {
-            this.scene2d.copyToClipboard();
-            Toast.open({message: 'URL of the scene is copied to clipboard.',
-                        position: 'is-bottom'});
+            navigator.clipboard.writeText(this.canvasManager.canvas2d.exportAsQueryString()).then(() => {
+                console.log('Text copied to clipboard...');
+                Toast.open({message: 'URL of the scene is copied to clipboard.',
+                            position: 'is-bottom'})
+            }).catch(err => {
+                console.log('Something went wrong', err);
+            });
         },
         toggleRenderGenerator: function() {
             if(this.scene2d.selectedObj !== undefined &&

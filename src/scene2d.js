@@ -414,7 +414,9 @@ export default class Scene2d extends Scene {
     }
 
     exportAsQueryString() {
-        let queryString = '?';
+        let queryString = '';
+        queryString += `renderGenerator=${this.isRenderingGenerator}&`;
+
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
             if (this.objects[objName] === undefined) continue;
@@ -424,18 +426,6 @@ export default class Scene2d extends Scene {
         }
 
         return queryString.substring(0, queryString.length - 1);
-    }
-
-    getSceneURL() {
-        return location.protocol +'//'+ location.hostname + location.pathname + this.exportAsQueryString();
-    }
-
-    copyToClipboard() {
-        navigator.clipboard.writeText(this.getSceneURL()).then(() => {
-            console.log('Text copied to clipboard...');
-        }).catch(err => {
-            console.log('Something went wrong', err);
-        });
     }
 
     exportJson() {
