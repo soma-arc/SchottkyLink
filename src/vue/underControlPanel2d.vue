@@ -33,6 +33,18 @@
       step="0.01">
     </b-input>
   </div>
+  <span class="parameterLabel">Max Iterations</span>
+  <div class="inputContainer">
+    <b-input
+      v-model.number="canvasManager.canvas2d.maxIterations"
+      style="width:70px;"
+      @input="valueChanged"
+      placeholder="Number"
+      type="number"
+      step="1"
+      min="0">
+    </b-input>
+  </div>
   <div class="inputContainer">
     <b-button type="is-primary" @click="tweet">
       Tweet

@@ -424,7 +424,7 @@ export default class Canvas2d extends Canvas {
 
     loadParameterFromQueryString(parsedQuery) {
         if (parsedQuery['scale'] !== undefined) {
-            this.scale = parseFloat(parsedQuery['scale']);
+            this.scale = Math.max(0, parseFloat(parsedQuery['scale']));
         }
         if (parsedQuery['translateX'] !== undefined) {
             this.translate.x = parseFloat(parsedQuery['translateX']);
@@ -439,6 +439,7 @@ export default class Canvas2d extends Canvas {
         queryString += `scale=${this.scale.toFixed(4)}&`;
         queryString += `translateX=${this.translate.x.toFixed(4)}&`;
         queryString += `translateY=${this.translate.y.toFixed(4)}&`;
+        queryString += `maxIterations=${this.maxIterations}&`;
         queryString += this.scene.exportAsQueryString();
         return queryString;
     }
