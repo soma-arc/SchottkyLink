@@ -273,9 +273,7 @@ export default class HalfPlane extends Generator {
     }
 
     static loadFromArray(array) {
-        if(array.length === 4) {
-            return HalfPlane.createFromNormal(array);
-        } else if(array.length === 3) {
+        if(array.length === 3) {
             return HalfPlane.createFromAngleDegree(array);
         }
         return undefined;

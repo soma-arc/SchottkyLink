@@ -344,9 +344,7 @@ export default class CrossingInversions extends Generator {
     }
 
     static loadFromArray(array) {
-        if(array.length === 5) {
-            return CrossingInversions.createFromNormal(array);
-        } else if(array.length === 4) {
+        if(array.length === 4) {
             return CrossingInversions.createFromAngleDegree(array);
         }
         return undefined;

@@ -360,9 +360,7 @@ export default class Rotation extends Generator {
     }
 
     static loadFromArray(array) {
-        if(array.length === 5) {
-            return Rotation.createFromNormal(array);
-        } else if(array.length === 4) {
+        if(array.length === 4) {
             return Rotation.createFromAngleDegree(array);
         }
         return undefined;

@@ -313,9 +313,7 @@ export default class ParallelTranslation extends Generator {
     }
 
     static loadFromArray(array) {
-        if(array.length === 5) {
-            return ParallelTranslation.createFromNormal(array);
-        } else if(array.length === 4) {
+        if(array.length === 4) {
             return ParallelTranslation.createFromAngleDegree(array);
         }
         return undefined;

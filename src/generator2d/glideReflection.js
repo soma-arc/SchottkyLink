@@ -321,9 +321,7 @@ export default class GlideReflection extends Generator {
     }
 
     static loadFromArray(array) {
-        if(array.length === 5) {
-            return GlideReflection.createFromNormal(array);
-        } else if(array.length === 4) {
+        if(array.length === 4) {
             return GlideReflection.createFromAngleDegree(array);
         }
         return undefined;

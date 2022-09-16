@@ -28,6 +28,9 @@ Set translate x.
 - translateY=float
 Set tramslate y.
 
+- maxIterations=Integer
+Set max iterations of inversions. [0, 100]
+
 - download=boolean
 if download == true, save and download canvas image.
 
@@ -37,38 +40,20 @@ if renderGenerator == true, render generator (only render OrbitSeed and VideoOrb
 - Circle[]=float,float,float  
 Add Circle to the scene (Center X, Center Y, Radius)
 
-- HalfPlane[]=float,float,float,float  
-Add HalfPlane to the scene (Origin X, Origin Y, Normal X, Normal Y)
-
 - HalfPlane[]=float,float,float  
 Add HalfPlane to the scene (Origin X, Origin Y, Normal Angle)
-
-- Rotation[]=float,float,float,float,float  
-Add Rotation to the scene (Origin X, Origin Y, Direction X, Direction Y, Rotation Angle)
 
 - Rotation[]=float,float,float,float  
 Add Rotation to the scene (Origin X, Origin Y, Boundary Angle, Rotation Angle)
 
-- CrossingInversions[]=float,float,float,float,float  
-Add CrossingInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Crossing Angle)
-
 - CrossingInversions[]=float,float,float,float  
 Add CrossingInversions to the scene (Origin X, Origin Y, Boundary Angle, Crossing Angle)
-
-- GlideReflection[]=float,float,float,float,float  
-Add GlideReflection to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
 
 - GlideReflection[]=float,float,float,float  
 Add GlideReflection to the scene (Origin X, Origin Y, Normal Angle, Distance)
 
-- ParallelInversions[]=float,float,float,float,float  
-Add ParallelInversions to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
-
 - ParallelInversions[]=float,float,float,float  
 Add ParallelInversions to the scene (Origin X, Origin Y, Normal Angle, Distance)
-
-- ParallelTranslation[]=float,float,float,float,float  
-Add ParallelTranslation to the scene (Origin X, Origin Y, Direction X, Direction Y, Distance)
 
 - ParallelTranslation[]=float,float,float,float  
 Add ParallelTranslation to the scene (Origin X, Origin Y, Normal Angle, Distance)
