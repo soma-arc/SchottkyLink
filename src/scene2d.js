@@ -50,7 +50,7 @@ for (const k of PRESETS_CONTEXT.keys()) {
 }
 
 export default class Scene2d extends Scene {
-    constructor() {
+    constructor(textureManager, videoManager) {
         super();
         this.objects = {};
         this.presets = PRESETS;
@@ -65,6 +65,9 @@ export default class Scene2d extends Scene {
 
         this.isRenderingGenerator = true;
         this.queryParameter = undefined;
+
+        this.textureManager = textureManager;
+        this.videoManager = videoManager;
     }
 
     addSceneUpdateListener(listener) {
@@ -373,6 +376,14 @@ export default class Scene2d extends Scene {
 
         if (parsedObject['renderGenerator'] !== undefined) {
             this.isRenderingGenerator = parsedObject['renderGenerator'] === 'true';
+        }
+    }
+
+    // OrbitSeedにテクスチャ解像度を通知する
+    updateOrbitSeed() {
+        if(this.objects['OrbitSeed'] === undefined) return;
+        for(const orbitSeed of this.objects['OrbitSeed']) {
+            orbitSeed.updateTextureSize(this.textureManager.textures);
         }
     }
 

@@ -32,6 +32,11 @@
       type="number"
       step="0.01">
     </b-input>
+    <b-checkbox
+      v-model="orbitSeed.keepAspect"
+      @input="chengeKeepAspectCheck">
+       Keep Aspect Ratio
+     </b-checkbox><br>
     Texture
     <select size="3" v-model="orbitSeed.textureIndex" id="texturePanel"
              @change="updateSelection" >
@@ -81,7 +86,13 @@ export default {
             this.scene.reRender();
         },
         changeHeight: function(){
-            this.orbitSeed.renderWidth = this.orbitSeed.size.y / this.orbitSeed.aspect;
+            if(this.orbitSeed.keepAspect) {
+                this.orbitSeed.renderWidth = this.orbitSeed.size.y / this.orbitSeed.aspect;
+            }
+            this.orbitSeed.update();
+            this.scene.reRender();
+        },
+        chengeKeepAspectCheck: function() {
             this.orbitSeed.update();
             this.scene.reRender();
         }

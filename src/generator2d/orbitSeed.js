@@ -18,13 +18,23 @@ export default class OrbitSeed extends Generator {
      */
     constructor(cornerX, cornerY, width, height) {
         super();
+        if(Number.isNaN(width)) {
+            // OrbitSeed[]=float,float,,float
+            this.keepAspect = true;
+            this.keepAspectFromHeight = true;
+        } else if(Number.isNaN(height)) {
+            // OrbitSeed[]=float,float,float,
+            this.keepAspect = true;
+            this.renderWidth = width;
+        } else {
+            this.keepAspect = false;
+        }
         this.corner = new Vec2(cornerX, cornerY);
+        this.size = new Vec2(width, height);
         this.aspect = height / width;
         this.renderWidth = width;
         this.cornerSelectionWidth = 0.01;
         this.textureIndex = 0;
-
-        this.update();
     }
 
     getPosition() {
@@ -32,7 +42,19 @@ export default class OrbitSeed extends Generator {
     }
 
     update() {
-        this.size = new Vec2(this.renderWidth, this.aspect * this.renderWidth);
+        if (this.keepAspect) {
+            this.size = new Vec2(this.renderWidth, this.aspect * this.renderWidth);
+        }
+    }
+
+    updateTextureSize(textures) {
+        const textureWidth = textures[this.textureIndex].width;
+        const textureHeight = textures[this.textureIndex].height;
+        this.aspect = textureHeight / textureWidth;
+        if(this.keepAspect && this.keepAspectFromHeight) {
+            this.renderWidth = this.size.y / this.aspect;
+        }
+        this.update();
     }
 
     setUniformValues(gl, uniLocation, uniIndex, sceneScale) {
@@ -125,12 +147,15 @@ export default class OrbitSeed extends Generator {
         case OrbitSeed.CORNER_LEFT_BELOW: {
             const nc = mouse.sub(selectionState.diffObj);
             const sizeDiff = this.corner.sub(nc);
-            this.renderWidth = this.size.x + sizeDiff.x;
-            this.corner.x = this.corner.x - sizeDiff.x;
-            this.update();
-            //const d = Math.max(sizeDiff.x, sizeDiff.y);
-            //this.corner = this.corner.sub(new Vec2(d, d));
-            //this.size = this.size.add(new Vec2(d, d));
+            if(this.keepAspect) {
+                this.renderWidth = this.size.x + sizeDiff.x;
+                this.corner.x = this.corner.x - sizeDiff.x;
+                this.update();
+            } else {
+                this.size = this.size.add(sizeDiff);
+                this.renderWidth = this.size.x;
+                this.corner = this.corner.sub(sizeDiff);
+            }
             break;
         }
         case OrbitSeed.CORNER_LEFT_ABOVE: {
@@ -142,10 +167,16 @@ export default class OrbitSeed extends Generator {
         case OrbitSeed.CORNER_RIGHT_ABOVE: {
             const nc = mouse.sub(selectionState.diffObj);
             const sizeDiff = nc.sub(this.corner.add(this.size));
-            this.renderWidth = this.size.x + sizeDiff.x;
-            this.update();
-            //const d = Math.max(sizeDiff.x, sizeDiff.y);
-            //this.size = this.size.add(new Vec2(d, d));
+            if(this.keepAspect) {
+                this.renderWidth = this.size.x + sizeDiff.x;
+                this.update();
+            } else {
+                const newSize = this.size.add(sizeDiff);
+                if(newSize.x > 0 && newSize.y > 0) {
+                    this.renderWidth = newSize.x;
+                    this.size = newSize;
+                }
+            }
             break;
         }
         }
@@ -164,12 +195,15 @@ export default class OrbitSeed extends Generator {
         case OrbitSeed.CORNER_LEFT_BELOW: {
             const nc = mouseState.position.sub(selectionState.diffObj);
             const sizeDiff = this.corner.sub(nc);
-            this.renderWidth = this.size.x + sizeDiff.x;
-            this.corner.x = this.corner.x - sizeDiff.x;
-            this.update();
-            //const d = Math.max(sizeDiff.x, sizeDiff.y);
-            //this.corner = this.corner.sub(new Vec2(d, d));
-            //this.size = this.size.add(new Vec2(d, d));
+            if(this.keepAspect) {
+                this.renderWidth = this.size.x + sizeDiff.x;
+                this.corner.x = this.corner.x - sizeDiff.x;
+                this.update();
+            } else {
+                this.size = this.size.add(sizeDiff);
+                this.renderWidth = this.size.x;
+                this.corner = this.corner.sub(sizeDiff);
+            }
             break;
         }
         case OrbitSeed.CORNER_LEFT_ABOVE: {
@@ -181,10 +215,16 @@ export default class OrbitSeed extends Generator {
         case OrbitSeed.CORNER_RIGHT_ABOVE: {
             const nc = mouseState.position.sub(selectionState.diffObj);
             const sizeDiff = nc.sub(this.corner.add(this.size));
-            this.renderWidth = this.size.x + sizeDiff.x;
-            this.update();
-            //const d = Math.max(sizeDiff.x, sizeDiff.y);
-            //this.size = this.size.add(new Vec2(d, d));
+            if(this.keepAspect) {
+                this.renderWidth = this.size.x + sizeDiff.x;
+                this.update();
+            } else {
+                const newSize = this.size.add(sizeDiff);
+                if(newSize.x > 0 && newSize.y > 0) {
+                    this.renderWidth = newSize.x;
+                    this.size = newSize;
+                }
+            }
             break;
         }
         }

@@ -8,11 +8,11 @@ export default class CanvasManager {
      * @param {Scene} scene2d
      * @param {Scene} scene3d
      */
-    constructor(scene2d, scene3d) {
+    constructor(scene2d, scene3d, textureManager, videoManager) {
         this.scene2d = scene2d;
         this.scene3d = scene3d;
-        this.videoManager = new VideoManager();
-        this.textureManager = new TextureManager();
+        this.textureManager = textureManager;
+        this.videoManager = videoManager;
         this.resizeCallback = this.resize.bind(this);
 
         this.canvas2d = new Canvas2d('canvas2d', this.scene2d, this.videoManager, this.textureManager);
