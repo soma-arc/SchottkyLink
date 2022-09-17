@@ -26,8 +26,12 @@ export default class VideoOrbit extends OrbitSeed {
     }
 
     static loadFromArray(array) {
-        return new VideoOrbit(array[0], array[1], // cornerX, cornerY
-                              array[2], array[3]);// width, height
+        const gen = new VideoOrbit(array[0], array[1], // cornerX, cornerY
+                                   array[2], array[3]);// width, height
+        if(array.length === 5 && array[4] === 1) {
+            gen.isFixed = true;
+        }
+        return gen;
     }
 
     get name() {

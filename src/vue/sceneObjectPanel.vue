@@ -16,6 +16,12 @@
       </b-button>
     </div>
 
+    <b-checkbox
+      v-if="scene.selectedObj !== undefined"
+      v-model="scene.selectedObj.isFixed">
+      Fix
+    </b-checkbox><br>
+
     <circle-controller v-if="selectedObjName === 'Circle'"
                        :circle="scene.selectedObj"
                        :scene="scene"/>

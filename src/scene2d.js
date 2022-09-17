@@ -252,6 +252,7 @@ export default class Scene2d extends Scene {
 
     move (mouse) {
         if (this.selectedState.isSelectingObj()) {
+            if(this.selectedState.selectedObj.isFixed) return false;
             this.selectedState.selectedObj.move(this.selectedState, mouse, this);
             return true;
         }

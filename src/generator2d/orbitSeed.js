@@ -231,8 +231,12 @@ export default class OrbitSeed extends Generator {
     }
 
     static loadFromArray(array) {
-        return new OrbitSeed(array[0], array[1], // cornerX, cornerY
+        const gen = new OrbitSeed(array[0], array[1], // cornerX, cornerY
                              array[2], array[3]);// width, height
+        if(array.length === 5 && array[4] === 1) {
+            gen.isFixed = true;
+        }
+        return gen;
     }
 
     exportAsQueryString() {
