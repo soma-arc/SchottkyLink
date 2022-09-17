@@ -45,6 +45,12 @@ window.addEventListener('load', () => {
         if(parsed['displayMode'] !== undefined) {
             const displayMode = parsed['displayMode'];
             canvasManager.displayMode = displayMode;
+            if(displayMode === 'iframe') {
+                const newWindow = open('/', '', 'width=0,height=0');
+                newWindow.addEventListener('load', () => {
+                    newWindow.close();
+                });
+            }
         }
         scene2d.loadFromQueryString(parsed);
         scene2d.updateOrbitSeed();
