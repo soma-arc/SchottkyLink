@@ -7,9 +7,15 @@
         </option>
       </template>
     </select>
-    <b-button type="is-primary" @click="deleteSelectedObj">
-      Remove
-    </b-button>
+    <div id="removeDeselectPanel">
+      <b-button class="buttob" type="is-primary" @click="deleteSelectedObj">
+        Remove
+      </b-button>
+      <b-button class="buttob" type="is-primary" @click="deselectObj">
+        Deselect
+      </b-button>
+    </div>
+
     <circle-controller v-if="selectedObjName === 'Circle'"
                        :circle="scene.selectedObj"
                        :scene="scene"/>
@@ -104,6 +110,11 @@ export default {
             this.scene.addCommand(new RemoveGeneratorCommand(this.scene, this.scene.selectedObj,
                                                              index));
             this.scene.selectedObj = undefined;
+        },
+        deselectObj: function() {
+            this.scene.selectedObj.selected = false;
+            this.scene.selectedObj = undefined;
+            this.canvas2d.render();
         }
     }
 }
@@ -125,4 +136,9 @@ export default {
 #deleteButton {
     margin: 5px;
 }
+
+#removeDeselectPanel {
+    margin: 10px;
+}
+
 </style>
