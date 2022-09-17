@@ -116,7 +116,14 @@ export default class Scene2d extends Scene {
 
     select (mouse, sceneScale) {
         if (this.selectedObj !== undefined) {
-            this.selectedObj.selected = false;
+            const state = this.selectedObj.select(mouse, sceneScale);
+            if (state.isSelectingObj()) {
+                this.selectedState = state;
+                this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
+                return true;
+            } else {
+                this.selectedObj.selected = false;
+            }
         }
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
