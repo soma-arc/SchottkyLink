@@ -16,6 +16,7 @@ export default class CanvasManager {
         this.resizeCallback = this.resize.bind(this);
 
         this.canvas2d = new Canvas2d('canvas2d', this.scene2d, this.videoManager, this.textureManager);
+        this.displayMode = 'default';
     }
 
     init(app) {

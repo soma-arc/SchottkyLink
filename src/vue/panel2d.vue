@@ -6,7 +6,7 @@
     </div>
     <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager"/>
   </div>
-  <controlPanel2d :scene2d="scene2d" :canvasManager="canvasManager"/>
+  <controlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
 </div>
 </template>
 
@@ -16,7 +16,12 @@ import UnderControlPanel2d from './underControlPanel2d.vue';
 
 export default {
     props: ['scene2d', 'canvasManager'],
-    components: { ControlPanel2d, UnderControlPanel2d }
+    components: { ControlPanel2d, UnderControlPanel2d },
+    computed: {
+        display: function() {
+            return this.canvasManager.displayMode !== 'iframe';
+        }
+    }
 }
 </script>
 

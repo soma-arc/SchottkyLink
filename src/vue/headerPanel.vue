@@ -12,7 +12,7 @@
         |
         <li class="button-elem">
           <v-link class="v-link-button" href="/3d">3D</v-link>
-         </li>
+        </li>
       </div>
     </ul>
     <header-menu :canvasManager="canvasManager"/>

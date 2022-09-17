@@ -1,8 +1,8 @@
 <template>
   <div id="root">
-    <header-panel :canvasManager="canvasManager"/>
+    <header-panel :canvasManager="canvasManager" v-if="display"/>
     <middle-panel :scene2d="scene2d" :scene3d="scene3d" :canvasManager="canvasManager" :currentRoute="currentRoute" />
-    <footer-panel/>
+    <footer-panel v-if="display"/>
   </div>
 </template>
 
@@ -15,6 +15,11 @@ export default {
     props: ['scene2d', 'scene3d', 'canvasManager', 'currentRoute'],
     components: {
         HeaderPanel, MiddlePanel, FooterPanel
+    },
+    computed: {
+        display: function() {
+            return this.canvasManager.displayMode !== 'iframe';
+        }
     }
 }
 </script>

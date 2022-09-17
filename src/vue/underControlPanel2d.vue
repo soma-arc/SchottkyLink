@@ -1,7 +1,7 @@
 <template>
 <div class="underControlPanel">
-  <span class="parameterLabel">scale</span>
-  <div class="inputContainer">
+  <span class="parameterLabel" v-if="display">scale</span>
+  <div class="inputContainer" v-if="display">
     <b-input
       v-model.number="canvasManager.canvas2d.scale"
       style="width:70px;"
@@ -11,8 +11,8 @@
       step="0.01">
     </b-input>
   </div>
-    <span class="parameterLabel">translate X</span>
-  <div class="inputContainer">
+  <span class="parameterLabel" v-if="display">translate X</span>
+  <div class="inputContainer" v-if="display">
     <b-input
       v-model.number="canvasManager.canvas2d.translate.x"
       style="width:70px;"
@@ -22,8 +22,8 @@
       step="0.01">
     </b-input>
   </div>
-  <span class="parameterLabel">translate Y</span>
-  <div class="inputContainer">
+  <span class="parameterLabel" v-if="display">translate Y</span>
+  <div class="inputContainer" v-if="display">
     <b-input
       v-model.number="canvasManager.canvas2d.translate.y"
       style="width:70px;"
@@ -65,7 +65,7 @@
       Reset
     </b-button>
   </div>
-  <div class="inputContainer">
+  <div class="inputContainer" v-if="display">
     <b-button type="is-primary" @click="saveSceneAsURL">
       Copy URL
     </b-button>
@@ -159,6 +159,11 @@ export default {
                 this.scene2d.selectedObj = undefined;
             }
             this.canvasManager.canvas2d.render();
+        }
+    },
+    computed: {
+        display: function() {
+            return this.canvasManager.displayMode !== 'iframe';
         }
     }
 }

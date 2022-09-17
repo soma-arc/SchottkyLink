@@ -42,6 +42,10 @@ window.addEventListener('load', () => {
         console.log('done.');
         const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
         const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
+        if(parsed['displayMode'] !== undefined) {
+            const displayMode = parsed['displayMode'];
+            canvasManager.displayMode = displayMode;
+        }
         scene2d.loadFromQueryString(parsed);
         scene2d.updateOrbitSeed();
         canvasManager.canvas2d.loadParameterFromQueryString(parsed);
