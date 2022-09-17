@@ -17,7 +17,9 @@ export default class Canvas2d extends Canvas {
 
         // geometry
         this.scale = 1;
-        this.scaleFactor = 1.25;
+        this.scaleFactor = 1.05;
+        this.scaleMax = 100;
+        this.scaleMin = 0;
         this.translate = new Vec2(0, 0);
 
         this.maxIterations = 20;
@@ -45,6 +47,8 @@ export default class Canvas2d extends Canvas {
         this.isRenderingOrbitOrigin = false;
 
         this.queryParameter = undefined;
+
+        this.displayMode = 'default';
     }
 
     init() {
@@ -123,6 +127,8 @@ export default class Canvas2d extends Canvas {
         } else {
             this.scale *= this.scaleFactor;
         }
+
+        this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
         this.render();
     }
 

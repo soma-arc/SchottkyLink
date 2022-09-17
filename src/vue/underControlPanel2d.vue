@@ -8,7 +8,9 @@
       @input="valueChanged"
       placeholder="Number"
       type="number"
-      step="0.01">
+      step="0.01"
+      min="canvasManager.canvas2d.scaleMin"
+      max="canvasManager.canavs2d.scaleMax">
     </b-input>
   </div>
   <span class="parameterLabel" v-if="display">translate X</span>
