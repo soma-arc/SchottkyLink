@@ -122,6 +122,10 @@ export default class Canvas2d extends Canvas {
 
     mouseWheelListener(event) {
         event.preventDefault();
+        if(this.displayMode === 'iframe'){
+            if(this.isRenderingGenerator) return;
+        }
+
         if (event.deltaY < 0) {
             this.scale /= this.scaleFactor;
         } else {
