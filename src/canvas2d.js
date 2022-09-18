@@ -453,7 +453,15 @@ export default class Canvas2d extends Canvas {
             this.queryParameter = parsedQuery;
         }
         if (parsedQuery['scale'] !== undefined) {
-            this.scale = Math.max(0, parseFloat(parsedQuery['scale']));
+            const array = parsedQuery['scale'].split(',');
+            if(array.length === 1) {
+                this.scale = Math.max(0, parseFloat(array[0]));
+            } else if(array.length === 3) {
+                const a = array.map(parseFloat);
+                this.scale = Math.max(0, a[0]);
+                this.scaleMin = Math.max(0, a[1]);
+                this.scaleMax = Math.max(0, a[2]);
+            }
         }
         if (parsedQuery['translateX'] !== undefined) {
             this.translate.x = parseFloat(parsedQuery['translateX']);
