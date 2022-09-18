@@ -114,6 +114,14 @@ export default class Scene2d extends Scene {
         }
     }
 
+    unselect() {
+        if(this.selectedObj !== undefined) {
+            this.selectedObj.selected = false;
+            this.selectedState = new SelectionState();
+            this.selectedObj = undefined;
+        }
+    }
+
     select (mouse, sceneScale) {
         if (this.selectedObj !== undefined) {
             const state = this.selectedObj.select(mouse, sceneScale);

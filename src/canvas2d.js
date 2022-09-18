@@ -147,8 +147,24 @@ export default class Canvas2d extends Canvas {
                 Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
                 this.draggingOrbitOrigin = true;
             } else {
+                const prevSelected = this.scene.selectedObj !== undefined;
+                let prevId = -1;
+                if(prevSelected) prevId = this.scene.selectedObj.id;
                 this.scene.select(mouse, this.scale);
                 this.render();
+
+                // 選択済みオブジェクトを選択すると選択状態をはずす
+                // mouseDown -> Moveに移行すると解除をキャンセル
+                let selected = false;
+                if(this.scene.selectedObj !== undefined) {
+                    selected = prevSelected && this.scene.selectedObj.id === prevId;
+                }
+                if(selected) {
+                    this.deselectTimer = setTimeout(() => {
+                        this.scene.unselect();
+                        this.render();
+                    }, 100);
+                }
             }
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             this.scene.addCircle(mouse, this.scale);
@@ -179,6 +195,7 @@ export default class Canvas2d extends Canvas {
     }
 
     mouseMoveListener(event) {
+        clearTimeout(this.deselectTimer);
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
