@@ -163,7 +163,7 @@ export default class Canvas2d extends Canvas {
                     this.deselectTimer = setTimeout(() => {
                         this.scene.unselect();
                         this.render();
-                    }, 100);
+                    }, 150);
                 }
             }
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
@@ -303,6 +303,10 @@ export default class Canvas2d extends Canvas {
             this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                               `u_imageTextures[${i}]`));
         }
+        for(let i = 0; i < this.textureManager.canvasTextures.length; i++) {
+            this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                              `u_canvasTextures[${i}]`));
+        }
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_resolution'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
@@ -335,6 +339,17 @@ export default class Canvas2d extends Canvas {
         this.gl.uniform1i(this.uniLocations[i++], textureIndex++);
         // image textures for orbit seed
         for(const tex of this.textureManager.textures) {
+            this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, tex.textureObj);
+            if(tex.isLoaded && tex.isCopiedToGLTexture === false) {
+                this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
+                                   this.gl.RGBA, this.gl.UNSIGNED_BYTE, tex.img);
+                tex.isCopiedToGLTexture = true;
+            }
+            this.gl.uniform1i(this.uniLocations[i++], textureIndex++);
+        }
+
+        for(const tex of this.textureManager.canvasTextures) {
             this.gl.activeTexture(this.gl.TEXTURE0 + textureIndex);
             this.gl.bindTexture(this.gl.TEXTURE_2D, tex.textureObj);
             if(tex.isLoaded && tex.isCopiedToGLTexture === false) {

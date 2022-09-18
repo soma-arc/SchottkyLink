@@ -11,6 +11,8 @@
                       width="128px" height="128px"/>
           <img-button label="Video Input" :src="cameraUrl" @click.native="addVideoOrbit"
                       width="128px" height="128px"/>
+          <img-button label="Canvas Seed" :src="orbitSeedUrl" @click.native="addCanvasSeed"
+                      width="128px" height="128px"/>
           <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                       width="128px" height="128px" @click.native="addParallelTranslation"/>
           <img-button label="Parallel Inversions" :src="parallelTranslationUrl"
@@ -118,6 +120,10 @@ export default {
                  this.scene2d.addVideoOrbit(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
                  this.canvasManager.canvas2d.compileRenderShader();
              }
+        },
+        addCanvasSeed: function() {
+            this.scene2d.addCanvasSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+            this.canvasManager.canvas2d.compileRenderShader();
         },
         addCrossingInversions: function() {
             this.scene2d.addCrossingInversions(new Vec2(0, 0), this.canvasManager.canvas2d.scale);

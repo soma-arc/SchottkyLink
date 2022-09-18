@@ -60,6 +60,11 @@
     <scaling-controller v-if="selectedObjName === 'Scaling'"
                         :scaling="scene.selectedObj"
                         :scene="scene"/>
+    <canvas-seed-controller v-if="selectedObjName === 'CanvasSeed'"
+                            :canvasSeed="scene.selectedObj"
+                            :scene="scene"
+                            :canvas="canvas2d"
+                            :textureManager="textureManager"/>
   </div>
 </template>
 
@@ -77,6 +82,7 @@ import CrossingInversionsController from './controller2d/crossingInversionsContr
 import RotationController from './controller2d/rotationController.vue';
 import TwoCirclesController from './controller2d/twoCirclesController.vue';
 import ScalingController from './controller2d/scalingController.vue';
+import CanvasSeedController from './controller2d/canvasSeedController.vue';
 
 export default {
     props: ['scene', 'canvas2d', 'textureManager'],
@@ -92,7 +98,8 @@ export default {
         CrossingInversionsController,
         RotationController,
         TwoCirclesController,
-        ScalingController
+        ScalingController,
+        CanvasSeedController
     },
     computed: {
         selectedObjName: function() {

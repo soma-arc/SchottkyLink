@@ -94,4 +94,15 @@ window.addEventListener('load', () => {
     renderLoop();
 
     canvasManager.render();
+
+    // iframe側からCanvasSeedのテクスチャを与える関数
+    // document.getElementById('iframe').contentWindow.changeCanvasSeedTextureURL(base64URL);
+    // のように呼ぶ
+    window.changeCanvasSeedTextureURL = (url) => {
+        textureManager.canvasTextures[0].imgUrl = url;
+        const promise = textureManager.canvasTextures[0].load(canvasManager.canvas2d.gl);
+        promise.then(() => {
+            canvasManager.render();
+        });
+    };
 });

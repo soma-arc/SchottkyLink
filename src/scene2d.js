@@ -12,6 +12,7 @@ import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
 import VideoOrbit from './generator2d/videoOrbit.js';
+import CanvasSeed from './generator2d/canvasSeed.js';
 import CrossingInversions from './generator2d/crossingInversions.js';
 import Rotation from './generator2d/rotation.js';
 import ParallelTranslation from './generator2d/parallelTranslation.js';
@@ -27,10 +28,12 @@ import RemoveGeneratorCommand from './command/removeGeneratorCommand.js';
 import Vec2 from './vector2d.js';
 import RemoveAllGeneratorsCommand from './command/removeAllGeneratorsCommand.js';
 import { ToastProgrammatic as Toast } from 'buefy';
+import TextureManager from './textureManager.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
                        'VideoOrbit': VideoOrbit,
+                       'CanvasSeed': CanvasSeed,
                        'Scaling': Scaling,
                        'Circle': Circle,
                        'HalfPlane': HalfPlane,
@@ -228,6 +231,14 @@ export default class Scene2d extends Scene {
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
+    addCanvasSeed(position, sceneScale) {
+        const o = new CanvasSeed(position.x - 0.05 * sceneScale,
+                                 position.y - 0.05 * sceneScale,
+                                 0.1 * sceneScale,
+                                 0.1 * sceneScale);
+        this.addCommand(new AddGeneratorCommand(this, o));
+    }
+
     addCrossingInversions(position, sceneScale) {
         const r = new CrossingInversions(position, new Vec2(1, 0), 0.5 * Math.PI);
         this.addCommand(new AddGeneratorCommand(this, r));
@@ -360,6 +371,9 @@ export default class Scene2d extends Scene {
             context[`num${objName}`] = this.objects[objName].length;
         }
 
+        context['maxNumImageTextures'] = TextureManager.MAX_TEXTURES;
+        context['maxNumCanvasTextures'] = TextureManager.MAX_CANVAS_TEXTURES;
+
         const textureIndexes = [];
         if(this.objects['OrbitSeed'] !== undefined &&
            this.objects['OrbitSeed'].length > 0) {
@@ -368,6 +382,7 @@ export default class Scene2d extends Scene {
             }
         }
         context['OrbitSeedTexIndexes'] = textureIndexes;
+
 
         return context;
     }

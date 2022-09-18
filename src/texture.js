@@ -15,6 +15,9 @@ export default class Texture {
     }
 
     load(gl) {
+        this.img = new Image();
+        this.isLoaded = false;
+        this.isCopiedToGLTexture = false;
         const p = new Promise((resolve, reject) => {
             this.img.addEventListener('load', () => {
                 this.isLoaded = true;

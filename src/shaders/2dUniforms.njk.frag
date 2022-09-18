@@ -4,7 +4,8 @@ uniform vec2 u_resolution;
 uniform vec3 u_geometry;
 uniform int u_maxIISIterations;
 uniform sampler2D u_videoTexture;
-uniform sampler2D u_imageTextures[10];
+uniform sampler2D u_imageTextures[{{ maxNumImageTextures }}];
+uniform sampler2D u_canvasTextures[{{ maxNumCanvasTextures }}];
 uniform float u_isRenderingGenerator;
 uniform bool u_isPressingShift;
 uniform bool u_isPressingCtrl;
@@ -145,6 +146,10 @@ uniform OrbitSeed u_videoOrbit{{ n }};
 
 {% for n in range(0, numScaling) %}
 uniform Scaling u_scaling{{ n }};
+{% endfor %}
+
+{% for n in range(0, numCanvasSeed) %}
+uniform OrbitSeed u_canvasSeed{{ n }};
 {% endfor %}
 
 uniform vec2 u_orbitOrigin;

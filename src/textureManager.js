@@ -9,11 +9,28 @@ export default class TextureManager {
         for (const imgName of Object.keys(DEFAULT_IMAGE_URLS)) {
             this.textures.push(new Texture(imgName, DEFAULT_IMAGE_URLS[imgName]));
         }
+
+        this.canvasTextures = [];
+        this.canvasTextures.push(new Texture('default_canvas', this.getDefaultCanvasURL()));
+    }
+
+    getDefaultCanvasURL() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        context.fillStyle = 'rgb(0, 0, 255)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL();
     }
 
     loadDefaultImages(gl) {
         const promises = [];
         for (const tex of this.textures) {
+            const promise = tex.load(gl);
+            promises.push(promise);
+        }
+        for (const tex of this.canvasTextures) {
             const promise = tex.load(gl);
             promises.push(promise);
         }
@@ -66,6 +83,10 @@ export default class TextureManager {
     }
 
     static get MAX_TEXTURES() {
-        return 10;
+        return 5;
+    }
+
+    static get MAX_CANVAS_TEXTURES() {
+        return 5;
     }
 }

@@ -65,6 +65,19 @@ bool IIS(vec2 pos, out vec3 col) {
         }
         {% endfor %}
 
+        {% for no in range(0, numCanvasSeed) %}
+        vec2 canvasUV{{ n }}{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
+        if(0. < canvasUV{{ n }}{{ no }}.x && canvasUV{{ n }}{{ no }}.x < 1. &&
+           0. < canvasUV{{ n }}{{ no }}.y && canvasUV{{ n }}{{ no }}.y < 1.) {
+            //c = deGamma(textureLod(u_imageTextures[{{ CanvasSeedTexIndexes[no] }}], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
+            c = deGamma(textureLod(u_canvasTextures[0], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
+            if(c.w == 1.) {
+                col = c.rgb;
+                return true;
+            }
+        }
+        {% endfor %}
+
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.centerAndRadius.z){
             pos = circleInvert(pos, u_circle{{ n }}.centerAndRadius);
@@ -515,6 +528,19 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
            0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
            (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
             pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
+            color = WHITE;
+            return true;
+        }
+    }
+    {% endfor %}
+
+    {% for no in range(0, numCanvasSeed) %}
+    if(u_canvasSeed{{ no }}.selected) {
+        vec2 canvasUV{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
+        if(0. < canvasUV{{ no }}.x && canvasUV{{ no }}.x < 1. &&
+           0. < canvasUV{{ no }}.y && canvasUV{{ no }}.y < 1. &&
+           (pos.x < u_canvasSeed{{ no }}.ui.x || u_canvasSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_canvasSeed{{ no }}.ui.y || u_canvasSeed{{ no }}.ui.w < pos.y)) {
             color = WHITE;
             return true;
         }
