@@ -370,7 +370,7 @@ export default class CrossingInversions extends Generator {
     }
 
     exportAsQueryString() {
-        return `CrossingInversions[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.boundaryDir1.x.toFixed(this.digits)},${this.boundaryDir1.y.toFixed(this.digits)},${this.degrees.toFixed(this.digits)}`;
+        return `CrossingInversions[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.boundaryAngleDeg.toFixed(this.digits)},${this.degrees.toFixed(this.digits)}`;
     }
 
     static get BODY() {

@@ -262,7 +262,7 @@ export default class Rotation extends Generator {
             break;
         }
         case Rotation.ROTATION_POINT: {
-            const mp = mouse.sub(this.p);
+            const mp = mouseState.position.sub(this.p);
             let theta1 = Math.atan2(mp.y, mp.x);
             if(theta1 < 0) theta1 += Radians.TWO_PI;
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
@@ -338,7 +338,7 @@ export default class Rotation extends Generator {
     }
 
     exportAsQueryString() {
-        return `Rotation[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.boundaryDir1.x.toFixed(this.digits)},${this.boundaryDir1.y.toFixed(this.digits)},${this.degrees.toFixed(this.digits)}`;
+        return `Rotation[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.boundaryAngleDeg.toFixed(this.digits)},${this.degrees.toFixed(this.digits)}`;
     }
 
     exportJson() {
