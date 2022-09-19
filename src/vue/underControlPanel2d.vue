@@ -35,8 +35,8 @@
       step="0.01">
     </b-input>
   </div>
-  <span class="parameterLabel">Max Iterations</span>
-  <div class="inputContainer">
+  <span class="parameterLabel" v-if="display">Max Iterations</span>
+  <div class="inputContainer" v-if="display">
     <b-input
       v-model.number="canvasManager.canvas2d.maxIterations"
       style="width:70px;"
@@ -57,7 +57,7 @@
       Save
     </b-button>
   </div>
-  <div class="inputContainer">
+  <div class="inputContainer" v-if="display">
     <b-button type="is-primary" @click="clearGenerators">
       Clear
     </b-button>
@@ -72,7 +72,7 @@
       Copy URL
     </b-button>
   </div>
-  <div class="inputContainer">
+  <div class="inputContainer" v-if="display">
     <b-switch v-model="scene2d.isRenderingGenerator"
               @input="toggleRenderGenerator"
               id="renderGenSwitch">
