@@ -123,7 +123,7 @@ export default class Canvas2d extends Canvas {
     mouseWheelListener(event) {
         event.preventDefault();
         if(this.displayMode === 'iframe'){
-            if(this.isRenderingGenerator) return;
+            if(this.scene.isRenderingGenerator) return;
         }
 
         if (event.deltaY < 0) {
