@@ -126,6 +126,7 @@ export default class Scene2d extends Scene {
     }
 
     select (mouse, sceneScale) {
+        // 既に選択済みのジェネレータから選択処理を行う
         if (this.selectedObj !== undefined) {
             const state = this.selectedObj.select(mouse, sceneScale);
             if (state.isSelectingObj()) {
@@ -139,11 +140,13 @@ export default class Scene2d extends Scene {
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
+            // ジェネレータが描画されないときはOrbitSeedやVideoOrbit, CanvasSeedのみが表示される
             if(this.isRenderingGenerator === false &&
-               (objName !== 'OrbitSeed' && objName !== 'VideoOrbit')) continue;
+               (objName !== 'OrbitSeed' && objName !== 'VideoOrbit' && objName !== 'CanvasSeed')) continue;
+
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
-                const state = obj.select(mouse, sceneScale);
+                const state = obj.selectBody(mouse, sceneScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
                     this.selectedObj = this.selectedState.selectedObj;

@@ -88,6 +88,11 @@ export default class Rotation extends Generator {
             .setDiffObj(mouse.sub(this.p));
     }
 
+    isHandle(componentId) {
+        return componentId === Rotation.BOUNDARY_POINT ||
+            componentId === Rotation.ROTATION_POINT;
+    }
+
     removable(mouse) {
         const dp = mouse.sub(this.p);
         if (Vec2.dot(dp, this.normal1) < 0 ||

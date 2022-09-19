@@ -68,6 +68,10 @@ export default class Circle extends Generator {
             .setPrevPosition(this.center);
     }
 
+    selectBody(mouse, sceneScale) {
+        return this.select(mouse, sceneScale);
+    }
+
     translate(vec) {
         this.center.add(vec);
         this.update();

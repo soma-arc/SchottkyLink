@@ -48,9 +48,11 @@ window.addEventListener('load', () => {
             canvasManager.canvas2d.displayMode = displayMode;
             if(displayMode === 'iframe') {
                 const newWindow = open('/', '', 'width=0,height=0');
-                newWindow.addEventListener('load', () => {
-                    newWindow.close();
-                });
+                if(newWindow !== null) {
+                    newWindow.addEventListener('load', () => {
+                        newWindow.close();
+                    });
+                }
             }
         }
         scene2d.loadFromQueryString(parsed);

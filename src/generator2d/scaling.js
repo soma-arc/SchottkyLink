@@ -39,6 +39,10 @@ export default class Scaling extends Generator {
         this.update();
     }
 
+    getPosition() {
+        return this.center;
+    }
+
     update() {
         this.c1d = this.c2.invertOnCircle(this.c1);
 

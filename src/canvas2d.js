@@ -49,6 +49,9 @@ export default class Canvas2d extends Canvas {
         this.queryParameter = undefined;
 
         this.displayMode = 'default';
+
+        this.prevSelected = false;
+        this.prevId = -1;
     }
 
     init() {
@@ -147,24 +150,10 @@ export default class Canvas2d extends Canvas {
                 Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
                 this.draggingOrbitOrigin = true;
             } else {
-                const prevSelected = this.scene.selectedObj !== undefined;
-                let prevId = -1;
-                if(prevSelected) prevId = this.scene.selectedObj.id;
+                this.prevSelected = this.scene.selectedObj !== undefined;
+                if(this.prevSelected) this.prevId = this.scene.selectedObj.id;
                 this.scene.select(mouse, this.scale);
                 this.render();
-
-                // 選択済みオブジェクトを選択すると選択状態をはずす
-                // mouseDown -> Moveに移行すると解除をキャンセル
-                let selected = false;
-                if(this.scene.selectedObj !== undefined) {
-                    selected = prevSelected && this.scene.selectedObj.id === prevId;
-                }
-                if(selected) {
-                    this.deselectTimer = setTimeout(() => {
-                        this.scene.unselect();
-                        this.render();
-                    }, 150);
-                }
             }
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
             this.scene.addCircle(mouse, this.scale);
@@ -183,6 +172,15 @@ export default class Canvas2d extends Canvas {
     }
 
     mouseUpListener(event) {
+        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
+            this.prevSelected && //一つ前のmouseDownで選択状態になっている
+            this.scene.selectedObj !== undefined &&
+            this.scene.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
+            !this.scene.selectedObj.isHandle(this.scene.selectedState.componentId)) {
+            this.scene.unselect();
+            this.render();
+        }
         this.mouseState.isPressing = false;
         this.isRendering = false;
         this.scene.mouseUp();

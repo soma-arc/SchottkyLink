@@ -269,6 +269,11 @@ export default class CrossingInversions extends Generator {
         this.update();
     }
 
+    isHandle(componentId) {
+        return componentId === CrossingInversions.BOUNDARY_POINT ||
+            componentId === CrossingInversions.ROTATION_POINT;
+    }
+
     /**
      *
      * @param {Vec2} p
