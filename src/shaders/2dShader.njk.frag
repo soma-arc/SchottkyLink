@@ -507,7 +507,7 @@ int computeOrbit(vec2 pos) {
 }
 
 bool renderOrbitSeed(vec2 pos, out vec3 color) {
-    color = vec3(0);
+    color = u_backgroundColor.rgb;
     {% for no in range(0, numOrbitSeed) %}
     if(u_orbitSeed{{ no }}.selected) {
         vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
@@ -551,7 +551,7 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
 }
 
 bool renderUI(vec2 pos, out vec3 color) {
-    color = vec3(0);
+    color = u_backgroundColor.rgb;
 
     {% for n  in range(0,  numPoint ) %}
     if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
@@ -850,7 +850,7 @@ bool renderUI(vec2 pos, out vec3 color) {
 }
 
 bool renderGenerator(vec2 pos, out vec3 color) {
-    color = vec3(0);
+    color = u_backgroundColor.rgb;
     float dist;
     {% for n in range(0, numTwoCircles) %}
     if(u_hyperbolic{{ n }}.selected) {
@@ -887,7 +887,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         color = WHITE;
         return true;
     }
-    vec4 loxoCol{{ n }} = vec4(0);
+    vec4 loxoCol{{ n }} = vec4(u_backgroundColor.rgb, 0);
     bool loxoRender{{ n }} = false;
     if (distance(pos, u_loxodromic{{ n }}.c3.xy) < u_loxodromic{{ n }}.c3.z) {
         loxoCol{{ n }} = blendCol(vec4(YELLOW, 0.5), loxoCol{{ n }});
@@ -972,7 +972,7 @@ void main() {
         position = position * u_geometry.z;
         position += u_geometry.xy;
 
-        vec3 col = vec3(0);
+        vec3 col = u_backgroundColor.rgb;
         // int n = computeOrbit(u_orbitOrigin);
         // bool line = renderOrbit(position, col, n);
         // if(line){
@@ -980,30 +980,30 @@ void main() {
         //     continue;
         // }
 
-        col = vec3(0);
         if(renderOrbitSeed(position, col)) {
             sum += col;
             continue;
         }
 
-        col = vec3(0);
-        if(renderUI(position, col)) {
-            sum += col * u_isRenderingGenerator;
-            continue;
-        }
-
-        col = vec3(0);
-        bool isRendered = IIS(position, col);
-        if(isRendered){
+        if(u_isRenderingGenerator == 1.0 && renderUI(position, col)) {
             sum += col;
             continue;
         }
 
-        if(renderGenerator(position, col)) {
-            sum += col * u_isRenderingGenerator;
+        bool isRendered = IIS(position, col);
+        if(isRendered){
+            sum += col;
+            continue;
+        } else {
+            if(u_isRenderingGenerator == 1.0 && renderGenerator(position, col)) {
+                sum += col;
+            } else {
+                sum += u_backgroundColor.rgb;
+            }
             continue;
         }
     }
-    vec3 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0).rgb;
+
+    //vec3 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0).rgb;
     outColor = vec4(sum / MAX_SAMPLES, 1);
 }

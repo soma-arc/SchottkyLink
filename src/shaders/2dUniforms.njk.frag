@@ -153,3 +153,4 @@ uniform OrbitSeed u_canvasSeed{{ n }};
 {% endfor %}
 
 uniform vec2 u_orbitOrigin;
+uniform vec4 u_backgroundColor;

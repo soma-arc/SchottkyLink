@@ -52,6 +52,8 @@ export default class Canvas2d extends Canvas {
 
         this.prevSelected = false;
         this.prevId = -1;
+
+        this.backgroundColor = [0, 0, 0, 1];
     }
 
     init() {
@@ -317,6 +319,8 @@ export default class Canvas2d extends Canvas {
                                                           'u_isPressingCtrl'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_orbitOrigin'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_backgroundColor'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -367,6 +371,11 @@ export default class Canvas2d extends Canvas {
         this.gl.uniform2f(this.uniLocations[i++],
                           this.orbitOrigin.x,
                           this.orbitOrigin.y);
+        this.gl.uniform4f(this.uniLocations[i++],
+                          this.backgroundColor[0],
+                          this.backgroundColor[1],
+                          this.backgroundColor[2],
+                          this.backgroundColor[3]);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
