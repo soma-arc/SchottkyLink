@@ -19,22 +19,28 @@ Access to the URL: [schottky.jp](http://schottky.jp) or download the source code
 #### QueryString
 All Angle parameters are in degrees.
 
-- scale=float
+- backgroundColor=float,float,float,float  
+Set backgounr color. (reg, green, blue, alpha) [0, 1]
+
+- generatorBoundaryColor=float,float,float  
+Set boundary color of generators (e.g. circumference of a circle). (red, green, blue) [0, 1]
+
+- scale=float  
 Set scene scale.
 
-- translateX=float
+- translateX=float  
 Set translate x.
 
-- translateY=float
+- translateY=float  
 Set tramslate y.
 
-- maxIterations=Integer
+- maxIterations=Integer  
 Set max iterations of inversions. [0, 100]
 
-- download=boolean
+- download=boolean  
 if download == true, save and download canvas image.
 
-- renderGenerator=boolean
+- renderGenerator=boolean  
 if renderGenerator == true, render generator (only render OrbitSeed and VideoOrbit.)
 
 - Circle[]=float,float,float  
