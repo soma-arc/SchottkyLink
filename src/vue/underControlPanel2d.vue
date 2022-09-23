@@ -1,7 +1,7 @@
 <template>
 <div class="underControlPanel">
-  <span class="parameterLabel" v-if="display">scale</span>
-  <div class="inputContainer" v-if="display">
+  <span class="parameterLabel">scale</span>
+  <div class="inputContainer">
     <b-input
       v-model.number="canvasManager.canvas2d.scale"
       style="width:70px;"
@@ -13,8 +13,8 @@
       max="canvasManager.canavs2d.scaleMax">
     </b-input>
   </div>
-  <span class="parameterLabel" v-if="display">translate X</span>
-  <div class="inputContainer" v-if="display">
+  <span class="parameterLabel">translate X</span>
+  <div class="inputContainer">
     <b-input
       v-model.number="canvasManager.canvas2d.translate.x"
       style="width:70px;"
@@ -24,8 +24,8 @@
       step="0.01">
     </b-input>
   </div>
-  <span class="parameterLabel" v-if="display">translate Y</span>
-  <div class="inputContainer" v-if="display">
+  <span class="parameterLabel">translate Y</span>
+  <div class="inputContainer">
     <b-input
       v-model.number="canvasManager.canvas2d.translate.y"
       style="width:70px;"
@@ -35,8 +35,8 @@
       step="0.01">
     </b-input>
   </div>
-  <span class="parameterLabel" v-if="display">Max Iterations</span>
-  <div class="inputContainer" v-if="display">
+  <span class="parameterLabel">Max Iterations</span>
+  <div class="inputContainer">
     <b-input
       v-model.number="canvasManager.canvas2d.maxIterations"
       style="width:70px;"
@@ -83,50 +83,14 @@
 </template>
 
 <script>
-import { ToastProgrammatic as Toast } from 'buefy'
+import { ToastProgrammatic as Toast } from 'buefy';
 import SelectionState from '../generator2d/selectionState.js';
 
 export default {
     props: ['scene2d', 'canvasManager'],
     methods: {
-        fetchUpload(url, body, successCallback, errorCallback) {
-            fetch(url, {
-                method: 'POST',
-                body: body,
-                mode: 'cors',
-                redirect: 'follow',
-            }).then(r => r.json())
-                .then(j => {
-                    if (successCallback) {
-                        successCallback(j);
-                    }
-                }).catch(e => {
-                    if (errorCallback) {
-                        errorCallback(e);
-                    } else {
-                        console.error(e);
-                    }
-                });
-        },
         tweet: function(event) {
-            const UPLOAD_URL = 'https://script.google.com/a/tessellation.jp/macros/s/AKfycbxvOHV4YIuHy8mzDx0cCNnxG_g24I1WaL11aV-0nEAgkO_WDjGS2iN5nf_HWl3DxxNOHQ/exec';
-            const formData = new FormData();
-            const canvasDataURL = this.canvasManager.canvas2d.renderAndGetCanvasURL(600);
-            formData.append('filename', (new Date()).getTime()+'.png');
-            formData.append('type', 'image/png');
-            formData.append('content', canvasDataURL.replace(/^data:image\/png;base64,/,''));
-            Toast.open({message: 'Uploading image ...',
-                        position: 'is-bottom'});
-            this.fetchUpload(UPLOAD_URL, formData,
-                             (json) => {
-                                 const fileURL = 'https://drive.google.com/file/d/' + json.id + '/view';
-                                 const array = [fileURL, '#SchottkyLink'];
-                                 const tweet = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(array.join('\n'));
-                                 window.open(tweet);
-                             },
-                             (error) => {
-                                 alert('Error: '+ error);
-                             });
+            this.canvasManager.saveImageAndTweet();
         },
         valueChanged: function(event) {
             this.canvasManager.canvas2d.render();

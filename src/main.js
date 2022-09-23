@@ -107,4 +107,24 @@ window.addEventListener('load', () => {
             canvasManager.render();
         });
     };
+
+    window.executeCommandTweet = () => {
+        canvasManager.saveImageAndTweet();
+    };
+
+    window.executeCommandSaveImage = () => {
+        canvasManager.canvas2d.renderProductAndSave();
+    };
+
+    window.executeCommandClearScene = () => {
+        scene2d.removeAllGenerators();
+    };
+
+    window.executeCommandResetScene = () => {
+        canvasManager.canvas2d.reloadParameter();
+        scene2d.reloadParameter();
+        canvasManager.textureManager.canvasTextures[0].imgUrl = canvasManager.textureManager.getDefaultCanvasURL();
+        canvasManager.canvas2d.compileRenderShader();
+        canvasManager.canvas2d.render();
+    };
 });

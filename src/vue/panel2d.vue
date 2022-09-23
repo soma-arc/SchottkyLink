@@ -4,7 +4,7 @@
     <div class="canvasParent">
       <canvas id="canvas2d" tabIndex="1000"/><br>
     </div>
-    <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager"/>
+    <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
   </div>
   <controlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
 </div>

@@ -54,7 +54,7 @@ export default class Canvas2d extends Canvas {
         this.prevId = -1;
 
         this.backgroundColor = [0, 0, 0, 1];
-        this.generatorBoundaryColor = [1, 0, 0];
+        this.generatorBoundaryColor = [1, 1, 1];
     }
 
     init() {
