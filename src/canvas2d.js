@@ -511,6 +511,9 @@ export default class Canvas2d extends Canvas {
         if (parsedQuery['maxIterations'] !== undefined) {
             this.maxIterations = Math.min(100, Math.max(0, parseInt(parsedQuery['maxIterations'])));
         }
+        if (parsedQuery['backgroundColor'] !== undefined) {
+            this.backgroundColor = parsedQuery['backgroundColor'].split(',').map(v=>{return Math.max(0, Math.min(1, parseFloat(v)));});
+        }
     }
 
     reloadParameter() {
@@ -523,6 +526,7 @@ export default class Canvas2d extends Canvas {
         queryString += `translateX=${this.translate.x.toFixed(4)}&`;
         queryString += `translateY=${this.translate.y.toFixed(4)}&`;
         queryString += `maxIterations=${this.maxIterations}&`;
+        queryString += `backgroundColor=${this.backgroundColor[0]},${this.backgroundColor[1]},${this.backgroundColor[2]}${this.backgroundColor[3]}&`;
         queryString += this.scene.exportAsQueryString();
         return queryString;
     }

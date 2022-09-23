@@ -38,6 +38,7 @@
           </section>
         </b-tab-item>
         <b-tab-item label="Render">
+          <render-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"></render-panel>
         </b-tab-item>
       </b-tabs>
   </div>
@@ -47,6 +48,7 @@
 import ImgButton from './imgButton.vue';
 import Vec2 from '../vector2d.js';
 import SceneObjectPanel from './sceneObjectPanel.vue';
+import RenderPanel from './renderPanel.vue';
 import Circle from '../generator2d/circle.js';
 
 const CIRCLE_IMG = require('../img/2dGenerators/circle.png');
@@ -61,7 +63,7 @@ const CAMERA_IMG = require('../img/2dGenerators/video_camera.png');
 
 export default {
     props: ['scene2d', 'canvasManager'],
-    components: { ImgButton, SceneObjectPanel },
+    components: { ImgButton, SceneObjectPanel, RenderPanel },
     data: function() {
         return { 'circleUrl': CIRCLE_IMG,
                  'halfPlaneUrl': HALF_PLANE_IMG,
