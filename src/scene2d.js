@@ -71,6 +71,8 @@ export default class Scene2d extends Scene {
 
         this.textureManager = textureManager;
         this.videoManager = videoManager;
+
+        this.displayMode = 'default';
     }
 
     addSceneUpdateListener(listener) {
@@ -140,12 +142,17 @@ export default class Scene2d extends Scene {
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
-            // ジェネレータが描画されないときはOrbitSeedやVideoOrbit, CanvasSeedのみが表示される
+            // ジェネレータが描画されないときはOrbitSeedやVideoOrbit, CanvasSeedのみが表示されるのでそれ以外は選択できない
             if(this.isRenderingGenerator === false &&
                (objName !== 'OrbitSeed' && objName !== 'VideoOrbit' && objName !== 'CanvasSeed')) continue;
 
+            // iframeで表示時にジェネレータ非表示だとSeed系は選択できない
+            if(this.displayMode === 'iframe' && this.isRenderingGenerator === false &&
+               (objName === 'OrbitSeed' || objName === 'VideoOrbit' || objName === 'CanvasSeed')) continue;
+
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
+                if(obj.isFixed && this.displayMode === 'iframe') continue;
                 const state = obj.selectBody(mouse, sceneScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
