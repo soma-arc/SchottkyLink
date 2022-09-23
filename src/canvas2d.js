@@ -54,6 +54,7 @@ export default class Canvas2d extends Canvas {
         this.prevId = -1;
 
         this.backgroundColor = [0, 0, 0, 1];
+        this.generatorBoundaryColor = [1, 0, 0];
     }
 
     init() {
@@ -321,6 +322,8 @@ export default class Canvas2d extends Canvas {
                                                           'u_orbitOrigin'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_backgroundColor'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_generatorBoundaryColor'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -376,6 +379,10 @@ export default class Canvas2d extends Canvas {
                           this.backgroundColor[1],
                           this.backgroundColor[2],
                           this.backgroundColor[3]);
+        this.gl.uniform3f(this.uniLocations[i++],
+                          this.generatorBoundaryColor[0],
+                          this.generatorBoundaryColor[1],
+                          this.generatorBoundaryColor[2]);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
@@ -514,6 +521,9 @@ export default class Canvas2d extends Canvas {
         if (parsedQuery['backgroundColor'] !== undefined) {
             this.backgroundColor = parsedQuery['backgroundColor'].split(',').map(v=>{return Math.max(0, Math.min(1, parseFloat(v)));});
         }
+        if (parsedQuery['generatorBoundaryColor'] !== undefined) {
+            this.generatorBoundaryColor = parsedQuery['generatorBoundaryColor'].split(',').map(v=>{return Math.max(0, Math.min(1, parseFloat(v)));});
+        }
     }
 
     reloadParameter() {
@@ -526,7 +536,8 @@ export default class Canvas2d extends Canvas {
         queryString += `translateX=${this.translate.x.toFixed(4)}&`;
         queryString += `translateY=${this.translate.y.toFixed(4)}&`;
         queryString += `maxIterations=${this.maxIterations}&`;
-        queryString += `backgroundColor=${this.backgroundColor[0]},${this.backgroundColor[1]},${this.backgroundColor[2]}${this.backgroundColor[3]}&`;
+        queryString += `backgroundColor=${this.backgroundColor[0]},${this.backgroundColor[1]},${this.backgroundColor[2]},${this.backgroundColor[3]}&`;
+        queryString += `generatorBoundaryColor=${this.generatorBoundaryColor[0]},${this.generatorBoundaryColor[1]},${this.generatorBoundaryColor[2]}&`;
         queryString += this.scene.exportAsQueryString();
         return queryString;
     }
