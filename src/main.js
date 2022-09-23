@@ -46,7 +46,9 @@ window.addEventListener('load', () => {
             const displayMode = parsed['displayMode'];
             canvasManager.displayMode = displayMode;
             canvasManager.canvas2d.displayMode = displayMode;
-            if(displayMode === 'iframe') {
+            scene2d.displayMode = displayMode;
+            if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
+                localStorage.setItem('isOpenedWindow', true);
                 const newWindow = open('/', '', 'width=0,height=0');
                 if(newWindow !== null) {
                     newWindow.addEventListener('load', () => {
