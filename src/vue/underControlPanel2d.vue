@@ -149,6 +149,7 @@ export default {
         resetGenerators: function() {
             this.canvasManager.canvas2d.reloadParameter();
             this.scene2d.reloadParameter();
+            this.canvasManager.textureManager.canvasTextures[0].imgUrl = this.canvasManager.textureManager.getDefaultCanvasURL();
             this.canvasManager.canvas2d.compileRenderShader();
             this.canvasManager.canvas2d.render();
         },

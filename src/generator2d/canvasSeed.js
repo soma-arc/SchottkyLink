@@ -48,7 +48,7 @@ export default class CanvasSeed extends OrbitSeed {
 
     cloneDeeply() {
         const canvasSeed = new CanvasSeed(this.corner.x, this.corner.y,
-                                        this.size.x, this.size.y);
+                                          this.size.x, this.size.y);
         canvasSeed.textureIndex = this.textureIndex;
         return canvasSeed;
     }
