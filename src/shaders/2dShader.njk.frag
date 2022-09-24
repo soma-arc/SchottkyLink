@@ -33,7 +33,7 @@ vec3 computeColor(float loopNum) {
 }
 
 const int MAX_ITERATIONS = 200;
-bool IIS(vec2 pos, out vec3 col) {
+bool IIS(vec2 pos, out vec4 col) {
     float invNum = 0.;
     bool inFund = true;
     vec4 c = vec4(0);
@@ -47,7 +47,7 @@ bool IIS(vec2 pos, out vec3 col) {
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
             c = deGamma(textureLod(u_imageTextures[{{ OrbitSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
-                col = c.rgb;
+                col = vec4(c.rgb, 1);
                 return true;
             }
         }
@@ -59,7 +59,7 @@ bool IIS(vec2 pos, out vec3 col) {
            0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1.) {
             c = deGamma(textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
-                col = c.rgb;
+                col = vec4(c.rgb, 1);
                 return true;
             }
         }
@@ -72,7 +72,7 @@ bool IIS(vec2 pos, out vec3 col) {
             //c = deGamma(textureLod(u_imageTextures[{{ CanvasSeedTexIndexes[no] }}], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
             c = deGamma(textureLod(u_canvasTextures[0], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
-                col = c.rgb;
+                col = vec4(c.rgb, 1);
                 return true;
             }
         }
@@ -253,7 +253,7 @@ bool IIS(vec2 pos, out vec3 col) {
         if (inFund) break;
     }
 
-    col = computeColor(invNum) * u_isRenderingGenerator;
+    col = mix(u_backgroundColor, vec4(computeColor(invNum), 1), u_isRenderingGenerator);
     return (invNum == 0.) ? false : true;
 }
 
@@ -506,8 +506,8 @@ int computeOrbit(vec2 pos) {
     return orbitNum;
 }
 
-bool renderOrbitSeed(vec2 pos, out vec3 color) {
-    color = u_backgroundColor.rgb;
+bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
+    color = u_backgroundColor;
     {% for no in range(0, numOrbitSeed) %}
     if(u_orbitSeed{{ no }}.selected) {
         vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
@@ -515,7 +515,7 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
            0. < uvOrbitSeed{{ no }}.y && uvOrbitSeed{{ no }}.y < 1. &&
            (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
@@ -528,7 +528,7 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
            0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
            (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
             pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
@@ -541,7 +541,7 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
            0. < canvasUV{{ no }}.y && canvasUV{{ no }}.y < 1. &&
            (pos.x < u_canvasSeed{{ no }}.ui.x || u_canvasSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_canvasSeed{{ no }}.ui.y || u_canvasSeed{{ no }}.ui.w < pos.y)) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
@@ -550,12 +550,12 @@ bool renderOrbitSeed(vec2 pos, out vec3 color) {
     return false;
 }
 
-bool renderUI(vec2 pos, out vec3 color) {
-    color = u_backgroundColor.rgb;
+bool renderUI(vec2 pos, out vec4 color) {
+    color = u_backgroundColor;
 
     {% for n  in range(0,  numPoint ) %}
     if(distance(pos, u_point{{ n }}.xy) < u_point{{ n }}.z){
-        color = BLUE;
+        color = vec4(BLUE, 1);
         return true;
     }
     {% endfor %}
@@ -566,7 +566,7 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_circle{{ n }}.selected){
         dist = u_circle{{ n }}.centerAndRadius.z - distance(pos, u_circle{{ n }}.centerAndRadius.xy);
         if(0. < dist && dist < u_circle{{ n }}.ui){
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         // Render the axis
@@ -585,23 +585,23 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_halfPlane{{ n }}.selected) {
         // normal point
         if(distance(pos, u_halfPlane{{ n }}.p + u_halfPlane{{ n }}.normal.xy * u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // point p
         if(distance(pos, u_halfPlane{{ n }}.p) < u_halfPlane{{ n }}.normal.w) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         // ring
         if(abs(distance(pos, u_halfPlane{{ n }}.p) - u_halfPlane{{ n }}.normal.z) < u_halfPlane{{ n }}.normal.w *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         // line
         dist = dot(pos - u_halfPlane{{ n }}.p , u_halfPlane{{ n }}.normal.xy);
         if(-u_halfPlane{{ n }}.normal.w < dist && dist < 0.) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
@@ -611,35 +611,35 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_translate{{ n }}.selected){
         // normal point
         if(distance(pos, u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.ui.x) < u_translate{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // ring
         if(abs(distance(pos, u_translate{{ n }}.p) - u_translate{{ n }}.ui.x) < u_translate{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         // point p
         if(distance(pos, u_translate{{ n }}.p) < u_translate{{ n }}.ui.y) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         // point on hp2
         if(distance(pos, u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z) < u_translate{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // boundary
         dist = dot(pos - u_translate{{ n }}.p, - u_translate{{ n }}.normal.xy);
         if(0. < dist && dist < u_translate{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
         dist = dot(pos - (u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z),
                    - u_translate{{ n }}.normal.xy);
         if(0. < dist && dist < u_translate{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
@@ -648,7 +648,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         float hpd{{ n }} = dot(u_translate{{ n }}.normal.xy, pos);
         if(hpd{{ n }} > 0. && u_translate{{ n }}.normal.z > hpd{{ n }} &&
            abs(dot(pos, vec2(-u_translate{{ n }}.normal.y, u_translate{{ n }}.normal.x))) < u_translate{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         pos += u_translate{{ n }}.p;
@@ -660,35 +660,35 @@ bool renderUI(vec2 pos, out vec3 color) {
 
         // normal point
         if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // ring
         if(abs(distance(pos, u_parallelInversions{{ n }}.p) - u_parallelInversions{{ n }}.ui.x) < u_parallelInversions{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         // point p
         if(distance(pos, u_parallelInversions{{ n }}.p) < u_parallelInversions{{ n }}.ui.y) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         // point on hp2
         if(distance(pos, u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z) < u_parallelInversions{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // boundary
         dist = dot(pos - u_parallelInversions{{ n }}.p, - u_parallelInversions{{ n }}.normal.xy);
         if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
         dist = dot(pos - (u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z),
                    - u_parallelInversions{{ n }}.normal.xy);
         if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
@@ -697,7 +697,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         float hpdInv{{ n }} = dot(u_parallelInversions{{ n }}.normal.xy, pos);
         if(hpdInv{{ n }} > 0. && u_parallelInversions{{ n }}.normal.z > hpdInv{{ n }} &&
            abs(dot(pos, vec2(-u_parallelInversions{{ n }}.normal.y, u_parallelInversions{{ n }}.normal.x))) < u_parallelInversions{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         pos += u_parallelInversions{{ n }}.p;
@@ -708,35 +708,35 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_glideReflection{{ n }}.selected){
         // normal point
         if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // ring
         if(abs(distance(pos, u_glideReflection{{ n }}.p) - u_glideReflection{{ n }}.ui.x) < u_glideReflection{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         // point p
         if(distance(pos, u_glideReflection{{ n }}.p) < u_glideReflection{{ n }}.ui.y) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         // point on hp2
         if(distance(pos, u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z) < u_glideReflection{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // boundary
         dist = dot(pos - u_glideReflection{{ n }}.p, - u_glideReflection{{ n }}.normal.xy);
         if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
         dist = dot(pos - (u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z),
                    - u_glideReflection{{ n }}.normal.xy);
         if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
@@ -745,7 +745,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         float hpdGlide{{ n }} = dot(u_glideReflection{{ n }}.normal.xy, pos);
         if(hpdGlide{{ n }} > 0. && u_glideReflection{{ n }}.normal.z > hpdGlide{{ n }} &&
            abs(dot(pos, vec2(-u_glideReflection{{ n }}.normal.y, u_glideReflection{{ n }}.normal.x))) < u_glideReflection{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         pos += u_glideReflection{{ n }}.p;
@@ -756,27 +756,27 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_crossingInversions{{ n }}.selected) {
         // point p
         if(distance(pos, u_crossingInversions{{ n }}.p) < u_crossingInversions{{ n }}.ui.y) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.zw) < u_crossingInversions{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // line
         pos -= u_crossingInversions{{ n }}.p;
         dist = dot(-u_crossingInversions{{ n }}.normal.xy, pos);
         if(0. < dist && dist < u_crossingInversions{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         dist = dot(-u_crossingInversions{{ n }}.normal.zw, pos);
         if(0. < dist && dist < u_crossingInversions{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
@@ -784,7 +784,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         if(dot(pos, u_crossingInversions{{ n }}.normal.xy) > 0. &&
            dot(pos, u_crossingInversions{{ n }}.normal.zw) > 0. &&
            abs(distance(pos, u_crossingInversions{{ n }}.p - u_crossingInversions{{ n }}.p) - u_crossingInversions{{ n }}.ui.x) < u_crossingInversions{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         pos += u_crossingInversions{{ n }}.p;
@@ -795,27 +795,27 @@ bool renderUI(vec2 pos, out vec3 color) {
     if(u_rotation{{ n }}.selected) {
         // point p
         if(distance(pos, u_rotation{{ n }}.p) < u_rotation{{ n }}.ui.y) {
-            color = LIGHT_BLUE;
+            color = vec4(LIGHT_BLUE, 1);
             return true;
         }
         if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         if(distance(pos, u_rotation{{ n }}.boundaryPoint.zw) < u_rotation{{ n }}.ui.y) {
-            color = PINK;
+            color = vec4(PINK, 1);
             return true;
         }
         // line
         pos -= u_rotation{{ n }}.p;
         dist = dot(-u_rotation{{ n }}.normal.xy, pos);
         if(0. < dist && dist < u_rotation{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         dist = dot(-u_rotation{{ n }}.normal.zw, pos);
         if(0. < dist && dist < u_rotation{{ n }}.ui.y) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
@@ -823,7 +823,7 @@ bool renderUI(vec2 pos, out vec3 color) {
         if(dot(pos, u_rotation{{ n }}.normal.xy) > 0. &&
            dot(pos, u_rotation{{ n }}.normal.zw) > 0. &&
            abs(distance(pos, u_rotation{{ n }}.p - u_rotation{{ n }}.p) - u_rotation{{ n }}.ui.x) < u_rotation{{ n }}.ui.y *.5) {
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         pos += u_rotation{{ n }}.p;
@@ -833,14 +833,14 @@ bool renderUI(vec2 pos, out vec3 color) {
     {% for n in range(0, numLoxodromic) %}
     // point p
     if(distance(pos, u_loxodromic{{ n }}.p) < u_loxodromic{{ n }}.ui.x) {
-        color = PINK;
+        color = vec4(PINK, 1);
         return true;
     }
     {% endfor %}
 
     {% for n in range(0, numScaling) %}
     if(distance(pos, u_scaling{{ n }}.line2.xy) < u_scaling{{ n }}.ui.x) {
-        color = PINK;
+        color = vec4(PINK, 1);
         return true;
     }
     {% endfor %}
@@ -848,33 +848,33 @@ bool renderUI(vec2 pos, out vec3 color) {
     return false;
 }
 
-bool renderGenerator(vec2 pos, out vec3 color) {
-    color = u_backgroundColor.rgb;
+bool renderGenerator(vec2 pos, out vec4 color) {
+    color = u_backgroundColor;
     float dist;
     {% for n in range(0, numTwoCircles) %}
     if(u_hyperbolic{{ n }}.selected) {
         dist = u_hyperbolic{{ n }}.c1.z - distance(pos, u_hyperbolic{{ n }}.c1.xy);
         if(0. < dist && dist < u_hyperbolic{{ n }}.ui){
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
         dist = u_hyperbolic{{ n }}.c2.z - distance(pos, u_hyperbolic{{ n }}.c2.xy);
         if(0. < dist && dist < u_hyperbolic{{ n }}.ui){
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
     if(distance(pos, u_hyperbolic{{ n }}.c1.xy) < u_hyperbolic{{ n }}.c1.z) {
-        color = RED;
+        color = vec4(RED, 1);
         return true;
     }
     if(distance(pos, u_hyperbolic{{ n }}.c2.xy) < u_hyperbolic{{ n }}.c2.z) {
-        color = GREEN;
+        color = vec4(GREEN, 1);
         return true;
     }
     if(distance(pos, u_hyperbolic{{ n }}.c1d.xy) < u_hyperbolic{{ n }}.c1d.z) {
-        color = BLUE;
+        color = vec4(BLUE, 1);
         return true;
     }
     {% endfor %}
@@ -883,7 +883,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     // line
     if(abs(dot(pos - u_loxodromic{{ n }}.c1.xy,
                u_loxodromic{{ n }}.line.zw)) < u_loxodromic{{ n }}.ui.y) {
-        color = u_generatorBoundaryColor;
+        color = vec4(u_generatorBoundaryColor, 1);
         return true;
     }
     vec4 loxoCol{{ n }} = vec4(0);
@@ -916,7 +916,7 @@ bool renderGenerator(vec2 pos, out vec3 color) {
         loxoRender{{ n }} = true;
     }
     if(loxoRender{{ n }}) {
-        color = loxoCol{{ n }}.rgb;
+        color = vec4(loxoCol{{ n }}.rgb, 1);
         return true;
     }
     {% endfor %}
@@ -925,36 +925,36 @@ bool renderGenerator(vec2 pos, out vec3 color) {
     if(u_scaling{{ n }}.selected) {
         dist = u_scaling{{ n }}.c1.z - distance(pos, u_scaling{{ n }}.c1.xy);
         if(0. < dist && dist < u_scaling{{ n }}.ui.y){
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
 
         dist = u_scaling{{ n }}.c2.z - distance(pos, u_scaling{{ n }}.c2.xy);
         if(0. < dist && dist < u_scaling{{ n }}.ui.y){
-            color = u_generatorBoundaryColor;
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
     }
     if(abs(dot(pos - u_scaling{{ n }}.line1.xy,
                u_scaling{{ n }}.line1.zw)) < u_scaling{{ n }}.ui.y) {
-        color = YELLOW;
+        color = vec4(YELLOW, 1);
         return true;
     }
     if(abs(dot(pos - u_scaling{{ n }}.line2.xy,
                u_scaling{{ n }}.line2.zw)) < u_scaling{{ n }}.ui.y) {
-        color = u_generatorBoundaryColor;
+        color = vec4(u_generatorBoundaryColor, 1);
         return true;
     }
     if(distance(pos, u_scaling{{ n }}.c1.xy) < u_scaling{{ n }}.c1.z) {
-        color = RED;
+        color = vec4(RED, 1);
         return true;
     }
     if(distance(pos, u_scaling{{ n }}.c2.xy) < u_scaling{{ n }}.c2.z) {
-        color = GREEN;
+        color = vec4(GREEN, 1);
         return true;
     }
     if(distance(pos, u_scaling{{ n }}.c1d.xy) < u_scaling{{ n }}.c1d.z) {
-        color = BLUE;
+        color = vec4(BLUE, 1);
         return true;
     }
     {% endfor %}
@@ -964,14 +964,14 @@ bool renderGenerator(vec2 pos, out vec3 color) {
 
 const float MAX_SAMPLES = 20.;
 void main() {
-    vec3 sum = vec3(0);
+    vec4 sum = vec4(0);
     float ratio = u_resolution.x / u_resolution.y / 2.0;
     for(float i = 0.; i < MAX_SAMPLES; i++){
         vec2 position = ((gl_FragCoord.xy + rand2n(gl_FragCoord.xy, i)) / u_resolution.yy ) - vec2(ratio, 0.5);
         position = position * u_geometry.z;
         position += u_geometry.xy;
 
-        vec3 col = u_backgroundColor.rgb;
+        vec4 col = u_backgroundColor;
         // int n = computeOrbit(u_orbitOrigin);
         // bool line = renderOrbit(position, col, n);
         // if(line){
@@ -979,7 +979,7 @@ void main() {
         //     continue;
         // }
 
-        if(renderOrbitSeed(position, col)) {
+        if(renderEdgeOfOrbitSeed(position, col)) {
             sum += col;
             continue;
         }
@@ -997,12 +997,12 @@ void main() {
             if(u_isRenderingGenerator == 1.0 && renderGenerator(position, col)) {
                 sum += col;
             } else {
-                sum += u_backgroundColor.rgb;
+                sum += u_backgroundColor;
             }
             continue;
         }
     }
 
     //vec3 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0).rgb;
-    outColor = vec4(sum / MAX_SAMPLES, 1);
+    outColor = sum / MAX_SAMPLES;
 }

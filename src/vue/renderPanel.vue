@@ -16,6 +16,7 @@ export default {
     components: { },
     data: function() {
         return {
+            selectedColor: Color.parse(`rgba(${this.canvas2d.backgroundColor[0] * 255},${this.canvas2d.backgroundColor[1] * 255},${this.canvas2d.backgroundColor[2] * 255},${this.canvas2d.backgroundColor[3]})`)
         }
     },
     methods: {
@@ -31,13 +32,6 @@ export default {
         }
     },
     computed: {
-        selectedColor: function() {
-            const r = this.canvas2d.backgroundColor[0] * 255;
-            const g = this.canvas2d.backgroundColor[1] * 255;
-            const b = this.canvas2d.backgroundColor[2] * 255;
-            const a = this.canvas2d.backgroundColor[3];
-            return Color.parse(`rgba(${r},${g},${b},${a})`);
-        }
     }
 }
 </script>
