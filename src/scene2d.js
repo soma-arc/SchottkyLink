@@ -228,16 +228,18 @@ export default class Scene2d extends Scene {
     }
 
     addOrbitSeed(position, sceneScale) {
+        const aspect = this.textureManager.textures[0].height / this.textureManager.textures[0].width;
         const o = new OrbitSeed(position.x - 0.05 * sceneScale,
                                 position.y - 0.05 * sceneScale,
                                 0.1 * sceneScale,
-                                0.1 * sceneScale);
+                                0.1 * sceneScale * aspect);
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
     addVideoOrbit(position, sceneScale) {
+        const aspect = this.videoManager.height / this.videoManager.width;
         const o = new VideoOrbit(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
-                                 0.1 * sceneScale, 0.1 * sceneScale);
+                                 0.1 * sceneScale, 0.1 * sceneScale * aspect);
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 

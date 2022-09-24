@@ -1,8 +1,6 @@
-import { CreateRGBATextures } from './glUtils.js';
 import Texture from './texture.js';
 const DEFAULT_IMAGE_URLS = { 'cat_fish_run': require('./img/cat_fish_run.png')
                              };
-
 export default class TextureManager {
     constructor() {
         this.textures = [];
