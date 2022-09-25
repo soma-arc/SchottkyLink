@@ -34,52 +34,48 @@ window.addEventListener('load', () => {
         components: { 'root': Root }
     });
 
-    console.log('loading texture...');
     const promises = canvasManager.init(app);
     canvasManager.resize();
 
-    Promise.all(promises).then(() => {
-        console.log('done.');
-        const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
-        const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
-        if(parsed['displayMode'] !== undefined) {
-            const displayMode = parsed['displayMode'];
-            canvasManager.displayMode = displayMode;
-            canvasManager.canvas2d.displayMode = displayMode;
-            scene2d.displayMode = displayMode;
-            if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
-                localStorage.setItem('isOpenedWindow', true);
-                const newWindow = open('/', '', 'width=0,height=0');
-                if(newWindow !== null) {
-                    newWindow.addEventListener('load', () => {
-                        newWindow.close();
-                    });
-                }
-            }
-        }
-        scene2d.loadFromQueryString(parsed);
-        scene2d.updateOrbitSeed();
-        canvasManager.canvas2d.loadParameterFromQueryString(parsed);
-        canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
-        canvasManager.canvas2d.compileRenderShader();
-        if (scene2d.objects['VideoOrbit'] !== undefined &&
-            canvasManager.videoManager.streaming === false) {
-            canvasManager.videoManager.connect(
-                canvasManager.canvas2d.gl,
-                () => {
-                    canvasManager.videoManager.streaming = true;
-                    if(downloadImage) {
-                        canvasManager.canvas2d.renderProductAndSave();
-                    }
-                },
-                () => {
+    const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
+    const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
+    if(parsed['displayMode'] !== undefined) {
+        const displayMode = parsed['displayMode'];
+        canvasManager.displayMode = displayMode;
+        canvasManager.canvas2d.displayMode = displayMode;
+        scene2d.displayMode = displayMode;
+        if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
+            localStorage.setItem('isOpenedWindow', true);
+            const newWindow = open('/', '', 'width=0,height=0');
+            if(newWindow !== null) {
+                newWindow.addEventListener('load', () => {
+                    newWindow.close();
                 });
-        } else {
-            if(downloadImage) {
-                canvasManager.canvas2d.renderProductAndSave();
             }
         }
-    });
+    }
+    scene2d.loadFromQueryString(parsed);
+    scene2d.updateOrbitSeed();
+    canvasManager.canvas2d.loadParameterFromQueryString(parsed);
+    canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
+    canvasManager.canvas2d.compileRenderShader();
+    if (scene2d.objects['VideoOrbit'] !== undefined &&
+        canvasManager.videoManager.streaming === false) {
+        canvasManager.videoManager.connect(
+            canvasManager.canvas2d.gl,
+            () => {
+                canvasManager.videoManager.streaming = true;
+                if(downloadImage) {
+                    canvasManager.canvas2d.renderProductAndSave();
+                }
+            },
+            () => {
+            });
+    } else {
+        if(downloadImage) {
+            canvasManager.canvas2d.renderProductAndSave();
+        }
+    }
 
     let resizeTimer = setTimeout(canvasManager.resizeCallback, 500);
     window.addEventListener('resize', () => {

@@ -22,17 +22,13 @@ export default class TextureManager {
         return canvas.toDataURL();
     }
 
-    loadDefaultImages(gl) {
-        const promises = [];
+    async loadDefaultImages(gl) {
         for (const tex of this.textures) {
-            const promise = tex.load(gl);
-            promises.push(promise);
+            await tex.load(gl);
         }
         for (const tex of this.canvasTextures) {
-            const promise = tex.load(gl);
-            promises.push(promise);
+            await tex.load(gl);
         }
-        return promises;
     }
 
     loadTextureFromDialogue(gl, scene, orbitSeed){
