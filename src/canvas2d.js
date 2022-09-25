@@ -59,6 +59,22 @@ export default class Canvas2d extends Canvas {
 
     init() {
         this.canvas = document.getElementById(this.canvasId);
+        const zt = new ZingTouch.Region(this.canvas);
+        zt.bind(this.canvas, 'tap', (e) => {
+            console.log(e);
+            if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200) {
+                // doubleTap
+                console.log('doubleTap');
+                const ev = e.detail.events[0];
+                this.scene.remove(this.calcSceneCoord(ev.x, ev.y));
+            } else {
+                const ev = e.detail.events[0];
+                const mouse = this.calcSceneCoord(ev.x, ev.y);
+                this.scene.select(mouse, this.scale);
+            }
+            this.render();
+            this.prevTime = e.timeStamp;
+        });
         this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
         this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
