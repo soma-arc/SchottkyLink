@@ -110,10 +110,11 @@ export default {
                 console.log('Something went wrong', err);
             });
         },
-        resetGenerators: function() {
+        resetGenerators: async function() {
             this.canvasManager.canvas2d.reloadParameter();
             this.scene2d.reloadParameter();
             this.canvasManager.textureManager.canvasTextures[0].imgUrl = this.canvasManager.textureManager.getDefaultCanvasURL();
+            await this.canvasManager.textureManager.canvasTextures[0].load(this.canvasManager.canvas2d.gl);
             this.canvasManager.canvas2d.compileRenderShader();
             this.canvasManager.canvas2d.render();
         },
