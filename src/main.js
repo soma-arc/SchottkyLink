@@ -9,6 +9,11 @@ import TextureManager from './textureManager.js';
 import VideoManager from './videoManager.js';
 const QueryString = require('query-string');
 
+window.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('touchmove', e=>e.preventDefault(),{passive:false});
+    document.addEventListener('mousewheel',e=>e.preventDefault(),{passive:false});
+});
+
 window.addEventListener('load', () => {
     Vue.use(Buefy);
     window.Vue = Vue;
