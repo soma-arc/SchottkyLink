@@ -1,8 +1,8 @@
 <template>
 <div class="contentParent">
   <div class="canvasPanel">
-    <div class="canvasParent">
-      <canvas id="canvas2d" tabIndex="1000"/><br>
+    <div class="canvasParent" >
+      <canvas id="canvas2d" tabIndex="1000" v-bind:class="{ defaultMode: display === true,'iframeMode': display === false }"/><br>
     </div>
     <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
   </div>
@@ -36,14 +36,24 @@ export default {
 .canvasParent {
     flex: 1;
     display: flex;
-    border-style: ridge;
-    border-color: gray;
 }
 
 #canvas2d {
     width: 100%;
     height: 100%;
     cursor: crosshair;
+    border-style: ridge;
+    border-color: gray
+}
+
+.defaultMode {
+    border-style: ridge;
+    border-color: gray
+}
+
+.iframeMode {
+    border:0;
+    border-style: none;
 }
 
 .canvasPanel {
