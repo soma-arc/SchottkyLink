@@ -31,9 +31,9 @@ import { ToastProgrammatic as Toast } from 'buefy';
 import TextureManager from './textureManager.js';
 
 // TODO: generate this object automatically
-const STR_CLASS_MAP = {'OrbitSeed': OrbitSeed,
+const STR_CLASS_MAP = {'CanvasSeed': CanvasSeed,
+                       'OrbitSeed': OrbitSeed,
                        'VideoOrbit': VideoOrbit,
-                       'CanvasSeed': CanvasSeed,
                        'Scaling': Scaling,
                        'Circle': Circle,
                        'HalfPlane': HalfPlane,

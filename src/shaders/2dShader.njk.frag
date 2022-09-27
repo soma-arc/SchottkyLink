@@ -41,6 +41,19 @@ bool IIS(vec2 pos, out vec4 col) {
         if(i > u_maxIISIterations) break;
         inFund = true;
 
+        {% for no in range(0, numCanvasSeed) %}
+        vec2 canvasUV{{ n }}{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
+        if(0. < canvasUV{{ n }}{{ no }}.x && canvasUV{{ n }}{{ no }}.x < 1. &&
+           0. < canvasUV{{ n }}{{ no }}.y && canvasUV{{ n }}{{ no }}.y < 1.) {
+            //c = deGamma(textureLod(u_imageTextures[{{ CanvasSeedTexIndexes[no] }}], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
+            c = deGamma(textureLod(u_canvasTextures[0], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
+            if(c.w == 1.) {
+                col = vec4(c.rgb, 1);
+                return true;
+            }
+        }
+        {% endfor %}
+
         {% for no in range(0, numOrbitSeed) %}
         vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
@@ -58,19 +71,6 @@ bool IIS(vec2 pos, out vec4 col) {
         if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
            0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1.) {
             c = deGamma(textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0));
-            if(c.w == 1.) {
-                col = vec4(c.rgb, 1);
-                return true;
-            }
-        }
-        {% endfor %}
-
-        {% for no in range(0, numCanvasSeed) %}
-        vec2 canvasUV{{ n }}{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
-        if(0. < canvasUV{{ n }}{{ no }}.x && canvasUV{{ n }}{{ no }}.x < 1. &&
-           0. < canvasUV{{ n }}{{ no }}.y && canvasUV{{ n }}{{ no }}.y < 1.) {
-            //c = deGamma(textureLod(u_imageTextures[{{ CanvasSeedTexIndexes[no] }}], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
-            c = deGamma(textureLod(u_canvasTextures[0], vec2(canvasUV{{ n }}{{ no }}.x, 1. - canvasUV{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
                 col = vec4(c.rgb, 1);
                 return true;
@@ -508,6 +508,20 @@ int computeOrbit(vec2 pos) {
 
 bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
     color = u_backgroundColor;
+
+    {% for no in range(0, numCanvasSeed) %}
+    if(u_canvasSeed{{ no }}.selected) {
+        vec2 canvasUV{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
+        if(0. < canvasUV{{ no }}.x && canvasUV{{ no }}.x < 1. &&
+           0. < canvasUV{{ no }}.y && canvasUV{{ no }}.y < 1. &&
+           (pos.x < u_canvasSeed{{ no }}.ui.x || u_canvasSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_canvasSeed{{ no }}.ui.y || u_canvasSeed{{ no }}.ui.w < pos.y)) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+    }
+    {% endfor %}
+
     {% for no in range(0, numOrbitSeed) %}
     if(u_orbitSeed{{ no }}.selected) {
         vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
@@ -528,19 +542,6 @@ bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
            0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
            (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
             pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
-            color = vec4(u_generatorBoundaryColor, 1);
-            return true;
-        }
-    }
-    {% endfor %}
-
-    {% for no in range(0, numCanvasSeed) %}
-    if(u_canvasSeed{{ no }}.selected) {
-        vec2 canvasUV{{ no }} = (pos - u_canvasSeed{{ no }}.corner) / u_canvasSeed{{ no }}.size;
-        if(0. < canvasUV{{ no }}.x && canvasUV{{ no }}.x < 1. &&
-           0. < canvasUV{{ no }}.y && canvasUV{{ no }}.y < 1. &&
-           (pos.x < u_canvasSeed{{ no }}.ui.x || u_canvasSeed{{ no }}.ui.z < pos.x ||
-            pos.y < u_canvasSeed{{ no }}.ui.y || u_canvasSeed{{ no }}.ui.w < pos.y)) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
