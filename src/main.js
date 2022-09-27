@@ -60,8 +60,27 @@ window.addEventListener('load', () => {
         }
     }
     scene2d.loadFromQueryString(parsed);
-    scene2d.updateOrbitSeed();
     canvasManager.canvas2d.loadParameterFromQueryString(parsed);
+
+    const d = { 'currentRoute': route,
+                'scene2d': scene2d,
+                'scene3d': scene3d,
+                'canvasManager': canvasManager };
+
+    /* eslint-disable no-unused-vars */
+    const app = new Vue({
+        el: '#app',
+        data: d,
+        render: (h) => {
+            return h('root', { 'props': d });
+        },
+        components: { 'root': Root }
+    });
+
+    canvasManager.init(app);
+    canvasManager.resize();
+
+    scene2d.updateOrbitSeed();
     canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
     canvasManager.canvas2d.compileRenderShader();
     if (scene2d.objects['VideoOrbit'] !== undefined &&
