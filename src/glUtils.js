@@ -1,5 +1,10 @@
 export function GetWebGL2Context(canvas) {
     const gl = canvas.getContext('webgl2');
+    if(!gl){
+        console.log('WebGL 2.0 is not supported on this device or browser! Please use another browser or device.');
+        alert('WebGL 2.0 is not supported on this device or browser! Please use another browser or device.');
+        return;
+    }
     return gl;
 }
 
