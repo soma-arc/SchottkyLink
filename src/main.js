@@ -149,4 +149,8 @@ window.addEventListener('load', () => {
         canvasManager.canvas2d.compileRenderShader();
         canvasManager.canvas2d.render();
     };
+
+    window.allowDeleteComponents = (bool) => {
+        canvasManager.canvas2d.allowDeleteComponents = bool;
+    };
 });

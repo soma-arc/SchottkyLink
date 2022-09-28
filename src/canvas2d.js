@@ -55,6 +55,8 @@ export default class Canvas2d extends Canvas {
 
         this.backgroundColor = [0, 0, 0, 1];
         this.generatorBoundaryColor = [1, 1, 1];
+
+        this.allowDeleteComponents = true;
     }
 
     init() {
@@ -62,7 +64,8 @@ export default class Canvas2d extends Canvas {
         const zt = new ZingTouch.Region(this.canvas);
         zt.bind(this.canvas, 'tap', (e) => {
             console.log(e);
-            if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200) {
+            if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200 &&
+               this.allowDeleteComponents) {
                 // doubleTap
                 console.log('doubleTap');
                 const ev = e.detail.events[0];
@@ -185,7 +188,7 @@ export default class Canvas2d extends Canvas {
     }
 
     mouseDblClickListener(event) {
-        if (event.button === Canvas.MOUSE_BUTTON_LEFT) {
+        if (event.button === Canvas.MOUSE_BUTTON_LEFT && this.allowDeleteComponents) {
             this.scene.remove(this.calcSceneCoord(event.clientX, event.clientY));
         }
     }
@@ -540,6 +543,10 @@ export default class Canvas2d extends Canvas {
         if (parsedQuery['generatorBoundaryColor'] !== undefined) {
             this.generatorBoundaryColor = parsedQuery['generatorBoundaryColor'].split(',').map(v=>{return Math.max(0, Math.min(1, parseFloat(v)));});
         }
+
+        if (parsedQuery['allowDeleteComponent'] !== undefined) {
+            this.allowDeleteComponents = parsedQuery['allowDeleteComponents'] === 'true';
+        }
     }
 
     reloadParameter() {
@@ -554,6 +561,7 @@ export default class Canvas2d extends Canvas {
         queryString += `maxIterations=${this.maxIterations}&`;
         queryString += `backgroundColor=${this.backgroundColor[0]},${this.backgroundColor[1]},${this.backgroundColor[2]},${this.backgroundColor[3]}&`;
         queryString += `generatorBoundaryColor=${this.generatorBoundaryColor[0]},${this.generatorBoundaryColor[1]},${this.generatorBoundaryColor[2]}&`;
+        queryString += `allowDeleteComponents=${this.allowDeleteComponents}`;
         queryString += this.scene.exportAsQueryString();
         return queryString;
     }
