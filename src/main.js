@@ -129,7 +129,7 @@ window.addEventListener('load', () => {
         canvasManager.canvas2d.reloadParameter();
         scene2d.reloadParameter();
         canvasManager.textureManager.canvasTextures[0].imgUrl = canvasManager.textureManager.getDefaultCanvasURL();
-        await this.canvasManager.textureManager.canvasTextures[0].load(this.canvasManager.canvas2d.gl);
+        await canvasManager.textureManager.canvasTextures[0].load(canvasManager.canvas2d.gl);
 
         canvasManager.canvas2d.compileRenderShader();
         canvasManager.canvas2d.render();
