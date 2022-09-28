@@ -125,10 +125,12 @@ window.addEventListener('load', () => {
         scene2d.removeAllGenerators();
     };
 
-    window.executeCommandResetScene = () => {
+    window.executeCommandResetScene = async () => {
         canvasManager.canvas2d.reloadParameter();
         scene2d.reloadParameter();
         canvasManager.textureManager.canvasTextures[0].imgUrl = canvasManager.textureManager.getDefaultCanvasURL();
+        await this.canvasManager.textureManager.canvasTextures[0].load(this.canvasManager.canvas2d.gl);
+
         canvasManager.canvas2d.compileRenderShader();
         canvasManager.canvas2d.render();
     };

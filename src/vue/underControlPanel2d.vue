@@ -57,7 +57,7 @@
       Save
     </b-button>
   </div>
-  <div class="inputContainer" v-if="display">
+  <div class="inputContainer">
     <b-button type="is-primary" @click="clearGenerators">
       Clear
     </b-button>
@@ -67,12 +67,12 @@
       Reset
     </b-button>
   </div>
-  <div class="inputContainer" v-if="display">
+  <div class="inputContainer">
     <b-button type="is-primary" @click="saveSceneAsURL">
       Copy URL
     </b-button>
   </div>
-  <div class="inputContainer" v-if="display">
+  <div class="inputContainer">
     <b-switch v-model="scene2d.isRenderingGenerator"
               @input="toggleRenderGenerator"
               id="renderGenSwitch">
