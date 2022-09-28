@@ -24,23 +24,6 @@ window.addEventListener('load', () => {
     const scene3d = new Scene3d();
     const canvasManager = new CanvasManager(scene2d, scene3d, textureManager, videoManager);
     const route = '/'; //window.location.pathname;
-    const d = { 'currentRoute': route,
-                'scene2d': scene2d,
-                'scene3d': scene3d,
-                'canvasManager': canvasManager };
-
-    /* eslint-disable no-unused-vars */
-    const app = new Vue({
-        el: '#app',
-        data: d,
-        render: (h) => {
-            return h('root', { 'props': d });
-        },
-        components: { 'root': Root }
-    });
-
-    const promises = canvasManager.init(app);
-    canvasManager.resize();
 
     const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
     const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
@@ -152,5 +135,14 @@ window.addEventListener('load', () => {
 
     window.allowDeleteComponents = (bool) => {
         canvasManager.canvas2d.allowDeleteComponents = bool;
+    };
+
+    window.enableRenderGenerator = (enabled) => {
+        scene2d.isRenderingGenerator = enabled;
+        canvasManager.canvas2d.render();
+    };
+
+    window.enableVideoStream = (bool) => {
+        videoManager.streaming = bool;
     };
 });

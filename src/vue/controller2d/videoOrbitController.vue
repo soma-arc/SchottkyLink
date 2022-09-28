@@ -1,5 +1,8 @@
 <template>
-  <div>
+<div>
+  <b-switch v-model="scene.videoManager.streaming">
+    Streaming
+  </b-switch><br>
     Origin X
     <b-input
       v-model.number="videoOrbit.corner.x"
