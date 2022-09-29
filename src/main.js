@@ -11,7 +11,6 @@ const QueryString = require('query-string');
 
 window.addEventListener('DOMContentLoaded',()=>{
     document.addEventListener('touchmove', e=>e.preventDefault(),{passive:false});
-    document.addEventListener('mousewheel',e=>e.preventDefault(),{passive:false});
 });
 
 window.addEventListener('load', () => {
@@ -105,12 +104,10 @@ window.addEventListener('load', () => {
     // iframe側からCanvasSeedのテクスチャを与える関数
     // document.getElementById('iframe').contentWindow.changeCanvasSeedTextureURL(base64URL);
     // のように呼ぶ
-    window.changeCanvasSeedTextureURL = (url) => {
+    window.changeCanvasSeedTextureURL = async (url) => {
         textureManager.canvasTextures[0].imgUrl = url;
-        const promise = textureManager.canvasTextures[0].load(canvasManager.canvas2d.gl);
-        promise.then(() => {
-            canvasManager.render();
-        });
+        await textureManager.canvasTextures[0].load(canvasManager.canvas2d.gl);
+        canvasManager.render();
     };
 
     window.executeCommandTweet = () => {
@@ -146,5 +143,11 @@ window.addEventListener('load', () => {
 
     window.enableVideoStream = (bool) => {
         videoManager.streaming = bool;
+    };
+
+    window.executeCommandCopyURL = async () => {
+        const url = this.canvasManager.canvas2d.exportAsQueryString();
+        await navigator.clipboard.writeText(url);
+        return url;
     };
 });
