@@ -2,6 +2,7 @@ import { GetWebGL2Context, CreateSquareVbo, AttachShader,
          LinkProgram, CreateRGBATextures } from './glUtils';
 import Canvas from './canvas.js';
 import Vec2 from './vector2d.js';
+import ZingTouch from 'zingtouch';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
 const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
@@ -57,27 +58,46 @@ export default class Canvas2d extends Canvas {
         this.generatorBoundaryColor = [1, 1, 1];
 
         this.allowDeleteComponents = true;
+        this.cursorType = 'crosshair';
+        this.grab = false;
     }
 
     init() {
         this.canvas = document.getElementById(this.canvasId);
-        const zt = new ZingTouch.Region(this.canvas);
-        zt.bind(this.canvas, 'tap', (e) => {
-            console.log(e);
-            if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200 &&
-               this.allowDeleteComponents) {
-                // doubleTap
-                console.log('doubleTap');
-                const ev = e.detail.events[0];
-                this.scene.remove(this.calcSceneCoord(ev.x, ev.y));
-            } else {
-                const ev = e.detail.events[0];
-                const mouse = this.calcSceneCoord(ev.x, ev.y);
-                this.scene.select(mouse, this.scale);
-            }
-            this.render();
-            this.prevTime = e.timeStamp;
-        });
+        // const zt = new ZingTouch.Region(this.canvas);
+        // zt.bind(this.canvas, 'tap', (e) => {
+        //     console.log(e);
+        //     if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200 &&
+        //        this.allowDeleteComponents) {
+        //         // doubleTap
+        //         console.log('doubleTap');
+        //         const ev = e.detail.events[0];
+        //         this.scene.remove(this.calcSceneCoord(ev.x, ev.y));
+        //     } else {
+        //         const ev = e.detail.events[0];
+        //         const mouse = this.calcSceneCoord(ev.x, ev.y);
+        //         this.scene.select(mouse, this.scale);
+        //     }
+        //     this.render();
+        //     this.prevTime = e.timeStamp;
+        // });
+
+        // zt.bind(this.canvas, 'pan', (e) => {
+        //     console.log(e);
+        //     const ev = e.detail.events[0];
+        //     if (ev.type === 'move') {
+        //     } else if(ev.type === 'end') {
+        //     }
+        // });
+
+        // const doublePan = new ZingTouch.Pan({
+        //     numInputs: 2
+        // });
+
+        // zt.bind(this.canvas, doublePan, (e) => {
+        //     console.log(e);
+        // });
+
         this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
         this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
@@ -185,6 +205,9 @@ export default class Canvas2d extends Canvas {
         this.mouseState.prevPosition = mouse;
         this.mouseState.prevTranslate = this.translate;
         this.mouseState.isPressing = true;
+        if(this.grab) {
+            this.cursorType = 'grabbing';
+        }
     }
 
     mouseDblClickListener(event) {
@@ -207,6 +230,10 @@ export default class Canvas2d extends Canvas {
         this.isRendering = false;
         this.scene.mouseUp();
         this.draggingOrbitOrigin = false;
+        if(this.grab) {
+            this.cursorType = 'grab';
+            this.grab = false;
+        }
     }
 
     mouseLeaveListener(event) {
@@ -216,16 +243,26 @@ export default class Canvas2d extends Canvas {
 
     mouseMoveListener(event) {
         clearTimeout(this.deselectTimer);
+        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
+        if(selectionState.isSelectingObj()) {
+            if(selectionState.selectedObj.isBody(selectionState.componentId)) {
+                this.cursorType = 'allScroll';
+            } else {
+                this.grab = true;
+                this.cursorType = 'grab';
+            }
+        } else {
+            this.grab = false;
+            this.cursorType = 'crosshair';
+        }
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
-        const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        this.cursorType = 'grabbing';
         this.mouseState.position = mouse;
-        if (this.mouseState.button === Canvas.MOUSE_BUTTON_LEFT) {
-            if(this.draggingOrbitOrigin) {
-                this.orbitOrigin = mouse;
-                this.isRendering = true;
-            } else {
+        if(this.displayMode === 'iframe') {
+            if(this.scene.isRenderingGenerator) {
                 let moved;
                 if(event.shiftKey || event.ctrlKey) {
                     moved = this.scene.moveAlongAxis(this.mouseState, this.keyState);
@@ -233,10 +270,33 @@ export default class Canvas2d extends Canvas {
                     moved = this.scene.move(mouse);
                 }
                 if (moved) this.isRendering = true;
+            } else {
+                if(event.ctrlKey) {
+                    this.scale += 0.1 * (this.mouseState.prevPosition.y - mouse.y);
+                    this.isRendering = true;
+                } else {
+                    this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
+                    this.isRendering = true;
+                }
             }
-        } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
-            this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-            this.isRendering = true;
+        } else {
+            if (this.mouseState.button === Canvas.MOUSE_BUTTON_LEFT) {
+                if(this.draggingOrbitOrigin) {
+                    this.orbitOrigin = mouse;
+                    this.isRendering = true;
+                } else {
+                    let moved;
+                    if(event.shiftKey || event.ctrlKey) {
+                        moved = this.scene.moveAlongAxis(this.mouseState, this.keyState);
+                    } else {
+                        moved = this.scene.move(mouse);
+                    }
+                    if (moved) this.isRendering = true;
+                }
+            } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
+                this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
+                this.isRendering = true;
+            }
         }
     }
 

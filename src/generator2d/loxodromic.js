@@ -305,6 +305,11 @@ export default class Loxodromic extends Generator {
                               new Vec2(array[6], array[7]));
     }
 
+    isBody(componentId) {
+        return componentId === Loxodromic.C1_BODY ||
+            componentId === Loxodromic.C2_BODY;
+    }
+
     static get C1_BODY() {
         return 0;
     }

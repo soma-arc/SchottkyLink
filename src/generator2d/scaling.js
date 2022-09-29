@@ -339,6 +339,10 @@ export default class Scaling extends Generator {
         return 'Scaling';
     }
 
+    isBody(componentId) {
+        return componentId === Scaling.BODY;
+    }
+
     static get BODY() {
         return 0;
     }

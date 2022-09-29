@@ -2,7 +2,7 @@
 <div class="contentParent">
   <div class="canvasPanel">
     <div class="canvasParent" >
-      <canvas id="canvas2d" tabIndex="1000" v-bind:class="{ defaultMode: display === true,'iframeMode': display === false }"/><br>
+      <canvas id="canvas2d" width="200" tabIndex="1000" v-bind:class="[ mode, canvasManager.canvas2d.cursorType ]"/><br>
     </div>
     <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
   </div>
@@ -20,6 +20,9 @@ export default {
     computed: {
         display: function() {
             return this.canvasManager.displayMode !== 'iframe';
+        },
+        mode: function() {
+            return this.display ? 'defaultMode' : 'iframeMode';
         }
     }
 }
@@ -41,7 +44,6 @@ export default {
 #canvas2d {
     width: 100%;
     height: 100%;
-    cursor: crosshair;
     border-style: ridge;
     border-color: gray
 }
@@ -61,6 +63,22 @@ export default {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.crosshair {
+    cursor: crosshair;
+}
+
+.allScroll {
+    cursor: all-scroll;
+}
+
+.grab {
+    cursor: grab;
+}
+
+.grabbing {
+    cursor: grabbing;
 }
 
 underControlPanel2d {

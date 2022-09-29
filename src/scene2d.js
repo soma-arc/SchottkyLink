@@ -168,6 +168,27 @@ export default class Scene2d extends Scene {
         return false;
     }
 
+    getComponentOnMouse(mouse, sceneScale) {
+        if (this.selectedObj !== undefined) {
+            const state = this.selectedObj.select(mouse, sceneScale);
+            if (state.isSelectingObj()) {
+                return state;
+            }
+        }
+
+        const objKeyNames = Object.keys(STR_CLASS_MAP);
+        for (const objName of objKeyNames) {
+            if (this.objects[objName] === undefined) continue;
+            for (const obj of this.objects[objName]) {
+                const state = obj.selectBody(mouse, sceneScale);
+                if(state.isSelectingObj()) {
+                    return state;
+                }
+            }
+        }
+        return new SelectionState();
+    }
+
     inOutsideOfGenerators(position) {
         const objKeyNames = Object.keys(this.objects);
         for (const objName of objKeyNames) {

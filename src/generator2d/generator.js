@@ -139,6 +139,10 @@ export default class Generator {
         return {};
     }
 
+    isBody(componentId) {
+        return false;
+    }
+
     static loadFromArray(array) {
         return new Generator();
     }

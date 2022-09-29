@@ -266,6 +266,10 @@ export default class OrbitSeed extends Generator {
         return nh;
     }
 
+    isBody(componentId) {
+        return componentId === OrbitSeed.BODY;
+    }
+
     static get BODY() {
         return 0;
     }

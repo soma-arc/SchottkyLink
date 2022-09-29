@@ -662,8 +662,8 @@ bool renderUI(vec2 pos, out vec4 color) {
             return true;
         }
 
-        dist = dot(pos - (u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z),
-                   - u_translate{{ n }}.normal.xy);
+        dist = -dot(pos - (u_translate{{ n }}.p + u_translate{{ n }}.normal.xy * u_translate{{ n }}.normal.z),
+                    - u_translate{{ n }}.normal.xy);
         if(0. < dist && dist < u_translate{{ n }}.ui.y) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
@@ -726,7 +726,7 @@ bool renderUI(vec2 pos, out vec4 color) {
             return true;
         }
 
-        dist = dot(pos - (u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z),
+        dist = -dot(pos - (u_parallelInversions{{ n }}.p + u_parallelInversions{{ n }}.normal.xy * u_parallelInversions{{ n }}.normal.z),
                    - u_parallelInversions{{ n }}.normal.xy);
         if(0. < dist && dist < u_parallelInversions{{ n }}.ui.y) {
             color = vec4(u_generatorBoundaryColor, 1);
@@ -789,7 +789,7 @@ bool renderUI(vec2 pos, out vec4 color) {
             return true;
         }
 
-        dist = dot(pos - (u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z),
+        dist = -dot(pos - (u_glideReflection{{ n }}.p + u_glideReflection{{ n }}.normal.xy * u_glideReflection{{ n }}.normal.z),
                    - u_glideReflection{{ n }}.normal.xy);
         if(0. < dist && dist < u_glideReflection{{ n }}.ui.y) {
             color = vec4(u_generatorBoundaryColor, 1);
@@ -867,6 +867,10 @@ bool renderUI(vec2 pos, out vec4 color) {
         // point p
         if(distance(pos, u_rotation{{ n }}.p) < u_rotation{{ n }}.ui.y) {
             color = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+        if(distance(pos, u_rotation{{ n }}.p) < u_rotation{{ n }}.ui.y * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
         if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y) {

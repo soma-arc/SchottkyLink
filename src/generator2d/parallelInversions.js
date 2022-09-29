@@ -63,6 +63,14 @@ export default class ParallelInversions extends Generator {
                 .setDiffObj(dpNormal);
         }
 
+        // origin control point
+        const dp = mouse.sub(this.p);
+        if (dp.length() < this.UIPointRadius * sceneScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(ParallelInversions.ORIGIN_POINT)
+                .setDiffObj(dp);
+        }
+
         return this.selectBody(mouse, sceneScale);
     }
 
@@ -103,7 +111,8 @@ export default class ParallelInversions extends Generator {
 
     move(mouseState, mouse) {
         switch (mouseState.componentId) {
-        case ParallelInversions.BODY: {
+        case ParallelInversions.BODY:
+        case ParallelInversions.ORIGIN_POINT: {
             this.p = mouse.sub(mouseState.diffObj);
             break;
         }
@@ -352,6 +361,10 @@ export default class ParallelInversions extends Generator {
         return nh;
     }
 
+    isBody(componentId) {
+        return componentId === ParallelInversions.BODY;
+    }
+
     static get BODY() {
         return 0;
     }
@@ -362,6 +375,10 @@ export default class ParallelInversions extends Generator {
 
     static get POINT_HP2() {
         return 2;
+    }
+
+    static get ORIGIN_POINT() {
+        return 3;
     }
 
     get name() {

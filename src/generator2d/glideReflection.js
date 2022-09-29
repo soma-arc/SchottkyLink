@@ -62,6 +62,13 @@ export default class GlideReflection extends Generator {
                 .setComponentId(GlideReflection.NORMAL_POINT)
                 .setDiffObj(dpNormal);
         }
+        // origin control point
+        const dp = mouse.sub(this.p);
+        if (dp.length() < this.UIPointRadius * sceneScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(GlideReflection.ORIGIN_POINT)
+                .setDiffObj(dp);
+        }
 
         return this.selectBody(mouse, sceneScale);
     }
@@ -103,7 +110,8 @@ export default class GlideReflection extends Generator {
 
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
-        case GlideReflection.BODY: {
+        case GlideReflection.BODY:
+        case GlideReflection.ORIGIN_POINT: {
             this.p = mouse.sub(selectionState.diffObj);
             break;
         }
@@ -350,6 +358,10 @@ export default class GlideReflection extends Generator {
                                    array[3]);
     }
 
+    isBody(componentId) {
+        return componentId === GlideReflection.BODY;
+    }
+
     static get BODY() {
         return 0;
     }
@@ -360,6 +372,10 @@ export default class GlideReflection extends Generator {
 
     static get POINT_HP2() {
         return 2;
+    }
+
+    static get ORIGIN_POINT() {
+        return 3;
     }
 
     get name() {

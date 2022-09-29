@@ -63,6 +63,14 @@ export default class ParallelTranslation extends Generator {
                 .setDiffObj(dpNormal);
         }
 
+        // origin control point
+        const dp = mouse.sub(this.p);
+        if (dp.length() < this.UIPointRadius * sceneScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(ParallelTranslation.ORIGIN_POINT)
+                .setDiffObj(dp);
+        }
+
         return this.selectBody(mouse, sceneScale);
     }
 
@@ -103,7 +111,8 @@ export default class ParallelTranslation extends Generator {
 
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
-        case ParallelTranslation.BODY: {
+        case ParallelTranslation.BODY:
+        case ParallelTranslation.ORIGIN_POINT: {
             this.p = mouse.sub(selectionState.diffObj);
             break;
         }
@@ -350,6 +359,10 @@ export default class ParallelTranslation extends Generator {
         return nh;
     }
 
+    isBody(componentId) {
+        return componentId === ParallelTranslation.BODY;
+    }
+
     static get BODY() {
         return 0;
     }
@@ -360,6 +373,10 @@ export default class ParallelTranslation extends Generator {
 
     static get POINT_HP2() {
         return 2;
+    }
+
+    static get ORIGIN_POINT() {
+        return 3;
     }
 
     get name() {

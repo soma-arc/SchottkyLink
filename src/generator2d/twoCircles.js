@@ -226,6 +226,11 @@ export default class TwoCircles extends Generator {
                               new Circle(new Vec2(array[3], array[4]), array[5]));
     }
 
+    isBody(componentId) {
+        return componentId === TwoCircles.C1_BODY ||
+            componentId === TwoCircles.C2_BODY;
+    }
+
     static get C1_BODY() {
         return 0;
     }

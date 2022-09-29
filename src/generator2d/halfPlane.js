@@ -299,6 +299,10 @@ export default class HalfPlane extends Generator {
                              new Vec2(Math.cos(angleRadian), Math.sin(angleRadian)));
     }
 
+    isBody(componentId) {
+        return componentId === HalfPlane.BODY;
+    }
+
     static get BODY() {
         return 0;
     }

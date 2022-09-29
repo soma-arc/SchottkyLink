@@ -72,6 +72,14 @@ export default class CrossingInversions extends Generator {
                 .setDiffObj(dp2);
         }
 
+        // origin control point
+        const dOrigin = mouse.sub(this.p);
+        if (dOrigin.length() < this.UIPointRadius * sceneScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(CrossingInversions.ORIGIN_POINT)
+                .setDiffObj(dOrigin);
+        }
+
         if (Vec2.dot(dp, this.normal1) > 0 &&
             Vec2.dot(dp2, this.normal2) > 0) {
             return new SelectionState();
@@ -93,7 +101,8 @@ export default class CrossingInversions extends Generator {
 
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
-        case CrossingInversions.BODY: {
+        case CrossingInversions.BODY:
+        case CrossingInversions.ORIGIN_POINT: {
             this.p = mouse.sub(selectionState.diffObj);
             break;
         }
@@ -373,6 +382,10 @@ export default class CrossingInversions extends Generator {
         return `CrossingInversions[]=${this.p.x.toFixed(this.digits)},${this.p.y.toFixed(this.digits)},${this.boundaryAngleDeg.toFixed(this.digits)},${this.degrees.toFixed(this.digits)}`;
     }
 
+    isBody(componentId) {
+        return componentId === CrossingInversions.BODY;
+    }
+
     static get BODY() {
         return 0;
     }
@@ -383,6 +396,10 @@ export default class CrossingInversions extends Generator {
 
     static get ROTATION_POINT() {
         return 2;
+    }
+
+    static get ORIGIN_POINT() {
+        return 3;
     }
 
     get name() {

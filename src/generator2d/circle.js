@@ -295,6 +295,10 @@ export default class Circle extends Generator {
         return new Circle(center, r);
     }
 
+    isBody(componentId) {
+        return componentId === Circle.BODY;
+    }
+
     static get BODY() {
         return 0;
     }
