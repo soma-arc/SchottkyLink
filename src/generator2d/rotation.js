@@ -180,8 +180,7 @@ export default class Rotation extends Generator {
         }
         case Rotation.ROTATION_POINT: {
             const mp = mouse.sub(this.p);
-            let theta1 = Math.atan2(mp.y, mp.x);
-            if(theta1 < 0) theta1 += Radians.TWO_PI;
+            const theta1 = Math.atan2(mp.y, mp.x);
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             let rad = theta1 - theta2;
             rad = (Math.abs(rad - Radians.PI) < 0.1 || isNaN(rad)) ? Radians.PI : rad;
@@ -272,8 +271,7 @@ export default class Rotation extends Generator {
         }
         case Rotation.ROTATION_POINT: {
             const mp = mouseState.position.sub(this.p);
-            let theta1 = Math.atan2(mp.y, mp.x);
-            if(theta1 < 0) theta1 += Radians.TWO_PI;
+            const theta1 = Math.atan2(mp.y, mp.x);
             const theta2 = Math.atan2(this.boundaryDir1.y, this.boundaryDir1.x);
             let rad = theta1 - theta2;
             rad = (Math.abs(rad - Radians.PI) < 0.1 || isNaN(rad)) ? Radians.PI : rad;
