@@ -205,7 +205,8 @@ export default class Canvas2d extends Canvas {
         this.mouseState.prevPosition = mouse;
         this.mouseState.prevTranslate = this.translate;
         this.mouseState.isPressing = true;
-        if(this.grab) {
+        if(this.cursorType === 'grab' ||
+           this.cursorType === 'allScroll') {
             this.cursorType = 'grabbing';
         }
     }
@@ -230,9 +231,17 @@ export default class Canvas2d extends Canvas {
         this.isRendering = false;
         this.scene.mouseUp();
         this.draggingOrbitOrigin = false;
-        if(this.grab) {
-            this.cursorType = 'grab';
-            this.grab = false;
+        const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
+        if(selectionState.isSelectingObj()) {
+            if(selectionState.selectedObj.isBody(selectionState.componentId)) {
+                if(this.mouseState.isPressing) {
+                    this.cursorType = 'grabbing';
+                } else {
+                    this.cursorType = 'allScroll';
+                }
+            } else {
+                this.cursorType = 'grab';
+            }
         }
     }
 
@@ -247,19 +256,24 @@ export default class Canvas2d extends Canvas {
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
         if(selectionState.isSelectingObj()) {
             if(selectionState.selectedObj.isBody(selectionState.componentId)) {
-                this.cursorType = 'allScroll';
+                if(this.mouseState.isPressing) {
+                    this.cursorType = 'grabbing';
+                } else {
+                    this.cursorType = 'allScroll';
+                }
             } else {
-                this.grab = true;
-                this.cursorType = 'grab';
+                if(this.mouseState.isPressing) {
+                    this.cursorType = 'grabbing';
+                } else {
+                    this.cursorType = 'grab';
+                }
             }
         } else {
-            this.grab = false;
             this.cursorType = 'crosshair';
         }
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
-        this.cursorType = 'grabbing';
         this.mouseState.position = mouse;
         if(this.displayMode === 'iframe') {
             if(this.scene.isRenderingGenerator) {
