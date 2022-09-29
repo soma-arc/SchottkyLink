@@ -45,7 +45,8 @@ export default {
     width: 100%;
     height: 100%;
     border-style: ridge;
-    border-color: gray
+    border-color: gray;
+    outline: none;
 }
 
 .defaultMode {
