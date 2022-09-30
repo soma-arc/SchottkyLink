@@ -614,4 +614,12 @@ export default class Scene2d extends Scene {
 
     mouseLeave() {
     }
+
+    getGenerator(genName, index) {
+        const gens = this.objects['Circle'];
+        if(gens === undefined) return undefined;
+        const gen = gens[index];
+        if(gen === undefined) return undefined;
+        return gen;
+    }
 }
