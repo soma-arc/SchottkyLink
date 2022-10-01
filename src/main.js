@@ -114,7 +114,7 @@ window.addEventListener('load', () => {
     };
 
     window.executeCommandTweet = () => {
-        canvasManager.saveImageAndTweet();
+        canvasManager.saveImageAndTweet('#FMS特別講義');
     };
 
     window.executeCommandSaveImage = () => {
@@ -215,15 +215,15 @@ window.addEventListener('load', () => {
     };
 
     window.setOrbitSeed = (index, x, y, width, height) => {
-        setSeed('OrbitSeed', x, y, width, height);
+        setSeed('OrbitSeed', index, x, y, width, height);
     };
 
     window.setVideoOrbit = (index, x, y, width, height) => {
-        setSeed('VideoOrbit', x, y, width, height);
+        setSeed('VideoOrbit', index, x, y, width, height);
     };
 
     window.setCanvasSeed = (index, x, y, width, height) => {
-        setSeed('CanvasSeed', x, y, width, height);
+        setSeed('CanvasSeed', index, x, y, width, height);
     };
 
     const setParallelPlanes = (name, index, x, y, degree, distance) => {
@@ -262,11 +262,11 @@ window.addEventListener('load', () => {
     };
 
     window.setCrossingInversions = (index, x, y, boundaryDegree, normalDegree) => {
-        setParallelPlanes('CrossingInversions', index, x, y, boundaryDegree, normalDegree);
+        setTwoPlanes('CrossingInversions', index, x, y, boundaryDegree, normalDegree);
     };
 
     window.setRotation = (index, x, y, boundaryDegree, normalDegree) => {
-        setParallelPlanes('Rotation', index, x, y, boundaryDegree, normalDegree);
+        setTwoPlanes('Rotation', index, x, y, boundaryDegree, normalDegree);
     };
 
     window.setScaling = (index, x, y, c1r, c2r, angleDegree) => {

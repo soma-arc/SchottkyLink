@@ -58,7 +58,7 @@ export default class CanvasManager {
         }
     }
 
-    saveImageAndTweet() {
+    saveImageAndTweet(tag) {
         const UPLOAD_URL = 'https://script.google.com/a/tessellation.jp/macros/s/AKfycbxvOHV4YIuHy8mzDx0cCNnxG_g24I1WaL11aV-0nEAgkO_WDjGS2iN5nf_HWl3DxxNOHQ/exec';
         const formData = new FormData();
         const width = 600;
@@ -72,6 +72,7 @@ export default class CanvasManager {
                          (json) => {
                              const fileURL = 'https://drive.google.com/file/d/' + json.id + '/view';
                              const array = [fileURL, '#SchottkyLink'];
+                             if(tag !== undefined) array.push(tag);
                              const tweet = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(array.join('\n'));
                              window.open(tweet);
                          },

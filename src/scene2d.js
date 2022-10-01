@@ -616,7 +616,7 @@ export default class Scene2d extends Scene {
     }
 
     getGenerator(genName, index) {
-        const gens = this.objects['Circle'];
+        const gens = this.objects[genName];
         if(gens === undefined) return undefined;
         const gen = gens[index];
         if(gen === undefined) return undefined;
