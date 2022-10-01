@@ -2,7 +2,6 @@ import { GetWebGL2Context, CreateSquareVbo, AttachShader,
          LinkProgram, CreateRGBATextures } from './glUtils';
 import Canvas from './canvas.js';
 import Vec2 from './vector2d.js';
-import ZingTouch from 'zingtouch';
 
 const RENDER_VERTEX = require('./shaders/render.vert');
 const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
@@ -64,39 +63,192 @@ export default class Canvas2d extends Canvas {
 
     init() {
         this.canvas = document.getElementById(this.canvasId);
-        // const zt = new ZingTouch.Region(this.canvas);
-        // zt.bind(this.canvas, 'tap', (e) => {
-        //     console.log(e);
-        //     if(this.prevTime !== undefined && e.timeStamp - this.prevTime < 200 &&
-        //        this.allowDeleteComponents) {
-        //         // doubleTap
-        //         console.log('doubleTap');
-        //         const ev = e.detail.events[0];
-        //         this.scene.remove(this.calcSceneCoord(ev.x, ev.y));
-        //     } else {
-        //         const ev = e.detail.events[0];
-        //         const mouse = this.calcSceneCoord(ev.x, ev.y);
-        //         this.scene.select(mouse, this.scale);
-        //     }
-        //     this.render();
-        //     this.prevTime = e.timeStamp;
-        // });
 
-        // zt.bind(this.canvas, 'pan', (e) => {
-        //     console.log(e);
-        //     const ev = e.detail.events[0];
-        //     if (ev.type === 'move') {
-        //     } else if(ev.type === 'end') {
-        //     }
-        // });
+        function copyTouch(touch) {
+            const o = {};
+            o.identifier = touch.identifier;
+            o.clientX = touch.clientX;
+            o.clientY = touch.clientY;
+            o.radiusX = touch.radiusX;
+            o.radiusY = touch.radiusY;
+            return o;
+        }
 
-        // const doublePan = new ZingTouch.Pan({
-        //     numInputs: 2
-        // });
+        function touchIndexById(idToFind) {
+            for (let i = 0; i < touchesList.length; i++) {
+                const id = touchesList[i].identifier;
+                if (id == idToFind) {
+                    return i;
+                }
+            }
+            return -1;    // not found
+        }
 
-        // zt.bind(this.canvas, doublePan, (e) => {
-        //     console.log(e);
-        // });
+        this.canvas.addEventListener('touchstart', handleStart.bind(this), false);
+        this.canvas.addEventListener('touchend', handleEnd.bind(this), false);
+        this.canvas.addEventListener('touchcancel', handleCancel.bind(this), false);
+        this.canvas.addEventListener('touchmove', handleMove.bind(this), false);
+
+        const touchesList = [];
+        let longTapTimer = undefined;
+        const longTapMillis = 500;
+        const longTapMoveThreshold = 0.01;
+        let startTouch = undefined;
+        let prevDistance = -1;
+        const zoomDistanceThreshold = 300;
+        function handleStart(event) {
+            event.preventDefault();
+            //console.log(event);
+            //console.log('');
+            //console.log('start '+ event.changedTouches.length);
+            const touches = event.changedTouches;
+            const touch = touches[0];
+
+            const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
+                                              touch.clientY + touch.radiusY);
+            this.prevSelected = this.scene.selectedObj !== undefined;
+            if(this.prevSelected) this.prevId = this.scene.selectedObj.id;
+            this.scene.select(mouse, this.scale);
+            this.render();
+
+            this.mouseState.prevPosition = mouse;
+            this.mouseState.prevTranslate = this.translate;
+
+            if(this.allowDeleteComponents) {
+                longTapTimer = setTimeout(() => {
+                    this.scene.remove(mouse);
+                }, longTapMillis);
+            }
+            console.log(touch);
+            touchesList.push(copyTouch(touch));
+            startTouch = copyTouch(touch);
+        }
+
+        function handleMove(event) {
+            event.preventDefault();
+            //console.log('move '+ event.changedTouches.length);
+            const touches = event.changedTouches;
+            const touch = touches[0];
+            const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
+                                              touch.clientY + touch.radiusY);
+
+            this.mouseState.position = mouse;
+            if(this.displayMode === 'iframe') {
+                if(this.scene.isRenderingGenerator) {
+                    const moved = this.scene.move(mouse);
+                    if (moved) this.isRendering = true;
+                } else {
+                    if(touches.length === 1) {
+                        this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
+                    } else if (touches.length === 2) {
+                        const t1 = touchesList[0];
+                        const t2 = touchesList[1];
+                        const m1 = new Vec2(t1.clientX, t1.clientY);
+                        const m2 = new Vec2(t2.clientX, t2.clientY);
+                        const distance = Vec2.distance(m1, m2);
+                        if(prevDistance > 0 && distance > zoomDistanceThreshold) {
+                            if(distance > prevDistance) {
+                                this.scale /= this.scaleFactor;
+                            } else {
+                                this.scale *= this.scaleFactor;
+                            }
+                            this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
+                        }
+                        prevDistance = distance;
+
+                        // update touches
+                        for (let i = 0; i < touches.length; i++) {
+                            const idx = touchIndexById(touchesList[i].identifier);
+                            if (idx >= 0) {
+                                touchesList.splice(idx, 1, copyTouch(touches[i]));
+                            }
+                        }
+                    }
+                    this.isRendering = true;
+                }
+            } else {
+                if(touches.length === 1) {
+                    const moved = this.scene.move(mouse);
+                    if (moved) this.isRendering = true;
+                } else if(touches.length === 2) {
+                    const t1 = touchesList[0];
+                    const t2 = touchesList[1];
+                    const m1 = new Vec2(t1.clientX, t1.clientY);
+                    const m2 = new Vec2(t2.clientX, t2.clientY);
+                    const distance = Vec2.distance(m1, m2);
+                    if(prevDistance > 0 && distance > zoomDistanceThreshold) {
+                        if(distance > prevDistance) {
+                            this.scale /= this.scaleFactor;
+                        } else {
+                            this.scale *= this.scaleFactor;
+                        }
+                        this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
+                    } else {
+                        const idx = touchIndexById(startTouch.identifier);
+                        const t = touchesList[idx];
+                        const m = this.calcSceneCoord(t.clientX + t.radiusX,
+                                                      t.clientY + t.radiusY);
+                        this.translate = this.translate.sub(m.sub(this.mouseState.prevPosition));
+                    }
+                    prevDistance = distance;
+                    this.isRendering = true;
+
+                    // update touches
+                    for (let i = 0; i < touches.length; i++) {
+                        const idx = touchIndexById(touchesList[i].identifier);
+                        if (idx >= 0) {
+                            touchesList.splice(idx, 1, copyTouch(touches[i]));
+                        }
+                    }
+                }
+            }
+
+            // TODO scaleによって閾値がかわってしまうのでdistanceをclientX, clientYで計算する
+            if(longTapTimer !== undefined &&
+               Vec2.distance(this.mouseState.prevPosition, mouse) > longTapMoveThreshold) {
+                clearTimeout(longTapTimer);
+                longTapTimer = undefined;
+            }
+        }
+
+        function handleEnd(event) {
+            event.preventDefault();
+            //console.log('end ' + event.changedTouches.length);
+            const touches = event.changedTouches;
+            const touch = touches[0];
+            const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
+                                              touch.clientY + touch.radiusY);
+            if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
+                this.prevSelected && //一つ前のmouseDownで選択状態になっている
+                this.scene.selectedObj !== undefined &&
+                this.scene.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
+                !this.scene.selectedObj.isHandle(this.scene.selectedState.componentId)) {
+                this.scene.unselect();
+                this.render();
+            }
+            this.mouseState.isPressing = false;
+            this.isRendering = false;
+            this.scene.mouseUp();
+
+            if(longTapTimer !== undefined) {
+                clearTimeout(longTapTimer);
+                longTapTimer = undefined;
+            }
+
+            console.log(touchesList);
+            for (let i = 0; i < touchesList.length; i++) {
+                const idx = touchIndexById(touchesList[i].identifier);
+                if (idx >= 0) {
+                    touchesList.splice(idx, 1);
+                }
+            }
+            console.log('');
+            prevDistance = -1;
+        }
+
+        function handleCancel(event) {
+            event.preventDefault();
+        }
 
         this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
         this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
