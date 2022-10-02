@@ -73,6 +73,7 @@ window.addEventListener('load', () => {
         canvasManager.videoManager.connect(
             canvasManager.canvas2d.gl,
             () => {
+                scene2d.updateVideoOrbit();
                 canvasManager.videoManager.streaming = true;
                 if(downloadImage) {
                     canvasManager.canvas2d.renderProductAndSave();

@@ -16,6 +16,16 @@ export default class VideoOrbit extends OrbitSeed {
                                                `u_videoOrbit${index}.selected`));
     }
 
+    updateTextureSize(width, height) {
+        const textureWidth = width;
+        const textureHeight = height;
+        this.aspect = textureHeight / textureWidth;
+        if(this.keepAspect && this.keepAspectFromHeight) {
+            this.renderWidth = this.size.y / this.aspect;
+        }
+        this.update();
+    }
+
     exportAsQueryString() {
         return `VideoOrbit[]=${this.corner.x.toFixed(this.digits)},${this.corner.y.toFixed(this.digits)},${this.size.x.toFixed(this.digits)},${this.size.y.toFixed(this.digits)}`;
     }

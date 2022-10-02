@@ -451,6 +451,13 @@ export default class Scene2d extends Scene {
         }
     }
 
+    updateVideoOrbit() {
+        if(this.objects['VideoOrbit'] === undefined) return;
+        for(const videoOrbit of this.objects['VideoOrbit']) {
+            videoOrbit.updateTextureSize(this.videoManager.width, this.videoManager.height);
+        }
+    }
+
     reloadParameter() {
         this.loadFromQueryString(this.queryParameter);
     }
