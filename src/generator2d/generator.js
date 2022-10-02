@@ -42,10 +42,11 @@ export default class Generator {
      * ハンドルなどのUIを除いた選択判定を行う
      * @param {Vec2} mouse
      * @param  {number} sceneScale
+     * @param  {number} selectionScale
      * @returns {SelectionState}
      */
-    selectBody(mouse, sceneScale) {
-        return this.select(mouse, sceneScale);
+    selectBody(mouse, sceneScale, selectionScale) {
+        return this.select(mouse, sceneScale, selectionScale);
     }
 
     // ハンドル型UIであるかどうかを判定する

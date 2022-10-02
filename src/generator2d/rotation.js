@@ -58,13 +58,16 @@ export default class Rotation extends Generator {
             - Math.atan2(this.boundaryDir2.y, this.boundaryDir2.x);
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius * sceneScale));
         const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius * sceneScale));
 
         // point of hp2
         const dp2 = mouse.sub(boundaryDirPoint2);
-        if (dp2.length() < this.UIPointRadius * sceneScale) {
+        if (dp2.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Rotation.ROTATION_POINT)
                 .setDiffObj(dp2);
@@ -72,7 +75,7 @@ export default class Rotation extends Generator {
 
         // normal control point
         const dp = mouse.sub(boundaryDirPoint1);
-        if (dp.length() < this.UIPointRadius * sceneScale) {
+        if (dp.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Rotation.BOUNDARY_POINT)
                 .setDiffObj(dp);
@@ -80,7 +83,7 @@ export default class Rotation extends Generator {
 
         // origin control point
         const dOrigin = mouse.sub(this.p);
-        if (dOrigin.length() < this.UIPointRadius * sceneScale) {
+        if (dOrigin.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Rotation.ORIGIN_POINT)
                 .setDiffObj(dOrigin);

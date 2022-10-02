@@ -96,6 +96,7 @@ export default class Canvas2d extends Canvas {
         let startTouch = undefined;
         let prevDistance = -1;
         const zoomDistanceThreshold = 300;
+        const touchSelectionScale = 3;
         function handleStart(event) {
             event.preventDefault();
             //console.log(event);
@@ -108,7 +109,7 @@ export default class Canvas2d extends Canvas {
                                               touch.clientY + touch.radiusY);
             this.prevSelected = this.scene.selectedObj !== undefined;
             if(this.prevSelected) this.prevId = this.scene.selectedObj.id;
-            this.scene.select(mouse, this.scale);
+            this.scene.select(mouse, this.scale, touchSelectionScale);
             this.render();
 
             this.mouseState.prevPosition = mouse;

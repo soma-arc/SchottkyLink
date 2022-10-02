@@ -54,30 +54,36 @@ export default class GlideReflection extends Generator {
                                  this.normal.scale(-1));
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         // normal control point
         const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIRingRadius * sceneScale)));
-        if (dpNormal.length() < this.UIPointRadius * sceneScale) {
+        if (dpNormal.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(GlideReflection.NORMAL_POINT)
                 .setDiffObj(dpNormal);
         }
         // origin control point
         const dp = mouse.sub(this.p);
-        if (dp.length() < this.UIPointRadius * sceneScale) {
+        if (dp.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(GlideReflection.ORIGIN_POINT)
                 .setDiffObj(dp);
         }
 
-        return this.selectBody(mouse, sceneScale);
+        return this.selectBody(mouse, sceneScale, selectionScale);
     }
 
-    selectBody(mouse, sceneScale) {
+    selectBody(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const dp = mouse.sub(this.p);
         // point of hp2
         const dp2 = mouse.sub(this.p.add(this.normal.scale(this.planeDist)));
-        if (dp2.length() < this.UIPointRadius * sceneScale) {
+        if (dp2.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(GlideReflection.POINT_HP2)
                 .setDiffObj(dp2);

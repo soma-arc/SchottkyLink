@@ -44,9 +44,12 @@ export default class HalfPlane extends Generator {
                                     this.normal.x);
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const dpNormal = mouse.sub(this.p.add(this.normal.scale(this.normalUIPointLen * sceneScale)));
-        if (dpNormal.length() < this.UIPointRadius * sceneScale) {
+        if (dpNormal.length() < this.UIPointRadius * sceneScale * selectionScale) {
             this.prevNormal = this.normal;
             return new SelectionState().setObj(this)
                 .setComponentId(HalfPlane.NORMAL_POINT)
@@ -54,7 +57,7 @@ export default class HalfPlane extends Generator {
         }
 
         const dpOrigin = mouse.sub(this.p);
-        if(dpOrigin.length() < this.UIPointRadius * sceneScale) {
+        if(dpOrigin.length() < this.UIPointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(HalfPlane.ORIGIN_POINT)
                 .setDiffObj(dpOrigin);

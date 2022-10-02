@@ -48,13 +48,16 @@ export default class Circle extends Generator {
         return new Circle(c, r);
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const dp = mouse.sub(this.center);
         const d = dp.length();
         if (d > this.r) return new SelectionState();
 
         const distFromCircumference = this.r - d;
-        if (distFromCircumference < this.circumferenceThickness * sceneScale) {
+        if (distFromCircumference < this.circumferenceThickness * sceneScale * selectionScale) {
             this.prevRadius = this.r;
             return new SelectionState().setObj(this)
                 .setComponentId(Circle.CIRCUMFERENCE)

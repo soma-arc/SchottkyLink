@@ -127,10 +127,10 @@ export default class Scene2d extends Scene {
         }
     }
 
-    select (mouse, sceneScale) {
+    select (mouse, sceneScale, selectionScale) {
         // 既に選択済みのジェネレータから選択処理を行う
         if (this.selectedObj !== undefined) {
-            const state = this.selectedObj.select(mouse, sceneScale);
+            const state = this.selectedObj.select(mouse, sceneScale, selectionScale);
             if (state.isSelectingObj()) {
                 this.selectedState = state;
                 this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
@@ -153,7 +153,7 @@ export default class Scene2d extends Scene {
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
                 if(obj.isFixed && this.displayMode === 'iframe') continue;
-                const state = obj.selectBody(mouse, sceneScale);
+                const state = obj.selectBody(mouse, sceneScale, selectionScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
                     this.selectedObj = this.selectedState.selectedObj;
