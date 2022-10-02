@@ -394,6 +394,8 @@ export default class Canvas2d extends Canvas {
             } else {
                 this.cursorType = 'grab';
             }
+        } else {
+            this.cursorType = 'crosshair';
         }
     }
 
@@ -421,7 +423,9 @@ export default class Canvas2d extends Canvas {
                 }
             }
         } else {
-            this.cursorType = 'crosshair';
+            if(this.cursorType !== 'grabbing') {
+                this.cursorType = 'crosshair';
+            }
         }
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
