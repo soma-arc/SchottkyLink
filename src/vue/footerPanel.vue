@@ -5,7 +5,6 @@
          target="_blank">
           <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
       </a>
-      <a id="prevLink" target="_blank" href="https://youtu.be/s1rtGw-WM_8">Introductory video on YouTube</a>
       <div id="version">Version 3.6.0 </div>
     </div>
     <div>
@@ -61,6 +60,7 @@ footer {
     padding-left: 5px;
     padding-bottom: 10px;
     border-right-style: ridge;
+    border-left-style: ridge;
 
     border-right-color: gray;
     border-left-color: gray;
