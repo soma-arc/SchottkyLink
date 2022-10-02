@@ -6,7 +6,7 @@
           <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
       </a>
       <a id="prevLink" target="_blank" href="https://youtu.be/s1rtGw-WM_8">Introductory video on YouTube</a>
-      <div id="version">Version 3.5.0 </div>
+      <div id="version">Version 3.6.0 </div>
     </div>
     <div>
       Created by soma_arc

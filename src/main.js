@@ -173,10 +173,12 @@ window.addEventListener('load', () => {
 
     window.setBackgroundColor = (r, g, b, a) => {
         canvasManager.canvas2d.backgroundColor = [r, g, b, a];
+        canvasManager.canvas2d.render();
     };
 
     window.setGeneratorBoundaryColor = (r, g, b) => {
         canvasManager.canvas2d.generatorBoundaryColor = [r, g, b];
+        canvasManager.canvas2d.render();
     };
 
     window.allowDeleteComponents = (bool) => {
