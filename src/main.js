@@ -145,7 +145,7 @@ window.addEventListener('load', () => {
     };
 
     window.executeCommandCopyURL = async () => {
-        const url = this.canvasManager.canvas2d.exportAsQueryString();
+        const url = canvasManager.canvas2d.exportAsQueryString();
         await navigator.clipboard.writeText(url);
         return url;
     };
