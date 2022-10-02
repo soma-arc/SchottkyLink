@@ -56,20 +56,20 @@ export default class CrossingInversions extends Generator {
         const boundaryDirPoint1 = this.p.add(this.boundaryDir1.scale(this.normalUIRingRadius * sceneScale));
         const boundaryDirPoint2 = this.p.add(this.boundaryDir2.scale(this.normalUIRingRadius * sceneScale));
 
-        // normal control point
-        const dp = mouse.sub(boundaryDirPoint1);
-        if (dp.length() < this.UIPointRadius * sceneScale) {
-            return new SelectionState().setObj(this)
-                .setComponentId(CrossingInversions.BOUNDARY_POINT)
-                .setDiffObj(dp);
-        }
-
         // point of hp2
         const dp2 = mouse.sub(boundaryDirPoint2);
         if (dp2.length() < this.UIPointRadius * sceneScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(CrossingInversions.ROTATION_POINT)
                 .setDiffObj(dp2);
+        }
+
+        // normal control point
+        const dp = mouse.sub(boundaryDirPoint1);
+        if (dp.length() < this.UIPointRadius * sceneScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(CrossingInversions.BOUNDARY_POINT)
+                .setDiffObj(dp);
         }
 
         // origin control point

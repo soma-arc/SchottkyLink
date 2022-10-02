@@ -820,21 +820,21 @@ bool renderUI(vec2 pos, out vec4 color) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
-        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y) {
-            color = vec4(PINK, 1);
-            return true;
-        }
-        // boundary
-        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y * 1.5) {
-            color = vec4(u_generatorBoundaryColor, 1);
-            return true;
-        }
         if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.zw) < u_crossingInversions{{ n }}.ui.y) {
             color = vec4(GREEN, 1);
             return true;
         }
         // boundary
         if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.zw) < u_crossingInversions{{ n }}.ui.y * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y) {
+            color = vec4(PINK, 1);
+            return true;
+        }
+        // boundary
+        if(distance(pos, u_crossingInversions{{ n }}.boundaryPoint.xy) < u_crossingInversions{{ n }}.ui.y * 1.5) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
@@ -873,21 +873,21 @@ bool renderUI(vec2 pos, out vec4 color) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
-        if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y) {
-            color = vec4(PINK, 1);
-            return true;
-        }
-        // boundary
-        if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y * 1.5) {
-            color = vec4(u_generatorBoundaryColor, 1);
-            return true;
-        }
         if(distance(pos, u_rotation{{ n }}.boundaryPoint.zw) < u_rotation{{ n }}.ui.y) {
             color = vec4(GREEN, 1);
             return true;
         }
         // boundary
         if(distance(pos, u_rotation{{ n }}.boundaryPoint.zw) < u_rotation{{ n }}.ui.y * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+        if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y) {
+            color = vec4(PINK, 1);
+            return true;
+        }
+        // boundary
+        if(distance(pos, u_rotation{{ n }}.boundaryPoint.xy) < u_rotation{{ n }}.ui.y * 1.5) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
