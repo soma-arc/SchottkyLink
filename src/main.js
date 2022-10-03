@@ -19,6 +19,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 window.addEventListener('load', () => {
     Vue.use(Buefy);
     window.Vue = Vue;
+    console.log(window.navigator.userAgent);
 
     const textureManager = new TextureManager();
     const videoManager = new VideoManager();

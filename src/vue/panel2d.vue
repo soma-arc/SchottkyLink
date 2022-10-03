@@ -1,8 +1,8 @@
 <template>
 <div class="contentParent">
   <div class="canvasPanel">
-    <div class="canvasParent" >
-      <canvas id="canvas2d" width="200" tabIndex="1000" v-bind:class="[ mode, canvasManager.canvas2d.cursorType ]"/><br>
+    <div class="canvasParent" id="canvasParent">
+      <canvas id="canvas2d" tabIndex="1000" v-bind:class="[ mode, canvasManager.canvas2d.cursorType ]"/><br>
     </div>
     <underControlPanel2d :scene2d="scene2d" :canvasManager="canvasManager" v-if="display"/>
   </div>

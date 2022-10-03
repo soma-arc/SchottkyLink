@@ -128,11 +128,6 @@ export default {
             }
             this.canvasManager.canvas2d.render();
         }
-    },
-    computed: {
-        display: function() {
-            return this.canvasManager.displayMode !== 'iframe';
-        }
     }
 }
 </script>
