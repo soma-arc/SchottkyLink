@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5, user-scalable=no" />
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    </head>
+    <body>
+        <div style="display: flex;justify-content: flex-end;position:sticky;top:0;">
+            <div style="position:absolute;background-color:#ffffffda;border-left:1px solid black;margin-bottom:10px;">
+
+                <form>
+                    <input size="35" value="https://soma-arc.net/SchottkyV3/v3/2/" onchange="
+                                 localStorage.setItem('base_href',this.value);
+                                 ">
+                    <script>
+                     (()=>{
+                         let input= document.currentScript.closest('form').querySelector('input');
+                         if (/^(soma-arc\.net|schottky\.jp)$/.test(document.location.hostname)) {
+                             localStorage.removeItem('base_href');
+                             input.style.display = 'none';
+                             return;
+                         }
+                         let base_href = localStorage.getItem('base_href');
+                         if (base_href && /^https*:\/\//.test(base_href)) {
+                             input.value = base_href;
+                         } else {
+                             if (input.value && /^https*:\/\//.test(input.value)) {
+                                 localStorage.setItem('base_href',input.value);
+                             }
+                         }
+                     })();
+                    </script>
+                </form>
+                <div id="svgbase"></div>
+            </div>
+        </div>
+        <iframe style="border:none;" width="80%" height="550" src="./?displayMode=iframe"></iframe>
+        <div id="menu">
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+        <script defer src="https://www.t3puzzle.com/n/switch-text.js"></script>
+        <script src="https://www.t3puzzle.com/schottky/wp.js">
+        </script>
+    </body>
+</html>
