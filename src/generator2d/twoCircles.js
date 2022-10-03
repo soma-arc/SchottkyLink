@@ -39,8 +39,11 @@ export default class TwoCircles extends Generator {
         return d < this.c2.r;
     }
 
-    select(mouse, sceneScale) {
-        const c1State = this.c1.select(mouse, sceneScale);
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
+        const c1State = this.c1.select(mouse, sceneScale, selectionScale);
         if (c1State.isSelectingObj()) {
             if (c1State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)
@@ -55,7 +58,7 @@ export default class TwoCircles extends Generator {
             }
         }
 
-        const c2State = this.c2.select(mouse, sceneScale);
+        const c2State = this.c2.select(mouse, sceneScale, selectionScale);
         if (c2State.isSelectingObj()) {
             if (c2State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)

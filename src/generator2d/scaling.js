@@ -83,15 +83,18 @@ export default class Scaling extends Generator {
         return d < this.c1d.r;
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const dpl2 = mouse.sub(this.line2P);
-        if (dpl2.length() < this.pointRadius * sceneScale) {
+        if (dpl2.length() < this.pointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Scaling.LINE2_POINT)
                 .setDiffObj(dpl2);
         }
 
-        const c1State = this.c1.select(mouse, sceneScale);
+        const c1State = this.c1.select(mouse, sceneScale, selectionScale);
         if (c1State.isSelectingObj()) {
             if (c1State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)
@@ -104,7 +107,7 @@ export default class Scaling extends Generator {
             }
         }
 
-        const c2State = this.c2.select(mouse, sceneScale);
+        const c2State = this.c2.select(mouse, sceneScale, selectionScale);
         if (c2State.isSelectingObj()) {
             if (c2State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)
@@ -331,8 +334,8 @@ export default class Scaling extends Generator {
 
     static loadFromArray(array) {
         return new Scaling(new Vec2(array[0], array[1]), // center
-                           new Vec2(array[2], array[3]), // c1r, c2r
-                           Radians.RadtoDeg(array[4])); // rotation angle degrees
+                           array[2], array[3], // c1r, c2r
+                           Radians.RadToDeg(array[4])); // rotation angle degrees
     }
 
     get name() {

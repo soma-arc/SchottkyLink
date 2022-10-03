@@ -51,15 +51,18 @@ export default class Loxodromic extends Generator {
         return d < this.c2.r;
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
         const dp = mouse.sub(this.p);
-        if (dp.length() < this.pointRadius * sceneScale) {
+        if (dp.length() < this.pointRadius * sceneScale * selectionScale) {
             return new SelectionState().setObj(this)
                 .setComponentId(Loxodromic.POINT)
                 .setDiffObj(dp);
         }
 
-        const c1State = this.c1.select(mouse, sceneScale);
+        const c1State = this.c1.select(mouse, sceneScale, selectionScale);
         if (c1State.isSelectingObj()) {
             if (c1State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)
@@ -74,7 +77,7 @@ export default class Loxodromic extends Generator {
             }
         }
 
-        const c2State = this.c2.select(mouse, sceneScale);
+        const c2State = this.c2.select(mouse, sceneScale, selectionScale);
         if (c2State.isSelectingObj()) {
             if (c2State.componentId === Circle.BODY) {
                 return new SelectionState().setObj(this)
