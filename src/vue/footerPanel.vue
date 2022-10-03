@@ -5,7 +5,7 @@
          target="_blank">
           <img src="../img/GitHub-Mark-32px.png" class="imgLink"/>
       </a>
-      <div id="version">Version 3.6.0 </div>
+      <div id="version">Version 3.7.0 </div>
     </div>
     <div>
       Created by soma_arc
