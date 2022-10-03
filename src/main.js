@@ -146,10 +146,14 @@ window.addEventListener('load', () => {
         videoManager.streaming = bool;
     };
 
+    window.executeCommandGetURL = () => {
+        const url = canvasManager.canvas2d.exportAsQueryString();
+        return url;
+    };
+
     window.executeCommandCopyURL = async () => {
         const url = canvasManager.canvas2d.exportAsQueryString();
         await navigator.clipboard.writeText(url);
-        return url;
     };
 
     // Canvas
