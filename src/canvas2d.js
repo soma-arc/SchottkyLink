@@ -786,6 +786,7 @@ export default class Canvas2d extends Canvas {
 
     exportAsQueryString() {
         let queryString = location.protocol +'//'+ location.hostname + location.pathname +'?';
+        queryString += `displayMode=${this.displayMode}&`;
         queryString += `scale=${this.scale.toFixed(4)}&`;
         queryString += `translateX=${this.translate.x.toFixed(4)}&`;
         queryString += `translateY=${this.translate.y.toFixed(4)}&`;
