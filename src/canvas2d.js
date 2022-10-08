@@ -351,6 +351,7 @@ export default class Canvas2d extends Canvas {
                 this.render();
             }
         } else if (event.button === Canvas.MOUSE_BUTTON_WHEEL) {
+            if(this.displayMode === 'iframe') return;
             this.scene.addCircle(mouse, this.scale);
             this.compileRenderShader();
             this.render();
