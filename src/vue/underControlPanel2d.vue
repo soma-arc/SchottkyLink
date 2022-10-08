@@ -47,11 +47,11 @@
       min="0">
     </b-input>
   </div>
-  <div class="inputContainer">
-    <b-button type="is-primary" @click="tweet">
-      Tweet
-    </b-button>
-  </div>
+  <!-- <div class="inputContainer"> -->
+  <!--   <b-button type="is-primary" @click="tweet"> -->
+  <!--     Tweet -->
+  <!--   </b-button> -->
+  <!-- </div> -->
   <div class="inputContainer">
     <b-button type="is-primary" @click="saveImage">
       Save

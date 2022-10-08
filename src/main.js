@@ -35,15 +35,15 @@ window.addEventListener('load', () => {
         canvasManager.displayMode = displayMode;
         canvasManager.canvas2d.displayMode = displayMode;
         scene2d.displayMode = displayMode;
-        if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
-            localStorage.setItem('isOpenedWindow', true);
-            const newWindow = open('/', '', 'width=0,height=0');
-            if(newWindow !== null) {
-                newWindow.addEventListener('load', () => {
-                    newWindow.close();
-                });
-            }
-        }
+        // if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
+        //     localStorage.setItem('isOpenedWindow', true);
+        //     const newWindow = open('/', '', 'width=0,height=0');
+        //     if(newWindow !== null) {
+        //         newWindow.addEventListener('load', () => {
+        //             newWindow.close();
+        //         });
+        //     }
+        // }
     }
     scene2d.loadFromQueryString(parsed);
     canvasManager.canvas2d.loadParameterFromQueryString(parsed);
@@ -116,7 +116,7 @@ window.addEventListener('load', () => {
     };
 
     window.executeCommandTweet = () => {
-        canvasManager.saveImageAndTweet('#FMS特別講義');
+        canvasManager.saveImageAndTweet('');
     };
 
     window.executeCommandSaveImage = () => {

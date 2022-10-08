@@ -59,7 +59,7 @@ export default class CanvasManager {
     }
 
     saveImageAndTweet(tag) {
-        const UPLOAD_URL = 'https://script.google.com/a/tessellation.jp/macros/s/AKfycbxvOHV4YIuHy8mzDx0cCNnxG_g24I1WaL11aV-0nEAgkO_WDjGS2iN5nf_HWl3DxxNOHQ/exec';
+        const UPLOAD_URL = '';
         const formData = new FormData();
         const width = 600;
         const canvasDataURL = this.canvas2d.renderAndGetCanvasURL(width);
