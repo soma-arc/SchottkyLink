@@ -257,11 +257,11 @@ bool IIS(vec2 pos, out vec4 col) {
     return (invNum == 0.) ? false : true;
 }
 
-bool renderOrbit(vec2 pos, out vec3 col, int numOrbit){
-    col = vec3(0);
+bool renderOrbit(vec2 pos, out vec4 col, int numOrbit){
+    col = vec4(0);
     for(int i = 0; i < numOrbit; i++) {
         if(distance(pos, g_orbitPoints[i]) < .01) {
-            col = vec3(0, 0, 1);
+            col = vec4(0, 0, 1, 1);
             return true;
         }
         if(i > 0) {
@@ -273,7 +273,7 @@ bool renderOrbit(vec2 pos, out vec3 col, int numOrbit){
             vec2 posP2 = pos - p2;
             if(dot(posP1, posP2) < 0. &&
                abs(dot(n, posP1)) < .001) {
-                col = vec3(0, 1, 1);
+                col = vec4(0, 1, 1, 1);
                 return true;
             }
         }
@@ -283,7 +283,6 @@ bool renderOrbit(vec2 pos, out vec3 col, int numOrbit){
 
 int computeOrbit(vec2 pos) {
     bool inFund = true;
-    vec4 c = vec4(0);
     int orbitNum = 0;
     g_orbitPoints[orbitNum] = pos;
     orbitNum++;
@@ -1067,12 +1066,14 @@ void main() {
         position += u_geometry.xy;
 
         vec4 col = u_backgroundColor;
-        // int n = computeOrbit(u_orbitOrigin);
-        // bool line = renderOrbit(position, col, n);
-        // if(line){
-        //     sum += col;
-        //     continue;
-        // }
+        if(u_isRenderingOrbit == 1.0) {
+            int n = computeOrbit(u_orbitOrigin);
+            bool line = renderOrbit(position, col, n);
+            if(line){
+                sum += col;
+                continue;
+            }
+        }
 
         if(renderEdgeOfOrbitSeed(position, col)) {
             sum += col;

@@ -79,6 +79,13 @@
       Render Generator
     </b-switch>
   </div>
+  <div class="inputContainer">
+    <b-switch v-model="canvasManager.canvas2d.isRenderingOrbitOrigin"
+              @input="toggleRenderOrbit"
+              id="renderGenSwitch">
+      Render Orbit
+    </b-switch>
+  </div>
 </div>
 </template>
 
@@ -127,6 +134,9 @@ export default {
                 this.scene2d.selectedObj = undefined;
             }
             this.canvasManager.canvas2d.render();
+        },
+        toggleRenderOrbit: function() {
+            this.canvasManager.canvas2d.render();
         }
     }
 }
@@ -148,6 +158,6 @@ export default {
 }
 
 #renderGenSwitch {
-    margin-left: 40px;
+    margin-left: 20px;
 }
 </style>

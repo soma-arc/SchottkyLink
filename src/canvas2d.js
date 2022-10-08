@@ -385,7 +385,10 @@ export default class Canvas2d extends Canvas {
         this.scene.mouseUp();
         this.draggingOrbitOrigin = false;
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
-        if(selectionState.isSelectingObj()) {
+        if(this.isRenderingOrbitOrigin &&
+           Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+            this.cursorType = 'grab';
+        } else if(selectionState.isSelectingObj()) {
             if(selectionState.selectedObj.isBody(selectionState.componentId)) {
                 if(this.mouseState.isPressing) {
                     this.cursorType = 'grabbing';
@@ -409,7 +412,14 @@ export default class Canvas2d extends Canvas {
         clearTimeout(this.deselectTimer);
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
-        if(selectionState.isSelectingObj()) {
+        if(this.isRenderingOrbitOrigin &&
+           Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+            if(this.mouseState.isPressing) {
+                    this.cursorType = 'grabbing';
+            } else {
+                this.cursorType = 'grab';
+            }
+        } else if(selectionState.isSelectingObj()) {
             if(selectionState.selectedObj.isBody(selectionState.componentId)) {
                 if(this.mouseState.isPressing) {
                     this.cursorType = 'grabbing';
@@ -574,6 +584,8 @@ export default class Canvas2d extends Canvas {
                                                           'u_backgroundColor'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_generatorBoundaryColor'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_isRenderingOrbit'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -633,6 +645,7 @@ export default class Canvas2d extends Canvas {
                           this.generatorBoundaryColor[0],
                           this.generatorBoundaryColor[1],
                           this.generatorBoundaryColor[2]);
+        this.gl.uniform1f(this.uniLocations[i++], this.isRenderingOrbitOrigin);
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 
