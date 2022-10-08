@@ -66,8 +66,8 @@ bool IIS(vec2 pos, out vec4 col) {
         }
         {% endfor %}
 
-        {% for no in range(0, numVideoOrbit) %}
-        vec2 videoUV{{ n }}{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
+        {% for no in range(0, numVideoSeed) %}
+        vec2 videoUV{{ n }}{{ no }} = (pos - u_videoSeed{{ no }}.corner) / u_videoSeed{{ no }}.size;
         if(0. < videoUV{{ n }}{{ no }}.x && videoUV{{ n }}{{ no }}.x < 1. &&
            0. < videoUV{{ n }}{{ no }}.y && videoUV{{ n }}{{ no }}.y < 1.) {
             c = deGamma(textureLod(u_videoTexture, vec2(videoUV{{ n }}{{ no }}.x, 1. - videoUV{{ n }}{{ no }}.y), 0.0));
@@ -534,13 +534,13 @@ bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
     }
     {% endfor %}
 
-    {% for no in range(0, numVideoOrbit) %}
-    if(u_videoOrbit{{ no }}.selected) {
-        vec2 videoUV{{ no }} = (pos - u_videoOrbit{{ no }}.corner) / u_videoOrbit{{ no }}.size;
+    {% for no in range(0, numVideoSeed) %}
+    if(u_videoSeed{{ no }}.selected) {
+        vec2 videoUV{{ no }} = (pos - u_videoSeed{{ no }}.corner) / u_videoSeed{{ no }}.size;
         if(0. < videoUV{{ no }}.x && videoUV{{ no }}.x < 1. &&
            0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
-           (pos.x < u_videoOrbit{{ no }}.ui.x || u_videoOrbit{{ no }}.ui.z < pos.x ||
-            pos.y < u_videoOrbit{{ no }}.ui.y || u_videoOrbit{{ no }}.ui.w < pos.y)) {
+           (pos.x < u_videoSeed{{ no }}.ui.x || u_videoSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_videoSeed{{ no }}.ui.y || u_videoSeed{{ no }}.ui.w < pos.y)) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }

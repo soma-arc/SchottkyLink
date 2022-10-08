@@ -63,12 +63,12 @@ window.addEventListener('load', () => {
     scene2d.updateOrbitSeed();
     canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
     canvasManager.canvas2d.compileRenderShader();
-    if (scene2d.objects['VideoOrbit'] !== undefined &&
+    if (scene2d.objects['VideoSeed'] !== undefined &&
         canvasManager.videoManager.streaming === false) {
         canvasManager.videoManager.connect(
             canvasManager.canvas2d.gl,
             () => {
-                scene2d.updateVideoOrbit();
+                scene2d.updateVideoSeed();
                 canvasManager.videoManager.streaming = true;
                 if(downloadImage) {
                     canvasManager.canvas2d.renderProductAndSave();
@@ -220,8 +220,8 @@ window.addEventListener('load', () => {
         setSeed('OrbitSeed', index, x, y, width, height);
     };
 
-    window.setVideoOrbit = (index, x, y, width, height) => {
-        setSeed('VideoOrbit', index, x, y, width, height);
+    window.setVideoSeed = (index, x, y, width, height) => {
+        setSeed('VideoSeed', index, x, y, width, height);
     };
 
     window.setCanvasSeed = (index, x, y, width, height) => {

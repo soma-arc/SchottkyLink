@@ -5,7 +5,7 @@
   </b-switch><br>
     Origin X
     <b-input
-      v-model.number="videoOrbit.corner.x"
+      v-model.number="videoSeed.corner.x"
       @input="valueChanged"
       placeholder="Number"
       type="number"
@@ -13,7 +13,7 @@
     </b-input>
     Origin Y
     <b-input
-      v-model.number="videoOrbit.corner.y"
+      v-model.number="videoSeed.corner.y"
       @input="valueChanged"
       placeholder="Number"
       type="number"
@@ -21,7 +21,7 @@
     </b-input>
     Width
     <b-input
-      v-model.number="videoOrbit.size.x"
+      v-model.number="videoSeed.size.x"
       @input="changeWidth"
       placeholder="Number"
       type="number"
@@ -29,7 +29,7 @@
     </b-input>
     Height
     <b-input
-      v-model.number="videoOrbit.size.y"
+      v-model.number="videoSeed.size.y"
       @input="changeHeight"
       placeholder="Number"
       type="number"
@@ -40,7 +40,7 @@
 
 <script>
 export default {
-    props: ['videoOrbit', 'scene'],
+    props: ['videoSeed', 'scene'],
     data() {
         return {}
     },
@@ -49,11 +49,11 @@ export default {
             this.scene.reRender();
         },
         changeWidth: function() {
-            this.videoOrbit.size.y = this.videoOrbit.aspect * this.videoOrbit.size.x;
+            this.videoSeed.size.y = this.videoSeed.aspect * this.videoSeed.size.x;
             this.scene.reRender();
         },
         changeHeight: function(){
-            this.videoOrbit.size.x = this.videoOrbit.size.y / this.videoOrbit.aspect;
+            this.videoSeed.size.x = this.videoSeed.size.y / this.videoSeed.aspect;
             this.scene.reRender();
         }
     }

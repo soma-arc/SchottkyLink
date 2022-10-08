@@ -33,9 +33,9 @@
                            :scene="scene"
                            :canvas="canvas2d"
                            :textureManager="textureManager"/>
-    <video-orbit-controller v-if="selectedObjName === 'VideoOrbit'"
-                           :videoOrbit="scene.selectedObj"
-                            :scene="scene"/>
+    <video-seed-controller v-if="selectedObjName === 'VideoSeed'"
+                           :videoSeed="scene.selectedObj"
+                           :scene="scene"/>
     <loxodromic-controller v-if="selectedObjName === 'Loxodromic'"
                             :loxodromic="scene.selectedObj"
                             :scene="scene"/>
@@ -73,7 +73,7 @@ import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
 import OrbitSeedController from './controller2d/orbitSeedController.vue';
-import videoOrbitController from './controller2d/videoOrbitController.vue';
+import VideoSeedController from './controller2d/videoSeedController.vue';
 import LoxodromicController from './controller2d/loxodromicController.vue';
 import ParallelTranslationController from './controller2d/parallelTranslationController.vue';
 import ParallelInversionsController from './controller2d/parallelInversionsController.vue';
@@ -90,7 +90,7 @@ export default {
         CircleController,
         HalfPlaneController,
         OrbitSeedController,
-        videoOrbitController,
+        VideoSeedController,
         LoxodromicController,
         ParallelTranslationController,
         ParallelInversionsController,

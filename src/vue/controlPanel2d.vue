@@ -9,7 +9,7 @@
                       width="128px" height="128px" @click.native="addHalfPlane"/>
           <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
                       width="128px" height="128px"/>
-          <img-button label="Video Input" :src="cameraUrl" @click.native="addVideoOrbit"
+          <img-button label="Video Input" :src="cameraUrl" @click.native="addVideoSeed"
                       width="128px" height="128px"/>
           <img-button label="Canvas Seed" :src="orbitSeedUrl" @click.native="addCanvasSeed"
                       width="128px" height="128px"/>
@@ -107,19 +107,19 @@ export default {
             this.scene2d.addOrbitSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
-        addVideoOrbit: function(){
+        addVideoSeed: function(){
              if (this.canvasManager.videoManager.streaming === false) {
                  this.canvasManager.videoManager.connect(
                      this.canvasManager.canvas2d.gl,
                      () => {
-                         this.scene2d.addVideoOrbit(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+                         this.scene2d.addVideoSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
                          this.canvasManager.canvas2d.compileRenderShader();
                          this.canvasManager.videoManager.streaming = true;
                      },
                      () => {
                      });
              } else {
-                 this.scene2d.addVideoOrbit(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+                 this.scene2d.addVideoSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
                  this.canvasManager.canvas2d.compileRenderShader();
              }
         },

@@ -11,7 +11,7 @@ import HalfPlane from './generator2d/halfPlane.js';
 import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
 import OrbitSeed from './generator2d/orbitSeed.js';
-import VideoOrbit from './generator2d/videoOrbit.js';
+import VideoSeed from './generator2d/videoSeed.js';
 import CanvasSeed from './generator2d/canvasSeed.js';
 import CrossingInversions from './generator2d/crossingInversions.js';
 import Rotation from './generator2d/rotation.js';
@@ -33,7 +33,7 @@ import TextureManager from './textureManager.js';
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'CanvasSeed': CanvasSeed,
                        'OrbitSeed': OrbitSeed,
-                       'VideoOrbit': VideoOrbit,
+                       'VideoSeed': VideoSeed,
                        'Scaling': Scaling,
                        'Circle': Circle,
                        'HalfPlane': HalfPlane,
@@ -257,10 +257,10 @@ export default class Scene2d extends Scene {
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
-    addVideoOrbit(position, sceneScale) {
+    addVideoSeed(position, sceneScale) {
         const aspect = this.videoManager.height / this.videoManager.width;
-        const o = new VideoOrbit(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
-                                 0.1 * sceneScale, 0.1 * sceneScale * aspect);
+        const o = new VideoSeed(position.x - 0.05 * sceneScale, position.y - 0.05 * sceneScale,
+                                0.1 * sceneScale, 0.1 * sceneScale * aspect);
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
@@ -451,10 +451,10 @@ export default class Scene2d extends Scene {
         }
     }
 
-    updateVideoOrbit() {
-        if(this.objects['VideoOrbit'] === undefined) return;
-        for(const videoOrbit of this.objects['VideoOrbit']) {
-            videoOrbit.updateTextureSize(this.videoManager.width, this.videoManager.height);
+    updateVideoSeed() {
+        if(this.objects['VideoSeed'] === undefined) return;
+        for(const videoSeed of this.objects['VideoSeed']) {
+            videoSeed.updateTextureSize(this.videoManager.width, this.videoManager.height);
         }
     }
 
