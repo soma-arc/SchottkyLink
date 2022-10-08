@@ -35,14 +35,8 @@ window.addEventListener('load', () => {
         canvasManager.displayMode = displayMode;
         canvasManager.canvas2d.displayMode = displayMode;
         scene2d.displayMode = displayMode;
-        // if(displayMode === 'iframe' && localStorage.getItem('isOpenedWindow') === undefined) {
-        //     localStorage.setItem('isOpenedWindow', true);
-        //     const newWindow = open('/', '', 'width=0,height=0');
-        //     if(newWindow !== null) {
-        //         newWindow.addEventListener('load', () => {
-        //             newWindow.close();
-        //         });
-        //     }
+        // if(displayMode === 'iframe') {
+        //     askToAllowPopup();
         // }
     }
     scene2d.loadFromQueryString(parsed);
@@ -310,3 +304,15 @@ window.addEventListener('load', () => {
         canvasManager.canvas2d.render();
     };
 });
+
+function askToAllowPopup() {
+    if(localStorage.getItem('isOpenedWindow') === undefined) {
+        localStorage.setItem('isOpenedWindow', true);
+        const newWindow = open('/', '', 'width=0,height=0');
+        if(newWindow !== null) {
+            newWindow.addEventListener('load', () => {
+                newWindow.close();
+            });
+        }
+    }
+}
