@@ -807,7 +807,7 @@ export default class Canvas2d extends Canvas {
         queryString += `maxIterations=${this.maxIterations}&`;
         queryString += `backgroundColor=${this.backgroundColor[0]},${this.backgroundColor[1]},${this.backgroundColor[2]},${this.backgroundColor[3]}&`;
         queryString += `generatorBoundaryColor=${this.generatorBoundaryColor[0]},${this.generatorBoundaryColor[1]},${this.generatorBoundaryColor[2]}&`;
-        queryString += `allowDeleteComponents=${this.allowDeleteComponents}`;
+        queryString += `allowDeleteComponents=${this.allowDeleteComponents}&`;
         queryString += this.scene.exportAsQueryString();
         return queryString;
     }
