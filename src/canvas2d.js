@@ -107,8 +107,8 @@ export default class Canvas2d extends Canvas {
 
             const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
                                               touch.clientY + touch.radiusY);
-            this.prevSelected = this.scene.selectedObj !== undefined;
-            if(this.prevSelected) this.prevId = this.scene.selectedObj.id;
+            this.prevSelected = this.scene.selectedState.isSelectingObj();
+            if(this.prevSelected) this.prevId = this.scene.selectedState.selectedObj.id;
             this.scene.select(mouse, this.scale, touchSelectionScale);
             this.render();
 
@@ -221,9 +221,9 @@ export default class Canvas2d extends Canvas {
                                               touch.clientY + touch.radiusY);
             if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
                 this.prevSelected && //一つ前のmouseDownで選択状態になっている
-                this.scene.selectedObj !== undefined &&
-                this.scene.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
-                !this.scene.selectedObj.isHandle(this.scene.selectedState.componentId)) {
+                this.scene.selectedState.isSelectingObj() &&
+                this.scene.selectedState.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
+                !this.scene.selectedState.selectedObj.isHandle(this.scene.selectedState.componentId)) {
                 this.scene.unselect();
                 this.render();
             }
@@ -345,8 +345,8 @@ export default class Canvas2d extends Canvas {
                 Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
                 this.draggingOrbitOrigin = true;
             } else {
-                this.prevSelected = this.scene.selectedObj !== undefined;
-                if(this.prevSelected) this.prevId = this.scene.selectedObj.id;
+                this.prevSelected = this.scene.selectedState.isSelectingObj();
+                if(this.prevSelected) this.prevId = this.scene.selectedState.selectedObj.id;
                 this.scene.select(mouse, this.scale);
                 this.render();
             }
@@ -375,9 +375,9 @@ export default class Canvas2d extends Canvas {
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
             this.prevSelected && //一つ前のmouseDownで選択状態になっている
-            this.scene.selectedObj !== undefined &&
-            this.scene.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
-            !this.scene.selectedObj.isHandle(this.scene.selectedState.componentId)) {
+            this.scene.selectedState.isSelectingObj() &&
+            this.scene.selectedState.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
+            !this.scene.selectedState.selectedObj.isHandle(this.scene.selectedState.componentId)) {
             this.scene.unselect();
             this.render();
         }

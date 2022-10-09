@@ -1,6 +1,6 @@
 <template>
   <div id="sceneObjPanel">
-    <select size="5" @change="updateSelection"  v-model="scene.selectedObj" class="objList">
+    <select size="5" @change="updateSelection"  v-model="scene.selectedState.selectedObj" class="objList">
       <template v-for="objs in scene.objects" v-bind:objs="objs">
         <option v-for="obj in objs" v-bind:value="obj">
           {{ obj.name }} - {{ obj.id }}
@@ -17,51 +17,51 @@
     </div>
 
     <b-checkbox
-      v-if="scene.selectedObj !== undefined"
-      v-model="scene.selectedObj.isFixed">
+      v-if="scene.selectedState.isSelectingObj()"
+      v-model="scene.selectedState.selectedObj.isFixed">
       Fix
     </b-checkbox><br>
 
     <circle-controller v-if="selectedObjName === 'Circle'"
-                       :circle="scene.selectedObj"
+                       :circle="scene.selectedState.selectedObj"
                        :scene="scene"/>
     <half-plane-controller v-if="selectedObjName === 'HalfPlane'"
-                           :half-plane="scene.selectedObj"
+                           :half-plane="scene.selectedState.selectedObj"
                            :scene="scene"/>
     <texture-seed-controller v-if="selectedObjName === 'TextureSeed'"
-                             :textureSeed="scene.selectedObj"
+                             :textureSeed="scene.selectedState.selectedObj"
                              :scene="scene"
                              :canvas="canvas2d"
                              :textureManager="textureManager"/>
     <video-seed-controller v-if="selectedObjName === 'VideoSeed'"
-                           :videoSeed="scene.selectedObj"
+                           :videoSeed="scene.selectedState.selectedObj"
                            :scene="scene"/>
     <loxodromic-controller v-if="selectedObjName === 'Loxodromic'"
-                            :loxodromic="scene.selectedObj"
+                            :loxodromic="scene.selectedState.selectedObj"
                             :scene="scene"/>
     <parallel-translation-controller v-if="selectedObjName === 'ParallelTranslation'"
-                                     :parallelTranslation="scene.selectedObj"
+                                     :parallelTranslation="scene.selectedState.selectedObj"
                                      :scene="scene"/>
     <parallel-inversions-controller v-if="selectedObjName === 'ParallelInversions'"
-                                    :parallelInversions="scene.selectedObj"
+                                    :parallelInversions="scene.selectedState.selectedObj"
                                     :scene="scene"/>
     <glide-reflection-controller v-if="selectedObjName === 'GlideReflection'"
-                                 :glideReflection="scene.selectedObj"
+                                 :glideReflection="scene.selectedState.selectedObj"
                                  :scene="scene"/>
     <crossing-inversions-controller v-if="selectedObjName === 'CrossingInversions'"
-                                    :crossingInversions="scene.selectedObj"
+                                    :crossingInversions="scene.selectedState.selectedObj"
                                     :scene="scene"/>
     <rotation-controller v-if="selectedObjName === 'Rotation'"
-                         :rotation="scene.selectedObj"
+                         :rotation="scene.selectedState.selectedObj"
                          :scene="scene"/>
     <two-circles-controller v-if="selectedObjName === 'TwoCircles'"
-                            :twoCircles="scene.selectedObj"
+                            :twoCircles="scene.selectedState.selectedObj"
                             :scene="scene"/>
     <scaling-controller v-if="selectedObjName === 'Scaling'"
-                        :scaling="scene.selectedObj"
+                        :scaling="scene.selectedState.selectedObj"
                         :scene="scene"/>
     <canvas-seed-controller v-if="selectedObjName === 'CanvasSeed'"
-                            :canvasSeed="scene.selectedObj"
+                            :canvasSeed="scene.selectedState.selectedObj"
                             :scene="scene"
                             :canvas="canvas2d"
                             :textureManager="textureManager"/>
@@ -69,6 +69,7 @@
 </template>
 
 <script>
+import SelectionState from '../generator2d/selectionState.js';
 import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
@@ -103,30 +104,32 @@ export default {
     },
     computed: {
         selectedObjName: function() {
-            if (this.scene.selectedObj === undefined) return '';
-            return this.scene.selectedObj.name;
+            if (this.scene.selectedState.isSelectingObj() === false) return '';
+            return this.scene.selectedState.selectedObj.name;
         }
     },
     methods: {
         updateSelection: function() {
             this.scene.unselectAll();
-            if (this.scene.selectedObj === undefined) return;
-            this.scene.selectedObj.selected = true;
+            if(this.scene.selectedState.isSelectingObj() === false) return;
+            this.scene.selectedState.selectedObj.selected = true;
             this.canvas2d.render();
         },
         deleteSelectedObj: function() {
-            if (this.scene.selectedObj === undefined) return;
-            const name = this.scene.selectedObj.name;
+            if (this.scene.selectedState.isSelectingObj() === false) return;
+            const name = this.scene.selectedState.selectedObj.name;
             const index = this.scene.objects[name].findIndex((elem) => {
-                return elem.id === this.scene.selectedObj.id;
+                return elem.id === this.scene.selectedState.selectedObj.id;
             });
-            this.scene.addCommand(new RemoveGeneratorCommand(this.scene, this.scene.selectedObj,
+            this.scene.addCommand(new RemoveGeneratorCommand(this.scene,
+                                                             this.scene.selectedState.selectedObj,
                                                              index));
-            this.scene.selectedObj = undefined;
+            this.scene.selectedState = new SelectionState();
         },
         deselectObj: function() {
-            this.scene.selectedObj.selected = false;
-            this.scene.selectedObj = undefined;
+            if (this.scene.selectedState.isSelectingObj() === false) return;
+            this.scene.selectedState.selectedObj.selected = false;
+            this.scene.selectedState = new SelectionState();
             this.canvas2d.render();
         }
     }

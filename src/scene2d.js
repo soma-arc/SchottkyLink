@@ -58,7 +58,6 @@ export default class Scene2d extends Scene {
         this.objects = {};
         this.presets = PRESETS;
         this.sortPresetByIndex();
-        this.selectedObj = undefined;
         this.selectedState = new SelectionState();
 
         this.updateSceneListeners = [];
@@ -120,23 +119,25 @@ export default class Scene2d extends Scene {
     }
 
     unselect() {
-        if(this.selectedObj !== undefined) {
-            this.selectedObj.selected = false;
+        if(this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.selected = false;
             this.selectedState = new SelectionState();
-            this.selectedObj = undefined;
+            this.selectedState.selectedObj = undefined;
         }
     }
 
     select (mouse, sceneScale, selectionScale) {
         // 既に選択済みのジェネレータから選択処理を行う
-        if (this.selectedObj !== undefined) {
-            const state = this.selectedObj.select(mouse, sceneScale, selectionScale);
-            if (state.isSelectingObj()) {
-                this.selectedState = state;
-                this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
-                return true;
-            } else {
-                this.selectedObj.selected = false;
+        if (this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.selected = false;
+            if(this.selectedState.selectedObj.isFixed === false) {
+                const state = this.selectedState.selectedObj.select(mouse, sceneScale, selectionScale);
+                if (state.isSelectingObj()) {
+                    this.selectedState = state;
+                    this.selectedState.selectedObj.selected = true;
+                    this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
+                    return true;
+                }
             }
         }
 
@@ -146,17 +147,12 @@ export default class Scene2d extends Scene {
             if(this.isRenderingGenerator === false &&
                (objName !== 'TextureSeed' && objName !== 'VideoOrbit' && objName !== 'CanvasSeed')) continue;
 
-            // iframeで表示時にジェネレータ非表示だとSeed系は選択できない
-            if(this.displayMode === 'iframe' && this.isRenderingGenerator === false &&
-               (objName === 'TextureSeed' || objName === 'VideoOrbit' || objName === 'CanvasSeed')) continue;
-
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
-                if(obj.isFixed && this.displayMode === 'iframe') continue;
+                if(obj.isFixed) continue;
                 const state = obj.selectBody(mouse, sceneScale, selectionScale);
                 if (state.isSelectingObj()) {
                     this.selectedState = state;
-                    this.selectedObj = this.selectedState.selectedObj;
                     this.selectedState.selectedObj.selected = true;
                     this.selectedState.setPrevPosition(this.selectedState.selectedObj.getPosition());
                     return true;
@@ -164,13 +160,12 @@ export default class Scene2d extends Scene {
             }
         }
         this.selectedState = new SelectionState();
-        this.selectedObj = undefined;
         return false;
     }
 
     getComponentOnMouse(mouse, sceneScale) {
-        if (this.selectedObj !== undefined) {
-            const state = this.selectedObj.select(mouse, sceneScale);
+        if (this.selectedState.isSelectingObj()) {
+            const state = this.selectedState.selectedObj.select(mouse, sceneScale);
             if (state.isSelectingObj()) {
                 return state;
             }
@@ -212,8 +207,8 @@ export default class Scene2d extends Scene {
     }
 
     toggleSnapMode() {
-        if (this.selectedObj !== undefined) {
-            this.selectedObj.toggleSnapMode();
+        if (this.selectedState.isSelectingObj()) {
+            this.selectedState.selectedObj.toggleSnapMode();
         }
     }
 
@@ -500,7 +495,7 @@ export default class Scene2d extends Scene {
 
     clear() {
         this.objects = {};
-        this.selectedObj = undefined;
+        this.selectedState = new SelectionState();
     }
 
     exportAsQueryString() {
@@ -600,8 +595,8 @@ export default class Scene2d extends Scene {
     }
 
     copy() {
-        if(this.selectedObj !== undefined) {
-            this.copiedGenerator = this.selectedObj;
+        if(this.selectedState.selectedObj !== undefined) {
+            this.copiedGenerator = this.selectedState.selectedObj;
             Toast.open({message: 'Copied.',
                         position: 'is-bottom'});
         }
