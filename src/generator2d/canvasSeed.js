@@ -1,9 +1,6 @@
-import Vec2 from '../vector2d.js';
-import Generator from './generator.js';
-import SelectionState from './selectionState.js';
-import OrbitSeed from './orbitSeed.js';
+import TextureSeed from './textureSeed.js';
 
-export default class CanvasSeed extends OrbitSeed {
+export default class CanvasSeed extends TextureSeed {
     /**
      *       width
      *   -------------

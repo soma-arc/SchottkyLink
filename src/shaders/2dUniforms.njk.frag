@@ -72,7 +72,7 @@ struct Loxodromic {
     bool selected;
 };
 
-struct OrbitSeed {
+struct Seed {
     vec2 corner;
     vec2 size;
     vec4 ui; // [bodyCorner, bodySize]
@@ -136,12 +136,12 @@ uniform TwoCircles u_hyperbolic{{ n }};
 uniform Loxodromic u_loxodromic{{ n }};
 {% endfor %}
 
-{% for n in range(0, numOrbitSeed) %}
-uniform OrbitSeed u_orbitSeed{{ n }};
+{% for n in range(0, numTextureSeed) %}
+uniform Seed u_textureSeed{{ n }};
 {% endfor %}
 
 {% for n in range(0, numVideoSeed) %}
-uniform OrbitSeed u_videoSeed{{ n }};
+uniform Seed u_videoSeed{{ n }};
 {% endfor %}
 
 {% for n in range(0, numScaling) %}
@@ -149,7 +149,7 @@ uniform Scaling u_scaling{{ n }};
 {% endfor %}
 
 {% for n in range(0, numCanvasSeed) %}
-uniform OrbitSeed u_canvasSeed{{ n }};
+uniform Seed u_canvasSeed{{ n }};
 {% endfor %}
 
 uniform vec2 u_orbitOrigin;

@@ -10,7 +10,7 @@ import AngleHalfPlaneCommand from './command/angleHalfPlaneCommand.js';
 import HalfPlane from './generator2d/halfPlane.js';
 import TwoCircles from './generator2d/twoCircles.js';
 import Loxodromic from './generator2d/loxodromic.js';
-import OrbitSeed from './generator2d/orbitSeed.js';
+import TextureSeed from './generator2d/textureSeed.js';
 import VideoSeed from './generator2d/videoSeed.js';
 import CanvasSeed from './generator2d/canvasSeed.js';
 import CrossingInversions from './generator2d/crossingInversions.js';
@@ -32,7 +32,7 @@ import TextureManager from './textureManager.js';
 
 // TODO: generate this object automatically
 const STR_CLASS_MAP = {'CanvasSeed': CanvasSeed,
-                       'OrbitSeed': OrbitSeed,
+                       'TextureSeed': TextureSeed,
                        'VideoSeed': VideoSeed,
                        'Scaling': Scaling,
                        'Circle': Circle,
@@ -142,13 +142,13 @@ export default class Scene2d extends Scene {
 
         const objKeyNames = Object.keys(STR_CLASS_MAP);
         for (const objName of objKeyNames) {
-            // ジェネレータが描画されないときはOrbitSeedやVideoOrbit, CanvasSeedのみが表示されるのでそれ以外は選択できない
+            // ジェネレータが描画されないときはTextureSeedやVideoOrbit, CanvasSeedのみが表示されるのでそれ以外は選択できない
             if(this.isRenderingGenerator === false &&
-               (objName !== 'OrbitSeed' && objName !== 'VideoOrbit' && objName !== 'CanvasSeed')) continue;
+               (objName !== 'TextureSeed' && objName !== 'VideoOrbit' && objName !== 'CanvasSeed')) continue;
 
             // iframeで表示時にジェネレータ非表示だとSeed系は選択できない
             if(this.displayMode === 'iframe' && this.isRenderingGenerator === false &&
-               (objName === 'OrbitSeed' || objName === 'VideoOrbit' || objName === 'CanvasSeed')) continue;
+               (objName === 'TextureSeed' || objName === 'VideoOrbit' || objName === 'CanvasSeed')) continue;
 
             if (this.objects[objName] === undefined) continue;
             for (const obj of this.objects[objName]) {
@@ -248,9 +248,9 @@ export default class Scene2d extends Scene {
         this.addCommand(new AddGeneratorCommand(this, l));
     }
 
-    addOrbitSeed(position, sceneScale) {
+    addTextureSeed(position, sceneScale) {
         const aspect = this.textureManager.textures[0].height / this.textureManager.textures[0].width;
-        const o = new OrbitSeed(position.x - 0.05 * sceneScale,
+        const o = new TextureSeed(position.x - 0.05 * sceneScale,
                                 position.y - 0.05 * sceneScale,
                                 0.1 * sceneScale,
                                 0.1 * sceneScale * aspect);
@@ -408,13 +408,13 @@ export default class Scene2d extends Scene {
         context['maxNumCanvasTextures'] = TextureManager.MAX_CANVAS_TEXTURES;
 
         const textureIndexes = [];
-        if(this.objects['OrbitSeed'] !== undefined &&
-           this.objects['OrbitSeed'].length > 0) {
-            for(const orbitSeed of this.objects['OrbitSeed']) {
-                textureIndexes.push(orbitSeed.textureIndex);
+        if(this.objects['TextureSeed'] !== undefined &&
+           this.objects['TextureSeed'].length > 0) {
+            for(const textureSeed of this.objects['TextureSeed']) {
+                textureIndexes.push(textureSeed.textureIndex);
             }
         }
-        context['OrbitSeedTexIndexes'] = textureIndexes;
+        context['TextureSeedTexIndexes'] = textureIndexes;
 
 
         return context;
@@ -443,11 +443,11 @@ export default class Scene2d extends Scene {
         }
     }
 
-    // OrbitSeedにテクスチャ解像度を通知する
-    updateOrbitSeed() {
-        if(this.objects['OrbitSeed'] === undefined) return;
-        for(const orbitSeed of this.objects['OrbitSeed']) {
-            orbitSeed.updateTextureSize(this.textureManager.textures);
+    // TextureSeedにテクスチャ解像度を通知する
+    updateTextureSeed() {
+        if(this.objects['TextureSeed'] === undefined) return;
+        for(const textureSeed of this.objects['TextureSeed']) {
+            textureSeed.updateTextureSize(this.textureManager.textures);
         }
     }
 

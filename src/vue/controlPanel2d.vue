@@ -7,11 +7,11 @@
                       width="128px" height="128px" @click.native="addCircle"/>
           <img-button label="Half Plane" :src="halfPlaneUrl"
                       width="128px" height="128px" @click.native="addHalfPlane"/>
-          <img-button label="Orbit Seed" :src="orbitSeedUrl" @click.native="addOrbitSeed"
+          <img-button label="Orbit Seed" :src="textureSeedUrl" @click.native="addTextureSeed"
                       width="128px" height="128px"/>
           <img-button label="Video Input" :src="cameraUrl" @click.native="addVideoSeed"
                       width="128px" height="128px"/>
-          <img-button label="Canvas Seed" :src="orbitSeedUrl" @click.native="addCanvasSeed"
+          <img-button label="Canvas Seed" :src="textureSeedUrl" @click.native="addCanvasSeed"
                       width="128px" height="128px"/>
           <img-button label="Parallel Translation" :src="parallelTranslationUrl"
                       width="128px" height="128px" @click.native="addParallelTranslation"/>
@@ -58,7 +58,7 @@ const ROTATION_IMG = require('../img/2dGenerators/rotation.png');
 const SCALING_IMG = require('../img/2dGenerators/scaling.png');
 const TWO_CIRCLES_IMG = require('../img/2dGenerators/twoCircles.png');
 const LOXODROMIC_IMG = require('../img/2dGenerators/loxodromic.png');
-const ORBIT_SEED_IMG = require('../img/2dGenerators/orbitSeed.png');
+const TEXTURE_SEED_IMG = require('../img/2dGenerators/textureSeed.png');
 const CAMERA_IMG = require('../img/2dGenerators/video_camera.png');
 
 export default {
@@ -72,7 +72,7 @@ export default {
                  'scalingUrl': SCALING_IMG,
                  'twoCirclesUrl': TWO_CIRCLES_IMG,
                  'loxodromicUrl': LOXODROMIC_IMG,
-                 'orbitSeedUrl': ORBIT_SEED_IMG,
+                 'textureSeedUrl': TEXTURE_SEED_IMG,
                  'cameraUrl': CAMERA_IMG,
                  activeTab: 0
                }
@@ -103,8 +103,8 @@ export default {
             this.scene2d.addLoxodromic(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
-        addOrbitSeed: function() {
-            this.scene2d.addOrbitSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
+        addTextureSeed: function() {
+            this.scene2d.addTextureSeed(new Vec2(0, 0), this.canvasManager.canvas2d.scale);
             this.canvasManager.canvas2d.compileRenderShader();
         },
         addVideoSeed: function(){

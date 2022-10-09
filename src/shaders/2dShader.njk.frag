@@ -54,11 +54,11 @@ bool IIS(vec2 pos, out vec4 col) {
         }
         {% endfor %}
 
-        {% for no in range(0, numOrbitSeed) %}
-        vec2 uv{{ n }}{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
+        {% for no in range(0, numTextureSeed) %}
+        vec2 uv{{ n }}{{ no }} = (pos - u_textureSeed{{ no }}.corner) / u_textureSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
-            c = deGamma(textureLod(u_imageTextures[{{ OrbitSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0));
+            c = deGamma(textureLod(u_imageTextures[{{ TextureSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0));
             if(c.w == 1.) {
                 col = vec4(c.rgb, 1);
                 return true;
@@ -505,7 +505,7 @@ int computeOrbit(vec2 pos) {
     return orbitNum;
 }
 
-bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
+bool renderEdgeOfSeed(vec2 pos, out vec4 color) {
     color = u_backgroundColor;
 
     {% for no in range(0, numCanvasSeed) %}
@@ -521,13 +521,13 @@ bool renderEdgeOfOrbitSeed(vec2 pos, out vec4 color) {
     }
     {% endfor %}
 
-    {% for no in range(0, numOrbitSeed) %}
-    if(u_orbitSeed{{ no }}.selected) {
-        vec2 uvOrbitSeed{{ no }} = (pos - u_orbitSeed{{ no }}.corner) / u_orbitSeed{{ no }}.size;
-        if(0. < uvOrbitSeed{{ no }}.x && uvOrbitSeed{{ no }}.x < 1. &&
-           0. < uvOrbitSeed{{ no }}.y && uvOrbitSeed{{ no }}.y < 1. &&
-           (pos.x < u_orbitSeed{{ no }}.ui.x || u_orbitSeed{{ no }}.ui.z < pos.x ||
-            pos.y < u_orbitSeed{{ no }}.ui.y || u_orbitSeed{{ no }}.ui.w < pos.y)) {
+    {% for no in range(0, numTextureSeed) %}
+    if(u_textureSeed{{ no }}.selected) {
+        vec2 uvTextureSeed{{ no }} = (pos - u_textureSeed{{ no }}.corner) / u_textureSeed{{ no }}.size;
+        if(0. < uvTextureSeed{{ no }}.x && uvTextureSeed{{ no }}.x < 1. &&
+           0. < uvTextureSeed{{ no }}.y && uvTextureSeed{{ no }}.y < 1. &&
+           (pos.x < u_textureSeed{{ no }}.ui.x || u_textureSeed{{ no }}.ui.z < pos.x ||
+            pos.y < u_textureSeed{{ no }}.ui.y || u_textureSeed{{ no }}.ui.w < pos.y)) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
@@ -1075,7 +1075,7 @@ void main() {
             }
         }
 
-        if(renderEdgeOfOrbitSeed(position, col)) {
+        if(renderEdgeOfSeed(position, col)) {
             sum += col;
             continue;
         }

@@ -1,6 +1,6 @@
-import OrbitSeed from './orbitSeed.js';
+import TextureSeed from './textureSeed.js';
 
-export default class VideoSeed extends OrbitSeed {
+export default class VideoSeed extends TextureSeed {
     constructor(cornerX, cornerY, width, height) {
         super(cornerX, cornerY, width, height);
     }

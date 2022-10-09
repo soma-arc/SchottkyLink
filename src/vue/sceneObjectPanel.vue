@@ -28,11 +28,11 @@
     <half-plane-controller v-if="selectedObjName === 'HalfPlane'"
                            :half-plane="scene.selectedObj"
                            :scene="scene"/>
-    <orbit-seed-controller v-if="selectedObjName === 'OrbitSeed'"
-                           :orbitSeed="scene.selectedObj"
-                           :scene="scene"
-                           :canvas="canvas2d"
-                           :textureManager="textureManager"/>
+    <texture-seed-controller v-if="selectedObjName === 'TextureSeed'"
+                             :textureSeed="scene.selectedObj"
+                             :scene="scene"
+                             :canvas="canvas2d"
+                             :textureManager="textureManager"/>
     <video-seed-controller v-if="selectedObjName === 'VideoSeed'"
                            :videoSeed="scene.selectedObj"
                            :scene="scene"/>
@@ -72,7 +72,7 @@
 import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
-import OrbitSeedController from './controller2d/orbitSeedController.vue';
+import TextureSeedController from './controller2d/textureSeedController.vue';
 import VideoSeedController from './controller2d/videoSeedController.vue';
 import LoxodromicController from './controller2d/loxodromicController.vue';
 import ParallelTranslationController from './controller2d/parallelTranslationController.vue';
@@ -89,7 +89,7 @@ export default {
     components: {
         CircleController,
         HalfPlaneController,
-        OrbitSeedController,
+        TextureSeedController,
         VideoSeedController,
         LoxodromicController,
         ParallelTranslationController,

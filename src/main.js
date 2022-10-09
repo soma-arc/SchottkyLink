@@ -60,7 +60,7 @@ window.addEventListener('load', () => {
     canvasManager.init(app);
     canvasManager.resize();
 
-    scene2d.updateOrbitSeed();
+    scene2d.updateTextureSeed();
     canvasManager.textureManager.loadTextureFromQueryString(parsed, canvasManager.canvas2d.gl);
     canvasManager.canvas2d.compileRenderShader();
     if (scene2d.objects['VideoSeed'] !== undefined &&
@@ -208,16 +208,16 @@ window.addEventListener('load', () => {
     };
 
     const setSeed = (name, index, x, y, width, height) => {
-        const orbit = scene2d.getGenerator(name, index);
-        if(orbit === undefined) return;
-        orbit.corner = new Vec2(x, y);
-        orbit.size = new Vec2(width, height);
-        orbit.update();
+        const seed = scene2d.getGenerator(name, index);
+        if(seed === undefined) return;
+        seed.corner = new Vec2(x, y);
+        seed.size = new Vec2(width, height);
+        seed.update();
         canvasManager.canvas2d.render();
     };
 
-    window.setOrbitSeed = (index, x, y, width, height) => {
-        setSeed('OrbitSeed', index, x, y, width, height);
+    window.setTextureSeed = (index, x, y, width, height) => {
+        setSeed('TextureSeed', index, x, y, width, height);
     };
 
     window.setVideoSeed = (index, x, y, width, height) => {

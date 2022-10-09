@@ -2,7 +2,7 @@ import Vec2 from '../vector2d.js';
 import Generator from './generator.js';
 import SelectionState from './selectionState.js';
 
-export default class OrbitSeed extends Generator {
+export default class TextureSeed extends Generator {
     /**
      *       width
      *   -------------
@@ -19,11 +19,11 @@ export default class OrbitSeed extends Generator {
     constructor(cornerX, cornerY, width, height) {
         super();
         if(Number.isNaN(width)) {
-            // OrbitSeed[]=float,float,,float
+            // TextureSeed[]=float,float,,float
             this.keepAspect = true;
             this.keepAspectFromHeight = true;
         } else if(Number.isNaN(height)) {
-            // OrbitSeed[]=float,float,float,
+            // TextureSeed[]=float,float,float,
             this.keepAspect = true;
             this.renderWidth = width;
         } else {
@@ -77,13 +77,13 @@ export default class OrbitSeed extends Generator {
 
     setUniformLocation(gl, uniLocation, program, index) {
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.corner`));
+                                               `u_textureSeed${index}.corner`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.size`));
+                                               `u_textureSeed${index}.size`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.ui`));
+                                               `u_textureSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
-                                               `u_orbitSeed${index}.selected`));
+                                               `u_textureSeed${index}.selected`));
     }
 
     select(mouse, sceneScale) {
@@ -98,29 +98,29 @@ export default class OrbitSeed extends Generator {
                 if (mouse.y < bodyCorner.y) {
                     const dp = mouse.sub(this.corner);
                     return new SelectionState().setObj(this)
-                        .setComponentId(OrbitSeed.CORNER_LEFT_BELOW)
+                        .setComponentId(TextureSeed.CORNER_LEFT_BELOW)
                         .setDiffObj(dp);
                 } else if (bodyCorner.y + bodySize.y < mouse.y) {
                     const dp = mouse.sub(this.corner.add(new Vec2(0, this.size.y)));
                     return new SelectionState().setObj(this)
-                        .setComponentId(OrbitSeed.CORNER_LEFT_ABOVE)
+                        .setComponentId(TextureSeed.CORNER_LEFT_ABOVE)
                         .setDiffObj(dp);
                 }
             } else if (bodyCorner.x + bodySize.x < mouse.x) {
                 if (mouse.y < bodyCorner.y) {
                     const dp = mouse.sub(this.corner.add(new Vec2(this.size.x, 0)));
                     return new SelectionState().setObj(this)
-                        .setComponentId(OrbitSeed.CORNER_RIGHT_BELOW)
+                        .setComponentId(TextureSeed.CORNER_RIGHT_BELOW)
                         .setDiffObj(dp);
                 } else if (bodyCorner.y + bodySize.y < mouse.y) {
                     const dp = mouse.sub(this.corner.add(this.size));
                     return new SelectionState().setObj(this)
-                        .setComponentId(OrbitSeed.CORNER_RIGHT_ABOVE)
+                        .setComponentId(TextureSeed.CORNER_RIGHT_ABOVE)
                         .setDiffObj(dp);
                 }
             }
             const dp = mouse.sub(this.corner);
-            return new SelectionState().setObj(this).setComponentId(OrbitSeed.BODY)
+            return new SelectionState().setObj(this).setComponentId(TextureSeed.BODY)
                 .setDiffObj(dp);
         }
         return new SelectionState();
@@ -140,11 +140,11 @@ export default class OrbitSeed extends Generator {
 
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
-        case OrbitSeed.BODY: {
+        case TextureSeed.BODY: {
             this.corner = mouse.sub(selectionState.diffObj);
             break;
         }
-        case OrbitSeed.CORNER_LEFT_BELOW: {
+        case TextureSeed.CORNER_LEFT_BELOW: {
             const nc = mouse.sub(selectionState.diffObj);
             const sizeDiff = this.corner.sub(nc);
             if(this.keepAspect) {
@@ -158,13 +158,13 @@ export default class OrbitSeed extends Generator {
             }
             break;
         }
-        case OrbitSeed.CORNER_LEFT_ABOVE: {
+        case TextureSeed.CORNER_LEFT_ABOVE: {
             break;
         }
-        case OrbitSeed.CORNER_RIGHT_BELOW: {
+        case TextureSeed.CORNER_RIGHT_BELOW: {
             break;
         }
-        case OrbitSeed.CORNER_RIGHT_ABOVE: {
+        case TextureSeed.CORNER_RIGHT_ABOVE: {
             const nc = mouse.sub(selectionState.diffObj);
             const sizeDiff = nc.sub(this.corner.add(this.size));
             if(this.keepAspect) {
@@ -184,7 +184,7 @@ export default class OrbitSeed extends Generator {
 
     moveAlongAxis(selectionState, mouseState, keyState, scene) {
         switch (selectionState.componentId) {
-        case OrbitSeed.BODY: {
+        case TextureSeed.BODY: {
             if (keyState.isPressingShift) {
                 this.corner.x = mouseState.position.sub(selectionState.diffObj).x;
             } else if (keyState.isPressingCtrl) {
@@ -192,7 +192,7 @@ export default class OrbitSeed extends Generator {
             }
             break;
         }
-        case OrbitSeed.CORNER_LEFT_BELOW: {
+        case TextureSeed.CORNER_LEFT_BELOW: {
             const nc = mouseState.position.sub(selectionState.diffObj);
             const sizeDiff = this.corner.sub(nc);
             if(this.keepAspect) {
@@ -206,13 +206,13 @@ export default class OrbitSeed extends Generator {
             }
             break;
         }
-        case OrbitSeed.CORNER_LEFT_ABOVE: {
+        case TextureSeed.CORNER_LEFT_ABOVE: {
             break;
         }
-        case OrbitSeed.CORNER_RIGHT_BELOW: {
+        case TextureSeed.CORNER_RIGHT_BELOW: {
             break;
         }
-        case OrbitSeed.CORNER_RIGHT_ABOVE: {
+        case TextureSeed.CORNER_RIGHT_ABOVE: {
             const nc = mouseState.position.sub(selectionState.diffObj);
             const sizeDiff = nc.sub(this.corner.add(this.size));
             if(this.keepAspect) {
@@ -231,7 +231,7 @@ export default class OrbitSeed extends Generator {
     }
 
     static loadFromArray(array) {
-        const gen = new OrbitSeed(array[0], array[1], // cornerX, cornerY
+        const gen = new TextureSeed(array[0], array[1], // cornerX, cornerY
                                   array[2], array[3]);// width, height
         if(array.length === 5 && array[4] === 1) {
             gen.isFixed = true;
@@ -240,7 +240,7 @@ export default class OrbitSeed extends Generator {
     }
 
     exportAsQueryString() {
-        return `OrbitSeed[]=${this.corner.x.toFixed(this.digits)},${this.corner.y.toFixed(this.digits)},${this.size.x.toFixed(this.digits)},${this.size.y.toFixed(this.digits)}`;
+        return `TextureSeed[]=${this.corner.x.toFixed(this.digits)},${this.corner.y.toFixed(this.digits)},${this.size.x.toFixed(this.digits)},${this.size.y.toFixed(this.digits)}`;
     }
 
     exportJson() {
@@ -253,21 +253,21 @@ export default class OrbitSeed extends Generator {
     }
 
     cloneDeeply() {
-        const orbitSeed = new OrbitSeed(this.corner.x, this.corner.y,
+        const textureSeed = new TextureSeed(this.corner.x, this.corner.y,
                                         this.size.x, this.size.y);
-        orbitSeed.textureIndex = this.textureIndex;
-        return orbitSeed;
+        textureSeed.textureIndex = this.textureIndex;
+        return textureSeed;
     }
 
     static loadJson(obj, scene) {
-        const nh = new OrbitSeed(obj.corner[0], obj.corner[1],
-                                 obj.width, obj.height);
+        const nh = new TextureSeed(obj.corner[0], obj.corner[1],
+                                   obj.width, obj.height);
         nh.setId(obj.id);
         return nh;
     }
 
     isBody(componentId) {
-        return componentId === OrbitSeed.BODY;
+        return componentId === TextureSeed.BODY;
     }
 
     static get BODY() {
@@ -291,6 +291,6 @@ export default class OrbitSeed extends Generator {
     }
 
     get name() {
-        return 'OrbitSeed';
+        return 'TextureSeed';
     }
 }
