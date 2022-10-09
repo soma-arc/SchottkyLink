@@ -32,10 +32,7 @@ export default class CanvasSeed extends TextureSeed {
 
     static loadFromArray(array) {
         const gen = new CanvasSeed(array[0], array[1], // cornerX, cornerY
-                             array[2], array[3]);// width, height
-        if(array.length === 5 && array[4] === 1) {
-            gen.isFixed = true;
-        }
+                                   array[2], array[3]);// width, height
         return gen;
     }
 
@@ -52,7 +49,7 @@ export default class CanvasSeed extends TextureSeed {
 
     static loadJson(obj, scene) {
         const nh = new CanvasSeed(obj.corner[0], obj.corner[1],
-                                 obj.width, obj.height);
+                                  obj.width, obj.height);
         nh.setId(obj.id);
         return nh;
     }

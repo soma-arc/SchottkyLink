@@ -38,9 +38,6 @@ export default class VideoSeed extends TextureSeed {
     static loadFromArray(array) {
         const gen = new VideoSeed(array[0], array[1], // cornerX, cornerY
                                   array[2], array[3]);// width, height
-        if(array.length === 5 && array[4] === 1) {
-            gen.isFixed = true;
-        }
         return gen;
     }
 
