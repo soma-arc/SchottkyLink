@@ -185,6 +185,13 @@ window.addEventListener('load', () => {
         canvasManager.canvas2d.allowDeleteComponents = bool;
     };
 
+    const setGeneratorFixed = (name, index, bool) => {
+        const seed = scene2d.getGenerator(name, index);
+        if(seed === undefined) return;
+        seed.isFixed = bool;
+        canvasManager.canvas2d.render();
+    };
+
     window.setCircle = (index, x, y, r) => {
         const circle = scene2d.getGenerator('Circle', index);
         if(circle === undefined) return;
@@ -193,6 +200,10 @@ window.addEventListener('load', () => {
         circle.r = r;
         circle.update();
         canvasManager.canvas2d.render();
+    };
+
+    window.setCircleFixed = (index, bool) => {
+        setGeneratorFixed('Circle', index, bool);
     };
 
     window.setHalfPlane = (index, x, y, degree) => {
@@ -205,6 +216,10 @@ window.addEventListener('load', () => {
         plane.boundaryDir = new Vec2(plane.normal.y,
                                      plane.normal.x);
         canvasManager.canvas2d.render();
+    };
+
+    window.setHalfPlaneFixed = (index, bool) => {
+        setGeneratorFixed('HalfPlane', index, bool);
     };
 
     const setSeed = (name, index, x, y, width, height) => {
@@ -220,12 +235,24 @@ window.addEventListener('load', () => {
         setSeed('TextureSeed', index, x, y, width, height);
     };
 
+    window.setTextureSeedFixed = (index, bool) => {
+        setGeneratorFixed('TextureSeed', index, bool);
+    };
+
     window.setVideoSeed = (index, x, y, width, height) => {
         setSeed('VideoSeed', index, x, y, width, height);
     };
 
+    window.setVideoSeedFixed = (index, bool) => {
+        setGeneratorFixed('VideoSeed', index, bool);
+    };
+
     window.setCanvasSeed = (index, x, y, width, height) => {
         setSeed('CanvasSeed', index, x, y, width, height);
+    };
+
+    window.setCanvasSeedFixed = (index, bool) => {
+        setGeneratorFixed('CanvasSeed', index, bool);
     };
 
     const setParallelPlanes = (name, index, x, y, degree, distance) => {
@@ -243,12 +270,24 @@ window.addEventListener('load', () => {
         setParallelPlanes('ParallelInversions', index, x, y, degree, distance);
     };
 
+    window.setParallelInversionsFixed = (index, bool) => {
+        setGeneratorFixed('ParallelInversions', index, bool);
+    };
+
     window.setParallelTranslation = (index, x, y, degree, distance) => {
         setParallelPlanes('ParallelTranslation', index, x, y, degree, distance);
     };
 
+    window.setParallelInversionsFixed = (index, bool) => {
+        setGeneratorFixed('ParallelTranslation', index, bool);
+    };
+
     window.setGlideReflection = (index, x, y, degree, distance) => {
         setParallelPlanes('GlideReflection', index, x, y, degree, distance);
+    };
+
+    window.setGlideReflectionFixed = (index, bool) => {
+        setGeneratorFixed('GlideReflection', index, bool);
     };
 
     const setTwoPlanes = (name, index, x, y, boundaryDegree, normalDegree) => {
@@ -267,8 +306,16 @@ window.addEventListener('load', () => {
         setTwoPlanes('CrossingInversions', index, x, y, boundaryDegree, normalDegree);
     };
 
+    window.setCrossingInversionsFixed = (index, bool) => {
+        setGeneratorFixed('CrossingInversions', index, bool);
+    };
+
     window.setRotation = (index, x, y, boundaryDegree, normalDegree) => {
         setTwoPlanes('Rotation', index, x, y, boundaryDegree, normalDegree);
+    };
+
+    window.setRotationFixed = (index, bool) => {
+        setGeneratorFixed('Rotation', index, bool);
     };
 
     window.setScaling = (index, x, y, c1r, c2r, angleDegree) => {
@@ -283,6 +330,10 @@ window.addEventListener('load', () => {
         canvasManager.canvas2d.render();
     };
 
+    window.setScalingFixed = (index, bool) => {
+        setGeneratorFixed('Scaling', index, bool);
+    };
+
     window.setTwoCircles = (index, c1x, c1y, c1r, c2x, c2y, c2r) => {
         const gen = scene2d.getGenerator('TwoCircles', index);
         if(gen === undefined) return;
@@ -290,6 +341,10 @@ window.addEventListener('load', () => {
         gen.c2 = new Circle(new Vec2(c2x, c2y), c2r);
         gen.update();
         canvasManager.canvas2d.render();
+    };
+
+    window.setTwoCirclesFixed = (index, bool) => {
+        setGeneratorFixed('TwoCircles', index, bool);
     };
 
     window.setLoxodromic = (index, c1x, c1y, c1r, c2x, c2y, c2r, px, py) => {
@@ -302,6 +357,10 @@ window.addEventListener('load', () => {
         gen.c2PrevRadius = gen.c2.r;
         gen.update();
         canvasManager.canvas2d.render();
+    };
+
+    window.setLoxodromicFixed = (index, bool) => {
+        setGeneratorFixed('Loxodromic', index, bool);
     };
 });
 
