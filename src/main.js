@@ -29,7 +29,7 @@ window.addEventListener('load', () => {
     const route = '/'; //window.location.pathname;
 
     const parsed = QueryString.parse(location.search, {arrayFormat: 'bracket'});
-    const downloadImage = (parsed['download'] !== undefined) && parsed['download'] === 'true';
+    const saveImage = (parsed['saveImage'] !== undefined) && parsed['saveImage'] === 'true';
     if(parsed['displayMode'] !== undefined) {
         const displayMode = parsed['displayMode'];
         canvasManager.displayMode = displayMode;
@@ -70,14 +70,14 @@ window.addEventListener('load', () => {
             () => {
                 scene2d.updateVideoSeed();
                 canvasManager.videoManager.streaming = true;
-                if(downloadImage) {
+                if(saveImage) {
                     canvasManager.canvas2d.renderProductAndSave();
                 }
             },
             () => {
             });
     } else {
-        if(downloadImage) {
+        if(saveImage) {
             canvasManager.canvas2d.renderProductAndSave();
         }
     }
