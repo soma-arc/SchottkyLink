@@ -320,9 +320,6 @@ export default class Canvas2d extends Canvas {
 
     mouseWheelListener(event) {
         event.preventDefault();
-        if(this.displayMode === 'iframe'){
-            if(this.scene.isRenderingGenerator) return;
-        }
 
         if (event.deltaY < 0) {
             this.scale /= this.scaleFactor;
@@ -373,6 +370,7 @@ export default class Canvas2d extends Canvas {
 
     mouseUpListener(event) {
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        // 選択状態の解除
         if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
             this.prevSelected && //一つ前のmouseDownで選択状態になっている
             this.scene.selectedState.isSelectingObj() &&
@@ -381,6 +379,7 @@ export default class Canvas2d extends Canvas {
             this.scene.unselect();
             this.render();
         }
+
         this.mouseState.isPressing = false;
         this.isRendering = false;
         this.scene.mouseUp();
@@ -412,6 +411,7 @@ export default class Canvas2d extends Canvas {
     mouseMoveListener(event) {
         clearTimeout(this.deselectTimer);
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
+        // マウスカーソルがジェネレータ上にある時マウスカーソルを変更する
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
         if(this.isRenderingOrbitOrigin &&
            Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
@@ -439,29 +439,12 @@ export default class Canvas2d extends Canvas {
                 this.cursorType = 'crosshair';
             }
         }
+        // Mouse Dragging
         // envent.button return 0 when the mouse is not pressed.
         // Thus we check if the mouse is pressed.
         if (!this.mouseState.isPressing) return;
         this.mouseState.position = mouse;
-        if(this.displayMode === 'iframe') {
-            if(this.scene.isRenderingGenerator) {
-                let moved;
-                if(event.shiftKey || event.ctrlKey) {
-                    moved = this.scene.moveAlongAxis(this.mouseState, this.keyState);
-                } else {
-                    moved = this.scene.move(mouse);
-                }
-                if (moved) this.isRendering = true;
-            } else {
-                if(event.ctrlKey) {
-                    this.scale += 0.1 * (this.mouseState.prevPosition.y - mouse.y);
-                    this.isRendering = true;
-                } else {
-                    this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-                    this.isRendering = true;
-                }
-            }
-        } else {
+        if(this.scene.isRenderingGenerator) {
             if (this.mouseState.button === Canvas.MOUSE_BUTTON_LEFT) {
                 if(this.draggingOrbitOrigin) {
                     this.orbitOrigin = mouse;
@@ -476,6 +459,14 @@ export default class Canvas2d extends Canvas {
                     if (moved) this.isRendering = true;
                 }
             } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
+                this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
+                this.isRendering = true;
+            }
+        } else {
+            if(event.ctrlKey) {
+                this.scale += 0.1 * (this.mouseState.prevPosition.y - mouse.y);
+                this.isRendering = true;
+            } else {
                 this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
                 this.isRendering = true;
             }
