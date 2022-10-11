@@ -246,9 +246,9 @@ export default class Scene2d extends Scene {
     addTextureSeed(position, sceneScale) {
         const aspect = this.textureManager.textures[0].height / this.textureManager.textures[0].width;
         const o = new TextureSeed(position.x - 0.05 * sceneScale,
-                                position.y - 0.05 * sceneScale,
-                                0.1 * sceneScale,
-                                0.1 * sceneScale * aspect);
+                                  position.y - 0.05 * sceneScale,
+                                  0.1 * sceneScale,
+                                  0.1 * sceneScale * aspect);
         this.addCommand(new AddGeneratorCommand(this, o));
     }
 
@@ -299,7 +299,8 @@ export default class Scene2d extends Scene {
 
     move (mouse) {
         if (this.selectedState.isSelectingObj()) {
-            if(this.selectedState.selectedObj.isFixed) return false;
+            if(this.selectedState.selectedObj.isFixed ||
+               this.selectedState.selectedObj.isBody(this.selectedState.componentId)) return false;
             this.selectedState.selectedObj.move(this.selectedState, mouse, this);
             return true;
         }
@@ -410,7 +411,6 @@ export default class Scene2d extends Scene {
             }
         }
         context['TextureSeedTexIndexes'] = textureIndexes;
-
 
         return context;
     }

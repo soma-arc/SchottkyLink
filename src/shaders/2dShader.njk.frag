@@ -577,6 +577,16 @@ bool renderUI(vec2 pos, out vec4 color) {
         //     color = WHITE;
         //     return true;
         // }
+        // point p
+        if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.ui) {
+            color = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+        // point p Boundary
+        if(distance(pos, u_circle{{ n }}.centerAndRadius.xy) < u_circle{{ n }}.ui * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
     }
     {% endfor %}
 

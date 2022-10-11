@@ -11,6 +11,7 @@ export default class Circle extends Generator {
         this.rSq = r * r;
         this.prevRadius = r;
         this.circumferenceThickness = 0.01;
+        this.UIPointRadius = 0.01;
 
         this.snapMode = Circle.SNAP_NONE;
     }
@@ -49,6 +50,7 @@ export default class Circle extends Generator {
     }
 
     select(mouse, sceneScale, selectionScale) {
+        // selection scale タッチ操作時にデフォルトの制御点の大きさだと選択しにくいのでスケールをかける
         if(selectionScale === undefined) {
             selectionScale = 1;
         }
@@ -65,6 +67,13 @@ export default class Circle extends Generator {
                 .setPrevPosition(this.center);
         }
 
+        const dpOrigin = mouse.sub(this.center);
+        if(dpOrigin.length() < this.UIPointRadius * sceneScale * selectionScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(Circle.ORIGIN_POINT)
+                .setDiffObj(dpOrigin);
+        }
+
         return new SelectionState().setObj(this)
             .setComponentId(Circle.BODY)
             .setDiffObj(dp)
@@ -72,7 +81,11 @@ export default class Circle extends Generator {
     }
 
     selectBody(mouse, sceneScale) {
-        return this.select(mouse, sceneScale);
+        const dp = mouse.sub(this.center);
+        if(dp.length() > this.r) return new SelectionState();
+        return new SelectionState().setObj(this)
+            .setComponentId(Circle.BODY)
+            .setDiffObj(dp);
     }
 
     translate(vec) {
@@ -308,6 +321,10 @@ export default class Circle extends Generator {
 
     static get CIRCUMFERENCE() {
         return 1;
+    }
+
+    static get ORIGIN_POINT() {
+        return 2;
     }
 
     static get SNAP_NONE() {
