@@ -34,6 +34,7 @@ export default class TextureSeed extends Generator {
         this.aspect = height / width;
         this.renderWidth = width;
         this.cornerSelectionWidth = 0.01;
+        this.uiPointRadius = 0.01;
         this.textureIndex = 0;
     }
 
@@ -65,11 +66,11 @@ export default class TextureSeed extends Generator {
                      this.size.x, this.size.y);
         const cornerSize = new Vec2(this.cornerSelectionWidth * sceneScale,
                                     this.cornerSelectionWidth * sceneScale);
-        const bodyCorner = this.corner.add(cornerSize);
-        const bodyCornerDiagonal = this.corner.add(this.size).sub(cornerSize);
+        console.log(this.uiPointRadius);
         gl.uniform4f(uniLocation[uniI++],
-                     bodyCorner.x, bodyCorner.y,
-                     bodyCornerDiagonal.x, bodyCornerDiagonal.y);
+                     cornerSize.x, cornerSize.y,
+                     this.uiPointRadius * sceneScale,
+                     this.uiPointRadius * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
         return uniI;
@@ -254,7 +255,7 @@ export default class TextureSeed extends Generator {
 
     cloneDeeply() {
         const textureSeed = new TextureSeed(this.corner.x, this.corner.y,
-                                        this.size.x, this.size.y);
+                                            this.size.x, this.size.y);
         textureSeed.textureIndex = this.textureIndex;
         return textureSeed;
     }
@@ -288,6 +289,10 @@ export default class TextureSeed extends Generator {
 
     static get CORNER_LEFT_BELOW() {
         return 4;
+    }
+
+    static get ORIGIN_POINT() {
+        return 5;
     }
 
     get name() {

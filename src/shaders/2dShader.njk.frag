@@ -518,16 +518,37 @@ bool renderEdgeOfSeed(vec2 pos, out vec4 color) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
+        if(distance(pos, u_canvasSeed{{ n }}.corner + u_canvasSeed{{ n }}.size/2.0) < u_canvasSeed{{ n }}.ui) {
+            color = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+        // point p Boundary
+        if(distance(pos, u_canvasSeed{{ n }}.corner + u_canvasSeed{{ n }}.size/2.0) < u_canvasSeed{{ n }}.ui * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
     }
     {% endfor %}
 
     {% for no in range(0, numTextureSeed) %}
     if(u_textureSeed{{ no }}.selected) {
         vec2 uvTextureSeed{{ no }} = (pos - u_textureSeed{{ no }}.corner) / u_textureSeed{{ no }}.size;
+        vec2 bodyCorner{{ no }} = u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.ui.xy;
+        vec2 bodyCornerDiagonal{{ no }} = u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size - u_textureSeed{{ no }}.ui.xy;
         if(0. < uvTextureSeed{{ no }}.x && uvTextureSeed{{ no }}.x < 1. &&
            0. < uvTextureSeed{{ no }}.y && uvTextureSeed{{ no }}.y < 1. &&
-           (pos.x < u_textureSeed{{ no }}.ui.x || u_textureSeed{{ no }}.ui.z < pos.x ||
-            pos.y < u_textureSeed{{ no }}.ui.y || u_textureSeed{{ no }}.ui.w < pos.y)) {
+           (pos.x < bodyCorner{{ no }}.x || bodyCornerDiagonal{{ no }}.x < pos.x ||
+            pos.y < bodyCorner{{ no }}.y || bodyCornerDiagonal{{ no }}.y < pos.y)) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+
+        if(distance(pos, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0) < u_textureSeed{{ no }}.ui.z) {
+            color = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+        // point p Boundary
+        if(distance(pos, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0) < u_textureSeed{{ no }}.ui.z * 1.5) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }
@@ -541,6 +562,15 @@ bool renderEdgeOfSeed(vec2 pos, out vec4 color) {
            0. < videoUV{{ no }}.y && videoUV{{ no }}.y < 1. &&
            (pos.x < u_videoSeed{{ no }}.ui.x || u_videoSeed{{ no }}.ui.z < pos.x ||
             pos.y < u_videoSeed{{ no }}.ui.y || u_videoSeed{{ no }}.ui.w < pos.y)) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+        if(distance(pos, u_videoSeed{{ n }}.corner + u_videoSeed{{ n }}.size/2.0) < u_videoSeed{{ n }}.ui) {
+            color = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+        // point p Boundary
+        if(distance(pos, u_videoSeed{{ n }}.corner + u_videoSeed{{ n }}.size/2.0) < u_videoSeed{{ n }}.ui * 1.5) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }

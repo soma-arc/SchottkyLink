@@ -75,7 +75,7 @@ struct Loxodromic {
 struct Seed {
     vec2 corner;
     vec2 size;
-    vec4 ui; // [bodyCorner, bodySize]
+    vec4 ui;
     bool selected;
 };
 
