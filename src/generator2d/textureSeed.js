@@ -66,7 +66,6 @@ export default class TextureSeed extends Generator {
                      this.size.x, this.size.y);
         const cornerSize = new Vec2(this.cornerSelectionWidth * sceneScale,
                                     this.cornerSelectionWidth * sceneScale);
-        console.log(this.uiPointRadius);
         gl.uniform4f(uniLocation[uniI++],
                      cornerSize.x, cornerSize.y,
                      this.uiPointRadius * sceneScale,
@@ -87,7 +86,12 @@ export default class TextureSeed extends Generator {
                                                `u_textureSeed${index}.selected`));
     }
 
-    select(mouse, sceneScale) {
+    select(mouse, sceneScale, selectionScale) {
+        // selection scale タッチ操作時にデフォルトの制御点の大きさだと選択しにくいのでスケールをかける
+        if(selectionScale === undefined) {
+            selectionScale = 1;
+        }
+
         const cornerSize = new Vec2(this.cornerSelectionWidth * sceneScale,
                                     this.cornerSelectionWidth * sceneScale);
         const bodyCorner = this.corner.add(cornerSize);
@@ -120,6 +124,14 @@ export default class TextureSeed extends Generator {
                         .setDiffObj(dp);
                 }
             }
+            const center = this.corner.add(this.size.scale(0.5));
+            const dpOrigin = mouse.sub(center);
+            if(dpOrigin.length() < this.uiPointRadius * sceneScale * selectionScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(TextureSeed.ORIGIN_POINT)
+                .setDiffObj(dpOrigin);
+            }
+
             const dp = mouse.sub(this.corner);
             return new SelectionState().setObj(this).setComponentId(TextureSeed.BODY)
                 .setDiffObj(dp);
@@ -141,6 +153,10 @@ export default class TextureSeed extends Generator {
 
     move(selectionState, mouse) {
         switch (selectionState.componentId) {
+        case TextureSeed.ORIGIN_POINT: {
+            this.corner = mouse.sub(selectionState.diffObj).sub(this.size.scale(0.5));
+            break;
+        }
         case TextureSeed.BODY: {
             this.corner = mouse.sub(selectionState.diffObj);
             break;
