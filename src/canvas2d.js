@@ -57,7 +57,7 @@ export default class Canvas2d extends Canvas {
         this.generatorBoundaryColor = [1, 1, 1];
 
         this.allowDeleteComponents = true;
-        this.cursorType = 'crosshair';
+        this.cursorType = 'allScroll';
         this.grab = false;
     }
 
@@ -356,8 +356,8 @@ export default class Canvas2d extends Canvas {
         this.mouseState.prevPosition = mouse;
         this.mouseState.prevTranslate = this.translate;
         this.mouseState.isPressing = true;
-        if(this.cursorType === 'grab' ||
-           this.cursorType === 'allScroll') {
+        if(this.cursorType === 'grab') {
+            // カーソルがジェネレータの制御点や円周の上
             this.cursorType = 'grabbing';
         }
     }
@@ -372,6 +372,7 @@ export default class Canvas2d extends Canvas {
         const mouse = this.calcSceneCoord(event.clientX, event.clientY);
         // 選択状態の解除
         if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
+            Vec2.distance(mouse, this.mouseState.prevTranslate) < 0.001 &&
             this.prevSelected && //一つ前のmouseDownで選択状態になっている
             this.scene.selectedState.isSelectingObj() &&
             this.scene.selectedState.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
@@ -387,19 +388,19 @@ export default class Canvas2d extends Canvas {
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
         if(this.isRenderingOrbitOrigin &&
            Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+            // Orbit表示機能の原点を離したときのカーソル
             this.cursorType = 'grab';
         } else if(selectionState.isSelectingObj()) {
             if(selectionState.selectedObj.isBody(selectionState.componentId)) {
-                if(this.mouseState.isPressing) {
-                    this.cursorType = 'grabbing';
-                } else {
-                    this.cursorType = 'allScroll';
-                }
+                // カーソルがジェネレータの制御点や円周以外の上
+                this.cursorType = 'crosshair';
             } else {
+                // カーソルがジェネレータの制御点や円周などの上
                 this.cursorType = 'grab';
             }
         } else {
-            this.cursorType = 'crosshair';
+            // デフォルトのカーソル
+            this.cursorType = 'allScroll';
         }
     }
 
@@ -415,19 +416,18 @@ export default class Canvas2d extends Canvas {
         const selectionState = this.scene.getComponentOnMouse(mouse, this.scale);
         if(this.isRenderingOrbitOrigin &&
            Vec2.distance(mouse, this.orbitOrigin) < 0.01) {
+            // Orbit表示機能の原点をつかむときのカーソル
             if(this.mouseState.isPressing) {
-                    this.cursorType = 'grabbing';
+                this.cursorType = 'grabbing';
             } else {
                 this.cursorType = 'grab';
             }
         } else if(selectionState.isSelectingObj()) {
             if(selectionState.selectedObj.isBody(selectionState.componentId)) {
-                if(this.mouseState.isPressing) {
-                    this.cursorType = 'grabbing';
-                } else {
-                    this.cursorType = 'allScroll';
-                }
+                // ジェネレータの制御点, 境界以外の上にあるときのカーソル
+                this.cursorType = 'crosshair';
             } else {
+                // ジェネレータの制御点, 円周などの上のカーソル
                 if(this.mouseState.isPressing) {
                     this.cursorType = 'grabbing';
                 } else {
@@ -435,8 +435,9 @@ export default class Canvas2d extends Canvas {
                 }
             }
         } else {
+            // デフォルトのカーソル
             if(this.cursorType !== 'grabbing') {
-                this.cursorType = 'crosshair';
+                this.cursorType = 'allScroll';
             }
         }
         // Mouse Dragging
@@ -456,11 +457,12 @@ export default class Canvas2d extends Canvas {
                     } else {
                         moved = this.scene.move(mouse);
                     }
-                    if (moved) this.isRendering = true;
+                    if (!moved && !selectionState.isSelectingObj()) {
+                        // ジェネレータ以外をドラッグしたときはシーンの平行移動
+                        this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
+                    }
+                    this.isRendering = true;
                 }
-            } else if (this.mouseState.button === Canvas.MOUSE_BUTTON_RIGHT) {
-                this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-                this.isRendering = true;
             }
         } else {
             if(event.ctrlKey) {
