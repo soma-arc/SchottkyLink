@@ -107,14 +107,17 @@ export default class Canvas2d extends Canvas {
 
             const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
                                               touch.clientY + touch.radiusY);
+            // ジェネレータを選択していたかどうか, 選択していたジェネレータのIDを保存してから選択処理に移る
             this.prevSelected = this.scene.selectedState.isSelectingObj();
             if(this.prevSelected) this.prevId = this.scene.selectedState.selectedObj.id;
+            // 指によって正確に選択するのは難しいので選択半径はtouchSelectionScaleで大きめにとる
             this.scene.select(mouse, this.scale, touchSelectionScale);
             this.render();
 
             this.mouseState.prevPosition = mouse;
             this.mouseState.prevTranslate = this.translate;
 
+            // ロングタップ検出用タイマーがキャンセルされなければジェネレータの削除判定を行ない削除する
             if(this.allowDeleteComponents) {
                 longTapTimer = setTimeout(() => {
                     this.scene.remove(mouse);
@@ -142,6 +145,7 @@ export default class Canvas2d extends Canvas {
                     if(touches.length === 1) {
                         this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
                     } else if (touches.length === 2) {
+                        // 二本指によるジェスチャ iframe以外の時と同じ
                         const t1 = touchesList[0];
                         const t2 = touchesList[1];
                         const m1 = new Vec2(t1.clientX, t1.clientY);
@@ -172,19 +176,24 @@ export default class Canvas2d extends Canvas {
                     const moved = this.scene.move(mouse);
                     if (moved) this.isRendering = true;
                 } else if(touches.length === 2) {
+                    // 二本指によるジェスチャ
                     const t1 = touchesList[0];
                     const t2 = touchesList[1];
                     const m1 = new Vec2(t1.clientX, t1.clientY);
                     const m2 = new Vec2(t2.clientX, t2.clientY);
                     const distance = Vec2.distance(m1, m2);
+                    // 指同士の間隔がある程度離れているならばピンチイン/アウトでズーム
                     if(prevDistance > 0 && distance > zoomDistanceThreshold) {
                         if(distance > prevDistance) {
+                            // 指を広げている
                             this.scale /= this.scaleFactor;
                         } else {
+                            // 指を近づけている
                             this.scale *= this.scaleFactor;
                         }
                         this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
                     } else {
+                        // 二本指ドラッグによってsceneを平行移動する
                         const idx = touchIndexById(startTouch.identifier);
                         const t = touchesList[idx];
                         const m = this.calcSceneCoord(t.clientX + t.radiusX,
@@ -204,6 +213,7 @@ export default class Canvas2d extends Canvas {
                 }
             }
 
+            // ロングタップの検出. 閾値よりも大きく動いたらロングタップ判定をキャンセル
             // TODO scaleによって閾値がかわってしまうのでdistanceをclientX, clientYで計算する
             if(longTapTimer !== undefined &&
                Vec2.distance(this.mouseState.prevPosition, mouse) > longTapMoveThreshold) {
@@ -219,11 +229,11 @@ export default class Canvas2d extends Canvas {
             const touch = touches[0];
             const mouse = this.calcSceneCoord(touch.clientX + touch.radiusX,
                                               touch.clientY + touch.radiusY);
-            if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 &&
-                this.prevSelected && //一つ前のmouseDownで選択状態になっている
+            if (Vec2.distance(mouse, this.mouseState.prevPosition) < 0.001 && // 画面をタッチしてから動いていない(ドラッグしていない)
+                this.prevSelected && //一つ前のタッチで選択状態になっている
                 this.scene.selectedState.isSelectingObj() &&
                 this.scene.selectedState.selectedObj.id === this.prevId && // 一つ前のmouseDownで選択したジェネレータと同一のものをクリック
-                !this.scene.selectedState.selectedObj.isHandle(this.scene.selectedState.componentId)) {
+                !this.scene.selectedState.selectedObj.isHandle(this.scene.selectedState.componentId)) { // 制御点をタップしたときは選択状態を解除しない
                 this.scene.unselect();
                 this.render();
             }
@@ -236,6 +246,7 @@ export default class Canvas2d extends Canvas {
                 longTapTimer = undefined;
             }
 
+            // タッチリストを削除
             console.log(touchesList);
             for (let i = 0; i < touchesList.length; i++) {
                 const idx = touchIndexById(touchesList[i].identifier);

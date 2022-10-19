@@ -379,6 +379,7 @@ export default class ParallelInversions extends Generator {
         return 1;
     }
 
+    // 半平面同士の距離を指定する制御点
     static get POINT_HP2() {
         return 2;
     }

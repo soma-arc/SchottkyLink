@@ -49,7 +49,8 @@ export default class Generator {
         return this.select(mouse, sceneScale, selectionScale);
     }
 
-    // ハンドル型UIであるかどうかを判定する
+    // 与えられたコンポーネントIDがハンドル型UI
+    // (HalfPlaneにおける回転を制御するNORMAL_POINTや半平面同士の距離を制御するPOINT_HP2など)であるかどうかを判定する
     isHandle(componentId) {
         return false;
     }
