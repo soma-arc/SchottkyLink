@@ -156,3 +156,4 @@ uniform vec2 u_orbitOrigin;
 uniform float u_isRenderingOrbit;
 uniform vec4 u_backgroundColor;
 uniform vec3 u_generatorBoundaryColor;
+uniform vec2 u_fundamentalDomain[{{ numFundamentalDomainPoints }}];

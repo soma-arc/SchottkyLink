@@ -986,6 +986,22 @@ bool renderUI(vec2 pos, out vec4 color) {
     return false;
 }
 
+{% if numFundamentalDomainPoints != 0 %}
+bool inFundamentalDomain(vec2 p) {
+    {% for n in range(1, numFundamentalDomainPoints) %}
+    vec2 n{{ n }} = normalize(u_fundamentalDomain[{{ n }}] - u_fundamentalDomain[{{ n - 1 }}]);
+    float d{{ n }} = dot(normalize(p - u_fundamentalDomain[{{ n - 1 }}]),
+                         vec2(-n{{ n }}.y, n{{ n }}.x));
+    if(d{{ n }} > 0.0) return false;
+    {% endfor %}
+    vec2 nend = normalize(u_fundamentalDomain[0] - u_fundamentalDomain[{{ numFundamentalDomainPoints - 1 }}]);
+    float dend = dot(normalize(p - u_fundamentalDomain[{{ numFundamentalDomainPoints - 1 }}]),
+                     vec2(-nend.y, nend.x));
+    if(dend > 0.0) return false;
+    return true;
+}
+{% endif %}
+
 bool renderGenerator(vec2 pos, out vec4 color) {
     color = u_backgroundColor;
     float dist;

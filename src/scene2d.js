@@ -72,6 +72,8 @@ export default class Scene2d extends Scene {
         this.videoManager = videoManager;
 
         this.displayMode = 'default';
+
+        this.fundamentalDomain = [];
     }
 
     addSceneUpdateListener(listener) {
@@ -378,6 +380,8 @@ export default class Scene2d extends Scene {
         }
         uniLocations.push(gl.getUniformLocation(program,
                                                 'u_isRenderingGenerator'));
+        uniLocations.push(gl.getUniformLocation(program,
+                                                'u_fundamentalDomain'));
     }
 
     setUniformValues(gl, uniLocations, uniIndex, sceneScale) {
@@ -390,6 +394,7 @@ export default class Scene2d extends Scene {
             }
         }
         gl.uniform1f(uniLocations[uniI++], this.isRenderingGenerator);
+        gl.uniform2fv(uniLocations[uniI++], this.fundamentalDomain);
         return uniI;
     }
 
@@ -411,7 +416,7 @@ export default class Scene2d extends Scene {
             }
         }
         context['TextureSeedTexIndexes'] = textureIndexes;
-
+        context['numFundamentalDomainPoints'] = this.fundamentalDomain.length / 2;
         return context;
     }
 
@@ -435,6 +440,15 @@ export default class Scene2d extends Scene {
 
         if (parsedObject['renderGenerator'] !== undefined) {
             this.isRenderingGenerator = parsedObject['renderGenerator'] === 'true';
+        }
+
+        if (parsedObject['FundamentalDomain'] !== undefined) {
+            const domain = parsedObject['FundamentalDomain'].split(',').map((v) => parseFloat(v));
+            if (domain.length >= 3 && domain.length % 2 === 1) {
+                console.log('Fundamental Domain is invalid');
+            } else {
+                this.fundamentalDomain = domain;
+            }
         }
     }
 
