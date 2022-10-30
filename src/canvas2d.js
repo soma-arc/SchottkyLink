@@ -128,6 +128,8 @@ export default class Canvas2d extends Canvas {
             startTouch = copyTouch(touch);
         }
 
+        // TODO: 指が二本から一本になったとき, prevPositionがかわってしまうのでtranslateがおかしくなる
+        // 二本から一本にかわったら残った指とのprevPositionを計算しなおす
         function handleMove(event) {
             event.preventDefault();
             //console.log('move '+ event.changedTouches.length);
@@ -137,81 +139,43 @@ export default class Canvas2d extends Canvas {
                                               touch.clientY + touch.radiusY);
 
             this.mouseState.position = mouse;
-            if(this.displayMode === 'iframe') {
-                if(this.scene.isRenderingGenerator) {
-                    const moved = this.scene.move(mouse);
-                    if (moved) this.isRendering = true;
-                } else {
-                    if(touches.length === 1) {
-                        this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
-                    } else if (touches.length === 2) {
-                        // 二本指によるジェスチャ iframe以外の時と同じ
-                        const t1 = touchesList[0];
-                        const t2 = touchesList[1];
-                        const m1 = new Vec2(t1.clientX, t1.clientY);
-                        const m2 = new Vec2(t2.clientX, t2.clientY);
-                        const distance = Vec2.distance(m1, m2);
-                        if(prevDistance > 0 && distance > zoomDistanceThreshold) {
-                            if(distance > prevDistance) {
-                                this.scale /= this.scaleFactor;
-                            } else {
-                                this.scale *= this.scaleFactor;
-                            }
-                            this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
-                        }
-                        prevDistance = distance;
-
-                        // update touches
-                        for (let i = 0; i < touches.length; i++) {
-                            const idx = touchIndexById(touchesList[i].identifier);
-                            if (idx >= 0) {
-                                touchesList.splice(idx, 1, copyTouch(touches[i]));
-                            }
-                        }
-                    }
-                    this.isRendering = true;
+            if(touches.length === 1) {
+                const moved = this.scene.move(mouse);
+                if (!moved && !this.scene.selectedState.isSelectingObj()) {
+                    // ジェネレータ以外をドラッグしたときはシーンの平行移動
+                    this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
                 }
-            } else {
-                if(touches.length === 1) {
-                    const moved = this.scene.move(mouse);
-                    if (moved) this.isRendering = true;
-                } else if(touches.length === 2) {
-                    // 二本指によるジェスチャ
-                    const t1 = touchesList[0];
-                    const t2 = touchesList[1];
-                    const m1 = new Vec2(t1.clientX, t1.clientY);
-                    const m2 = new Vec2(t2.clientX, t2.clientY);
-                    const distance = Vec2.distance(m1, m2);
-                    // 指同士の間隔がある程度離れているならばピンチイン/アウトでズーム
-                    if(prevDistance > 0 && distance > zoomDistanceThreshold) {
-                        if(distance > prevDistance) {
-                            // 指を広げている
-                            this.scale /= this.scaleFactor;
-                        } else {
-                            // 指を近づけている
-                            this.scale *= this.scaleFactor;
-                        }
-                        this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
+                this.isRendering = true;
+            } else if(touches.length === 2) {
+                // 二本指によるジェスチャ
+                const t1 = touchesList[0];
+                const t2 = touchesList[1];
+                const m1 = new Vec2(t1.clientX, t1.clientY);
+                const m2 = new Vec2(t2.clientX, t2.clientY);
+                const distance = Vec2.distance(m1, m2);
+                // 指同士の間隔がある程度離れているならばピンチイン/アウトでズーム
+                if(prevDistance > 0 && distance > zoomDistanceThreshold) {
+                    if(distance > prevDistance) {
+                        // 指を広げている
+                        this.scale /= this.scaleFactor;
                     } else {
-                        // 二本指ドラッグによってsceneを平行移動する
-                        const idx = touchIndexById(startTouch.identifier);
-                        const t = touchesList[idx];
-                        const m = this.calcSceneCoord(t.clientX + t.radiusX,
-                                                      t.clientY + t.radiusY);
-                        this.translate = this.translate.sub(m.sub(this.mouseState.prevPosition));
+                        // 指を近づけている
+                        this.scale *= this.scaleFactor;
                     }
-                    prevDistance = distance;
-                    this.isRendering = true;
+                    this.scale = Math.min(this.scaleMax, Math.max(this.scaleMin, this.scale));
+                }
+                prevDistance = distance;
+                this.isRendering = true;
 
-                    // update touches
-                    for (let i = 0; i < touches.length; i++) {
-                        const idx = touchIndexById(touchesList[i].identifier);
-                        if (idx >= 0) {
-                            touchesList.splice(idx, 1, copyTouch(touches[i]));
-                        }
+                // update touches
+                for (let i = 0; i < touches.length; i++) {
+                    const idx = touchIndexById(touchesList[i].identifier);
+                    if (idx >= 0) {
+                        touchesList.splice(idx, 1, copyTouch(touches[i]));
                     }
                 }
             }
+
 
             // ロングタップの検出. 閾値よりも大きく動いたらロングタップ判定をキャンセル
             // TODO scaleによって閾値がかわってしまうのでdistanceをclientX, clientYで計算する
