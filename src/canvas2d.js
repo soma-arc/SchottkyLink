@@ -140,8 +140,9 @@ export default class Canvas2d extends Canvas {
 
             this.mouseState.position = mouse;
             if(touches.length === 1) {
-                const moved = this.scene.move(mouse);
-                if (!moved && !this.scene.selectedState.isSelectingObj()) {
+                if(this.scene.selectionState.isSelectingObj()) {
+                    this.scene.move(mouse);
+                } else {
                     // ジェネレータ以外をドラッグしたときはシーンの平行移動
                     this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
                 }
@@ -426,13 +427,11 @@ export default class Canvas2d extends Canvas {
                     this.orbitOrigin = mouse;
                     this.isRendering = true;
                 } else {
-                    let moved;
                     if(event.shiftKey || event.ctrlKey) {
-                        moved = this.scene.moveAlongAxis(this.mouseState, this.keyState);
+                        this.scene.moveAlongAxis(this.mouseState, this.keyState);
+                    } else if(selectionState.isSelectingObj()){
+                        this.scene.move(mouse);
                     } else {
-                        moved = this.scene.move(mouse);
-                    }
-                    if (!moved && !selectionState.isSelectingObj()) {
                         // ジェネレータ以外をドラッグしたときはシーンの平行移動
                         this.translate = this.translate.sub(mouse.sub(this.mouseState.prevPosition));
                     }
