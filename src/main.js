@@ -362,6 +362,12 @@ window.addEventListener('load', () => {
     window.setLoxodromicFixed = (index, bool) => {
         setGeneratorFixed('Loxodromic', index, bool);
     };
+
+    window.setFundamentalDomain = (fundamentalDomain) => {
+        scene2d.fundamentalDomain = fundamentalDomain;
+        canvasManager.canvas2d.compileRenderShader();
+        canvasManager.canvas2d.render();
+    };
 });
 
 function askToAllowPopup() {
