@@ -14,6 +14,8 @@ export default class VideoSeed extends TextureSeed {
                                                `u_videoSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoSeed${index}.selected`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_videoSeed${index}.cropPolygon`));
     }
 
     updateTextureSize(width, height) {

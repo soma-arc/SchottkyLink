@@ -55,7 +55,19 @@ bool IIS(vec2 pos, out vec4 col) {
         {% endfor %}
 
         {% for no in range(0, numTextureSeed) %}
-        vec2 uv{{ n }}{{ no }} = (pos - u_textureSeed{{ no }}.corner) / u_textureSeed{{ no }}.size;
+        float u_texLen{{ no }} = distance(u_textureSeed{{ no }}.corner, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size / 2.0);
+        vec2 u_texCenter{{ no }} = u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0;
+        mat2 u_texRotateM{{ no }} = mat2(cos(u_textureSeed{{ no }}.rotationRadian),
+                                         -sin(u_textureSeed{{ no }}.rotationRadian),
+                                         sin(u_textureSeed{{ no }}.rotationRadian),
+                                         cos(u_textureSeed{{ no }}.rotationRadian));
+        mat2 u_texInvRotateM{{ no }} = mat2(cos(-u_textureSeed{{ no }}.rotationRadian),
+                                         -sin(-u_textureSeed{{ no }}.rotationRadian),
+                                         sin(-u_textureSeed{{ no }}.rotationRadian),
+                                         cos(-u_textureSeed{{ no }}.rotationRadian));
+        pos -= u_texCenter{{ no }};
+        pos = u_texRotateM{{ no }} * pos;
+        vec2 uv{{ n }}{{ no }} = (pos + u_textureSeed{{ no }}.size * 0.5) / u_textureSeed{{ no }}.size;
         if(0. < uv{{ n }}{{ no }}.x && uv{{ n }}{{ no }}.x < 1. &&
            0. < uv{{ n }}{{ no }}.y && uv{{ n }}{{ no }}.y < 1.) {
             c = deGamma(textureLod(u_imageTextures[{{ TextureSeedTexIndexes[no] }}], vec2(uv{{ n }}{{ no }}.x, 1. - uv{{ n }}{{ no }}.y), 0.0));
@@ -64,6 +76,8 @@ bool IIS(vec2 pos, out vec4 col) {
                 return true;
             }
         }
+        pos = u_texInvRotateM{{ no }} * pos;
+        pos += u_texCenter{{ no }};
         {% endfor %}
 
         {% for no in range(0, numVideoSeed) %}
@@ -551,6 +565,28 @@ bool renderEdgeOfSeed(vec2 pos, out vec4 color) {
         }
         // point p Boundary
         if(distance(pos, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0) < u_textureSeed{{ no }}.ui.z * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+        // up point
+        float len{{ no }} = distance(u_textureSeed{{ no }}.corner, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size / 2.0);
+        vec2 p{{ no }} = u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0;
+        mat2 rotateM{{ no }} = mat2(cos(-u_textureSeed{{ no }}.rotationRadian),
+                                    -sin(-u_textureSeed{{ no }}.rotationRadian),
+                                    sin(-u_textureSeed{{ no }}.rotationRadian),
+                                    cos(-u_textureSeed{{ no }}.rotationRadian));
+        vec2 up{{ no }} = rotateM{{ no }} * vec2(0, 1);
+        if(distance(pos, p{{ no }} + up{{ no }} * len{{ no }}) < u_textureSeed{{ no }}.ui.z) {
+            color = vec4(PINK, 1);
+            return true;
+        }
+        // up point Boundary
+        if(distance(pos, p{{ no }} + up{{ no }} * len{{ no }}) < u_textureSeed{{ no }}.ui.z * 1.5) {
+            color = vec4(u_generatorBoundaryColor, 1);
+            return true;
+        }
+        // ring
+        if(abs(distance(pos, u_textureSeed{{ no }}.corner + u_textureSeed{{ no }}.size/2.0) - len{{ no }}) < u_textureSeed{{ no }}.ui.z * 0.5) {
             color = vec4(u_generatorBoundaryColor, 1);
             return true;
         }

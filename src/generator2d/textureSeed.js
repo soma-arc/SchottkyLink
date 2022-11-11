@@ -36,15 +36,29 @@ export default class TextureSeed extends Generator {
         this.cornerSelectionWidth = 0.01;
         this.uiPointRadius = 0.01;
         this.textureIndex = 0;
+
+        this.cropPolygon = [0.0, 0.0];
+
+        // 画像の上方向. 回転に用いる.
+        this.upDir = new Vec2(0, 1);
+        this.upPointRadius = Vec2.distance(this.corner, this.corner.add(this.size)) * 0.5;
+        this.rotationRadian = Math.atan2(this.upDir.y, this.upDir.x) - Math.PI / 2;
+
+        this.upUIPointLen = 0.1;
     }
 
     getPosition() {
         return this.corner;
     }
 
+    setCropPolygon(cropPolygon) {
+        this.cropPolygon = cropPolygon;
+    }
+
     update() {
         if (this.keepAspect) {
             this.size = new Vec2(this.renderWidth, this.aspect * this.renderWidth);
+            this.upPointRadius = Vec2.distance(this.corner, this.corner.add(this.size)) * 0.5;
         }
     }
 
@@ -64,14 +78,18 @@ export default class TextureSeed extends Generator {
                      this.corner.x, this.corner.y);
         gl.uniform2f(uniLocation[uniI++],
                      this.size.x, this.size.y);
+        gl.uniform1f(uniLocation[uniI++],
+                     this.rotationRadian);
         const cornerSize = new Vec2(this.cornerSelectionWidth * sceneScale,
                                     this.cornerSelectionWidth * sceneScale);
         gl.uniform4f(uniLocation[uniI++],
                      cornerSize.x, cornerSize.y,
                      this.uiPointRadius * sceneScale,
-                     this.uiPointRadius * sceneScale);
+                     this.upUIPointLen * sceneScale);
         gl.uniform1i(uniLocation[uniI++],
                      this.selected);
+        gl.uniform2fv(uniLocation[uniI++],
+                      this.cropPolygon);
         return uniI;
     }
 
@@ -81,9 +99,13 @@ export default class TextureSeed extends Generator {
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_textureSeed${index}.size`));
         uniLocation.push(gl.getUniformLocation(program,
+                                               `u_textureSeed${index}.rotationRadian`));
+        uniLocation.push(gl.getUniformLocation(program,
                                                `u_textureSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_textureSeed${index}.selected`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_textureSeed${index}.cropPolygon`));
     }
 
     select(mouse, sceneScale, selectionScale) {
@@ -97,6 +119,15 @@ export default class TextureSeed extends Generator {
         const bodyCorner = this.corner.add(cornerSize);
         const bodySize = this.size.sub(cornerSize.scale(2));
 
+        const center = this.corner.add(this.size.scale(0.5));
+        const upPoint = center.add(this.upDir.scale(this.upPointRadius));
+        const dpUp = mouse.sub(upPoint);
+        if(dpUp.length() < this.uiPointRadius * sceneScale * selectionScale) {
+            return new SelectionState().setObj(this)
+                .setComponentId(TextureSeed.UP_POINT)
+                .setDiffObj(dpUp);
+        }
+        
         if (this.corner.x < mouse.x && mouse.x < this.corner.x + this.size.x &&
             this.corner.y < mouse.y && mouse.y < this.corner.y + this.size.y) {
             if (mouse.x < bodyCorner.x) {
@@ -124,12 +155,12 @@ export default class TextureSeed extends Generator {
                         .setDiffObj(dp);
                 }
             }
-            const center = this.corner.add(this.size.scale(0.5));
+
             const dpOrigin = mouse.sub(center);
             if(dpOrigin.length() < this.uiPointRadius * sceneScale * selectionScale) {
-            return new SelectionState().setObj(this)
-                .setComponentId(TextureSeed.ORIGIN_POINT)
-                .setDiffObj(dpOrigin);
+                return new SelectionState().setObj(this)
+                    .setComponentId(TextureSeed.ORIGIN_POINT)
+                    .setDiffObj(dpOrigin);
             }
 
             const dp = mouse.sub(this.corner);
@@ -196,6 +227,14 @@ export default class TextureSeed extends Generator {
             }
             break;
         }
+        case TextureSeed.UP_POINT: {
+            const center = this.corner.add(this.size.scale(0.5));
+            this.upDir = mouse.sub(center).normalize();
+            this.rotationRadian = Math.atan2(this.upDir.y, this.upDir.x) - Math.PI / 2;
+            break;
+        }
+        default:
+            break;
         }
     }
 
@@ -309,6 +348,10 @@ export default class TextureSeed extends Generator {
 
     static get ORIGIN_POINT() {
         return 5;
+    }
+
+    static get UP_POINT() {
+        return 6;
     }
 
     get name() {

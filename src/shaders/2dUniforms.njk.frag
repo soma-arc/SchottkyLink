@@ -75,8 +75,10 @@ struct Loxodromic {
 struct Seed {
     vec2 corner;
     vec2 size;
+    float rotationRadian;
     vec4 ui;
     bool selected;
+    vec2 cropPolygon[10];
 };
 
 struct Scaling {
@@ -156,4 +158,6 @@ uniform vec2 u_orbitOrigin;
 uniform float u_isRenderingOrbit;
 uniform vec4 u_backgroundColor;
 uniform vec3 u_generatorBoundaryColor;
+{% if numFundamentalDomainPoints > 2 %}
 uniform vec2 u_fundamentalDomain[{{ numFundamentalDomainPoints }}];
+{% endif %}

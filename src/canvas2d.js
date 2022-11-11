@@ -429,7 +429,7 @@ export default class Canvas2d extends Canvas {
                 } else {
                     if(event.shiftKey || event.ctrlKey) {
                         this.scene.moveAlongAxis(this.mouseState, this.keyState);
-                    } else if(selectionState.isSelectingObj()){
+                    } else if(this.scene.selectedState.isSelectingObj()){
                         this.scene.move(mouse);
                     } else {
                         // ジェネレータ以外をドラッグしたときはシーンの平行移動

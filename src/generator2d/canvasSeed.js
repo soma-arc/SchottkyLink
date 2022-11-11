@@ -28,6 +28,8 @@ export default class CanvasSeed extends TextureSeed {
                                                `u_canvasSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_canvasSeed${index}.selected`));
+        uniLocation.push(gl.getUniformLocation(program,
+                                               `u_canvasSeed${index}.cropPolygon`));
     }
 
     static loadFromArray(array) {
