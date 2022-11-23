@@ -1,23 +1,38 @@
+/**
+ * @module Vec3
+ */
 export default class Vec3 {
+    /** X value of the vector.
+     * @type {Number}
+     */
+    x;
+    /** Y value of the vector.
+     * @type {Number}
+     */
+    y;
+    /** Z value of the vector.
+     * @type {Number}
+     */
+    z;
+
     /**
-     *
-     * @param {number} x
-     * @param {number} y
-     * @param {number} z
+     * @param {Number} x
+     * @param {Number} y
+     * @param {Number} z
      */
     constructor(x, y, z) {
         this.x = x;
-        this.y = y
+        this.y = y;
         this.z = z;
     }
 
     /**
-     *
+     * Add vector
      * @param {Vec3} v
      * @returns {Vec3}
      */
     add(v) {
-        return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z)
+        return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z);
     }
 
     /**
@@ -26,7 +41,7 @@ export default class Vec3 {
      * @returns {Vec3}
      */
     sub(v) {
-        return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z)
+        return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z);
     }
 
     /**
@@ -49,7 +64,7 @@ export default class Vec3 {
 
     /**
      *
-     * @param {number} k
+     * @param {Number} k
      * @returns {Vec3}
      */
     scale(k) {
@@ -58,7 +73,7 @@ export default class Vec3 {
 
     /**
      *
-     * @returns {number}
+     * @returns {Number}
      */
     length() {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
@@ -66,7 +81,7 @@ export default class Vec3 {
 
     /**
      *
-     * @returns {number}
+     * @returns {Number}
      */
     lengthSq() {
         return (this.x * this.x + this.y * this.y + this.z * this.z);
@@ -93,7 +108,7 @@ export default class Vec3 {
      *
      * @param {Vec3} v1
      * @param {Vec3} v2
-     * @returns {number}
+     * @returns {Number}
      */
     static dot(v1, v2) {
         return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
@@ -115,7 +130,7 @@ export default class Vec3 {
      *
      * @param {Vec3} v1
      * @param {Vec3} v2
-     * @returns {number}
+     * @returns {Number}
      */
     static distance(v1, v2) {
         const l = v1.sub(v2);
@@ -124,8 +139,8 @@ export default class Vec3 {
 
     /**
      *
-     * @param {number} radians
-     * @returns {number}
+     * @param {Number} radians
+     * @returns {Number}
      */
     rotateAroundX(radians) {
         const cosRad = Math.cos(radians);
@@ -137,8 +152,8 @@ export default class Vec3 {
 
     /**
      *
-     * @param {number} radians
-     * @returns {number}
+     * @param {Number} radians
+     * @returns {Number}
      */
     rotateAroundY(radians) {
         const cosRad = Math.cos(radians);
@@ -150,8 +165,8 @@ export default class Vec3 {
 
     /**
      *
-     * @param {number} radians
-     * @returns {number}
+     * @param {Number} radians
+     * @returns {Number}
      */
     rotateAroundZ(radians) {
         const cosRad = Math.cos(radians);
