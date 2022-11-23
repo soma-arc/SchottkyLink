@@ -25,6 +25,8 @@ export default class CanvasSeed extends TextureSeed {
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_canvasSeed${index}.size`));
         uniLocation.push(gl.getUniformLocation(program,
+                                               `u_textureSeed${index}.rotationRadian`));
+        uniLocation.push(gl.getUniformLocation(program,
                                                `u_canvasSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_canvasSeed${index}.selected`));

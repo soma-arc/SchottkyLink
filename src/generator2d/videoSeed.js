@@ -11,6 +11,8 @@ export default class VideoSeed extends TextureSeed {
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoSeed${index}.size`));
         uniLocation.push(gl.getUniformLocation(program,
+                                               `u_textureSeed${index}.rotationRadian`));
+        uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoSeed${index}.ui`));
         uniLocation.push(gl.getUniformLocation(program,
                                                `u_videoSeed${index}.selected`));
