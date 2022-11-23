@@ -1,5 +1,4 @@
-import { GetWebGL2Context, CreateSquareVbo, AttachShader,
-         LinkProgram, CreateRGBATextures } from './glUtils';
+import GLUtils from './glUtils';
 import Canvas from './canvas.js';
 import Vec2 from './vector2d.js';
 
@@ -238,24 +237,24 @@ export default class Canvas2d extends Canvas {
         this.canvas.addEventListener('contextmenu', event => event.preventDefault());
 
         this.resizeCanvas();
-        this.gl = GetWebGL2Context(this.canvas);
-        this.vertexBuffer = CreateSquareVbo(this.gl);
+        this.gl = GLUtils.GetWebGL2Context(this.canvas);
+        this.vertexBuffer = GLUtils.CreateSquareVbo(this.gl);
 
         this.renderCanvasProgram = this.gl.createProgram();
-        AttachShader(this.gl, RENDER_VERTEX,
+        GLUtils.AttachShader(this.gl, RENDER_VERTEX,
                      this.renderCanvasProgram, this.gl.VERTEX_SHADER);
-        AttachShader(this.gl, RENDER_FRAGMENT,
+        GLUtils.AttachShader(this.gl, RENDER_FRAGMENT,
                      this.renderCanvasProgram, this.gl.FRAGMENT_SHADER);
-        LinkProgram(this.gl, this.renderCanvasProgram);
+        GLUtils.LinkProgram(this.gl, this.renderCanvasProgram);
         this.renderCanvasVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
                                                              'a_vertex');
 
         this.productRenderProgram = this.gl.createProgram();
-        AttachShader(this.gl, RENDER_FLIPPED_VERTEX,
+        GLUtils.AttachShader(this.gl, RENDER_FLIPPED_VERTEX,
                      this.productRenderProgram, this.gl.VERTEX_SHADER);
-        AttachShader(this.gl, RENDER_FRAGMENT,
+        GLUtils.AttachShader(this.gl, RENDER_FRAGMENT,
                      this.productRenderProgram, this.gl.FRAGMENT_SHADER);
-        LinkProgram(this.gl, this.productRenderProgram);
+        GLUtils.LinkProgram(this.gl, this.productRenderProgram);
         this.productRenderVAttrib = this.gl.getAttribLocation(this.renderCanvasProgram,
                                                               'a_vertex');
 
@@ -380,7 +379,7 @@ export default class Canvas2d extends Canvas {
         }
     }
 
-    mouseLeaveListener(event) {
+    mouseLeaveListener() {
         this.mouseState.isPressing = false;
         this.isRendering = false;
     }
@@ -487,7 +486,7 @@ export default class Canvas2d extends Canvas {
         }
     }
 
-    keyupListener(event) {
+    keyupListener() {
         this.keyState.isPressingShift = false;
         this.keyState.isPressingCtrl = false;
         this.isRendering = false;
@@ -496,34 +495,35 @@ export default class Canvas2d extends Canvas {
 
     compileRenderShader() {
         this.renderProgram = this.gl.createProgram();
-        AttachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
+        GLUtils.AttachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
         // attachShader(this.gl, CIRCLE_EDGE_SHADER_TMPL.render(this.scene.getContext()),
         //              this.renderProgram, this.gl.FRAGMENT_SHADER);
         //console.log(CIRCLES_SHADER_TMPL.render(this.scene.getContext()));
-        AttachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
+        GLUtils.AttachShader(this.gl, CIRCLES_SHADER_TMPL.render(this.scene.getContext()),
                      this.renderProgram, this.gl.FRAGMENT_SHADER);
-        LinkProgram(this.gl, this.renderProgram);
+        GLUtils.LinkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
         this.getRenderUniformLocations();
     }
 
     initRenderTextures() {
-        this.renderTextures = CreateRGBATextures(this.gl, this.canvas.width,
-                                                 this.canvas.height, 2);
+        this.renderTextures = GLUtils.CreateRGBAUnsignedByteTextures(this.gl, this.canvas.width,
+                                                                     this.canvas.height, 2);
     }
 
     initProductRenderTextures() {
-        this.productRenderTextures = CreateRGBATextures(this.gl,
-                                                        this.productRenderResolution.x,
-                                                        this.productRenderResolution.y, 2);
-        this.productRenderResultTexture = CreateRGBATextures(this.gl,
-                                                             this.productRenderResolution.x,
-                                                             this.productRenderResolution.y, 1)[0];
+        this.productRenderTextures =
+            GLUtils.CreateRGBAUnsignedByteTextures(this.gl,
+                                                   this.productRenderResolution.x,
+                                                   this.productRenderResolution.y, 2);
+        this.productRenderResultTexture =
+            GLUtils.CreateRGBAUnsignedByteTextures(this.gl,
+                                                   this.productRenderResolution.x,
+                                                   this.productRenderResolution.y, 1)[0];
     }
 
     getRenderUniformLocations() {
         this.uniLocations = [];
-        let textureIndex = 0;
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_accTexture'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,

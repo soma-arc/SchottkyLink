@@ -1,4 +1,4 @@
-import { CreateRGBTextures } from './glUtils';
+import GLUtils from './glUtils';
 
 export default class VideoManager {
     constructor() {
@@ -9,7 +9,7 @@ export default class VideoManager {
     }
 
     init(gl) {
-        this.texture = CreateRGBTextures(gl, this.width, this.height, 1)[0];
+        this.texture = GLUtils.CreateRGBUnsignedByteTextures(gl, this.width, this.height, 1)[0];
     }
 
     connect(gl, canplayCallback, failure) {
@@ -24,8 +24,8 @@ export default class VideoManager {
                 this.width = this.video.videoWidth;
                 this.height = this.video.videoHeight;
 
-                this.texture = CreateRGBTextures(gl,
-                                                 this.width, this.height, 1)[0];
+                this.texture = GLUtils.CreateRGBUnsignedByteTextures(gl,
+                                                                     this.width, this.height, 1)[0];
                 canplayCallback(this.width, this.height);
             };
             this.video.addEventListener('canplay', canplayListener);
@@ -42,7 +42,6 @@ export default class VideoManager {
                 console.log('can not be used webcam');
             }
         };
-
         if (navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(media).then(successCallback,
                                                             failureCallback);

@@ -1,5 +1,4 @@
-import { CreateRGBATextures } from './glUtils.js';
-
+import GLUtils from './glUtils.js';
 
 export default class Texture {
     constructor(filename, imgUrl) {
@@ -11,19 +10,19 @@ export default class Texture {
     }
 
     init(gl) {
-        this.textureObj = CreateRGBATextures(gl, 1, 1, 1)[0];
+        this.textureObj = GLUtils.CreateRGBAUnsignedByteTextures(gl, 1, 1, 1)[0];
     }
 
     load(gl) {
         this.img = new Image();
         this.isLoaded = false;
         this.isCopiedToGLTexture = false;
-        const p = new Promise((resolve, reject) => {
+        const p = new Promise((resolve) => {
             this.img.addEventListener('load', () => {
                 this.isLoaded = true;
                 this.width = this.img.width;
                 this.height = this.img.height;
-                this.textureObj = CreateRGBATextures(gl, 1, 1, 1)[0];
+                this.textureObj = GLUtils.CreateRGBAUnsignedByteTextures(gl, 1, 1, 1)[0];
                 resolve();
             });
         });

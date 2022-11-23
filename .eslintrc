@@ -13,12 +13,11 @@
         "no-unreachable": "error"
     },
     "env": {
-        "es6": true,
+        "es2022": true,
         "browser": true,
         "node": true
     },
     "parserOptions": {
-        "sourceType": "module",
-        "ecmaVersion": 2018
+        "sourceType": "module"
     }
 }
