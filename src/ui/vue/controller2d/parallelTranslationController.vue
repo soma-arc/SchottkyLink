@@ -2,7 +2,7 @@
 <div>
   Origin X
   <b-input 
-    v-model.number="glideReflection.p.x"
+    v-model.number="parallelTranslation.p.x"
     @input="valueChanged"
     placeholder="Number"
     type="number"
@@ -10,7 +10,7 @@
   </b-input>
   Origin Y
   <b-input 
-    v-model.number="glideReflection.p.y"
+    v-model.number="parallelTranslation.p.y"
     @input="valueChanged"
     placeholder="Number"
     type="number"
@@ -18,7 +18,7 @@
   </b-input>
   Normal Angle
   <b-input 
-    v-model.number="glideReflection.normalAngleDeg"
+    v-model.number="parallelTranslation.normalAngleDeg"
     @input="computeNormal"
     placeholder="Number"
     type="number"
@@ -26,7 +26,7 @@
   </b-input>
   Distance
   <b-input 
-    v-model.number="glideReflection.planeDist"
+    v-model.number="parallelTranslation.planeDist"
     @input="updateTranslation"
     placeholder="Number"
     type="number"
@@ -36,10 +36,10 @@
 </template>
 
 <script>
-import Radians from '../../radians.js';
-import Vec2 from '../../vector2d.js';
+import Radians from '../../../core/radians.js';
+import Vec2 from '../../../core/vector2d.js';
 export default {
-        props: ['glideReflection', 'scene'],
+        props: ['parallelTranslation', 'scene'],
         components: {
         },
         methods: {
@@ -47,13 +47,13 @@ export default {
                 this.scene.reRender();
             },
             updateTranslation: function(event) {
-                this.glideReflection.update();
+                this.parallelTranslation.update();
                 this.scene.reRender();
             },
             computeNormal: function(event) {
-                const rad = Radians.DegToRad(this.glideReflection.normalAngleDeg);
-                this.glideReflection.normal = new Vec2(Math.cos(rad), Math.sin(rad));
-                this.glideReflection.updateFromNormal();
+                const rad = Radians.DegToRad(this.parallelTranslation.normalAngleDeg);
+                this.parallelTranslation.normal = new Vec2(Math.cos(rad), Math.sin(rad));
+                this.parallelTranslation.updateFromNormal();
                 this.scene.reRender();
             }
         }

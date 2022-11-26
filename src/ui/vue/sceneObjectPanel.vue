@@ -69,8 +69,8 @@
 </template>
 
 <script>
-import SelectionState from '../generator2d/selectionState.js';
-import RemoveGeneratorCommand from '../command/removeGeneratorCommand.js';
+import SelectionState from '../../core/generator2d/selectionState.js';
+import RemoveGeneratorCommand from '../../core/command/removeGeneratorCommand.js';
 import CircleController from './controller2d/circleController.vue';
 import HalfPlaneController from './controller2d/halfPlaneController.vue';
 import TextureSeedController from './controller2d/textureSeedController.vue';

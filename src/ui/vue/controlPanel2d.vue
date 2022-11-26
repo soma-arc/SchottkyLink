@@ -46,10 +46,10 @@
 
 <script>
 import ImgButton from './imgButton.vue';
-import Vec2 from '../vector2d.js';
+import Vec2 from '../../core/vector2d.js';
 import SceneObjectPanel from './sceneObjectPanel.vue';
 import RenderPanel from './renderPanel.vue';
-import Circle from '../generator2d/circle.js';
+import Circle from '../../core/generator2d/circle.js';
 
 const CIRCLE_IMG = require('../img/2dGenerators/circle.png');
 const HALF_PLANE_IMG = require('../img/2dGenerators/halfPlane.png');

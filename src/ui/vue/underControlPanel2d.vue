@@ -91,7 +91,7 @@
 
 <script>
 import { ToastProgrammatic as Toast } from 'buefy';
-import SelectionState from '../generator2d/selectionState.js';
+import SelectionState from '../../core/generator2d/selectionState.js';
 
 export default {
     props: ['scene2d', 'canvasManager'],

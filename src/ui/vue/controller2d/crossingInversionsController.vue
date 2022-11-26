@@ -38,8 +38,8 @@
 </template>
 
 <script>
-import Radians from '../../radians.js';
-import Vec2 from '../../vector2d.js';
+import Radians from '../../../core/radians.js';
+import Vec2 from '../../../core/vector2d.js';
 export default {
     props: ['crossingInversions', 'scene'],
     components: {

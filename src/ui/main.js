@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Buefy from 'buefy';
-import Root from '../core/vue/root.vue';
+import Root from './vue/root.vue';
 import 'buefy/dist/buefy.css';
 import Scene2d from '../core/scene2d.js';
 import Scene3d from '../core/scene3d.js';
