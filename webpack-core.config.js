@@ -1,11 +1,9 @@
 const path = require('path');
-const { VueLoaderPlugin } = require('vue-loader');
-
 const src  = path.resolve(__dirname, 'src');
-const dist = path.resolve(__dirname, 'docs');
+const dist = path.resolve(__dirname, 'dist');
 
 module.exports = () => ({
-    entry: [`${src}/ui/main.js`],
+    entry: [`${src}/core/core.js`],
 
     cache: {
         type: 'filesystem',
@@ -15,21 +13,15 @@ module.exports = () => ({
     },
 
     output: {
+        library: 'SchottkyLink',
         path: dist,
-        filename: 'bundle.js',
+        filename: (process.env.NODE_ENV === 'production') ?
+            'schottky-link-core.min.js' : 'schottky-link-core.js'
     },
     mode: 'development',
 
     module: {
         rules: [
-            {
-                test: /\.vue$/,
-                use: [
-                    {
-                        loader: 'vue-loader',
-                    }
-                ]
-            },
             {
                 test: /\.csv$/,
                 use: [
@@ -71,31 +63,12 @@ module.exports = () => ({
                 exclude: /node_modules/,
                 type: 'asset/resource'
             },
-            {
-                test: /\.css$/,
-                use: [
-                    'style-loader',
-                    'css-loader'
-                ],
-            }
         ]
     },
 
-    devtool: (process.env.NODE_ENV === 'production') ? false : 'inline-source-map',
+    devtool: (process.env.NODE_ENV === 'production') ? false : 'eval',
 
     resolve: {
         extensions: ['.js'],
-    },
-
-    devServer: {
-        static: {
-            directory: path.join(__dirname, 'docs'),
-        },
-        host: '0.0.0.0',
-        port: 3000
-    },
-
-    plugins: [
-        new VueLoaderPlugin()
-    ],
+    }
 });

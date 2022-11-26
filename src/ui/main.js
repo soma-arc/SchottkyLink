@@ -1,15 +1,15 @@
 import Vue from 'vue';
 import Buefy from 'buefy';
-import Root from './vue/root.vue';
+import Root from '../core/vue/root.vue';
 import 'buefy/dist/buefy.css';
-import Scene2d from './scene2d.js';
-import Scene3d from './scene3d.js';
-import CanvasManager from './canvasManager.js';
-import TextureManager from './textureManager.js';
-import VideoManager from './videoManager.js';
-import Radians from './radians.js';
-import Vec2 from './vector2d.js';
-import Circle from './generator2d/circle.js';
+import Scene2d from '../core/scene2d.js';
+import Scene3d from '../core/scene3d.js';
+import CanvasManager from '../core/canvasManager.js';
+import TextureManager from '../core/textureManager.js';
+import VideoManager from '../core/videoManager.js';
+import Radians from '../core/radians.js';
+import Vec2 from '../core/vector2d.js';
+import Circle from '../core/generator2d/circle.js';
 const QueryString = require('query-string');
 
 window.addEventListener('DOMContentLoaded',()=>{

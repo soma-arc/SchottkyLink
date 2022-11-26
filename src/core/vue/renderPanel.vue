@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import Color from '../../node_modules/buefy/src/utils/color.js';
+import Color from '../../../node_modules/buefy/src/utils/color.js';
 export default {
     props: ['scene', 'canvas2d'],
     components: { },
