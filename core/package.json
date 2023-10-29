@@ -1,0 +1,22 @@
+{
+    "name": "SchottkyLinkCore",
+    "version": "1.0.0",
+    "description": "An interactive visualization system on a family of Kleinian groups based on Schottky groups",
+    "main": "index.js",
+    "repository": "git@github.com:soma-arc/SchottkyLink",
+    "author": "soma_arc",
+    "license": "GPL-3.0",
+    "scripts": {
+        "release": "webpack --mode production",
+        "build": "webpack --mode development",
+        "build-core": "webpack --mode development --config webpack-core.config.js",
+        "release-core": "webpack --mode production --config webpack-core.config.js",
+        "start": "webpack serve"
+    },
+    "devDependencies": {
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^4.15.1",
+        "eslint": "^8.48.0"
+    }
+}
