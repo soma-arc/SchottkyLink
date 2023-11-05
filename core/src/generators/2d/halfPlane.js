@@ -27,14 +27,14 @@ export default class HalfPlane extends Generator {
      */
     select(p, sceneScale) {
         const dp = p.sub(this.origin);
-        if(dp.length() < Generator.CONTROL_POINT_RADIUS * sceneScale) {
+        if(dp.length() < HalfPlane.ControlPointRadius * sceneScale) {
             return new Selection().setObj(this)
                 .setComponentId(HalfPlane.COMPONENT_ORIGIN_POINT)
                 .setDiffObj(dp);
         }
         
-        const dpNormal = p.sub(this.origin.add(this.normal.scale(Generator.NORMAL_POINT_DISTANCE * sceneScale)));
-        if (dpNormal.length() < Generator.CONTROL_POINT_RADIUS * sceneScale) {
+        const dpNormal = p.sub(this.origin.add(this.normal.scale(HalfPlane.NormalPointDistance * sceneScale)));
+        if (dpNormal.length() < HalfPlane.ControlPointRadius * sceneScale) {
             return new Selection().setObj(this)
                 .setComponentId(HalfPlane.COMPONENT_NORMAL_POINT)
                 .setDiffBetweenComponent(dpNormal);
@@ -47,19 +47,17 @@ export default class HalfPlane extends Generator {
             .setDiffBetweenComponent(dp);
     }
 
-    setUniformValues(gl, uniforms) {
-        let uniI = 0;
-        gl.uniform2f(uniforms[uniI++], this.origin.x, this.origin.y);
-        gl.uniform2f(uniforms[uniI++], this.normal.x, this.normal.y);
-        gl.uniform1i(uniforms[uniI++], false);
+    setUniformValues(gl) {
+        gl.uniform2f(this.uniforms[0], this.origin.x, this.origin.y);
+        gl.uniform2f(this.uniforms[1], this.normal.x, this.normal.y);
+        gl.uniform1i(this.uniforms[2], false);
     }
 
     getUniformLocations(gl, program, index) {
-        const uniforms = [];
-        uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].origin`));
-        uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].normal`));
-        uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].selected`));
-        return uniforms;
+        this.uniforms = [];
+        this.uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].origin`));
+        this.uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].normal`));
+        this.uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].isSelected`));
     }
     
     /**
@@ -81,16 +79,5 @@ export default class HalfPlane extends Generator {
      */
     static get COMPONENT_ORIGIN_POINT() {
         return 2;
-    }
-
-    /**
-     * @return {string}
-     */
-    get type() {
-        return 'HalfPlane';
-    }
-
-    static get Type() {
-        return 'HalfPlane';
     }
 }

@@ -29,7 +29,7 @@ export default class InversionCircle extends Generator {
         if (d > this.#radius) return new Selection();
 
         const distFromCircumference = this.#radius - d;
-        if (distFromCircumference < this.circumferenceThickness * sceneScale) {
+        if (distFromCircumference < InversionCircle.CircumferenceThickness * sceneScale) {
             // ComponentOriginのような概念の導入が必要
             return new Selection().setObj(this)
                 .setComponentId(InversionCircle.COMPONENT_CIRCUMFERENCE)
@@ -49,19 +49,17 @@ export default class InversionCircle extends Generator {
         this.#center = origin;
     }
 
-    setUniformValues(gl, uniforms) {
-        let uniI = 0;
-        gl.uniform2f(uniforms[uniI++], this.#center.x, this.#center.y);
-        gl.uniform1f(uniforms[uniI++], this.#radius);
-        gl.uniform1i(uniforms[uniI++], false);
+    setUniformValues(gl) {
+        gl.uniform2f(this.uniforms[0], this.#center.x, this.#center.y);
+        gl.uniform1f(this.uniforms[1], this.#radius);
+        gl.uniform1i(this.uniforms[2], false);
     }
 
     getUniformLocations(gl, program, index) {
-        const uniforms = [];
-        uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].center`));
-        uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].radius`));
-        uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].selected`));
-        return uniforms;
+        this.uniforms = [];
+        this.uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].center`));
+        this.uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].radius`));
+        this.uniforms.push(gl.getUniformLocation(program, `u_circle[${index}].isSelected`));
     }
 
     exportAsObject() {
@@ -86,13 +84,5 @@ export default class InversionCircle extends Generator {
 
     static get COMPONENT_CENTER() {
         return 2;
-    }
-
-    get type() {
-        return 'InversionCircle';
-    }
-
-    static get Type() {
-        return 'InversionCircle';
     }
 }

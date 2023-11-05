@@ -33,8 +33,8 @@ export default class OrbitSeed extends Generator {
 
     select(mouse, sceneScale) {
         const size = new Vec2(this.width, this.height);
-        const cornerSize = new Vec2(this.borderWidth * sceneScale,
-                                    this.borderWidth * sceneScale);
+        const cornerSize = new Vec2(OrbitSeed.SeedBorderWidth * sceneScale,
+                                    OrbitSeed.SeedBorderWidth * sceneScale);
         const bodyCorner = this.origin.add(cornerSize);
         const bodySize = size.sub(cornerSize.scale(2));
 
@@ -44,7 +44,7 @@ export default class OrbitSeed extends Generator {
         if(dpUp.length() < this.controlPointRadius * sceneScale) {
             return new Selection().setObj(this)
                 .setComponentId(OrbitSeed.COMPONENT_ORIGIN_POINT)
-                .setDiffObj(dpUp);
+                .setDiffBetweenComponent(dpUp);
         }
 
         if (this.origin.x < mouse.x && mouse.x < this.origin.x + this.width &&
@@ -54,24 +54,24 @@ export default class OrbitSeed extends Generator {
                     const dp = mouse.sub(this.origin);
                     return new Selection().setObj(this)
                         .setComponentId(OrbitSeed.COMPONENT_CORNER_LEFT_BOTTOM)
-                        .setDiffObj(dp);
+                        .setDiffBetweenComponent(dp);
                 } else if (bodyCorner.y + bodySize.y < mouse.y) {
                     const dp = mouse.sub(this.origin.add(new Vec2(0, size.y)));
                     return new Selection().setObj(this)
                         .setComponentId(OrbitSeed.COMPONENT_CORNER_LEFT_TOP)
-                        .setDiffObj(dp);
+                        .setDiffBetweenComponent(dp);
                 }
             } else if (bodyCorner.x + bodySize.x < mouse.x) {
                 if (mouse.y < bodyCorner.y) {
                     const dp = mouse.sub(this.origin.add(new Vec2(size.x, 0)));
                     return new Selection().setObj(this)
                         .setComponentId(OrbitSeed.COMPONENT_CORNER_RIGHT_BOTTOM)
-                        .setDiffObj(dp);
+                        .setDiffBetweenComponent(dp);
                 } else if (bodyCorner.y + bodySize.y < mouse.y) {
                     const dp = mouse.sub(this.origin.add(size));
                     return new Selection().setObj(this)
                         .setComponentId(OrbitSeed.COMPONENT_CORNER_RIGHT_TOP)
-                        .setDiffObj(dp);
+                        .setDiffBetweenComponent(dp);
                 }
             }
 
@@ -79,12 +79,12 @@ export default class OrbitSeed extends Generator {
             if(dpOrigin.length() < this.controlPointRadius * sceneScale) {
                 return new Selection().setObj(this)
                     .setComponentId(OrbitSeed.COMPONENT_ORIGIN_POINT)
-                    .setDiffObj(dpOrigin);
+                    .setDiffBetweenComponent(dpOrigin);
             }
 
             const dp = mouse.sub(this.origin);
             return new Selection().setObj(this).setComponentId(OrbitSeed.COMPONENT_BODY)
-                .setDiffObj(dp);
+                .setDiffBetweenComponent(dp);
         }
         return new Selection();
     }
