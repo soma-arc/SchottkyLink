@@ -8,6 +8,7 @@ export default class Generator{
     #id;
     constructor(){
         this.#id = crypto.randomUUID();
+        this.slected = false;
         this.uniforms = [];
     }
 

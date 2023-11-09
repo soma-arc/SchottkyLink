@@ -12,17 +12,20 @@ const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
 
 export default class Renderer {
-    constructor(gl, fragmentShaderTmpl, scene) {
-        this.gl = gl;
+    constructor(canvas, fragmentShaderTmpl, scene) {
+        this.canvas = canvas;
+        this.gl = GLUtils.GetWebGL2Context(canvas.canvasElem);
         this.fragmentShaderTmpl = fragmentShaderTmpl;
         this.scene = scene;
 
-        this.resolution = new Vec2(512, 512);
+        this.setResolution(this.canvas.width, this.canvas.height);
 
         // vertex buffer objectはprogram間で使い回せる
-        this.vertexBuffer = GLUtils.CreateSquareVbo(gl);
+        this.vertexBuffer = GLUtils.CreateSquareVbo(this.gl);
 
-        this.setupCanvasRenderer();
+        this.setupRenderProgram();
+        this.setupCanvasRenderProgram();
+        this.setupUniformLocations();
     }
 
     setResolution(width, height) {
@@ -62,10 +65,10 @@ export default class Renderer {
     /**
      * 与えられたシェーダーテンプレートにシーンのコンテクストを与えてコードを生成, コンパイルする
      */
-    compileRenderShader() {
+    setupRenderProgram() {
         this.renderProgram = this.gl.createProgram();
         GLUtils.AttachShader(this.gl, RENDER_VERTEX, this.renderProgram, this.gl.VERTEX_SHADER);
-        GLUtils.AttachShader(this.gl, this.fragmentShaderTmpl.render(this.scene.getContext()),
+        GLUtils.AttachShader(this.gl, this.fragmentShaderTmpl.render(this.scene.getSceneInfo()),
                              this.renderProgram, this.gl.FRAGMENT_SHADER);
         GLUtils.LinkProgram(this.gl, this.renderProgram);
         this.renderVAttrib = this.gl.getAttribLocation(this.renderProgram, 'a_vertex');
@@ -78,7 +81,7 @@ export default class Renderer {
                                                                      this.resolution.y, 2);
     }
 
-    getUniformLocations() {
+    setupUniformLocations() {
         this.uniforms = [];
         this.uniforms.push(this.gl.getUniformLocation(this.renderProgram, 'u_resolution'));
 

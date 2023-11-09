@@ -1,49 +1,17 @@
 export default class Canvas {
     constructor(canvasId) {
         this.canvasId = canvasId;
-        this.canvas = document.getElementById(canvasId);
         this.pixelRatio = 1.0;//window.devicePixelRatio;
-        this.resizeCanvas();
-
-        this.boundMouseDownListener = this.mouseDownListener.bind(this);
-        this.boundMouseUpListener = this.mouseUpListener.bind(this);
-        this.boundMouseWheelListener = this.mouseWheelListener.bind(this);
-        this.boundMouseMoveListener = this.mouseMoveListener.bind(this);
-        this.boundDblClickLisntener = this.mouseDblClickListener.bind(this);
-        this.boundKeydown = this.keydownListener.bind(this);
-        this.boundKeyup = this.keyupListener.bind(this);
-        this.canvas.addEventListener('mousedown', this.boundMouseDownListener);
-        this.canvas.addEventListener('mouseup', this.boundMouseUpListener);
-        this.canvas.addEventListener('wheel', this.boundMouseWheelListener);
-        this.canvas.addEventListener('mousemove', this.boundMouseMoveListener);
-        this.canvas.addEventListener('dblclick', this.boundDblClickLisntener);
-        this.canvas.addEventListener('keydown', this.boundKeydown);
-        this.canvas.addEventListener('keyup', this.boundKeyup);
-        this.canvas.addEventListener('contextmenu', event => event.preventDefault());
     }
 
     resizeCanvas() {
-        const parent = this.canvas.parentElement;
-        this.canvas.style.width = parent.clientWidth + 'px';
-        this.canvas.style.height = parent.clientHeight + 'px';
-        this.canvas.width = parent.clientWidth * this.pixelRatio;
-        this.canvas.height = parent.clientHeight * this.pixelRatio;
-        this.canvasAspectRatio = this.canvas.width / this.canvas.height / 2;
+        const parent = this.canvasElem.parentElement;
+        this.canvasElem.style.width = parent.clientWidth + 'px';
+        this.canvasElem.style.height = parent.clientHeight + 'px';
+        this.canvasElem.width = parent.clientWidth * this.pixelRatio;
+        this.canvasElem.height = parent.clientHeight * this.pixelRatio;
+        this.canvasAspectRatio = this.canvasElem.width / this.canvasElem.height / 2;
     }
-
-    mouseWheelListener(event) {}
-
-    mouseDownListener(event) {}
-
-    mouseDblClickListener(event) {}
-
-    mouseUpListener(event) {}
-
-    mouseMoveListener(event) {}
-
-    keydownListener(event) {}
-
-    keyupListener(event) {}
 
     render() {}
 

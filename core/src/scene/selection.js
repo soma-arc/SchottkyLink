@@ -7,6 +7,7 @@ export default class Selection {
     constructor () {
         this.selectedObj = undefined;
         this.selectedComponentId = -1;
+        this.componentOrigin = undefined;
         // difference between mouse and the object
         // (e.g. center of the circle)
         /** @type{Vec2} */
@@ -39,6 +40,16 @@ export default class Selection {
 
     /**
      *
+     * @param {Vec2} componentOrigin
+     * @returns {Selection}
+     */
+    setComponentOrigin(componentOrigin) {
+        this.componentOrigin = componentOrigin;
+        return this;
+    }
+
+    /**
+     *
      * @param {Vec2} diffBetweenComponent
      * @returns {Selection}
      */
@@ -62,7 +73,7 @@ export default class Selection {
      *
      * @returns {boolean}
      */
-    isSelectingObj () {
+    isSelecting () {
         return this.selectedObj !== undefined;
     }
 }

@@ -35,6 +35,23 @@ module.exports = () => ({
                     'style-loader',
                     'css-loader'
                 ],
+            },
+            {
+                test: /\.(glsl|vert|frag)$/,
+                exclude: /\.(njk|nunjucks)\.(glsl|vert|frag)$/,
+                use: [
+                    {
+                        loader: 'shader-loader',
+                    }
+                ]
+            },
+            {
+                test: /\.(njk|nunjucks)\.(glsl|vert|frag)$/,
+                use: [
+                    {
+                        loader: 'nunjucks-loader'
+                    }
+                ]
             }
         ]
     },

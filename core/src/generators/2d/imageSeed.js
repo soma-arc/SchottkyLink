@@ -1,6 +1,7 @@
 import OrbitSeed from './orbitSeed.js';
 
 export default class ImageSeed extends OrbitSeed {
+    name = 'ImageSeed';
     /**
      *       width
      *   -------------

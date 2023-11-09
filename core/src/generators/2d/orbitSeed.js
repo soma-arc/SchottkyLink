@@ -1,8 +1,9 @@
 import Generator from '../generator.js';
-import Selection from '../scene/selection.js';
+import Selection from '../../scene/selection.js';
 import Vec2 from '../../math/vec2.js';
 
 export default class OrbitSeed extends Generator {
+    name = 'OrbitSeed';
     /**
      *       width
      *   -------------

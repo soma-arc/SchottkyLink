@@ -1,8 +1,30 @@
 export default class MouseState {
-    constructor() {
+    constructor(position) {
+        this.position = position;
         this.prevPosition = undefined;
         this.prevTranslation = undefined;
-        this.isPressing = true;
+        this.isPressing = false;
+        this.button = undefined;
+    }
+
+    setPrevPosition(prevPosition) {
+        this.prevPosition = prevPosition;
+        return this;
+    }
+
+    setPrevTranslation(prevTranslation) {
+        this.prevTranslation = prevTranslation;
+        return this;
+    }
+
+    setIsPressing(isPressing) {
+        this.isPressing = isPressing;
+        return this;
+    }
+
+    setButton(button) {
+        this.button = button;
+        return this;
     }
     
     static get MOUSE_BUTTON_LEFT() {

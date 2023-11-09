@@ -1,6 +1,7 @@
 import OrbitSeed from './orbitSeed.js';
 
 export default class VideoSeed extends OrbitSeed {
+    name = 'VideoSeed';
     constructor(origin, width, height) {
         super(origin, width, height);
     }

@@ -3,6 +3,7 @@ import Selection from '../../scene/selection.js';
 import Vec2 from '../../math/vec2.js';
 
 export default class InversionCircle extends Generator {
+    name = 'InversionCircle';
     /** @type Vec2 */
     #center;
     /** @type number */
@@ -20,7 +21,7 @@ export default class InversionCircle extends Generator {
 
     /**
      * @type {Vec2} p
-     * @type {number} sceneScale
+     * @type {number} sceneScale UIをズーム倍率によらず描画するために使用する
      * @return {Selection}
      */
     select(p, sceneScale) {
@@ -30,7 +31,7 @@ export default class InversionCircle extends Generator {
 
         const distFromCircumference = this.#radius - d;
         if (distFromCircumference < InversionCircle.CircumferenceThickness * sceneScale) {
-            // ComponentOriginのような概念の導入が必要
+            // ComponentOriginのよいうな概念の導入が必要
             return new Selection().setObj(this)
                 .setComponentId(InversionCircle.COMPONENT_CIRCUMFERENCE)
                 .setDiffBetweenComponent(dp);
@@ -52,7 +53,7 @@ export default class InversionCircle extends Generator {
     setUniformValues(gl) {
         gl.uniform2f(this.uniforms[0], this.#center.x, this.#center.y);
         gl.uniform1f(this.uniforms[1], this.#radius);
-        gl.uniform1i(this.uniforms[2], false);
+        gl.uniform1i(this.uniforms[2], this.selected);
     }
 
     getUniformLocations(gl, program, index) {

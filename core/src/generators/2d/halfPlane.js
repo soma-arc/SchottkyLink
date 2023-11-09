@@ -3,6 +3,7 @@ import Selection from '../../scene/selection.js';
 import Vec2 from '../../math/vec2.js';
 
 export default class HalfPlane extends Generator {
+    name = 'HalfPlane';
     /**
      *
      *       ^ normal

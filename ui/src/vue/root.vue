@@ -1,19 +1,16 @@
 <template>
-<div class="example">{{ msg }}</div>
+<div id="root">
+  <div width="512" height="512">
+    <canvas id="canvas" width="512" height="512"></canvas>
+  </div>
+</div>
 </template>
 
 <script>
 export default {
-    data() {
-        return {
-            msg: 'Hello world!'
-        }
-    }
+    props: ['canvas', 'scene', 'renderer'],
 }
 </script>
 
 <style>
-.example {
-    color: red;
-}
 </style>
