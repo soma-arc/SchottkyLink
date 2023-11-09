@@ -27,18 +27,18 @@ export default class HalfPlane extends Generator {
      * @return {Selection}
      */
     select(p, sceneScale) {
-        const dp = p.sub(this.origin);
-        if(dp.length() < HalfPlane.ControlPointRadius * sceneScale) {
-            return new Selection().setObj(this)
-                .setComponentId(HalfPlane.COMPONENT_ORIGIN_POINT)
-                .setDiffObj(dp);
-        }
-        
         const dpNormal = p.sub(this.origin.add(this.normal.scale(HalfPlane.NormalPointDistance * sceneScale)));
         if (dpNormal.length() < HalfPlane.ControlPointRadius * sceneScale) {
             return new Selection().setObj(this)
                 .setComponentId(HalfPlane.COMPONENT_NORMAL_POINT)
                 .setDiffBetweenComponent(dpNormal);
+        }
+
+        const dp = p.sub(this.origin);
+        if(dp.length() < HalfPlane.ControlPointRadius * sceneScale) {
+            return new Selection().setObj(this)
+                .setComponentId(HalfPlane.COMPONENT_ORIGIN_POINT)
+                .setDiffObj(dp);
         }
 
         if (Vec2.dot(this.normal, dp) > 0) return new Selection();
@@ -51,7 +51,7 @@ export default class HalfPlane extends Generator {
     setUniformValues(gl) {
         gl.uniform2f(this.uniforms[0], this.origin.x, this.origin.y);
         gl.uniform2f(this.uniforms[1], this.normal.x, this.normal.y);
-        gl.uniform1i(this.uniforms[2], false);
+        gl.uniform1i(this.uniforms[2], this.selected);
     }
 
     getUniformLocations(gl, program, index) {
@@ -60,7 +60,7 @@ export default class HalfPlane extends Generator {
         this.uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].normal`));
         this.uniforms.push(gl.getUniformLocation(program, `u_halfPlane[${index}].isSelected`));
     }
-    
+
     /**
      * @return {number}
      */

@@ -24,6 +24,7 @@ export default class Scene2d extends Scene {
         }
 
         this.generators['InversionCircle'].push(new InversionCircle(0, 0, 0.1));
+        this.generators['HalfPlane'].push(new HalfPlane(new Vec2(-0.1, 0), new Vec2(1, 0)));
 
         this.translation = new Vec2(0, 0);
         this.scale = 1;
@@ -65,9 +66,9 @@ export default class Scene2d extends Scene {
 
     setUniformValues(gl) {
         gl.uniform3f(this.uniforms[0], this.translation.x, this.translation.y, this.scale);
-        gl.uniform1f(this.uniforms[1], Generator.ControlPointRadis);
-        gl.uniform1f(this.uniforms[2], Generator.CircumferenceThickness);
-        gl.uniform1f(this.uniforms[3], Generator.SeedBorderWidth);
+        gl.uniform1f(this.uniforms[1], Generator.ControlPointRadius * this.scale);
+        gl.uniform1f(this.uniforms[2], Generator.CircumferenceThickness * this.scale);
+        gl.uniform1f(this.uniforms[3], Generator.SeedBorderWidth * this.scale);
         for (const genArray of Object.values(this.generators)) {
             for (const gen of genArray) {
                 gen.setUniformValues(gl);
@@ -130,6 +131,7 @@ export default class Scene2d extends Scene {
                                                                         event.clientY));
             if(event.button === MouseState.MOUSE_BUTTON_LEFT) {
                 const selected = this.select(mousePos);
+                console.log(this.selection);
                 // if(selected) {
                 // }
                 this.reRender();

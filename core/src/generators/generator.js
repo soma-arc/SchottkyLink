@@ -1,6 +1,8 @@
+import Selection from '../scene/selection.js';
+
 export default class Generator{
     static ControlPointRadius = 0.01;
-    static CircumferenceThickness = 0.1;
+    static CircumferenceThickness = 0.01;
     static SeedBorderWidth = 0.01;
     static NormalPointDistance = 0.01;
 
@@ -34,5 +36,14 @@ export default class Generator{
     }
 
     update() {
+    }
+
+    /**
+     * @type {Vec2} p
+     * @type {number} sceneScale
+     * @return {Selection}
+     */
+    select(p, sceneScale) {
+        return new Selection();
     }
 }

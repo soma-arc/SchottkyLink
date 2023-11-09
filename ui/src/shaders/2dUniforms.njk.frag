@@ -21,7 +21,7 @@ struct Circle {
 };
 
 struct HalfPlane {
-    vec2 p;
+    vec2 origin;
     vec2 normal;
     bool isSelected;
 };

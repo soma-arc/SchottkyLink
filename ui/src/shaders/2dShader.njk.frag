@@ -39,21 +39,60 @@ bool IIS(vec2 pos, out vec4 outColor) {
 
         {% for n in range(0,  numCircle ) %}
         if(distance(pos, u_circle[{{ n }}].center) < u_circle[{{ n }}].radius) {
-            if(u_circle[{{ n }}].isSelected) {
-                invNum++;
-            }
             pos = circleInvert(pos, u_circle[{{ n }}]);
             invNum++;
             continue;
         }
         {% endfor %}
 
-        break;
+        {% for n in range(0, numHalfPlane ) %}
+        pos -= u_halfPlane[{{ n }}].origin;
+        float dHalfPlane{{ n }} = dot(pos, u_halfPlane[{{ n }}].normal);
+        invNum += (dHalfPlane{{ n }} < 0.) ? 1. : 0.;
+        inFund = (dHalfPlane{{ n }} < 0. ) ? false : inFund;
+        pos -= 2.0 * min(0., dHalfPlane{{ n }}) * u_halfPlane[{{ n }}].normal;
+        pos += u_halfPlane[{{ n }}].origin;
+        {% endfor %}
+
+        if(inFund) break;
     }
 
     outColor = vec4(computeColor(invNum), 1.);
 
     return (invNum == 0.) ? false : true;
+}
+
+bool renderUI(vec2 pos, out vec4 outColor) {
+    outColor = vec4(0, 0, 0, 1);
+
+    float dist;
+    {% for n in range(0, numCircle ) %}
+    // boundary of circle
+    if(u_circle[{{ n }}].isSelected){
+        dist = u_circle[{{ n }}].radius - distance(pos, u_circle[{{ n }}].center);
+        if(0. < dist && dist < u_circumferenceThickness){
+            outColor = vec4(WHITE, 1);
+            return true;
+        }
+        // center
+        if(distance(pos, u_circle[{{ n }}].center) < u_uiControlPointRadius) {
+            outColor = vec4(LIGHT_BLUE, 1);
+            return true;
+        }
+    }
+    {% endfor %}
+
+    {% for n in range(0, numHalfPlane ) %}
+    // boundary of circle
+    if(u_halfPlane[{{ n }}].isSelected) {
+        if(distance(pos, u_halfPlane[{{ n }}].origin) < u_circumferenceThickness) {
+            outColor = vec4(WHITE, 1);
+            return true;
+        }
+    }
+    {% endfor %}
+
+    return false;
 }
 
 const float MAX_SAMPLES = 20.;
@@ -66,6 +105,12 @@ void main() {
         position += u_geometry.xy;
 
         vec4 col;
+
+        if(renderUI(position, col)) {
+            sum += col;
+            continue;
+        }
+        
         bool rendered = IIS(position, col);
 
         if(rendered) {
