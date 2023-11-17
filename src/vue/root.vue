@@ -1,8 +1,8 @@
 <template>
   <div id="root">
-    <header-panel :canvasManager="canvasManager" v-if="display"/>
+    <!-- <header-panel :canvasManager="canvasManager" v-if="display"/> -->
     <middle-panel :scene2d="scene2d" :scene3d="scene3d" :canvasManager="canvasManager" :currentRoute="currentRoute" />
-    <footer-panel v-if="display"/>
+    <!-- <footer-panel v-if="display"/> -->
   </div>
 </template>
 
@@ -36,8 +36,8 @@ div {
 #root {
     margin: 0;
     height: 100%;
-    display: flex;
-    flex-direction: column;
+    /* display: flex; */
+    /* flex-direction: column; */
     overflow: hidden;
 }
 </style>

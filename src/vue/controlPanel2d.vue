@@ -1,8 +1,8 @@
 <template>
 <div class="controlPanel">
-  <b-tabs position="is-centered" v-model="activeTab">
-      <b-tab-item label="Component">
-        <section id="component">
+  <!-- <b-tabs position="is-centered" v-model="activeTab"> -->
+  <!--     <b-tab-item label="Component"> -->
+        <!-- <section id="component"> -->
           <img-button label="Circle" :src="circleUrl"
                       width="128px" height="128px" @click.native="addCircle"/>
           <img-button label="Half Plane" :src="halfPlaneUrl"
@@ -29,18 +29,18 @@
                       width="128px" height="128px" @click.native="addTwoCircles"/>
           <img-button label="Loxodromic" :src="loxodromicUrl" @click.native="addLoxodromic"
                       width="128px" height="128px"/>
-        </section>
-        </b-tab-item>
-        <b-tab-item label="Scene">
-          <section>
-            <scene-object-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"
-                                :textureManager="canvasManager.textureManager"></scene-object-panel>
-          </section>
-        </b-tab-item>
-        <b-tab-item label="Render">
-          <render-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"></render-panel>
-        </b-tab-item>
-      </b-tabs>
+        <!-- </section> -->
+        <!-- </b-tab-item> -->
+        <!-- <b-tab-item label="Scene"> -->
+        <!--   <section> -->
+        <!--     <scene-object-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d" -->
+        <!--                         :textureManager="canvasManager.textureManager"></scene-object-panel> -->
+        <!--   </section> -->
+        <!-- </b-tab-item> -->
+        <!-- <b-tab-item label="Render"> -->
+        <!--   <render-panel :scene="scene2d" :canvas2d="canvasManager.canvas2d"></render-panel> -->
+        <!-- </b-tab-item> -->
+      <!-- </b-tabs> -->
   </div>
 </template>
 
@@ -180,10 +180,13 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position:relative;
 }
 
 .img-button {
     padding: 5px;
+    position: absolute;
+    left: 10px;
 }
 
 </style>
