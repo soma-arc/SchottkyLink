@@ -161,3 +161,10 @@ uniform vec3 u_generatorBoundaryColor;
 {% if numFundamentalDomainPoints > 2 %}
 uniform vec2 u_fundamentalDomain[{{ numFundamentalDomainPoints }}];
 {% endif %}
+
+uniform vec3 u_palette_a;
+uniform vec3 u_palette_b;
+uniform vec3 u_palette_c;
+uniform vec3 u_palette_d;
+uniform float u_paletteInitValue;
+uniform float u_paletteStep;
