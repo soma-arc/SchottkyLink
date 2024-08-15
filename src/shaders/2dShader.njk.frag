@@ -29,7 +29,7 @@ vec2 circleInvert(const vec2 pos, const vec4 circle){
 }
 
 vec3 computeColor(float loopNum) {
-    return palette((loopNum -1.) * 0.1, u_palette_a, u_palette_b, u_palette_c, u_palette_d);
+    return palette(u_paletteInitValue + u_paletteStep * (loopNum -1.), u_palette_a, u_palette_b, u_palette_c, u_palette_d);
 }
 
 const int MAX_ITERATIONS = 200;

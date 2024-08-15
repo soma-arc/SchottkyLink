@@ -17,20 +17,18 @@
       <b-colorpicker v-model="canvas2d.paletteC" :alpha="true" :color-formatter="colorFormatter"
                      @input="colorChanged"/>
     </b-field>
-      <b-field label="paletteD">
-    <b-colorpicker v-model="canvas2d.paletteD" :alpha="true" :color-formatter="colorFormatter"
-                   @input="colorChanged"/>
-      </b-field>
-          </b-field>
-      <b-field label="initialValue">
-    <b-slider v-model="canvas2d.paletteInitValue"
-                   @input="colorChanged" :step="0.1" :max="1"/>
-      </b-field>
-          </b-field>
-      <b-field label="valueStep">
-    <b-slider v-model="canvas2d.paletteStep" @input="colorChanged" :step="0.1" :max="1"/>
-      </b-field>
-  </section>
+    <b-field label="paletteD">
+      <b-colorpicker v-model="canvas2d.paletteD" :alpha="true" :color-formatter="colorFormatter"
+                     @input="colorChanged"/>
+    </b-field>
+    <b-field label="initialValue">
+      <b-slider v-model="canvas2d.paletteInitValue"
+                @input="colorChanged" :step="0.01" :max="1"/>
+    </b-field>
+    <b-field label="valueStep">
+      <b-slider v-model="canvas2d.paletteStep" @input="colorChanged" :step="0.01" :max="1"/>
+</b-field>
+</section>
 </div>
 </template>
 
