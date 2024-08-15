@@ -253,7 +253,8 @@ bool IIS(vec2 pos, out vec4 col) {
         if (inFund) break;
     }
 
-    col = mix(u_backgroundColor, vec4(computeColor(invNum), 1), u_isRenderingGenerator);
+    //col = mix(u_backgroundColor, vec4(computeColor(invNum), 1), u_isRenderingGenerator);
+    col = vec4(computeColor(invNum), 1);
     return (invNum == 0.) ? false : true;
 }
 
