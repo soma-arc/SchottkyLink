@@ -57,11 +57,11 @@ export default class Canvas2d extends Canvas {
         this.backgroundColor = Color.parse('rgba(0,0,0,1)');
         this.paletteA = Color.parse('rgba(128, 128, 128, 1)');
         this.paletteB = Color.parse('rgba(128, 128, 128, 1)');
-        this.paletteC = Color.parse('rgba(255, 255, 255, 1)');
-        this.paletteInitValue = 0;
-        this.paletteStep = 0.01;
-        console.log(`rgba(${0}, ${0.33 * 255}, ${0.67 * 255}, 1)`);
-        this.paletteD = Color.parse(`rgba(${0}, ${Math.round(0.33 * 255)}, ${Math.round(0.67 * 255)}, 1)`);
+        this.paletteC = Color.parse('rgba(255, 255, 128, 1)');
+        this.paletteInitValue = 0.21;
+        this.paletteStep = 0.1;
+        console.log(`rgba(${0.8 * 255}, ${0.9 * 255}, ${0.3 * 255}, 1)`);
+        this.paletteD = Color.parse(`rgba(${Math.round(0.8 * 255)}, ${Math.round(0.9 * 255)}, ${Math.round(0.3 * 255)}, 1)`);
         this.generatorBoundaryColor = [1, 1, 1];
 
         this.allowDeleteComponents = true;
@@ -590,6 +590,11 @@ export default class Canvas2d extends Canvas {
                                                           'u_palette_c'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_palette_d'));
+         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_paletteInitValue'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_paletteStep'));
+
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -658,6 +663,9 @@ export default class Canvas2d extends Canvas {
                           this.paletteC.red/255, this.paletteC.green/255, this.paletteC.blue/255);
         this.gl.uniform3f(this.uniLocations[i++],
                           this.paletteD.red/255, this.paletteD.green/255, this.paletteD.blue/255);
+
+        this.gl.uniform1f(this.uniLocations[i++], this.paletteInitValue);
+        this.gl.uniform1f(this.uniLocations[i++], this.paletteStep);
 
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
