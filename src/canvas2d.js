@@ -8,6 +8,7 @@ const RENDER_FLIPPED_VERTEX = require('./shaders/renderFlipped.vert');
 const RENDER_FRAGMENT = require('./shaders/render.frag');
 
 const CIRCLES_SHADER_TMPL = require('./shaders/2dShader.njk.frag');
+import Color from '../node_modules/buefy/src/utils/color.js';
 
 export default class Canvas2d extends Canvas {
     constructor(canvasId, scene, videoManager, textureManager) {
@@ -53,7 +54,14 @@ export default class Canvas2d extends Canvas {
         this.prevSelected = false;
         this.prevId = -1;
 
-        this.backgroundColor = [0, 0, 0, 1];
+        this.backgroundColor = Color.parse('rgba(0,0,0,1)');
+        this.paletteA = Color.parse('rgba(128, 128, 128, 1)');
+        this.paletteB = Color.parse('rgba(128, 128, 128, 1)');
+        this.paletteC = Color.parse('rgba(255, 255, 255, 1)');
+        this.paletteInitValue = 0;
+        this.paletteStep = 0.01;
+        console.log(`rgba(${0}, ${0.33 * 255}, ${0.67 * 255}, 1)`);
+        this.paletteD = Color.parse(`rgba(${0}, ${Math.round(0.33 * 255)}, ${Math.round(0.67 * 255)}, 1)`);
         this.generatorBoundaryColor = [1, 1, 1];
 
         this.allowDeleteComponents = true;
@@ -574,6 +582,14 @@ export default class Canvas2d extends Canvas {
                                                           'u_backgroundColor'));
         this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
                                                           'u_generatorBoundaryColor'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_palette_a'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_palette_b'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_palette_c'));
+        this.uniLocations.push(this.gl.getUniformLocation(this.renderProgram,
+                                                          'u_palette_d'));
         this.scene.setUniformLocation(this.gl, this.uniLocations, this.renderProgram);
     }
 
@@ -625,14 +641,24 @@ export default class Canvas2d extends Canvas {
                           this.orbitOrigin.x,
                           this.orbitOrigin.y);
         this.gl.uniform4f(this.uniLocations[i++],
-                          this.backgroundColor[0],
-                          this.backgroundColor[1],
-                          this.backgroundColor[2],
-                          this.backgroundColor[3]);
+                          this.backgroundColor.red/255,
+                          this.backgroundColor.green/255,
+                          this.backgroundColor.blue/255,
+                          this.backgroundColor.alpha/255);
         this.gl.uniform3f(this.uniLocations[i++],
                           this.generatorBoundaryColor[0],
                           this.generatorBoundaryColor[1],
                           this.generatorBoundaryColor[2]);
+
+        this.gl.uniform3f(this.uniLocations[i++],
+                          this.paletteA.red/255, this.paletteA.green/255, this.paletteA.blue/255);
+        this.gl.uniform3f(this.uniLocations[i++],
+                          this.paletteB.red/255, this.paletteB.green/255, this.paletteB.blue/255);
+        this.gl.uniform3f(this.uniLocations[i++],
+                          this.paletteC.red/255, this.paletteC.green/255, this.paletteC.blue/255);
+        this.gl.uniform3f(this.uniLocations[i++],
+                          this.paletteD.red/255, this.paletteD.green/255, this.paletteD.blue/255);
+
         i = this.scene.setUniformValues(this.gl, this.uniLocations, i, this.scale);
     }
 

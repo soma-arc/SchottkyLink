@@ -1,10 +1,35 @@
 <template>
 <div class="renderPanel">
   <section>
-  <b-field label="Backgroud Color">
-    <b-colorpicker v-model="selectedColor" :alpha="true" :color-formatter="colorFormatter"
+    <b-field label="Backgroud Color">
+      <b-colorpicker v-model="canvas2d.backgroundColor" :alpha="true" :color-formatter="colorFormatter"
+                     @input="colorChanged"/>
+    </b-field>
+    <b-field label="palette A">
+      <b-colorpicker v-model="canvas2d.paletteA" :alpha="true" :color-formatter="colorFormatter"
+                     @input="colorChanged"/>
+    </b-field>
+    <b-field label="palette B">
+      <b-colorpicker v-model="canvas2d.paletteB" :alpha="true" :color-formatter="colorFormatter"
+                     @input="colorChanged"/>
+    </b-field>
+    <b-field label="palette C">
+      <b-colorpicker v-model="canvas2d.paletteC" :alpha="true" :color-formatter="colorFormatter"
+                     @input="colorChanged"/>
+    </b-field>
+      <b-field label="paletteD">
+    <b-colorpicker v-model="canvas2d.paletteD" :alpha="true" :color-formatter="colorFormatter"
                    @input="colorChanged"/>
-  </b-field>
+      </b-field>
+          </b-field>
+      <b-field label="initialValue">
+    <b-slider v-model="canvas2d.paletteInitValue"
+                   @input="colorChanged" :step="0.1" :max="1"/>
+      </b-field>
+          </b-field>
+      <b-field label="valueStep">
+    <b-slider v-model="canvas2d.paletteStep" @input="colorChanged" :step="0.1" :max="1"/>
+      </b-field>
   </section>
 </div>
 </template>
@@ -16,7 +41,8 @@ export default {
     components: { },
     data: function() {
         return {
-            selectedColor: Color.parse(`rgba(${this.canvas2d.backgroundColor[0] * 255},${this.canvas2d.backgroundColor[1] * 255},${this.canvas2d.backgroundColor[2] * 255},${this.canvas2d.backgroundColor[3]})`)
+
+            
         }
     },
     methods: {
@@ -24,10 +50,6 @@ export default {
             return color.toString('rgba');
         },
         colorChanged(event) {
-            this.canvas2d.backgroundColor = [this.selectedColor.red / 255,
-                                             this.selectedColor.green / 255,
-                                             this.selectedColor.blue / 255,
-                                             this.selectedColor.alpha / 255];
             this.canvas2d.render();
         }
     },
